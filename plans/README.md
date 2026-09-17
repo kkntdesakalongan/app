@@ -4,14 +4,20 @@
 
 Planned with `improve` at `bf9a7ce`. The user approved the Chokidar
 dependency and selected tests-then-migrate. Plan 039 locks the watcher
-contract. Plan 040 replaces the file layer. Execute in order.
+contract. Plan 040 was attempted twice on `advisor/040-chokidar-watcher`
+and REJECTED on review: file-path watching lost add/rename/external-edit
+events, dir watching flaked the external-cycle test in full-suite runs,
+and installed `chokidar@5.0.0` still uses per-path `node:fs` watchers
+(no `fsevents` dep), so the low-limit dev run still hit `EMFILE`.
+Replan 040 from this clean slate. Plan 039 tests must pass unmodified
+under any new attempt.
 
 | Plan | Result | Priority | Effort | Risk | Depends on | Status |
 |---|---|---|---|---|---|---|
 | [039](039-lock-watcher-contract-tests.md) | Lock route watcher add, rename, delete, and ignore rules with tests | P1 | S | LOW | None | DONE (manifest.spec 29 pass, lint 0, dev-routes pass, 354ae9d) |
-| [040](040-chokidar-watcher.md) | Replace route watcher file layer with one Chokidar instance | P1 | S | MED | 039 | TODO |
+| 040 | Chokidar watcher migration | P1 | S | MED | 039 | REJECTED — file watching lost events, dir watching flaked, EMFILE premise false; replan from clean slate |
 
-Execute 039 before 040. Plan 040 must pass plan 039 tests unmodified.
+Plan 040 must pass plan 039 tests unmodified.
 Plan 040 keeps the public signature, debounce, queue, and close contract.
 Audit scope was limited to the Sprindle route watcher and its dev proof.
 Product behavior, databases, broad framework quality, dependency security,
