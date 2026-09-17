@@ -1,5 +1,22 @@
 # File-routing plans
 
+## Chokidar watcher migration — 2026-09-17
+
+Planned with `improve` at `bf9a7ce`. The user approved the Chokidar
+dependency and selected tests-then-migrate. Plan 039 locks the watcher
+contract. Plan 040 replaces the file layer. Execute in order.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [039](039-lock-watcher-contract-tests.md) | Lock route watcher add, rename, delete, and ignore rules with tests | P1 | S | LOW | None | DONE (manifest.spec 29 pass, lint 0, dev-routes pass, 354ae9d) |
+| [040](040-chokidar-watcher.md) | Replace route watcher file layer with one Chokidar instance | P1 | S | MED | 039 | TODO |
+
+Execute 039 before 040. Plan 040 must pass plan 039 tests unmodified.
+Plan 040 keeps the public signature, debounce, queue, and close contract.
+Audit scope was limited to the Sprindle route watcher and its dev proof.
+Product behavior, databases, broad framework quality, dependency security,
+performance, and frontend behavior were not audited.
+
 ## Windows tooling portability — 2026-09-17
 
 Planned with `improve` at `83c13b4`. The user selected all three findings as
