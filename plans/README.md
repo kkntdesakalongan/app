@@ -16,6 +16,9 @@ under any new attempt.
 |---|---|---|---|---|---|---|
 | [039](039-lock-watcher-contract-tests.md) | Lock route watcher add, rename, delete, and ignore rules with tests | P1 | S | LOW | None | DONE (manifest.spec 29 pass, lint 0, dev-routes pass, 354ae9d) |
 | 040 | Chokidar watcher migration | P1 | S | MED | 039 | REJECTED — file watching lost events, dir watching flaked, EMFILE premise false; replan from clean slate |
+| [041](041-migrate-sprindle-watcher-to-chokidar.md) | Chokidar 3.6 native watcher with atomic-input and macOS low-limit proofs | P1 | M | MED | 039 | DONE — 2026-09-18, review APPROVE; tooling 58 pass, watch 12 pass x3, lint 0, low-limit proof pass (fsevents, ulimit 128), dev-routes pass with DATABASE_URL, frozen lockfile 0, diff clean; branch `advisor/041-chokidar-3-watcher` |
+
+Plan 041 keeps the public signature, debounce, queue, and close contract.
 
 Plan 040 must pass plan 039 tests unmodified.
 Plan 040 keeps the public signature, debounce, queue, and close contract.
