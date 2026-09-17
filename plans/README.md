@@ -1,5 +1,74 @@
 # File-routing plans
 
+## Resource and form contract enforcement — 2026-09-17
+
+Planned with `improve` at `9d5f03e`. The user selected type safety and runtime
+enforcement fixes. These plans put the checks in Loom and the app schema seam;
+they add no agent workflow requirements. This directory already contains
+framework improvement plans, so numbering continues at 034.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [034](034-enforce-resource-action-declarations.md) | Exact standard action options and explicit custom declarations | P1 | M | MED | None | TODO |
+| [035](035-enforce-resource-identity.md) | Valid identity declarations and checked runtime identities | P1 | M | MED | 034 | TODO |
+| [036](036-separate-field-references-from-inputs.md) | Reject references at resolved field inputs | P1 | S | LOW | None | TODO |
+| [037](037-enforce-form-renderer-contracts.md) | Typed form renderer props and checks before component use | P1 | L | HIGH | 036; fixtures use 034–035 | TODO |
+
+Recommended order: **034 → 035 → 036 → 037**. Plan 036 can run independently,
+but execute serially because these plans share field and resource types. Plan
+037 is the largest change and has explicit intermediate checks. Read each plan
+fully before execution. Each plan contains its own context, scope, commands,
+failure cases, and stopping conditions.
+
+### Confirmed findings
+
+| Finding | Impact | Effort | Fix risk | Confidence | Evidence |
+|---|---|---|---|---|---|
+| Extra action keys survive generic constraints; standard spelling errors become custom actions | Ignored configuration, including a misspelled client permission | M | MED | HIGH | `packages/loom/src/resources/defineResource.ts:15`; `packages/loom/src/resources/actionResource.ts:145` |
+| Identity declaration can name an absent record property | Invalid navigation/write/cache identity | M | MED | HIGH | `packages/loom/src/contracts/schema.ts:34`; `packages/loom/src/resources/actionResource.ts:404`; `apps/web/src/framework/schema.ts:68` |
+| Field handles structurally fit resolved inputs | Renderer metadata is lost and a wrong control can appear | S | LOW | HIGH | `packages/loom/src/contracts/fields.ts:139`; `packages/loom/src/fields/resolve.ts:113` |
+| Form renderer names and props are broadly typed | Runtime configuration errors pass normal type checks | L | HIGH | HIGH | `packages/loom/src/contracts/fields.ts:91`; `packages/loom/src/fields/defineFields.ts:105`; `packages/loom/src/components/inputs/FileInput.vue:20` |
+
+These are correctness/type-contract findings. The permission issue concerns
+client configuration; no server authorization bypass was established.
+
+### Baseline evidence and limits
+
+- Loom `vue-tsc --noEmit --incremental false -p tsconfig.json`: passed.
+- Five focused Loom test files: **50/50 passed** (`resources`, `defineFields`,
+  `resolve`, `inputProps`, and renderer `registry`).
+- Compiler probes confirmed accepted invalid action options, action names,
+  identity keys, file props, renderer names, and reference-to-input assignments.
+  Positive controls confirmed standard return types, initial values, field keys,
+  known option value types, and custom call arguments are checked.
+- Runtime props must be checked after behavior merges, not only inside initial
+  prop resolution. Identity checking must also cover the inferred app schema seam.
+- Planning changed only these plans and this index. Implementation is not done.
+  The full web suite, browser behavior, and new rejection checks were not run as
+  completed implementation evidence.
+- Existing modified vendor detail source and untracked admin vendor plans were
+  outside this work and must be preserved.
+- During planning, concurrent work also changed the API authorization catalog,
+  web navigation/manifest tests, generated route map, and new vendor application
+  routes. These changes were not made or reviewed by this planning task.
+
+### Considered and rejected
+
+- More skill instructions for every input: the requested invariant belongs in
+  the framework.
+- Accepting string `accept` values through coercion: retains an ambiguous contract.
+- Treating all of `defineResource` as untyped: incorrect; several important
+  existing checks work and must remain.
+- Requiring all route parameters: conflicts with the established inherited
+  parameter contract from Plans 031–032.
+- Removing custom renderers/actions: they are supported extension points;
+  the plans make their declarations explicit and checked.
+- A new mandatory field builder for ad-hoc forms: unnecessary to distinguish
+  field references from field definitions.
+- A full security or framework audit: outside the selected work. Sprindle,
+  database behavior, dependency security, performance, display renderer typing,
+  and product direction were not audited.
+
 ## Managed dialog forms — 2026-09-17
 
 Planned with `improve` at `5cafda4`. The user selected this migration. Plan 033
