@@ -50,7 +50,7 @@ export default defineConfig(({ command, mode }) => {
           replacement: fileURLToPath(new URL('../../packages/loom/src/index.ts', import.meta.url)),
         },
         {
-          find: '@southneuhof/loom/',
+          find: /^@southneuhof\/loom\//,
           replacement: fileURLToPath(new URL('../../packages/loom/src/', import.meta.url)),
         },
         {
@@ -58,7 +58,7 @@ export default defineConfig(({ command, mode }) => {
           replacement: fileURLToPath(new URL('../api/src/index.ts', import.meta.url)),
         },
         {
-          find: '@southneuhof/api/',
+          find: /^@southneuhof\/api\//,
           replacement: fileURLToPath(new URL('../api/src/', import.meta.url)),
         },
         {
@@ -66,7 +66,7 @@ export default defineConfig(({ command, mode }) => {
           replacement: fileURLToPath(new URL('../../packages/sdk/src/index.ts', import.meta.url)),
         },
         {
-          find: '@southneuhof/sdk/',
+          find: /^@southneuhof\/sdk\//,
           replacement: fileURLToPath(new URL('../../packages/sdk/src/', import.meta.url)),
         },
       ],
