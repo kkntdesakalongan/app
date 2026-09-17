@@ -1,5 +1,24 @@
 # File-routing plans
 
+## Windows tooling portability — 2026-09-17
+
+Planned with `improve` at `83c13b4`. The user selected all three findings as
+one implementation because the cold tooling build, API filesystem paths, and
+Windows regression gate must land together.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [038](038-make-api-tooling-windows-portable.md) | Portable Sprindle tooling, API paths, subprocesses, and Windows CI | P1 | S | LOW | None | DONE — 2026-09-17, review APPROVE; cold tooling, dev startup, bundle, types, lint, and 4 focused tests pass on Windows |
+
+Plan 038 is independent of the pending Loom plans 034–037. It changes only the
+reported Sprindle/API tooling path and its CI proof. Ad hoc leading-slash removal,
+shell-launched `.cmd` files, and a two-file partial fix were rejected because
+they leave encoded/UNC paths, quoting, or later API failures unresolved.
+
+Audit scope was limited to the reported Windows tooling and API startup/build
+chain. Product behavior, databases, broad framework quality, dependency security,
+performance, and frontend behavior were not audited.
+
 ## Resource and form contract enforcement — 2026-09-17
 
 Planned with `improve` at `9d5f03e`. The user selected type safety and runtime

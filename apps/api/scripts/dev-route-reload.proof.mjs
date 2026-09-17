@@ -3,8 +3,9 @@ import assert from 'node:assert/strict'
 import { mkdir, rm, writeFile, rename } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('..', import.meta.url).pathname
+const root = fileURLToPath(new URL('..', import.meta.url))
 const routeRoot = join(root, 'src/routes/(dev-proof)')
 const port = 41000 + Math.floor(Math.random() * 1000)
 const base = `http://127.0.0.1:${port}`

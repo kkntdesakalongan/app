@@ -28,6 +28,45 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  windows-tooling:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 12.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Sprindle tooling from a clean checkout
+        run: pnpm --filter @southneuhof/api tooling:ensure
+
+      - name: Test bundled and unbundled manifests
+        run: pnpm --filter @southneuhof/sprindle exec vitest run src/tooling/manifest.spec.ts -t "plan011 builds each manifest once"
+
+      - name: Compile api routes without declarations
+        run: pnpm --filter @southneuhof/api routes:compile
+
+      - name: Build the production api bundle
+        run: pnpm --filter @southneuhof/api exec tsx scripts/build-production.ts
+
+      - name: Type-check api
+        run: pnpm --filter @southneuhof/api exec tsc -p tsconfig.json --noEmit --singleThreaded
+
   validate:
     runs-on: ubuntu-latest
 

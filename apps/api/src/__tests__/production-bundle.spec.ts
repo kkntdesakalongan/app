@@ -1,11 +1,12 @@
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 import { expect, test } from 'vitest'
 
 test('plain Node runs the source-free application with one request asset module', () => {
-  const root = new URL('../..', import.meta.url).pathname
+  const root = fileURLToPath(new URL('../..', import.meta.url))
   const source = readFileSync(join(root, 'dist', 'application.mjs'), 'utf8')
   const chunks = readdirSync(join(root, 'dist', 'chunks')).filter((name) => name.endsWith('.mjs')).map((name) => readFileSync(join(root, 'dist', 'chunks', name), 'utf8')).join('\n')
   expect(source + chunks).not.toMatch(/(?:from|import)\s*["']@southneuhof\/sprindle|typescript\/|from ["'][^"']*src\//)
@@ -18,8 +19,10 @@ test('plain Node runs the source-free application with one request asset module'
     cpSync(join(root, 'dist'), join(fixture, 'dist'), { recursive: true })
     mkdirSync(join(fixture, 'node_modules'))
     for (const entry of readdirSync(join(root, 'node_modules'), { withFileTypes: true })) {
-      if (entry.name === '@southneuhof') continue
-      symlinkSync(join(root, 'node_modules', entry.name), join(fixture, 'node_modules', entry.name), entry.isDirectory() ? 'dir' : 'file')
+      if (entry.name === '.bin' || entry.name === '@southneuhof') continue
+      const source = join(root, 'node_modules', entry.name)
+      const directory = statSync(source).isDirectory()
+      symlinkSync(source, join(fixture, 'node_modules', entry.name), directory && process.platform === 'win32' ? 'junction' : directory ? 'dir' : 'file')
     }
     const script = `const m=await import('./dist/application.mjs');const response=await m.app.request('/health');const session=await m.app.request('/api/auth/get-session');const asset=m.runWithAssetRequestUrl('https://api.example.test/request',()=>m.storedAsset('uploads/file.pdf'));process.stdout.write(JSON.stringify({status:response.status,body:await response.json(),sessionStatus:session.status,session:await session.json(),url:asset.url}))`
     const environment = { ...process.env }
