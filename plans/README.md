@@ -33,10 +33,11 @@ Windows regression gate must land together.
 |---|---|---|---|---|---|---|
 | [038](038-make-api-tooling-windows-portable.md) | Portable Sprindle tooling, API paths, subprocesses, and Windows CI | P1 | S | LOW | None | DONE — 2026-09-17, review APPROVE; cold tooling, dev startup, bundle, types, lint, and 4 focused tests pass on Windows |
 
-Plan 038 is independent of the pending Loom plans 034–037. It changes only the
-reported Sprindle/API tooling path and its CI proof. Ad hoc leading-slash removal,
-shell-launched `.cmd` files, and a two-file partial fix were rejected because
-they leave encoded/UNC paths, quoting, or later API failures unresolved.
+Plan 038 is independent of the pending Loom plans 034, 035, and 037. It changes
+only the reported Sprindle/API tooling path and its CI proof. Ad hoc
+leading-slash removal, shell-launched `.cmd` files, and a two-file partial fix
+were rejected because they leave encoded/UNC paths, quoting, or later API
+failures unresolved.
 
 Audit scope was limited to the reported Windows tooling and API startup/build
 chain. Product behavior, databases, broad framework quality, dependency security,
@@ -44,32 +45,31 @@ performance, and frontend behavior were not audited.
 
 ## Resource and form contract enforcement — 2026-09-17
 
-Planned with `improve` at `9d5f03e`. The user selected type safety and runtime
-enforcement fixes. These plans put the checks in Loom and the app schema seam;
-they add no agent workflow requirements. This directory already contains
-framework improvement plans, so numbering continues at 034.
+Planned with `improve` at `9d5f03e` and revised by user decision on 2026-09-18.
+These plans put resource checks and component-derived form prop types in Loom
+and the app schema seam. They add no agent workflow requirements. Plan 036 was
+dropped because rejecting field references would remove valid custom-form and
+multi-schema composition paths.
 
 | Plan | Result | Priority | Effort | Risk | Depends on | Status |
 |---|---|---|---|---|---|---|
-| [034](034-enforce-resource-action-declarations.md) | Exact standard action options and explicit custom declarations | P1 | M | MED | None | TODO |
+| [034](034-enforce-resource-action-declarations.md) | Exact standard actions and managed open-name custom actions | P1 | M | MED | None | TODO |
 | [035](035-enforce-resource-identity.md) | Valid identity declarations and checked runtime identities | P1 | M | MED | 034 | TODO |
-| [036](036-separate-field-references-from-inputs.md) | Reject references at resolved field inputs | P1 | S | LOW | None | TODO |
-| [037](037-enforce-form-renderer-contracts.md) | Typed form renderer props and checks before component use | P1 | L | HIGH | 036; fixtures use 034–035 | TODO |
+| [037](037-enforce-form-renderer-contracts.md) | Component-derived form prop types with open extra props | P1 | M | MED | None | TODO |
 
-Recommended order: **034 → 035 → 036 → 037**. Plan 036 can run independently,
-but execute serially because these plans share field and resource types. Plan
-037 is the largest change and has explicit intermediate checks. Read each plan
-fully before execution. Each plan contains its own context, scope, commands,
-failure cases, and stopping conditions.
+Recommended order: **034 → 035**, with **037** independent. Execute serially
+when the plans touch the same framework type files. Read each plan fully before
+execution. Each plan contains its own context, scope, commands, failure cases,
+and stopping conditions.
 
 ### Confirmed findings
 
 | Finding | Impact | Effort | Fix risk | Confidence | Evidence |
 |---|---|---|---|---|---|
-| Extra action keys survive generic constraints; standard spelling errors become custom actions | Ignored configuration, including a misspelled client permission | M | MED | HIGH | `packages/loom/src/resources/defineResource.ts:15`; `packages/loom/src/resources/actionResource.ts:145` |
+| Extra options inside standard action declarations survive generic constraints | Ignored configuration, including a misspelled client permission | M | MED | HIGH | `packages/loom/src/resources/defineResource.ts:15`; `packages/loom/src/resources/actionResource.ts:145` |
+| Custom actions expose raw `run` functions and have no resource-owned permission rule | Callers must copy permission-store logic and can omit it | M | MED | HIGH | `packages/loom/src/resources/actionResource.ts:657`; the role-assignment and role-permission route components |
 | Identity declaration can name an absent record property | Invalid navigation/write/cache identity | M | MED | HIGH | `packages/loom/src/contracts/schema.ts:34`; `packages/loom/src/resources/actionResource.ts:404`; `apps/web/src/framework/schema.ts:68` |
-| Field handles structurally fit resolved inputs | Renderer metadata is lost and a wrong control can appear | S | LOW | HIGH | `packages/loom/src/contracts/fields.ts:139`; `packages/loom/src/fields/resolve.ts:113` |
-| Form renderer names and props are broadly typed | Runtime configuration errors pass normal type checks | L | HIGH | HIGH | `packages/loom/src/contracts/fields.ts:91`; `packages/loom/src/fields/defineFields.ts:105`; `packages/loom/src/components/inputs/FileInput.vue:20` |
+| Form renderer props are broadly typed | Values that conflict with component `defineProps` pass normal type checks | M | MED | HIGH | `packages/loom/src/contracts/fields.ts:91`; `packages/loom/src/fields/defineFields.ts:105`; `packages/loom/src/components/inputs/FileInput.vue:20` |
 
 These are correctness/type-contract findings. The permission issue concerns
 client configuration; no server authorization bypass was established.
@@ -79,20 +79,17 @@ client configuration; no server authorization bypass was established.
 - Loom `vue-tsc --noEmit --incremental false -p tsconfig.json`: passed.
 - Five focused Loom test files: **50/50 passed** (`resources`, `defineFields`,
   `resolve`, `inputProps`, and renderer `registry`).
-- Compiler probes confirmed accepted invalid action options, action names,
-  identity keys, file props, renderer names, and reference-to-input assignments.
+- Compiler probes confirmed accepted invalid standard action options, identity
+  keys, file props, and renderer names.
   Positive controls confirmed standard return types, initial values, field keys,
   known option value types, and custom call arguments are checked.
-- Runtime props must be checked after behavior merges, not only inside initial
-  prop resolution. Identity checking must also cover the inferred app schema seam.
+- Form prop enforcement is compile-time only. Runtime prop safety is reserved
+  for a later decision. Identity checking must cover the inferred app schema seam.
 - Planning changed only these plans and this index. Implementation is not done.
   The full web suite, browser behavior, and new rejection checks were not run as
   completed implementation evidence.
-- Existing modified vendor detail source and untracked admin vendor plans were
-  outside this work and must be preserved.
-- During planning, concurrent work also changed the API authorization catalog,
-  web navigation/manifest tests, generated route map, and new vendor application
-  routes. These changes were not made or reviewed by this planning task.
+- Field-reference inputs remain supported. Their current runtime behavior is not
+  changed by these plans.
 
 ### Considered and rejected
 
@@ -103,10 +100,15 @@ client configuration; no server authorization bypass was established.
   existing checks work and must remain.
 - Requiring all route parameters: conflicts with the established inherited
   parameter contract from Plans 031–032.
-- Removing custom renderers/actions: they are supported extension points;
-  the plans make their declarations explicit and checked.
-- A new mandatory field builder for ad-hoc forms: unnecessary to distinguish
-  field references from field definitions.
+- Removing custom renderers/actions: they are supported extension points.
+  Custom renderer props are inferred from the declared Vue component type.
+- Keeping custom permission checks only in route components: rejected because a
+  direct custom `run` call can omit them. The resource action owns `can` and the
+  final `run` guard.
+- Rejecting field references from core forms: rejected because real custom forms
+  can combine fields from several schemas and need this escape hatch.
+- Runtime form prop validation: deferred. Agents and developers use the package
+  type-check commands for this contract.
 - A full security or framework audit: outside the selected work. Sprindle,
   database behavior, dependency security, performance, display renderer typing,
   and product direction were not audited.

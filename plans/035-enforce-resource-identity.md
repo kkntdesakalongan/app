@@ -9,7 +9,7 @@ results and update its row in `plans/README.md` after review.
 - Effort: M
 - Risk: MED — identity inference is used by routes, writes, and query keys.
 - Confidence: HIGH — a nonexistent identity key passed a compiler probe.
-- Depends on: 034, for the new resource declaration signature
+- Depends on: 034, because both plans change the `defineResource` declaration type
 - Category: correctness, type safety
 - Planned at: `9d5f03e`, 2026-09-17
 - Status: TODO
