@@ -1,6 +1,10 @@
 import { fromZod } from '@southneuhof/loom'
 import type {
+  CheckedSchemaIdentity,
   FormValidatorInput,
+  IdentityFunction,
+  IdentityKeyOf,
+  InvalidSchemaIdentity,
   RecordIdentity,
   SchemaIdentityDeclaration,
   WebResourceCreateOf,
@@ -32,8 +36,18 @@ type WriteContract<TWire extends object, TSchema> = TSchema extends SchemaSource
     : never
   : never
 
-type Definition<TRecord extends object, TQuery extends object, TCreate extends object, TUpdate extends object> = {
-  identity?: SchemaIdentityDeclaration<TRecord>
+type CheckedIdentity<TRecord extends object, TDefinition> = CheckedSchemaIdentity<TRecord, TDefinition extends { identity?: infer TDeclaration } ? TDeclaration : undefined>
+
+type Definition<TRecord extends object, TQuery extends object, TCreate extends object, TUpdate extends object, TDefinition extends object = { identity?: SchemaIdentityDeclaration<TRecord> }> = {
+  identity?: TDefinition extends { identity?: infer TDeclaration }
+    ? [TDeclaration] extends [IdentityKeyOf<TRecord>]
+      ? TDeclaration
+      : [TDeclaration] extends [readonly IdentityKeyOf<TRecord>[]]
+        ? TDeclaration
+        : [TDeclaration] extends [IdentityFunction<TRecord>]
+          ? TDeclaration
+          : SchemaIdentityDeclaration<TRecord>
+    : SchemaIdentityDeclaration<TRecord>
   record?: SchemaSource
   query?: SchemaSource
   create?: SchemaSource
@@ -42,7 +56,7 @@ type Definition<TRecord extends object, TQuery extends object, TCreate extends o
     create?: readonly FormValidatorInput<TCreate>[]
     update?: readonly FormValidatorInput<TUpdate>[]
   }
-}
+} & CheckedIdentity<TRecord, TDefinition>
 type RouteDefinitionShape<TRoute> = Omit<Definition<HonoRecordOf<TRoute>, HonoQueryOf<TRoute>, HonoCreateOf<TRoute>, HonoUpdateOf<TRoute>>, 'record' | 'create' | 'update' | 'validators'> & {
   validators?: ('create' extends keyof TRoute ? { create?: readonly FormValidatorInput<HonoCreateOf<TRoute>>[] } : { create?: never }) &
     ('update' extends keyof TRoute ? { update?: readonly FormValidatorInput<HonoUpdateOf<TRoute>>[] } : { update?: never })
@@ -69,6 +83,23 @@ type RuntimeDefinition = Omit<Definition<object, object, object, object>, 'ident
   identity?: string | readonly string[] | ((record: never) => RecordIdentity)
 }
 type OutputAt<TDefinition, TKey extends PropertyKey> = SourceAt<TDefinition, TKey> extends SchemaSource ? SchemaOutput<SourceAt<TDefinition, TKey>> : object
+type IdentityAt<TDefinition> = SourceAt<TDefinition, 'identity'>
+type InferredRecord<TDefinition> = SchemaOutput<SourceAt<TDefinition, 'record'>> & object
+type HasRecordSource<TDefinition> = [SourceAt<TDefinition, 'record'>] extends [never]
+  ? false
+  : [IdentityAt<TDefinition>] extends [undefined]
+    ? // With no explicit identity the record source decides: the overload
+      // guard checks the `id` default through CheckedSchemaIdentity.
+      true
+    : [IdentityAt<TDefinition>] extends [string]
+      ? [Extract<keyof InferredRecord<TDefinition>, string>] extends [never]
+        ? false
+        : 'id' extends Extract<keyof InferredRecord<TDefinition>, string>
+          ? true
+          : IdentityAt<TDefinition> extends Extract<keyof InferredRecord<TDefinition>, string>
+            ? true
+            : false
+      : true
 type InferredContract<TDefinition> = WebResourceSchema<
   OutputAt<TDefinition, 'record'>,
   OutputAt<TDefinition, 'query'>,
@@ -81,7 +112,17 @@ export function defineSchema<const TRoute, const TRecordSchema extends SchemaSou
   route: TRoute,
   definition: TDefinition & { record: TRecordSchema } & RouteDefinitionContract<TRoute, TDefinition, TRecordSchema>
 ): AppResourceContract<TRoute>
-export function defineSchema<const TDefinition extends RuntimeDefinition>(definition: TDefinition): InferredContract<TDefinition>
+export function defineSchema<const TDefinition extends RuntimeDefinition>(
+  definition: HasRecordSource<TDefinition> extends true
+    ? [IdentityAt<TDefinition>] extends [undefined]
+      ? TDefinition & CheckedSchemaIdentity<InferredRecord<TDefinition>, undefined>
+      : [IdentityAt<TDefinition>] extends [readonly []]
+        ? TDefinition & InvalidSchemaIdentity
+        : [IdentityAt<TDefinition>] extends [SchemaIdentityDeclaration<InferredRecord<TDefinition>>]
+          ? TDefinition & CheckedSchemaIdentity<InferredRecord<TDefinition>, IdentityAt<TDefinition>>
+          : TDefinition & InvalidSchemaIdentity
+    : TDefinition
+): InferredContract<TDefinition>
 export function defineSchema<const TContract extends WebResourceSchemaBoundary>(definition: CustomDefinition<TContract>): TContract
 export function defineSchema(routeOrDefinition: unknown, definition?: RuntimeDefinition): WebResourceSchemaBoundary {
   const source = definition ?? (routeOrDefinition as RuntimeDefinition)

@@ -16,7 +16,7 @@ record is [Frontend Resource and Schema Architecture](../superpowers/specs/2026-
    transport, or application permissions.
 5. Each module binds one schema-bound field set and each standard action selects
    its ordered references.
-6. Custom actions are ordinary application functions.
+6. Custom actions are declared actions with an explicit client permission contract.
 7. The backend remains the authority for access and validation.
 
 ## Route ownership
@@ -149,16 +149,23 @@ export const users = defineResource(usersSchema, {
       },
     },
     delete: { run: api.delete, permission: 'delete-users' },
-    verify: { run: verifyUser },
+    verify: { run: verifyUser, permission: 'verify-users' },
   },
 })
 ```
 
 The standard action names are `list`, `detail`, `create`, `update`, and
 `delete`. The first four return typed View props. Delete returns a typed action
-with a `run` function. A non-standard action exposes only `{ run }`; the
-framework does not add permission metadata, transport rules, validation, or
-automatic invalidation to it.
+with a `run` function. Every other action name is a custom action and declares
+exactly `{ run, permission }`. The permission is a nonempty string, a nonempty
+readonly string array (all entries required), a synchronous resolver over the
+exact `run` argument tuple that returns one of those values, or `null` for an
+intentionally open action. A custom action exposes `{ can(...), run(...) }`
+with the exact `run` argument tuple. `can` checks the resolved permission
+through the access adapter with the custom action name as the operation.
+`run` calls the same check and throws before application code when access is
+denied. The framework does not add transport rules, validation, or automatic
+invalidation to a custom action.
 
 Each standard action can select a schema-bound field reference or a typed schema
 key string. List and detail keys come from the record shape. Create keys come
@@ -320,7 +327,9 @@ table uses. A collection presentation does not rebuild route or delete permissio
 checks, and it receives no `load`, `data`, cache keys, or query client. Toggling
 the slot keeps query state and does not start a second load. Use named
 `loading`, `error`, and `empty` slots for standard TableContent messages.
-Custom actions remain plain functions. The route must await
+Custom actions expose a managed `can`/`run` seam, not plain functions.
+The route checks `resource.actions.name.can(...)` before it offers the control
+and the wrapped `run(...)` remains the final client guard. The route must await
 `resource.invalidate({ id })` after a successful custom action. The API remains
 the final authorization boundary for every action.
 

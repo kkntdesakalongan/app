@@ -68,6 +68,7 @@ describe('route type generation', () => {
     const consumer = join(root, 'consumer.ts')
     const tsconfig = join(root, 'tsconfig.json')
     const loom = join(repoRoot, 'packages/loom/src/resources/defineResource.ts')
+    const vueShim = join(repoRoot, 'packages/loom/env.d.ts')
     await mkdir(join(root, 'node_modules'), { recursive: true })
     await symlink(join(repoRoot, 'apps/web/node_modules/vue-router'), join(root, 'node_modules/vue-router'))
     await writeFile(
@@ -92,7 +93,7 @@ defineResource(schema, { key: 'fixture', actions: { list: { run: async () => ({ 
             '@southneuhof/loom': [loom],
           },
         },
-        files: [join(root, 'src/route-map.d.ts'), consumer],
+        files: [join(root, 'src/route-map.d.ts'), consumer, vueShim],
       })
     )
     const compile = () => run('pnpm', ['exec', 'tsc', '-p', tsconfig], { cwd: repoRoot, timeout: 20_000 })
@@ -121,6 +122,7 @@ defineResource(schema, { key: 'fixture', actions: { list: { run: async () => ({ 
     const consumer = join(root, 'consumer.ts')
     const tsconfig = join(root, 'tsconfig.json')
     const loom = join(repoRoot, 'packages/loom/src/resources/defineResource.ts')
+    const vueShim = join(repoRoot, 'packages/loom/env.d.ts')
     await mkdir(join(root, 'node_modules'), { recursive: true })
     await symlink(join(repoRoot, 'apps/web/node_modules/vue-router'), join(root, 'node_modules/vue-router'))
     await generate(root)
@@ -157,7 +159,7 @@ defineResource(schema, { key: 'exact-callback', actions: { detail: { run: async 
           target: 'es2022',
           paths: { '@southneuhof/loom': [loom] },
         },
-        files: [join(root, 'src/route-map.d.ts'), consumer],
+        files: [join(root, 'src/route-map.d.ts'), consumer, vueShim],
       })
     )
 

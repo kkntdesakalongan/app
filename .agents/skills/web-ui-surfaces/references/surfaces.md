@@ -55,6 +55,17 @@ Select field references in the visible order for each action. Omission removes
 a field from that surface. Use one terminal `.override(...)` for one local
 field difference.
 
+## Custom resource actions
+
+Declare custom actions in `actions` with exactly `run` and `permission`.
+Use a nonempty permission string, a nonempty array of these strings requiring
+every permission, or `null` for no client permission check. A synchronous
+resolver takes the same arguments as `run` and returns one of these values.
+Use `resource.actions.name.can(...args)` for UI access checks; `run(...args)`
+checks permission again before the callback. Keep server authorization.
+`resource.permissions` and `resourceCan` cover standard actions only.
+Standard `run` calls do not gain this custom-action guard.
+
 ## Action prop bags
 
 Pass standard actions directly:
@@ -108,8 +119,8 @@ stay intact.
 
 For a tree or other surface outside standard Views:
 
-- Use `resourceCan(resource)` from `apps/web/src/framework/access.ts` so the
-  resource permission remains the single source.
+- Use `resourceCan(resource)` from `apps/web/src/framework/access.ts` for
+  standard actions; use [custom action checks](#custom-resource-actions) for custom actions.
 - Use `errorMessage(error, fallback)` from the app normalization adapter.
 
 Keep server-derived record actions or `allowedOperations` as the record-level

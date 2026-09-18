@@ -71,7 +71,7 @@ Create `<module>.schema.ts` with app `defineSchema` from `@/framework/schema`.
   or let local runtime schemas infer its types.
 - Pass raw Zod schemas; the app seam owns `fromZod`.
 - Put record, query, create, update, identity, and all standard frontend
-  validation here.
+  validation here. Apply the [resource identity rule](../carta-module-development/references/contract-rules.md).
 - Move synchronous and asynchronous custom validators here.
 - Remove duplicated `required`, length, pattern, and cross-field rules from
   resource fields.
@@ -107,9 +107,9 @@ Call `defineResource(schema, definition)` with one `actions` object.
   options in the same standard action block.
 - Use one terminal partial `.override({...})` only for a real local difference.
 - Omit a reference to remove a field from a View; preserve the current order.
-- Give custom action blocks only `run` unless the approved design changes.
-- Do not add custom action schemas, permission metadata, kinds, HTTP methods, or
-  automatic invalidation.
+- Apply the [custom action contract](../web-ui-surfaces/references/surfaces.md#custom-resource-actions).
+  Preserve the existing permission rule in the declaration and use `can(...)`
+  for caller access checks.
 
 ### 4. Use the canonical public API
 
@@ -182,7 +182,7 @@ Before completion, verify:
 - every standard operation is readable from one action block;
 - every View owns complete fields;
 - every standard action has one execution path through the returned `run`;
-- custom actions remain plain application functions;
+- custom action declarations preserve access rules through `can` and guarded `run`;
 - user-facing labels match the legacy label ledger exactly, or an approved
   difference is recorded;
 - page chrome, actions, forms, collections, copy, and spacing match the
