@@ -759,3 +759,28 @@ repository migration is planned, not yet implemented or proven.
 
 This is a focused migration audit, not a full security, performance, database,
 or product-behavior audit. Those areas are outside Plans 029 and 030.
+
+## RPC pit-of-success — 2026-09-19
+
+Planned with `improve` at `2d6b378`. Scope: the `rpc.coffeeSales` 404 plus the
+`rpc is unknown` baseline from the same incident. Verified during planning:
+with the contract present `rpc.coffeeSales` is TS2339; with
+`apps/api/.sprindle` deleted every `rpc` use is TS18046 plus TS2307 on the
+contract import. No `rpc.camelCase` dot access exists on the current tree.
+Scaffold emits only `rpc['<slug>']` (`scripts/scaffold-bounded-module.mjs:533,615,656`).
+
+| Plan | Title | Priority | Effort | Depends on | Status |
+|---|---|---|---|---|---|
+| [042](042-gate-type-check-on-route-contract.md) | Gate web type-check on the generated route contract | P1 | S | — | DONE — 2026-09-19, review APPROVE with one test-cleanup revision (unused import removed); self-heal proof passed (deleted `.sprindle` regenerates via `type-check`, exit 0, byte-identical contract) |
+| [043](043-windows-safe-contract-links.md) | Make contract staging links Windows-safe | P1 | S | — | DONE — 2026-09-19, review APPROVE (helper plus `vi.mock('node:fs')` recorder test in `manifest.spec.ts`, not `tooling.spec.ts`, since the tooling suite spawns child processes; 37 tooling tests pass, lint and type-check clean) |
+| [044](044-reject-unknown-resource-routes.md) | Reject unknown resource routes at the app seam | P2 | S | 042 | DONE — 2026-09-19, review APPROVE as written (fail-fast guard with kebab-case hint, 2 action tests, SDK hyphen positives plus camelCase negative, 2 scaffold bracket assertions; all suites and lint clean) |
+
+Execute 042 and 043 in any order, then 044. Plan 042 makes the contract
+self-healing through the web `type-check` script; 043 makes that build
+reliable on Windows (`junction`); 044 adds the fail-fast guard, compiler
+negatives, and generator assertions.
+
+Considered and rejected: camelCase-to-kebab-case runtime aliases (keeps two
+names for one route); a regex lint rule for `rpc.camelCase` (type-check
+already rejects it once the contract exists); documenting "remember to
+build" (comments do not fail builds).

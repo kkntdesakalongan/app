@@ -32,6 +32,14 @@ async function payload(response: Response): Promise<unknown> {
 
 export function createHonoResourceActions<const TRoute>(route: TRoute): HonoResourceActions<TRoute> {
   const source = route as TRoute & RuntimeRoute
+  const shape = source as Partial<RuntimeRoute> | undefined
+  const has = (node: unknown, method: string) =>
+    !!node && typeof (node as Record<string, unknown>)[method] === 'function'
+  if (
+    !shape || !has(shape.list, '$get') || !has(shape.detail?.[':id'], '$get') ||
+    !has(shape.create, '$post') || !has(shape.update?.[':id'], '$patch') ||
+    !has(shape.delete?.[':id'], '$delete')
+  ) throw new Error('Unknown resource route. Use the kebab-case route key: rpc[\'<route-dir>\'].')
   const actions = {
     list: async ({ query, searchParameters, signal }: { query: Record<string, unknown>; searchParameters: Record<string, unknown>; signal?: AbortSignal }) =>
       dataAdapter.normalizeCollection(await payload(await source.list.$get({ query: wireQuery({ ...searchParameters, ...query }) }, { init: { signal } }))) as CollectionResult<
