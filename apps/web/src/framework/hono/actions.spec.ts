@@ -56,4 +56,21 @@ describe('createHonoResourceActions', () => {
     const actions = createHonoResourceActions(rpc.rows)
     await expect(actions.list({ query: {}, searchParameters: {} })).rejects.toEqual({ error: 'bad' })
   })
+
+  it('rejects an unknown resource route with a kebab-case hint', () => {
+    expect(() => createHonoResourceActions(undefined as never)).toThrow(/kebab-case|rpc\[/)
+    expect(() => createHonoResourceActions({} as never)).toThrow(/kebab-case|rpc\[/)
+    const rpc = hc<typeof app>('https://api.test', { fetch: fetchMock })
+    expect(() => createHonoResourceActions({ list: rpc.rows.list } as never)).toThrow(/kebab-case|rpc\[/)
+  })
+
+  it('accepts hyphenated first segments', async () => {
+    const rpc = hc<typeof app>('https://api.test', { fetch: fetchMock })
+    const hyphenated = { 'coffee-variants': rpc.rows }
+    const actions = createHonoResourceActions(hyphenated['coffee-variants'])
+    await expect(actions.list({ query: {}, searchParameters: {} })).resolves.toEqual({
+      data: [{ id: '1', name: 'One' }],
+      meta: { page: 1, pageSize: 10, total: 1, totalPage: 1 },
+    })
+  })
 })

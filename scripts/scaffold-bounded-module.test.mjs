@@ -130,6 +130,7 @@ test('creates explicit source files and stable absolute output', () => {
 
   const resource = readFileSync(result.generated.find((path) => path.endsWith('.resource.ts')), 'utf8')
   assert.match(resource, /title: 'Test Catalog'/)
+  assert.match(resource, /createHonoResourceActions\(rpc\['test-catalog'\]\)/)
 
   const detailRoute = readFileSync(result.generated.find((path) => path.endsWith('/detail.route.vue')), 'utf8')
   assert.doesNotMatch(detailRoute, /title=|back-to=/)
@@ -260,6 +261,7 @@ test('renders only selected actions and redirects', () => {
   const edit = readFileSync(result.generated.find((path) => path.endsWith('edit.route.vue')), 'utf8')
   assert.match(edit, /const load = /)
   assert.match(edit, /createHonoResourceActions/)
+  assert.match(edit, /createHonoResourceActions\(rpc\['test-catalog'\]\)/)
   assert.match(edit, /api\.detail\(/)
   assert.match(edit, /FormView v-bind="\{ load, \.\.\..*\.update\(.*\) \}"/)
   const resource = readFileSync(result.generated.find((path) => path.endsWith('.resource.ts')), 'utf8')
