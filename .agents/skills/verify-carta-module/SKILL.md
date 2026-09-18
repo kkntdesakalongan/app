@@ -57,8 +57,8 @@ whole-repository discovery pass.
 For every web result, apply [UI review](../web-ui-surfaces/references/verification.md),
 including standard Views and custom actions. Compare composition with
 [DESIGN.md](../../../DESIGN.md) and inspect the
-[complete field pattern](../web-ui-surfaces/references/fields.md) for all visible
-fields. A missing component import, raw asset JSON, or an unsupported custom
+[display and form pattern](../web-ui-surfaces/references/fields.md) for all visible
+fields. A missing component import, raw asset JSON, a raw state code, or an unsupported custom
 control requires `REWORK`. An unexplained difference from the app design also
 requires `REWORK`; a passing static check does not approve that difference.
 Check scope, unrelated work and unauthorized writes. Existing example code is

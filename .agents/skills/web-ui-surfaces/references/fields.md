@@ -1,13 +1,9 @@
 # Display fields
 
-Before selecting display settings, read `apps/web/src/configs/defaults.ts` and
-`apps/web/src/framework/fields/renderers.ts`. Use `apps/web/src/main.ts` to
-confirm registration when needed. These files own the current formats and
-renderer keys. A form renderer does not configure table or detail display.
+Use the app default when it gives the required readable result. Otherwise declare `display` in `defineFields`. A form renderer does not configure table or detail display.
 
 For each visible field, trace the returned value through its app default,
-shared `display` settings, and any `table` or `detail` override. Finish when
-each selected field produces readable output on both surfaces where it appears.
+shared `display` settings, and any `table` or `detail` override.
 For assets, check empty, single, and multiple values as applicable. For states,
 check each label and colour. Reuse the registered renderer before adding a slot.
 
@@ -45,10 +41,7 @@ use local options. Let the schema infer record types; fix a missing projection
 at its contract instead of casting records to `any` or fields to `never`.
 
 Form controls and display fields have separate contracts. Check list and detail
-output with representative returned values. Use the app display defaults or a
-supported renderer/format for dates, times, files and structured values. Preserve
-the date's time basis, show relation labels, and expose file names with the
-required preview or download action. Include required workflow results and
+output with representative returned values. Include required workflow results and
 history in the visible field selection. Verify these outcomes through the
 [UI checks](verification.md), rather than asserting field configuration.
 

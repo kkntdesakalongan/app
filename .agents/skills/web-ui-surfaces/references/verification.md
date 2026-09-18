@@ -16,7 +16,7 @@ native control against the shared component contract. Exit `2` needs source
 review; it is not a pass. Use the contract mode below for explicit globals or
 declared composition exceptions.
 
-Review source for meaningful list/detail values, relation labels, edit loading,
+Review source for readable values for every visible field, edit loading,
 field dependencies, filter wiring, access declarations and standard actions.
 Trace changed API values into the actual field configuration. Do not create
 tests that copy configuration or repeat standard framework control behavior.

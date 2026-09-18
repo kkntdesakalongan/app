@@ -60,9 +60,9 @@ permits routine choices, not contradictions of explicit access or business rules
 Record consequential assumptions as assumptions, not confirmations. Ask only
 where the answer changes a material outcome or write authority.
 
-Specify each relation's selectable label, stored identity, visible list/detail
-value and loaded edit value. Use the
-[complete relation pattern](../../web-ui-surfaces/references/fields.md).
+Specify each visible field's label and displayed value; for relations also specify
+stored identity, selectable label and loaded edit value. Use the
+[display and form pattern](../../web-ui-surfaces/references/fields.md).
 Reference unchanged field rules instead of copying them. An ordinary sort or
 label choice needs no separate acceptance case unless the user requires it.
 
@@ -101,7 +101,8 @@ Continue through all requested workflows before reporting module completion.
 ## Verify and hand off
 
 Apply the [verification strategy](verification-strategy.md). Review list/detail/edit
-source, including relation labels and field wiring. Use focused non-browser
+source for readable values for every visible field per [DESIGN.md](../../../../DESIGN.md#controls-and-values).
+Use focused non-browser
 checks for access, persisted values and business rules. Do not create or run E2E
 or require a manual journey. Report actual UI behavior as unverified.
 

@@ -75,9 +75,8 @@ review leaves the work in `verifying`, including after a repair.
   surface, use `$web-ui-surfaces` and read [DESIGN.md](../../../DESIGN.md).
   Apply this path to custom actions and playgrounds as well as CRUD.
 - Before selecting controls for any user input, use `$build-resource-form`.
-  This includes custom actions, playgrounds and inline uploads. For a relation, read the complete
-  [display and form pattern](../web-ui-surfaces/references/fields.md), not just
-  the lookup configuration.
+  This includes custom actions, playgrounds and inline uploads. For every visible field, read the
+  [display and form pattern](../web-ui-surfaces/references/fields.md).
 - Read [cross-layer contracts](references/contract-rules.md) for changed boundaries.
 - Read [field contracts](references/frontend-field-contract.md) for unresolved
   value shapes; [query cache](references/web-query-cache.md) for changed custom
