@@ -5,14 +5,16 @@ import { toast } from 'vue-sonner'
 import { ListView } from '@southneuhof/loom'
 import Switch from '@southneuhof/loom/components/inputs/Switch.vue'
 import { errorMessage } from '@/framework/adapters/data/normalize'
-import { permissions } from '@/stores/permissions'
 import { roleAssignments } from './role-assignments.resource'
 import type { RoleAssignment } from './role-assignments.schema'
 
 const route = useRoute('settings-users-detail-role-assignments')
 const userId = computed(() => String(route.params.userId))
 const pending = ref(new Set<string>())
-const canManage = computed(() => permissions().can('create-role-assignments') && permissions().can('delete-role-assignments'))
+
+function canToggle(row: RoleAssignment) {
+  return roleAssignments.actions.set.can(userId.value, String(row.id), !row.assigned)
+}
 
 const list = computed(() =>
   roleAssignments.list({
@@ -30,7 +32,7 @@ function roleRow(record: Record<string, unknown>) {
 
 async function toggle(row: RoleAssignment) {
   const roleId = String(row.id)
-  if (!canManage.value || isPending(roleId)) return
+  if (!canToggle(row) || isPending(roleId)) return
   const assigned = !row.assigned
   pending.value = new Set(pending.value).add(roleId)
   try {
@@ -55,7 +57,7 @@ async function toggle(row: RoleAssignment) {
           role="switch"
           :data-role="roleRow(record).id"
           :aria-checked="roleRow(record).assigned"
-          :disabled="isPending(String(roleRow(record).id)) || !canManage"
+          :disabled="isPending(String(roleRow(record).id)) || !canToggle(roleRow(record))"
           :aria-label="`Role ${roleRow(record).name}`"
           @update:model-value="toggle(roleRow(record))"
         />

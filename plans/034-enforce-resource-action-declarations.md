@@ -15,7 +15,22 @@ is required. Update this plan's row in `plans/README.md` after review.
 - Category: correctness, type safety
 - Planned at: `9d5f03e`, 2026-09-17
 - Revised at: `f4ef560`, 2026-09-18
-- Status: TODO
+- Status: IN PROGRESS — Steps 1-6 implemented; review corrections applied.
+- Progress 2026-09-18: Loom Types exit 0; Resource + field tests 31 passed
+  (29 resources + 2 defineFields); Custom action tests 8 passed;
+  Web tests 229 passed; Loom suite 463 passed.
+  Review corrections: cross-action negative type case added
+  (`bad-cross-action-option`: `create` rejects list-only `pageSizeOptions`);
+  `every` semantics proven (`many.can()` false and `run` denied with zero
+  callback calls when only one array entry is allowed); exhaustive
+  key-coverage assertion added beside `standardActionKeys` (temporary probe
+  with one key removed failed Types, restored state passes).
+  Web types gate has a pre-existing baseline failure unrelated to owners
+  (`'rpc' is of type 'unknown'`, missing `@southneuhof/api/routes-contract`);
+  stashed-tree baseline fails the same way, and an owner grep over the
+  changed resources, route components, bundle adapter, and action owners
+  returns zero errors. Focused lint passes for the five changed application
+  files. `git diff --check` exit 0.
 
 ## Why this matters
 

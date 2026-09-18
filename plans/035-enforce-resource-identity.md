@@ -12,7 +12,102 @@ results and update its row in `plans/README.md` after review.
 - Depends on: 034, because both plans change the `defineResource` declaration type
 - Category: correctness, type safety
 - Planned at: `9d5f03e`, 2026-09-17
-- Status: TODO
+- Status: IN PROGRESS (steps 1-4 done; review + index row pending)
+- Baseline (2026-09-17, worktree dirty with Plan 034 work):
+  - Drift check: plan ref `9d5f03e` absent from this clone; substituted
+    `git diff --stat HEAD` over scoped paths. Result: only Plan 034 files
+    changed (`defineResource.ts`, `actionResource.ts`, `access.ts` contract,
+    `resource-actions.type-test.ts`, `resources.spec.ts`, two template
+    resources + route components, `adapters/bundle.ts`, loom README,
+    arch doc, plans/034 file). `contracts/schema.ts`,
+    `apps/web/src/framework/schema.ts`, app `__tests__`/`__type-tests__`
+    unchanged. Drift reconciled: proceed without overwriting 034 logic.
+  - Types (Loom): exit 0 (`vue-tsc --noEmit --incremental false`).
+  - Runtime (Loom): 34 passed (`resources.spec.ts` +
+    `resource-cache.spec.ts`).
+  - App tests: 1 passed (`framework/__tests__/schema.spec.ts`).
+  - App types: pre-existing baseline failure only. `rpc` is `unknown`
+    (`@southneuhof/api/routes-contract` missing) in
+    `framework/adapters/storage.ts`, `framework/identity.ts`, route
+    actions/schemas, `routes/(public)/auth/login/index.route.vue`,
+    `utils/services.ts`, `packages/sdk/src/client.ts`; plus one
+    `permissions.schema.ts` write-contract mismatch on the dirty tree.
+    Verified identical counts with changes stashed
+    (`git stash push --keep-index` + type-check + `git stash pop`):
+    baseline has the same `rpc`-unknown failures, so they are NOT caused
+    by this plan. Owner files have zero errors:
+    no diagnostics mention `framework/schema.ts`, `__type-tests__/schema`,
+    `__type-tests__/identity`, or `contracts/schema`.
+- Step 1 (compiler regressions): added
+  `packages/loom/src/resources/__type-tests__/schema-identity.type-test.ts`
+  and `apps/web/src/framework/__type-tests__/schema-identity.type-test.ts`.
+  Before the fix every new `@ts-expect-error` reported unused (loom: all
+  identity negatives; app: all identity negatives), which confirms the probe.
+  Valid fixtures need no casts (one `String()`/`Number()` normalization kept
+  only inside a detail `run` body where the context id is optional).
+- Step 2 (static guards): `contracts/schema.ts` gains `IdentityKeyOf`,
+  `CheckedIdentityKey(s)`, `CheckedIdentityFunction`,
+  `CheckedDefaultIdentity`, `CheckedSchemaIdentity`,
+  `IdentityFromDeclaration` (diagnostic on invalid known declarations, exact
+  composite shape on valid tuples, `id`-default inference), and
+  `InvalidSchemaIdentity`; `defineResource` intersects the schema parameter
+  with `CheckedSchemaIdentity` over the inferred record; the app inferred
+  `defineSchema` overload applies the same guard while the Zod literal and
+  parsed record output are both present.
+- Step 2 judgement calls: empty-tuple literal `[]` widens past the guard on
+  the app seam, so the app rejects it at runtime (step 3) instead of claiming
+  a static diagnostic (the loom seam keeps the static negative); fn-return
+  mismatches fail in the base `RuntimeDefinition` constraint, which the app
+  test records as the diagnostic without a second key-rule implementation.
+  Hono and explicit custom overloads unchanged. Loom Types exit 0; app owner
+  files (`framework/schema.ts`, `__type-tests__/schema-identity`) report zero
+  diagnostics (remaining app failures match the pre-existing `rpc`-unknown
+  baseline: 15 route + 3 `framework/identity.ts` + 3 `adapters/storage.ts` +
+  1 `utils/services.ts` + 1 `sdk/client.ts`; the earlier `assets.form.spec`
+  + extra route failures seen mid-step were caused by my first
+  `HasRecordSource` draft and are gone; the Hono positive + negative cases
+  in the new app type-test pass).
+- Step 3 (runtime check): new private `packages/loom/src/resources/identity.ts`
+  holds one validator (`isRecordIdentity` + `checkIdentityDeclaration` +
+  `checkIdentityValue`). Construction rejects empty/duplicate key arrays.
+  `resolveIdentity` checks every result (key, tuple, fn, `id` default).
+  Public `detail`/`update`/`delete` IDs and scoped `invalidate({ id })`
+  check before work; omitted global `invalidate()` stays valid (explicit
+  invalid `id` fails; `invalidate` is async so its failure rejects, unlike
+  the sync method-ID guards). List-only reads gain no eager per-row work:
+  row routes check lazily when a target resolves. Malformed identities call
+  no write, register no navigation target, and touch no unrelated cache
+  entry. `resources.spec.ts` gains 4 tests (construction negatives, malformed
+  row identities, malformed method args, valid `0`/`''`/composite/global).
+  Runtime 38 passed (`resources.spec.ts` + `resource-cache.spec.ts`); Types
+  exit 0; App tests 1 passed; App types owner-clean. Full Loom suite:
+  57 files, 467 tests passed.
+- Step 4 (review): Loom README gains one identity-contract paragraph only
+  (no other README text touched). App lint on the two touched app files:
+  oxlint 0 errors + 1 pre-existing `TQuery` unused-var warning (present on
+  the clean tree; verified via `git stash push --keep-index`), oxfmt clean
+  after one format pass. `git diff --check` exit 0. Diff scan: only scoped
+  files changed; `defineResource.ts`/`actionResource.ts` diffs include Plan
+  034's `CheckedDefinition` work (preserved, not overwritten); no unrelated
+  contract or default-behavior change. Index row update left for reviewer
+  per plan instructions.
+- Reviewer findings (2026-09-18): (1) `IdentityKeyOf` tests key
+  requiredness with `{} extends Pick<TRecord, TKey>` so an optional key
+  fails even when its value type is exactly `string`; loom and app
+  `@ts-expect-error` negatives for optional `id` stay consumed, `Row`
+  positive still passes, Loom Types exit 0. (2) `HasRecordSource`
+  collapses the dead `? true : true` tautology to `true` with a comment:
+  the overload guard checks the `id` default; behavior unchanged, app
+  owner files report zero diagnostics, app schema test passes.
+  (3) `Definition` constrains its own `identity` member through the new
+  loom guards (`IdentityKeyOf` / tuple / `IdentityFunction`) and
+  intersects the same actual declaration through `CheckedIdentity`, so
+  an invalid literal cannot widen through the broad union; Hono
+  `identity: 'missing'` negative stays consumed, valid Hono positive
+  passes, plus a new Hono boolean-key (`identity: 'active'`) negative
+  proves scalar enforcement on the Hono path. App lint 0 errors
+  (1 pre-existing `TQuery` warning, also on the clean tree); oxfmt
+  clean; `git diff --check` exit 0.
 
 ## Why this matters
 
@@ -209,3 +304,29 @@ Future schema builders must validate identity before returning widened types.
 The runtime validator checks identity shape, not record ownership or authorization.
 Keep these responsibilities separate. Do not commit, push, or deploy without a
 separate request.
+
+## Review record (2026-09-18, reviewer verification)
+
+- Loom Types: exit 0 (`vue-tsc --noEmit --incremental false -p tsconfig.json`).
+- Runtime: 38 passed (`resources.spec.ts` + `resource-cache.spec.ts`,
+  incl. 4 identity tests: construction negatives, malformed row identities,
+  malformed method args, valid `0`/`''`/composite/global).
+- App tests: 1 passed (`framework/__tests__/schema.spec.ts`).
+- App types: pre-existing baseline failure only (`'rpc' is of type 'unknown'`,
+  missing `@southneuhof/api/routes-contract`); stashed-tree baseline shows
+  the same failures. Owner grep for `framework/schema.ts`,
+  `schema-identity`, and `contracts/schema` returns empty (exit 1).
+- Loom suite: 57 files, 467 tests passed. Web suite: 45 files, 229 passed.
+- App lint on the two touched app files: 0 errors; 1 pre-existing `TQuery`
+  unused-var warning also present on the clean tree (renaming out of scope).
+- `git diff --check`: exit 0.
+- Review corrections applied: `IdentityKeyOf` tests requiredness
+  (`{} extends Pick<TRecord, TKey>`), so optional keys fail even with a
+  scalar value type; `HasRecordSource` tautology collapsed with intent
+  comment (behavior unchanged); app `Definition.identity` constrained
+  through `IdentityKeyOf`/tuple/`IdentityFunction` plus a `CheckedIdentity`
+  intersection so Hono-path invalid literals cannot widen (Hono boolean-key
+  negative added as proof; write contracts and runtime untouched).
+- Done criteria hold except the Web-types gate, which fails only on the
+  pre-existing unrelated baseline. Scope: 035-owned files only; 034 logic
+  preserved. Index row update left for the final sign-off.

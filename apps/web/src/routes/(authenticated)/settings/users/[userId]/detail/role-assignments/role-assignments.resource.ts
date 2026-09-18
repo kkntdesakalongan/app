@@ -18,6 +18,9 @@ export const roleAssignments = defineResource(roleAssignmentsSchema, {
       route: { name: 'settings-users-detail-role-assignments' },
       pagination: false,
     },
-    set: { run: roleAssignmentsActions.set },
+    set: {
+      run: roleAssignmentsActions.set,
+      permission: ['create-role-assignments', 'delete-role-assignments'],
+    },
   },
 })

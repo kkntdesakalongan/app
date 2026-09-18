@@ -76,6 +76,14 @@ Use the registered framework renderer for each value. Calendar dates use the
 framework `date` renderer. Arrays of form-owned editable rows use the
 framework `table` renderer and `TableInput`.
 
+Field props use the component contract at compile time. A known component
+prop keeps its declared type, so `accept` on the `file` renderer takes
+`string[]`. Extra props stay valid, and required component props stay
+optional at authoring because defaults, sources, and adapters can supply
+them later. A custom renderer declares its key through module augmentation
+on `FormRendererComponents` and still needs runtime registration under the
+same key. No runtime prop validator is added.
+
 ## Labels and instructions
 
 The outer form field owns the visible label, required state, error, help text,

@@ -17,8 +17,9 @@ export function recordAllows(record: unknown, operation: RecordOperation): boole
 export const accessAdapter: AccessAdapter = {
   allows: ({ operation, permission, record }) => {
     const declared = (record as { allowedOperations?: unknown } | undefined)?.allowedOperations
-    if ((operation === 'detail' || operation === 'update' || operation === 'delete') && Array.isArray(declared)) {
-      return recordAllows(record, operation)
+    const recordOperation = operation as RecordOperation
+    if ((recordOperation === 'detail' || recordOperation === 'update' || recordOperation === 'delete') && Array.isArray(declared)) {
+      return recordAllows(record, recordOperation)
     }
     return allowsPermission(permission)
   },

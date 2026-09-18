@@ -53,9 +53,9 @@ multi-schema composition paths.
 
 | Plan | Result | Priority | Effort | Risk | Depends on | Status |
 |---|---|---|---|---|---|---|
-| [034](034-enforce-resource-action-declarations.md) | Exact standard actions and managed open-name custom actions | P1 | M | MED | None | TODO |
-| [035](035-enforce-resource-identity.md) | Valid identity declarations and checked runtime identities | P1 | M | MED | 034 | TODO |
-| [037](037-enforce-form-renderer-contracts.md) | Component-derived form prop types with open extra props | P1 | M | MED | None | TODO |
+| [034](034-enforce-resource-action-declarations.md) | Exact standard actions and managed open-name custom actions | P1 | M | MED | None | DONE — reviewed 2026-09-18; Loom Types 0, 31 resource+field tests, 8 custom-action route tests, 229 web, 467 Loom (final combined tree), focused lint 0, diff --check 0; Web types fails only on the pre-existing `rpc unknown` baseline (stashed-tree identical, owners clean) |
+| [035](035-enforce-resource-identity.md) | Valid identity declarations and checked runtime identities | P1 | M | MED | 034 | DONE — reviewed 2026-09-18; Loom Types 0, 38 resource+cache tests (incl. 4 identity), 1 app schema test, 467 Loom, 229 web, focused lint 0 errors (1 pre-existing TQuery warning on clean tree), diff --check 0; Web types fails only on the pre-existing baseline (owners clean) |
+| [037](037-enforce-form-renderer-contracts.md) | Component-derived form prop types with open extra props | P1 | M | MED | None | DONE — reviewed 2026-09-18; Loom Types 0, 45 registry+field tests, 467 Loom, 229 web, focused app lint 0 errors, diff --check 0; Web types fails only on the pre-existing baseline (owners clean); one contract-preserving test-fixture correction recorded in the plan |
 
 Recommended order: **034 → 035**, with **037** independent. Execute serially
 when the plans touch the same framework type files. Read each plan fully before
