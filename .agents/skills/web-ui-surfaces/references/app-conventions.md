@@ -11,7 +11,8 @@ changing the app shell.
 Use the typed navigation manifest for menu labels, groups, order, routes, and
 permission visibility. Use generated route names for links. Derive breadcrumbs
 and active navigation from routing data; do not maintain parallel URL maps.
-Use the [file-routing convention](file-routing.md) for retained parents and
+Place entries per the [file-routing convention](file-routing.md#place-the-page),
+where peer entries share URL depth. Use that convention for retained parents and
 replacement pages.
 The API still checks access when a hidden page is requested directly.
 

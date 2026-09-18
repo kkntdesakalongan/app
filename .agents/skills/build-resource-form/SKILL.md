@@ -1,6 +1,6 @@
 ---
 name: build-resource-form
-description: Build or review Carta form values, validation, relation sources, dependent inputs, custom fields, and child writes.
+description: Build or review Carta form values, validation, relation sources, dependent inputs, custom action inputs, custom fields, inline uploads, and child writes.
 ---
 
 # Build resource forms
