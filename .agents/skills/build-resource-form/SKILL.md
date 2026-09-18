@@ -65,10 +65,13 @@ for form-owned row arrays. If those cannot express one domain value, use the
 
 The outer form owns label, required state, error, help, and grid span.
 
-Define custom-action fields through the supported typed field builder or an
-explicit field type at declaration. Check renderer and renderer-prop placement
-against that contract; assigning a loose object to a component is not proof
-that its configuration keys are used.
+Use `defineFields` for component-derived prop checks. Include `form.renderer`
+when overriding props so the override is checked. For separate prop objects,
+use `satisfies FormRendererProps<'renderer-key'>` from
+`@southneuhof/loom/renderers/formContracts`. Known props keep their
+component types; extra props remain open. Broad field annotations do not prove
+prop validity. Check extra prop names against the component; type checks cannot
+detect those spelling errors. These checks do not validate runtime data.
 
 Apply the [framework-first composition rule](../web-ui-surfaces/SKILL.md#framework-first-composition)
 once per form pattern. Select the form surface from
