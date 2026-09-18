@@ -22,6 +22,11 @@ patterns. Use this file to check the boundaries between them.
 - **Queries:** The resource owner defines list filters and detail identity.
   Consumers pass parameters through the existing actions. Multi-selection query
   arrays use JSON and the API `selectionQuery(itemSchema)` contract.
+- **Resource identity:** Use a required `string | number` record key, a nonempty
+  tuple of distinct such keys, or a function returning a scalar or nonempty flat
+  object of scalars. The default `id` must meet the same key rule. Runtime
+  numbers must be finite; `0` and `''` are valid. Pass the declared identity
+  shape to routes, writes and keyed invalidation; use `invalidate()` for all records.
 - **Access:** Bind one permission policy across API, resource actions, route
   guards, navigation and seed data. Read the
   [API permission rules](../../api-conventions/SKILL.md).

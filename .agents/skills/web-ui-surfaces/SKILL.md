@@ -76,8 +76,9 @@ field catalog. Pass the returned action directly to its View:
 ```
 
 Use `createHonoResourceActions(rpc.<module>)` for standard transport. It already
-normalizes responses. Keep custom transport in app actions, with a typed
-`{ run }` resource action when needed. Routes do not call raw RPC endpoints.
+normalizes responses. Keep custom transport in app actions. For custom resource
+actions, use the [action contract](references/surfaces.md#custom-resource-actions).
+Routes do not call raw RPC endpoints.
 A file or wrapper earns its place when it owns behavior; simple standard
 resources can call the adapter directly without a separate actions file.
 

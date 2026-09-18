@@ -14,7 +14,7 @@ step. This file contains the implementation contract. Update this plan's row in
 - Category: type safety
 - Planned at: `9d5f03e`, 2026-09-17
 - Revised at: `f4ef560`, 2026-09-18
-- Status: TODO
+- Status: IN PROGRESS (Steps 1-4 done; review revision applied, index row pending)
 
 ## Why this matters
 
@@ -266,6 +266,70 @@ closed extra-prop records, or weakened existing value inference.
 Record checks and direct caller corrections. Update the index only after review.
 
 ## Done criteria
+
+- [x] Built-in field prop types come from their Vue component types.
+- [x] Declared custom renderer prop types come from `typeof CustomInput`.
+- [x] Supplied known props reject incorrect values on every covered authoring
+      path.
+- [x] Extra props remain valid.
+- [x] Required component props remain optional during field authoring.
+- [x] Existing field references, custom forms, and multi-schema composition are
+      not restricted.
+- [x] No runtime prop validator or component behavior change is added.
+- [x] Existing value inference and all command gates pass.
+- [ ] The diff stays in scope and records any direct caller correction.
+
+## Verification record (implementer, 2026-09-18)
+
+- Step 1: Drift reviewed (worktree holds Plans 034/035, untouched).
+  Loom types exit 0 on clean owners. Registry tests 13 passed. Field tests
+  32 passed. Web types baseline fails on clean tree (`'rpc' is of type
+  'unknown'`, missing `@southneuhof/api/routes-contract`); owners have zero
+  errors. New negative `@ts-expect-error` cases proved unused (6 diagnostics)
+  before the fix.
+- Step 2: `FormRendererComponents` plus extraction helper added. Built-in
+  runtime keys assert both directions against an explicit Pick list (test-only
+  `rating` and `file-manager` augmentations stay out of the assertion).
+  `file-manager` declares its component type with `import type`, no eager
+  load. Loom types exit 0. Registry tests 13 passed.
+- Step 3: Guards thread through `defineFields`, references plus
+  `.override(...)` (override checks props when the patch repeats the
+  renderer), framework field defaults, `behavior.props`, `behavior.presentation`
+  (literal `as const` renderer), form registry input, and input adapter
+  defaults plus normalized output. Ad-hoc `FieldDefinition`, catalogs,
+  resolved fields, and `FieldsInput` stay open at annotation; no caller
+  change was required, so no direct caller correction is recorded. Loom
+  types exit 0. Web types show only the pre-existing baseline failures
+  (23 errors, down from 52 on the stash baseline because the stash run also
+  counted untracked 037 files; zero errors name an owner file). Registry
+  plus field tests 45 passed.
+- Step 4: Docs updated (`packages/loom/README.md`, `docs/ui/forms.md`,
+  compile-time contract only). Loom suite 57 files / 467 tests passed.
+  Web suite 45 files / 229 tests passed. Focused app lint plus format pass
+  on changed app files. `git diff --check` exit 0.
+- Direct caller correction: `apps/web/src/router/__tests__/
+  route-type-generation.spec.ts` adds the existing `packages/loom/env.d.ts`
+  Vue SFC shim to its two isolated `tsc` fixtures. Without it the new
+  component-type imports fail with `TS2307` under plain `tsc`, which has no
+  Vue plugin. The two route assertions are unchanged.
+- Index row update left for review.
+- Review revision (2026-09-18): `renderers/registry.ts` gains a typed form
+  seam — `FormRendererRegistry.register<K>(key: K, ...)` ties the key to
+  `FormRendererComponents[K]` (plus plain `Component` for runtime wrappers,
+  so `file-manager` and `builtInFormRenderers` overrides still type), and
+  `RendererRegistriesInput.form` uses `FormRendererRegistriesInput` keyed by
+  the same map. Table/detail registries stay `Record<string, Component>`.
+  The custom-renderer type test now proves `register('rating', ...)` passes
+  while `register('ratingMisspelled', ...)` and the matching registry input
+  both fail via consumed `@ts-expect-error`. Finding 2 needed no change:
+  `fields/behavior.ts` has no runtime normalization (matches base revision,
+  diff is empty); the presentation negative passes through the type-only
+  guard. Finding 3 needed no change: `AnyDefinitions` already applies
+  `FormPropGuardFor` (line 369), and the `map-widget` caller stays open
+  because unknown keys skip the guard. No caller correction was required.
+  Loom types exit 0. Registry plus field tests 45 passed. Web owner grep
+  empty (full web check keeps the 23 pre-existing baseline errors).
+  `git diff --check` exit 0.
 
 - [ ] Built-in field prop types come from their Vue component types.
 - [ ] Declared custom renderer prop types come from `typeof CustomInput`.

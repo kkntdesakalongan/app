@@ -5,14 +5,12 @@ import { toast } from 'vue-sonner'
 import { ListView } from '@southneuhof/loom'
 import Switch from '@southneuhof/loom/components/inputs/Switch.vue'
 import { errorMessage } from '@/framework/adapters/data/normalize'
-import { permissions } from '@/stores/permissions'
 import type { RolePermission } from './role-permissions.schema'
 import { rolePermissions } from './role-permissions.resource'
 
 const route = useRoute('settings-roles-detail-permissions')
 const roleId = computed(() => String(route.params.roleId))
 const pending = ref(new Map<string, boolean>())
-const access = permissions()
 const list = computed(() => rolePermissions.list({ searchParameters: { role_id: roleId.value } }))
 
 function rowKey(id: string) {
@@ -28,7 +26,7 @@ function assigned(row: RolePermission) {
 }
 
 function canToggle(row: RolePermission) {
-  return access.can(row.assigned ? 'delete-role-permissions' : 'create-role-permissions')
+  return rolePermissions.actions.set.can(roleId.value, row.id, !row.assigned)
 }
 
 // Switch applies attributes to its wrapper. Label the focusable button locally.
