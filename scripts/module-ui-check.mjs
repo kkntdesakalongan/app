@@ -192,16 +192,6 @@ function propInit(obj, key) {
   return undefined
 }
 
-function propNode(obj, key) {
-  if (!obj || !ts.isObjectLiteralExpression(obj)) return undefined
-  for (const prop of obj.properties) {
-    if (!ts.isPropertyAssignment(prop)) continue
-    const name = prop.name
-    if ((ts.isIdentifier(name) || ts.isStringLiteral(name)) && name.text === key) return prop
-  }
-  return undefined
-}
-
 function stringValue(node) {
   return node && ts.isStringLiteralLike(node) ? node.text : undefined
 }

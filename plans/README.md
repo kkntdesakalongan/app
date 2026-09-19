@@ -784,3 +784,38 @@ Considered and rejected: camelCase-to-kebab-case runtime aliases (keeps two
 names for one route); a regex lint rule for `rpc.camelCase` (type-check
 already rejects it once the contract exists); documenting "remember to
 build" (comments do not fail builds).
+
+## Framework pit migration from POS forward-test — 2026-09-19
+
+Planned with `improve` at `b44b82b`. POS work was a forward-test only. These
+plans change framework seams plus gates. They do not fix POS module files.
+POS routes under `apps/web/src/routes/(authenticated)/pos/` and API orders
+under `apps/api/src/routes/(authenticated)/orders/` serve as read-only
+fixtures for cases and demo runs.
+
+Intent and nuance: record omission stays legal for truly non-readable rows.
+Silent omission was the defect only because POS orders should stay readable
+as history. The track keeps runtime hiding silent for users and makes the
+author choice explicit at build time. `list` and `create` never gate by row.
+
+| Plan | Title | Priority | Effort | Depends on | Status |
+|---|---|---|---|---|---|
+| [045](045-display-pit-non-string-fields.md) | Require explicit display for non-string visible fields | P1 | M | — | IMPLEMENTED — 2026-09-19; helper + 10 requirement specs, UI check flags POS amounts/booleans/dates/row lookups, Loom suite + tooling pass |
+| [046](046-dialogform-composition-guard.md) | Fail fast on empty custom DialogForm composition | P1 | S | — | TODO |
+| [047](047-derive-record-ops-from-actions.md) | Derive standard record ops from declared resource actions | P1 | M | — | TODO |
+| [048](048-custom-actions-row-gating.md) | Gate custom record actions by row through declared actions | P1 | M | 047 | TODO |
+| [049](049-row-op-sync-gate.md) | Static gate and docs for row-op sync | P2 | S | 047, 048 | TODO |
+
+Execute 045 and 046 in any order, then 047 → 048 → 049. Plans 047 and 048
+touch the shared access path; run them serially. Plan 049 proves the sync
+without a browser.
+
+### Findings considered and rejected
+
+- Mandatory `renderer: 'text'` for plain strings: rejected; plain strings keep
+  the default. Only non-string kinds require explicit display.
+- Runtime logs for hidden View: rejected; hidden controls are normal denial UX.
+- Auto-adding `'detail'` whenever permission exists: rejected; some rows are
+  deliberately non-readable. The author must decide per status.
+- Fixing POS routes inside these plans: rejected; POS is fixture-only by user
+  direction. Framework proofs use minimal inline fixtures plus POS demo runs.
