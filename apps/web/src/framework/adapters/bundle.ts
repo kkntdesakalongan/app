@@ -1,6 +1,6 @@
 import type { Router } from 'vue-router'
 import type { AccessAdapter, FrameworkAdaptersInput, UiAdapter } from '@southneuhof/loom'
-import { isDeclaredCustomOperation, isStandardRowOperation } from '@southneuhof/loom'
+import { isStandardRowOperation } from '@southneuhof/loom'
 import { dataAdapter } from './data/normalize'
 import { createRouteQueryAdapter } from './query/routeQuery'
 import { useColorPreference } from '@/stores/colorpreference'
@@ -16,7 +16,7 @@ export function recordAllows(record: unknown, operation: string): boolean {
 export const accessAdapter: AccessAdapter = {
   allows: ({ operation, permission, record }) => {
     const declared = (record as { allowedOperations?: unknown } | undefined)?.allowedOperations
-    if (Array.isArray(declared) && (isStandardRowOperation(operation) || isDeclaredCustomOperation(operation))) {
+    if (isStandardRowOperation(operation) && Array.isArray(declared)) {
       return recordAllows(record, operation)
     }
     return allowsPermission(permission)
