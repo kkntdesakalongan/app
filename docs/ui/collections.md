@@ -44,8 +44,8 @@ not turn it into a tab surface.
 ## Field display values
 
 Plain string fields use the default text. Each other visible field needs an
-explicit display choice in `defineFields`: a `format`, a `renderer`, or a
-`read`. This covers numbers, booleans, dates, enums, selections, lookups,
-objects, and arrays in list, detail, and table rows. A lookup or select
-field (one with a form `source`) needs `read` or `renderer`; a format alone
-is not enough. Unknown schema kinds never require a choice.
+explicit display choice in `defineFields`. Numbers, booleans, and dates
+accept a `format`, a `renderer`, or a `read`. Enums, selections, lookups,
+objects, and arrays need a `renderer` or a `read`; a format alone cannot
+render chips, tags, or lookups. This covers list, detail, and table rows.
+Unknown schema kinds never require a choice.

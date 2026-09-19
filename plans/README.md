@@ -800,7 +800,7 @@ author choice explicit at build time. `list` and `create` never gate by row.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |---|---|---|---|---|---|
-| [045](045-display-pit-non-string-fields.md) | Require explicit display for non-string visible fields | P1 | M | — | IMPLEMENTED — 2026-09-19; helper + 10 requirement specs, UI check flags POS amounts/booleans/dates/row lookups, Loom suite + tooling pass |
+| [045](045-display-pit-non-string-fields.md) | Require explicit display for non-string visible fields | P1 | M | — | IN PROGRESS — revision per review (tighten enum/selection rule, mirror agreement test) |
 | [046](046-dialogform-composition-guard.md) | Fail fast on empty custom DialogForm composition | P1 | S | — | TODO |
 | [047](047-derive-record-ops-from-actions.md) | Derive standard record ops from declared resource actions | P1 | M | — | TODO |
 | [048](048-custom-actions-row-gating.md) | Gate custom record actions by row through declared actions | P1 | M | 047 | TODO |

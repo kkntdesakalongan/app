@@ -5,7 +5,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { checkUiContract } from './module-ui-check.mjs'
+import { checkUiContract, fieldNeedsDisplay } from './module-ui-check.mjs'
+import { requiresExplicitDisplay } from '../packages/loom/src/fields/displayRequirement.ts'
 
 const contract = { surfaces: [{ file: 'page.vue', kind: 'detail', components: [{ name: 'DetailView', from: '@southneuhof/loom' }] }] }
 const page = '<script setup lang="ts">import { DetailView as RecordView, Button } from "@southneuhof/loom"</script><template><RecordView><template #controls><Button>Close</Button></template></RecordView></template>'
@@ -159,6 +160,32 @@ test('resource display risk flags non-string fields without an explicit display'
   assert.match(result.stdout, /items\.resource\.ts:\d+: ownerId \(string, list\) needs explicit display/)
   assert.match(result.stdout, /items\.resource\.ts:\d+: ownerId \(string, detail\) needs explicit display/)
   assert.ok(!result.stdout.split('\n').some(line => line.includes('name (')), 'plain string stays silent')
+})
+
+test('static display mirror agrees with requiresExplicitDisplay for every schema kind', () => {
+  const kinds = ['unknown', 'string', 'number', 'boolean', 'date', 'object', 'array',
+    'string[]', 'number[]', 'boolean[]', 'object[]', 'selection[]']
+  const signalSets = [
+    {}, { format: true }, { renderer: true }, { read: true },
+    { format: true, renderer: true, read: true },
+    { options: true }, { options: true, format: true }, { options: true, renderer: true }, { options: true, read: true },
+    { source: true }, { source: true, format: true }, { source: true, renderer: true }, { source: true, read: true },
+  ]
+  for (const kind of kinds) {
+    for (const set of signalSets) {
+      const field = {}
+      if (set.format) field.format = 'fmt'
+      if (set.renderer) field.renderer = 'rend'
+      if (set.read) field.read = () => 'value'
+      if (set.source) field.source = 'lookup'
+      if (set.options) field.props = { options: ['a'] }
+      const expected = requiresExplicitDisplay(kind, field)
+      const actual = fieldNeedsDisplay({ kind, options: !!set.options }, {
+        format: !!set.format, renderer: !!set.renderer, read: !!set.read, source: !!set.source,
+      })
+      assert.equal(actual, expected, `${kind} ${JSON.stringify(set)}`)
+    }
+  }
 })
 
 test('surface kind prevents declaring only the hand-written replacement', () => {

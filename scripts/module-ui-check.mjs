@@ -147,8 +147,11 @@ function checkSurfaces(contract, { root = process.cwd(), read = path => readFile
 
 // Visible-field display risk (plan 045). Static mirror of
 // requiresExplicitDisplay in packages/loom/src/fields/displayRequirement.ts:
-// plain strings keep the default text; other kinds need an explicit format,
-// renderer, or read. Objects, arrays, and lookups need read or renderer.
+// plain strings keep the default text; numbers, booleans, and dates accept
+// format, renderer, or read; enums, selections, objects, arrays, and lookups
+// need read or renderer. A plain-node share is impractical, so the agreement
+// test in scripts/module-ui-check.test.mjs runs both functions over every
+// InternalSchemaKind plus source-present rows. Update all three together.
 const displayKindByFormRenderer = {
   text: 'string',
   number: 'number',
@@ -161,15 +164,16 @@ const displayKindByFormRenderer = {
   table: 'array',
 }
 
-function fieldNeedsDisplay(kindInfo, signals) {
+export function fieldNeedsDisplay(kindInfo, signals) {
   const kind = kindInfo?.kind ?? 'unknown'
   if (signals.source) return !(signals.read || signals.renderer)
   if (kind === 'unknown') return false
-  const explicit = signals.read || signals.renderer || signals.format
-  if (kind === 'string' || kind === 'string[]') return !!kindInfo.options && !explicit
+  const readOrRenderer = signals.read || signals.renderer
+  if (kind === 'string' || kind === 'string[]') return !!kindInfo.options && !readOrRenderer
+  if (kind === 'selection[]') return !readOrRenderer
   if (kind === 'number' || kind === 'boolean' || kind === 'date'
-    || kind === 'number[]' || kind === 'boolean[]' || kind === 'selection[]') return !explicit
-  return !(signals.read || signals.renderer)
+    || kind === 'number[]' || kind === 'boolean[]') return !(readOrRenderer || signals.format)
+  return !readOrRenderer
 }
 
 function displayKindLabel(kindInfo) {
