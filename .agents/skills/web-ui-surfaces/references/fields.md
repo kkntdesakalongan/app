@@ -12,6 +12,10 @@ see its name in list and detail, and load that selection on edit. Treat these as
 one implementation result. Verify with a real named record before reusing the
 pattern. Lookup configuration alone covers only the input side.
 
+For a lookup inside `table` rows, define the row cell separately. The row
+lookup `view` covers the selection dialog only. Add a row `table` read or
+renderer for the cell. Without it, the row shows the raw stored identity.
+
 Use `defineFields(schema, definitions)` for shared labels and projections.
 Select field references in each action's visible order. Use a schema key string
 when the app default supplies all needed configuration. Use one terminal

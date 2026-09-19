@@ -21,7 +21,7 @@ For custom reads or writes, read the
 Identify the loading owner and every data consumer affected by a write.
 Read [Fields](references/fields.md) for every resource display and
 [File routing](references/file-routing.md) for every child section.
-Discovery is complete when each visible field has a supported display path,
+Discovery is complete when each visible field names its table value and its detail value,
 and each interaction has supported configuration, route placement, loading and
 refresh ownership, or a named framework gap. Keep these
 decisions in the existing work record and reuse them for matching interactions.
@@ -61,7 +61,7 @@ against the required result, not merely whether a slot supports them.
 | File routes, nested parents, tabs, Back, route lifecycle | [File routing](references/file-routing.md) |
 | Lists, cards, filters, actions, dialogs | [Surfaces](references/surfaces.md) |
 | Workflow detail, history, related records | [Detail layout](references/detail-layout.md) |
-| Any new or changed relation, display fields or labels | [Fields](references/fields.md) |
+| Value contract for any new or changed relation, display field, or label | [Fields](references/fields.md) |
 | Any user input, including custom actions and inline uploads; read before selecting controls | [Build resource forms](../build-resource-form/SKILL.md) |
 
 Routes own URLs, query state, navigation, dialogs, and workflow feedback.

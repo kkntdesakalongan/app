@@ -83,5 +83,7 @@ owning field only when the API location shape differs from the control shape.
 | `separator` | A labelled section break in a form | no submitted value; label and layout props |
 
 Use `table` and its row field catalog before you build manual repeatable rows.
+A row lookup `view` covers the selection dialog only. Define the row cell
+through [display and form pattern](../../web-ui-surfaces/references/fields.md).
 Use a separate child resource when rows need their own permissions, paging, or
 actions.
