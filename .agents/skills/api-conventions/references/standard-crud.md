@@ -36,7 +36,7 @@ behavior. Do not replace it merely to customize persistence.
 
 | Need | First choice |
 |---|---|
-| Default order, enum filters | `list({ query: { defaultSort, enumFilters } })` |
+| Default order, enum filters | `list({ query: { defaultSort, defaultOrder, enumFilters } })` |
 | Static search/order | Entity `read.searchColumns` / `read.pinnedOrder` |
 | Computed filter or related search | Validated `read.virtual` predicate |
 | Identity or fixed scope | Route `before` returning `{ where: (table) => predicate }` |
@@ -46,7 +46,9 @@ behavior. Do not replace it merely to customize persistence.
 | Referenced delete | `deleteGuard`, plus database integrity constraints |
 
 Built-in coercion and list parsing need no hook. Keep client-selectable default
-order distinct from mandatory `pinnedOrder`. Custom query predicates use the
+order distinct from mandatory `pinnedOrder`. Query keys are entity fields; the
+compiler rejects unknown names. `defaultSort`/`defaultOrder` yield to client
+`sort`/`order`; `read.pinnedOrder` ignores them. Custom query predicates use the
 provided column map so aliases remain correct. Scope applies to both rows and
 counts; client filters cannot widen it.
 
