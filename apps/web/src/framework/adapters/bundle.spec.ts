@@ -4,6 +4,21 @@ const canPermission = vi.hoisted(() => vi.fn())
 vi.mock('@/stores/permissions', () => ({ permissions: () => ({ can: canPermission }) }))
 
 import { accessAdapter, allowsPermission } from './bundle'
+import { defineResource } from '@southneuhof/loom'
+import type { WebResourceSchema } from '@southneuhof/loom'
+
+type PayRow = { id: string; allowedOperations?: string[] }
+type PaySchema = WebResourceSchema<PayRow, Record<string, never>, { id: string }, { id: string }, string>
+
+/** Declares the custom name so the adapter gates it by row. `refund` stays undeclared. */
+function declarePayAction() {
+  defineResource({ identity: 'id' } as PaySchema, {
+    key: 'adapter-custom-fixture',
+    actions: {
+      pay: { run: async () => ({ id: 'o1' }), permission: 'pay-orders' },
+    },
+  })
+}
 
 describe('web access adapter', () => {
   beforeEach(() => canPermission.mockReset())
@@ -53,6 +68,24 @@ describe('web access adapter', () => {
     expect(allowsPermission('create-rtm')).toBe(true)
     expect(allowsPermission('view-users')).toBe(true)
     expect(allowsPermission('list-divisions')).toBe(false)
+  })
+
+  it('gates a declared custom action by row without consulting permission', () => {
+    declarePayAction()
+    canPermission.mockReturnValue(false)
+
+    expect(accessAdapter.allows({ operation: 'pay', permission: 'pay-orders', record: { id: 'o1', allowedOperations: ['pay'] } })).toBe(true)
+    expect(canPermission).not.toHaveBeenCalled()
+    canPermission.mockReturnValue(true)
+    expect(accessAdapter.allows({ operation: 'pay', permission: 'pay-orders', record: { id: 'o2', allowedOperations: ['detail'] } })).toBe(false)
+    expect(canPermission).not.toHaveBeenCalled()
+  })
+
+  it('keeps permission-only behavior for an undeclared custom name', () => {
+    canPermission.mockImplementation((permission: string) => permission === 'pay-orders')
+
+    expect(accessAdapter.allows({ operation: 'refund', permission: 'pay-orders', record: { id: 'o1', allowedOperations: ['pay'] } })).toBe(true)
+    expect(accessAdapter.allows({ operation: 'refund', permission: 'denied-scope', record: { id: 'o1', allowedOperations: ['pay'] } })).toBe(false)
   })
 
   it('does not infer access from a malformed operations field', () => {
