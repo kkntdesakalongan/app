@@ -34,3 +34,12 @@ Use [collections.md](collections.md) to select `ChipFilter` or `Tabs`.
 Standard surface components own their loading, error, and empty presentation.
 Route-local layout owns only the domain sections that the standard surface
 cannot express.
+
+## Row operation sync
+
+Permission in `actions` decides role access; the row `allowedOperations`
+array decides this-row access when present, and omission hides by design.
+`list` and `create` never gate by row. A resource that declares a row action
+must carry that name in the row `allowedOperations`, or stay explicitly
+list-only (no detail declaration) or collection-only (never called with a
+row). See plans 047 and 048.

@@ -40,3 +40,12 @@ are not clearable and do not own router query state.
 
 A required query filter remains a `ChipFilter`; its required selection does
 not turn it into a tab surface.
+
+## Field display values
+
+Plain string fields use the default text. Each other visible field needs an
+explicit display choice in `defineFields`. Numbers, booleans, and dates
+accept a `format`, a `renderer`, or a `read`. Enums, selections, lookups,
+objects, and arrays need a `renderer` or a `read`; a format alone cannot
+render chips, tags, or lookups. This covers list, detail, and table rows.
+Unknown schema kinds never require a choice.
