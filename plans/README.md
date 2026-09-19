@@ -797,7 +797,7 @@ files change; the forward-test worktree is throwaway.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |---|---|---|---|---|---|
-| [050](050-list-query-key-types.md) | Type list query keys and support default order | P1 | M | — | TODO |
+| [050](050-list-query-key-types.md) | Type list query keys and support default order | P1 | M | — | IMPLEMENTED — 2026-09-19; route-schema 7 pass (4 new type tests), list-policy 7 pass (2 new runtime tests), focused 60 pass, full Sprindle 217 pass (33 files), Sprindle type-check 0, lint 0 warnings/errors, API type-check 0, diff --check 0 |
 
 ## Framework pit migration from POS forward-test — 2026-09-19
 
