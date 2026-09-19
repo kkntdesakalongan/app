@@ -17,6 +17,24 @@ describe('web access adapter', () => {
     expect(canPermission).not.toHaveBeenCalled()
   })
 
+  it('hides View by explicit omission on workflow-shaped rows', () => {
+    const workflow = { id: 'order-1', allowedOperations: ['update', 'pay', 'cancel'] }
+
+    expect(accessAdapter.allows({ operation: 'detail', permission: 'view-orders', record: workflow })).toBe(false)
+    expect(accessAdapter.allows({ operation: 'update', permission: 'update-orders', record: workflow })).toBe(true)
+    expect(accessAdapter.allows({ operation: 'detail', permission: 'view-orders', record: { id: 'order-2', allowedOperations: ['detail'] } })).toBe(true)
+    expect(canPermission).not.toHaveBeenCalled()
+  })
+
+  it('never gates collection ops by row', () => {
+    canPermission.mockImplementation((permission: string) => permission === 'view-orders')
+
+    expect(accessAdapter.allows({ operation: 'list', permission: 'view-orders', record: { allowedOperations: ['update'] } })).toBe(true)
+    expect(accessAdapter.allows({ operation: 'create', permission: 'view-orders', record: { allowedOperations: ['update'] } })).toBe(true)
+    expect(accessAdapter.allows({ operation: 'list', permission: 'denied-scope', record: { allowedOperations: ['list', 'detail'] } })).toBe(false)
+    expect(canPermission).toHaveBeenCalledWith('view-orders')
+    expect(canPermission).toHaveBeenCalledWith('denied-scope')
+  })
   it('uses exact declared permissions without record operations', () => {
     canPermission.mockImplementation((permission: string) => permission === 'detail-users' || permission === 'view-users')
 
