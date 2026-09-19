@@ -802,7 +802,7 @@ author choice explicit at build time. `list` and `create` never gate by row.
 |---|---|---|---|---|---|
 | [045](045-display-pit-non-string-fields.md) | Require explicit display for non-string visible fields | P1 | M | — | DONE — reviewed 2026-09-19; helper tightened for enum/selection, mirror agreement test, Loom 477 pass, tool tests pass |
 | [046](046-dialogform-composition-guard.md) | Fail fast on empty custom DialogForm composition | P1 | S | — | DONE — reviewed 2026-09-19; dev-only Form guard names schema keys plus missing fields and fromZod, DialogForm forwards unchanged, Loom 482 pass |
-| [047](047-derive-record-ops-from-actions.md) | Derive standard record ops from declared resource actions | P1 | M | — | TODO |
+| [047](047-derive-record-ops-from-actions.md) | Derive standard record ops from declared resource actions | P1 | M | — | IMPLEMENTED — 2026-09-19; Loom type-check 0, full Loom 488 pass (incl. 6 new derivation specs), web adapter 6 pass, fixed triple removed, web type-check blocked only by pre-existing read-only POS `orders.schema` error (proved identical without this diff); review open |
 | [048](048-custom-actions-row-gating.md) | Gate custom record actions by row through declared actions | P1 | M | 047 | TODO |
 | [049](049-row-op-sync-gate.md) | Static gate and docs for row-op sync | P2 | S | 047, 048 | TODO |
 
