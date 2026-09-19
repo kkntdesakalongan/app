@@ -800,8 +800,8 @@ author choice explicit at build time. `list` and `create` never gate by row.
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |---|---|---|---|---|---|
-| [045](045-display-pit-non-string-fields.md) | Require explicit display for non-string visible fields | P1 | M | — | IN PROGRESS — revision per review (tighten enum/selection rule, mirror agreement test) |
-| [046](046-dialogform-composition-guard.md) | Fail fast on empty custom DialogForm composition | P1 | S | — | TODO |
+| [045](045-display-pit-non-string-fields.md) | Require explicit display for non-string visible fields | P1 | M | — | DONE — reviewed 2026-09-19; helper tightened for enum/selection, mirror agreement test, Loom 477 pass, tool tests pass |
+| [046](046-dialogform-composition-guard.md) | Fail fast on empty custom DialogForm composition | P1 | S | — | DONE — reviewed 2026-09-19; dev-only Form guard names schema keys plus missing fields and fromZod, DialogForm forwards unchanged, Loom 482 pass |
 | [047](047-derive-record-ops-from-actions.md) | Derive standard record ops from declared resource actions | P1 | M | — | TODO |
 | [048](048-custom-actions-row-gating.md) | Gate custom record actions by row through declared actions | P1 | M | 047 | TODO |
 | [049](049-row-op-sync-gate.md) | Static gate and docs for row-op sync | P2 | S | 047, 048 | TODO |
