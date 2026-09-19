@@ -110,6 +110,57 @@ test('global declarations require source registration, not a type or stub', () =
 })
 
 
+test('resource display risk flags non-string fields without an explicit display', t => {
+  const root = mkdtempSync(join(tmpdir(), 'carta-ui-display-'))
+  t.after(() => rmSync(root, { recursive: true, force: true }))
+  mkdirSync(join(root, 'items'))
+  writeFileSync(join(root, 'items', 'items.schema.ts'), [
+    "import { z } from 'zod/v4'",
+    'export const itemFormSchema = z.object({',
+    '  name: z.string(),',
+    '  price: z.number(),',
+    '  active: z.boolean(),',
+    '})',
+    'const itemRecordSchema = z.object({',
+    '  name: z.string(),',
+    '  price: z.number(),',
+    '  active: z.boolean(),',
+    '  ownerId: z.string(),',
+    '})',
+    'export const itemSchema = defineSchema(null, { create: itemFormSchema, record: itemRecordSchema })',
+    '',
+  ].join('\n'))
+  writeFileSync(join(root, 'items', 'items.resource.ts'), [
+    "import { defineFields, defineResource } from '@southneuhof/loom'",
+    "import { itemSchema } from './items.schema'",
+    'const fields = defineFields(itemSchema, {',
+    "  name: { label: 'Name', form: { renderer: 'text' } },",
+    "  price: { label: 'Price', form: { renderer: 'currency' } },",
+    "  active: { label: 'Active', form: { renderer: 'switch' } },",
+    "  ownerId: { label: 'Owner', form: { renderer: 'lookup', source: 'owners' } },",
+    '})',
+    'export const items = defineResource(itemSchema, {',
+    "  key: 'items',",
+    '  actions: {',
+    '    list: { run: () => {}, fields: [fields.name, fields.price, fields.ownerId], permission: \'view\', route: { name: \'items\' } },',
+    '    detail: { run: () => {}, fields: [fields.name, fields.price, fields.active, fields.ownerId], permission: \'view\', route: { name: \'item\' } },',
+    '  },',
+    '})',
+    '',
+  ].join('\n'))
+  writeFileSync(join(root, 'page.vue'), page)
+  const run = (...paths) => spawnSync(process.execPath,
+    [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), '--sources', ...paths], { encoding: 'utf8' })
+  const result = run(root)
+  assert.equal(result.status, 2)
+  assert.match(result.stdout, /items\.resource\.ts:\d+: price \(number, list\) needs explicit display/)
+  assert.match(result.stdout, /items\.resource\.ts:\d+: price \(number, detail\) needs explicit display/)
+  assert.match(result.stdout, /items\.resource\.ts:\d+: active \(boolean, detail\) needs explicit display/)
+  assert.match(result.stdout, /items\.resource\.ts:\d+: ownerId \(string, list\) needs explicit display/)
+  assert.match(result.stdout, /items\.resource\.ts:\d+: ownerId \(string, detail\) needs explicit display/)
+  assert.ok(!result.stdout.split('\n').some(line => line.includes('name (')), 'plain string stays silent')
+})
+
 test('surface kind prevents declaring only the hand-written replacement', () => {
   const source = '<script setup>import { NavigationHeader } from "@southneuhof/loom"</script><template><NavigationHeader/><dl>Fields</dl></template>'
   const selected = { surfaces: [{ file: 'page.vue', kind: 'detail', components: [{ name: 'NavigationHeader', from: '@southneuhof/loom' }] }] }
