@@ -58,7 +58,7 @@ against the required result, not merely whether a slot supports them.
 | Work | Read |
 | --- | --- |
 | New page, app shell, navigation, visual hierarchy, responsive layout | [App conventions](references/app-conventions.md) |
-| File routes, nested parents, tabs, Back, route lifecycle | [File routing](references/file-routing.md) |
+| File routes, navigation entries, nested parents, tabs, Back, route lifecycle | [File routing](references/file-routing.md) |
 | Lists, cards, filters, actions, dialogs | [Surfaces](references/surfaces.md) |
 | Workflow detail, history, related records | [Detail layout](references/detail-layout.md) |
 | Value contract for any new or changed relation, display field, or label | [Fields](references/fields.md) |

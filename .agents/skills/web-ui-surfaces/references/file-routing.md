@@ -16,7 +16,10 @@ router supports these mechanisms; it does not choose the app's section layout.
 A folder adds URL segments. Its `index.route.vue` is a replaceable default
 page. A route file beside a matching folder retains that page as a parent.
 Give peer navigation entries sibling folders at the same URL depth, so each
-entry path matches one section. A navigation group supplies labels
+entry path matches one section. A group landing page is one such sibling: it
+lives in its own folder (for example `pos/sell/index.route.vue`), never as
+the bare group `pos/index.route.vue` while its peers sit a level deeper.
+A navigation group supplies labels
 and order; file placement supplies URLs and parents.
 Use `AppRouterView` in retained Carta record pages for the existing identity
 and refresh behavior. The route validator also accepts native `RouterView`.

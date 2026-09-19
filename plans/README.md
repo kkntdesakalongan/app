@@ -785,6 +785,20 @@ names for one route); a regex lint rule for `rpc.camelCase` (type-check
 already rejects it once the contract exists); documenting "remember to
 build" (comments do not fail builds).
 
+## List query key types — 2026-09-19
+
+Planned with `improve` at `fd53981`. A forward test wrote
+`list({ query: { defaultSort: '-createdAt' } })`; the bare-string type let it
+through and it failed only at runtime with
+`Unknown sort column "-createdAt"`. This plan types `defaultSort`,
+`enumFilters`, and `searchColumns` against the entity, adds the missing
+`defaultOrder`, and keeps `pinnedOrder` for mandatory order. No POS module
+files change; the forward-test worktree is throwaway.
+
+| Plan | Title | Priority | Effort | Depends on | Status |
+|---|---|---|---|---|---|
+| [050](050-list-query-key-types.md) | Type list query keys and support default order | P1 | M | — | TODO |
+
 ## Framework pit migration from POS forward-test — 2026-09-19
 
 Planned with `improve` at `b44b82b`. POS work was a forward-test only. These

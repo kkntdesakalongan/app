@@ -11,7 +11,11 @@ changing the app shell.
 Use the typed navigation manifest for menu labels, groups, order, routes, and
 permission visibility. Use generated route names for links. Derive breadcrumbs
 and active navigation from routing data; do not maintain parallel URL maps.
-Place entries per the [file-routing convention](file-routing.md#place-the-page),
+Every entry in one navigation group opens a page at the same URL depth, so a
+group landing page lives in its own sibling section (for example,
+`sell/index.route.vue` beside `menu-items/`, never a bare group
+`index.route.vue` that leaves one entry shallower than its peers). Place
+entries per the [file-routing convention](file-routing.md#place-the-page),
 where peer entries share URL depth. Use that convention for retained parents and
 replacement pages.
 The API still checks access when a hidden page is requested directly.
