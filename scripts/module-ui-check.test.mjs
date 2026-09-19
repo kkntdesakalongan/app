@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { checkUiContract, fieldNeedsDisplay } from './module-ui-check.mjs'
+import { checkUiContract, checkResourceRowOps, fieldNeedsDisplay } from './module-ui-check.mjs'
 import { requiresExplicitDisplay } from '../packages/loom/src/fields/displayRequirement.ts'
 
 const contract = { surfaces: [{ file: 'page.vue', kind: 'detail', components: [{ name: 'DetailView', from: '@southneuhof/loom' }] }] }
@@ -261,4 +261,50 @@ test('a justified record layout retains the Detail primitive and requires review
   const result = check(source, selected)
   assert.deepEqual(result.errors, [])
   assert.equal(result.review.length, 1)
+})
+
+test('resource row-op sync warns when a declared route or row control misses the row enum', t => {
+  const root = mkdtempSync(join(tmpdir(), 'carta-ui-rowops-'))
+  t.after(() => rmSync(root, { recursive: true, force: true }))
+  const write = (name, content) => writeFileSync(join(root, name), content)
+  // Detail declared with a route, but the row enum omits 'detail'.
+  write('detail-missing.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['update'])) })\n")
+  write('detail-missing.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './detail-missing.entity'\nexport const r = defineResource({}, { key: 'detail-missing', actions: { list: { run: async () => ({}), route: { name: 'l' } }, detail: { run: async () => ({}), permission: 'view', route: { name: 'd' } } } })\n")
+  // Update declared with a route, but the row enum omits 'update'.
+  write('update-missing.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
+  write('update-missing.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './update-missing.entity'\nexport const r = defineResource({}, { key: 'update-missing', actions: { list: { run: async () => ({}), route: { name: 'l' } }, update: { run: async () => ({}), permission: 'edit', route: { name: 'e' } } } })\n")
+  // Custom pay consumed as a row control, but the row enum omits 'pay'.
+  write('pay-row.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
+  write('pay-row.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './pay-row.entity'\nexport const r = defineResource({}, { key: 'pay-row', actions: { list: { run: async () => ({}), route: { name: 'l' } }, pay: { run: async () => ({}), permission: 'pay' } } })\n")
+  write('pay-row.vue', "<script>const ok = r.actions.pay.can(id, input, { record })</script><template><div>x</div></template>\n")
+  // List-only: no detail declaration, so the enum gap passes.
+  write('list-only.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['update'])) })\n")
+  write('list-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './list-only.entity'\nexport const r = defineResource({}, { key: 'list-only', actions: { list: { run: async () => ({}), route: { name: 'l' } } } })\n")
+  // Collection-only: custom action never called with a row, so it passes.
+  write('export-collection.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
+  write('export-collection.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './export-collection.entity'\nexport const r = defineResource({}, { key: 'export-collection', actions: { list: { run: async () => ({}), route: { name: 'l' } }, exportAll: { run: async () => ({}), permission: 'export' } } })\n")
+  write('export-collection.vue', "<script>const ok = r.actions.exportAll.can({ format: 'csv' })</script><template><div>x</div></template>\n")
+  // Permission-only rows carry no enum, so a declared detail route passes.
+  write('permission-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nexport const r = defineResource({}, { key: 'permission-only', actions: { list: { run: async () => ({}), route: { name: 'l' } }, detail: { run: async () => ({}), permission: 'view', route: { name: 'd' } } } })\n")
+  const files = ['detail-missing.resource.ts', 'update-missing.resource.ts', 'pay-row.resource.ts', 'list-only.resource.ts', 'export-collection.resource.ts', 'permission-only.resource.ts']
+  const vueContents = [
+    "<script>const ok = r.actions.pay.can(id, input, { record })</script>",
+    "<script>const ok = r.actions.exportAll.can({ format: 'csv' })</script>",
+  ]
+  const result = checkResourceRowOps(files, { root, vueContents })
+  assert.equal(result.length, 3)
+  assert.ok(result.some(item => item.includes('detail-missing') && item.includes("cannot carry 'detail'")), result.join('\n'))
+  assert.ok(result.some(item => item.includes('update-missing') && item.includes("cannot carry 'update'")), result.join('\n'))
+  assert.ok(result.some(item => item.includes('pay-row') && item.includes("cannot carry 'pay'")), result.join('\n'))
+  assert.ok(!result.some(item => item.includes('list-only declares')), result.join('\n'))
+  assert.ok(!result.some(item => item.includes('export-collection declares')), result.join('\n'))
+  assert.ok(!result.some(item => item.includes('permission-only declares')), result.join('\n'))
+  assert.ok(result.every(item => /^.+\.resource\.ts:\d+: /.test(item)), result.join('\n'))
+  // The sources CLI wires the same rule alongside template checks.
+  const run = (...paths) => spawnSync(process.execPath,
+    [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), '--sources', ...paths], { encoding: 'utf8' })
+  const cli = run(root)
+  assert.equal(cli.status, 2)
+  assert.match(cli.stdout, /detail-missing.*cannot carry 'detail'/)
+  assert.match(cli.stdout, /pay-row.*cannot carry 'pay'/)
 })

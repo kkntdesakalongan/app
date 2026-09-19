@@ -68,6 +68,11 @@ export function checkUiSources(paths, { root = process.cwd() } = {}) {
   const result = checkSurfaces({ surfaces }, { root }, false)
   const resourceFiles = [...new Set(paths.flatMap(collectResources))]
   for (const item of checkResourceDisplay(resourceFiles, { root })) result.review.push(item)
+  const vueContents = []
+  for (const surface of surfaces) {
+    try { vueContents.push(readFileSync(resolve(root, surface.file), 'utf8')) } catch { /* surface already reported */ }
+  }
+  for (const item of checkResourceRowOps(resourceFiles, { root, vueContents })) result.review.push(item)
   return result
 }
 
@@ -663,6 +668,148 @@ export function checkResourceDisplay(files, { root = process.cwd(), read = absPa
         if (fieldNeedsDisplay(kindInfo, signals)) {
           review.push(`${file}:${row.line}: ${row.key} (${displayKindLabel(kindInfo)}, row) needs explicit display (${displayHint(kindInfo, signals)})`)
         }
+      }
+    }
+  }
+  return review
+}
+
+// Row-op sync (plan 049). Static mirror of plans 047 and 048: permission
+// decides role access; the row allowedOperations array decides this-row
+// access when present; omission hides by design; list and create never gate
+// by row. When a resource declares a detail, update, or delete action with a
+// route (delete has no route option, so any delete declaration counts), or a
+// custom action consumed as a row control (a `.can(`/`.run(` call carrying a
+// trailing `{ record }` context in a Vue source), its row enum must be able
+// to carry that op name. A missing enum means permission-only rows, so the
+// check passes. A list-only resource (no detail declaration) and a
+// collection-only custom action (never called with a row) pass. Results are
+// review-only: intentional per-row omission stays legal, the author resolves
+// the warning explicitly.
+const standardRowOps = new Set(['detail', 'update', 'delete'])
+
+function parseResourceActions(entry) {
+  const found = []
+  function visit(node) {
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)
+      && (node.expression.text === 'defineResource' || node.expression.text === 'defineActionResource')
+      && node.arguments.length >= 2) {
+      const config = unwrapExpr(node.arguments[node.arguments.length - 1])
+      const key = stringValue(propInit(config, 'key')) ?? 'unknown'
+      const actions = propInit(config, 'actions')
+      const target = unwrapExpr(actions)
+      if (target && ts.isObjectLiteralExpression(target)) {
+        for (const prop of target.properties) {
+          if (!ts.isPropertyAssignment(prop)) continue
+          const name = prop.name
+          if (!ts.isIdentifier(name) && !ts.isStringLiteral(name)) continue
+          const value = unwrapExpr(prop.initializer)
+          const hasRoute = !!value && ts.isObjectLiteralExpression(value) && propInit(value, 'route') !== undefined
+          const line = ts.getLineAndCharacterOfPosition(entry.source, prop.name.getStart(entry.source)).line + 1
+          found.push({ key, name: name.text, hasRoute, line, declared: !!value && ts.isObjectLiteralExpression(value) })
+        }
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(entry.source)
+  return found
+}
+
+function enumStringsOf(node, out) {
+  function visit(current) {
+    if (ts.isCallExpression(current) && ts.isPropertyAccessExpression(current.expression)
+      && current.expression.name.text === 'enum' && current.arguments.length >= 1
+      && ts.isArrayLiteralExpression(unwrapExpr(current.arguments[0]))) {
+      for (const el of unwrapExpr(current.arguments[0]).elements) {
+        const text = stringValue(unwrapExpr(el))
+        if (text !== undefined) out.add(text)
+      }
+    }
+    ts.forEachChild(current, visit)
+  }
+  visit(node)
+}
+
+function rowOpsIn(entry, index, seen) {
+  const values = new Set()
+  const stack = [entry]
+  while (stack.length) {
+    const current = stack.pop()
+    if (!current || seen.has(current.absPath)) continue
+    seen.add(current.absPath)
+    function visit(node) {
+      if (ts.isPropertyAssignment(node) && ((ts.isIdentifier(node.name) && node.name.text === 'allowedOperations')
+        || (ts.isStringLiteral(node.name) && node.name.text === 'allowedOperations'))) {
+        enumStringsOf(node.initializer, values)
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(current.source)
+    for (const imp of current.imports) {
+      const target = index.resolveImport(imp.spec, current.absPath)
+      if (target && !seen.has(target.absPath)) stack.push(target)
+      // Follow one more hop: schema files import the entity holding the enum.
+      if (target) {
+        for (const nested of target.imports) {
+          const resolved = index.resolveImport(nested.spec, target.absPath)
+          if (resolved && !seen.has(resolved.absPath)) stack.push(resolved)
+        }
+      }
+    }
+  }
+  return values
+}
+
+function rowUsedCustomNames(vueContents) {
+  const used = new Set()
+  for (const content of vueContents) {
+    const pattern = /\.actions\.([A-Za-z_]\w*)\.(can|run)\s*\(/g
+    let match
+    while ((match = pattern.exec(content)) !== null) {
+      const after = content.slice(match.index, match.index + 600)
+      // A trailing `{ record }` (or `{ record:`) context marks a row call.
+      // Collection calls carry only domain inputs, never a record context.
+      if (/\{\s*record[\s,:}]/m.test(after)) used.add(match[1])
+    }
+  }
+  return used
+}
+
+export function checkResourceRowOps(files, { root = process.cwd(), read = absPath => readFileSync(absPath, 'utf8'), vueContents = [] } = {}) {
+  const review = []
+  const index = makeFileIndex(root, read)
+  const rowUsed = rowUsedCustomNames(vueContents)
+  for (const file of files) {
+    const abs = resolve(root, file)
+    const entry = index.load(abs)
+    if (!entry) {
+      review.push(`${file}: cannot parse resource for row-op check`)
+      continue
+    }
+    const declared = parseResourceActions(entry)
+    if (!declared.length) continue
+    const key = declared[0].key
+    const byName = new Map(declared.map(item => [item.name, item]))
+    const wanted = []
+    for (const name of ['detail', 'update']) {
+      const item = byName.get(name)
+      if (item && item.hasRoute) wanted.push(item)
+    }
+    const deleted = byName.get('delete')
+    if (deleted && deleted.declared) wanted.push({ ...deleted, name: 'delete' })
+    for (const item of declared) {
+      if (standardRowOps.has(item.name)) continue
+      if (rowUsed.has(item.name)) wanted.push(item)
+    }
+    if (!wanted.length) continue
+    const values = rowOpsIn(entry, index, new Set())
+    // No allowedOperations enum reachable: permission-only rows fall back to
+    // permission per plan 047, so the sync check passes.
+    if (!values.size) continue
+    for (const item of wanted) {
+      if (!values.has(item.name)) {
+        review.push(`${file}:${item.line}: ${key} declares ${item.name} but row allowedOperations cannot carry '${item.name}' (add '${item.name}' to the row enum or mark list-only/collection-only)`)
       }
     }
   }
