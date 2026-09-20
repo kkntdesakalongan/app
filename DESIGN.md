@@ -19,9 +19,13 @@ Add search, notifications, or a dashboard only when the task requires them.
 
 ## Page structure
 
-Use `ListView`, `DetailView`, and `FormView` for their standard tasks. The View
-owns the page header and normal actions. Add content through its supported slots
-or below the View. Give additional content a short section heading. Choose one
+Use `ListView`, `DetailView`, and `FormView` for their standard tasks. `DetailView`
+and `FormView` own the page header through `NavigationHeader`. A custom page
+without those Views uses `NavigationHeader` directly. `ListView` renders its own
+title and toolbar header. Show one `NavigationHeader` on each page; sections
+below it keep their own titles. Add content through
+the View's supported slots or below the View. Give additional content a short
+section heading. Choose one
 surface treatment: an unframed section with normal page spacing, or a framework
 card when the content needs visual containment. Keep unframed sections free of
 card-like borders, backgrounds, corner rounding, and container padding. Keep
@@ -29,17 +33,24 @@ module titles in the standard header; omit decorative banners, repeated titles,
 and slogans.
 
 A record with one additional section shows that section directly below
-`DetailView` on entry. Use an adjacent component, or a default child
-`detail/index.route.vue` with `AppRouterView` when the section needs a route.
+`DetailView` on entry. Use an adjacent component for a section of the same
+record. Use a default child `detail/index.route.vue` with `AppRouterView` only
+when the section owns an identity that users can link, refresh, and return to.
 The user does not need an Open button or a single tab to see that section.
 For several child sections, place the app routing `Tabs` below `DetailView`,
 then `AppRouterView`. Use named `RouteTab` targets. The detail remains visible.
+Length alone does not earn a route.
 See [file routing](.agents/skills/web-ui-surfaces/references/file-routing.md)
 for file placement, replacement pages, and Back targets.
 
-Keep the record summary first. Show each field or attachment once. Use a
-sidebar only when short workflow controls need to sit beside longer content.
-Several sections alone do not require a custom record shell.
+Keep the record summary first, with the primary task and its controls. Show
+each field or attachment once. Use a sidebar for companion context: facts about
+the same record with no row actions and no collection of its own. Companion
+context sits beside the primary content on wide screens and below it on narrow
+screens. Disclose supporting content that the user does not need to choose the
+next action with the shared `Disclosure` section. A linked collection with
+its own rows owns the full width below the summary. Several sections alone do
+not require a custom record shell.
 
 Give the record summary, related collections and distinct workflow areas named
 sections. On a custom detail page, use separate framework cards by default for
