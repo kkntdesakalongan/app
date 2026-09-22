@@ -17,10 +17,10 @@ including custom workflows added to it.
 Add exact owners, work order, setup and suitable checks to the existing work
 record. Confirm that the standard design approval gate records the user's
 approval of this exact revision. If it does not, return to `$carta-module-design`,
-present the design and stop for approval before planning. Keep the plan in the
-standard design record without creating
-numbered plans, a worksheet or UI JSON. A plan-only request stops there.
-Use the remaining procedure only for a scoped full contract or an existing full
+present the design and stop for approval before planning. On the standard
+execution path, keep the plan in the design record without creating numbered
+plans or a worksheet. A plan-only request stops there.
+Use the remaining procedure only for the full execution path or an existing full
 plan. A custom action alone does not require it. Include workflow restrictions
 on standard actions in the first result; keep later workflow work explicit.
 

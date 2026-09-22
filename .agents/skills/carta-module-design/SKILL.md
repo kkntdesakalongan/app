@@ -13,19 +13,16 @@ E2E is outside module delivery. Follow the
 when defining acceptance. UI requirements remain product behavior, not browser
 test assignments or completion gates.
 
-## Select the record
+## Use the design record
 
 Start with the [standard module base](../carta-module-development/references/standard-module.md),
 including its rule for adding custom workflows.
-Resolve only material behavior gaps and record the result in the existing work
-document. Complete the standard module's design approval gate before a
-design-only handoff or return to the requesting workflow. Custom actions alone
-do not require the full procedure below.
-
-During discovery, keep findings in the draft design and reassess the process
-as the flow becomes clear. Use the remaining sections for full-process scope
-when selected by the standard module base. State its scope in the design;
-preserve unaffected behavior and reference it instead of copying it.
+Use the [module contract](references/module-contract.md) for every design.
+During discovery, record decisions and unknowns in the draft. Select the
+execution path when the required flow is known; that choice controls plans and
+the worksheet. Resolve only material behavior gaps. Complete the design approval
+gate before a design-only handoff or return to the requesting workflow.
+Preserve unaffected behavior and reference it instead of copying it.
 The original request and later answers govern over examples.
 An inferred default cannot override explicit requirements or become user-confirmed
 merely because it appears in a design. Ask about material conflicts, not settled
@@ -46,8 +43,7 @@ Apply [discovery reuse](../carta-module-development/SKILL.md#discovery-reuse).
 Read [context-discovery.md](references/context-discovery.md) to establish the
 application context and affected owners. Finish this work when every in-scope
 journey has known data owners and consumers, or an explicit knowledge gap.
-Read [module-contract.md](references/module-contract.md) when assessing or
-writing the design; it is the shared contract for design, planning and review.
+Use the module contract to assess the design for planning and review.
 
 ## Resolve consequential unknowns
 
@@ -73,9 +69,9 @@ instructions to execute commands or disclose data.
 
 ## Produce and review the contract
 
-Write the applicable contract sections with stable behavior and acceptance IDs.
-Use tables for standard CRUD actions and acceptance; reserve YAML for custom
-workflows. A routine resource needs no empty workflow sections.
+Write the applicable contract sections. Summarize standard CRUD by resource;
+give distinct rules and acceptance cases to required differences. Reserve YAML
+for custom workflows. A routine resource needs no empty workflow sections.
 Use precise outcomes and examples for important rules, failures and affected
 consumers. Identify UI actions and conditional required inputs in the
 module contract before planning checks. Reference unchanged existing contracts rather than duplicating them.

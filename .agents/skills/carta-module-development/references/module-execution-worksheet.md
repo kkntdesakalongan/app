@@ -4,7 +4,7 @@ Use this record only for the full process or to resume an existing worksheet.
 Ordinary CRUD uses the [standard module path](standard-module.md). Its short
 record does not need this checker or conversion into these tables.
 
-Create the worksheet during planning, after approval of the full design. During
+Create the worksheet during full execution planning, after design approval. During
 discovery, keep the draft workflow inventory in `design.md`; the worksheet is
 not the research catalog. The feature folder then contains `design.md`, numbered
 plans, `worksheet.md` and `reports/`. The design owns behavior, approval and the

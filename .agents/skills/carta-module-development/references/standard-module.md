@@ -6,36 +6,30 @@ use a different structure when the requested task does not fit CRUD.
 
 ## Select the process
 
-Use one draft design to record findings as the user flow becomes clear. Before
-selecting the standard path, establish the in-scope actions, results and
-dependencies from the request and user answers; keep material gaps open in the
-draft. If the initial request establishes the full process, use that format
-at once; otherwise keep the draft open to either level of detail. Use the
-standard path for CRUD and custom operations whose rules and results can be
-specified and checked locally. A relation, custom control or shared access
-predicate alone does not require the full process.
+Use one [design record](../../carta-module-design/references/module-contract.md)
+from the start of discovery. Record decisions, sources, conflicts and unknowns
+there. Establish the in-scope actions, results and dependencies before selecting
+the execution path. Use the standard path for CRUD and custom operations whose
+rules and results can be specified and checked locally. A relation, custom
+control or shared access predicate alone does not require the full process.
 
-Use the full design/plan/worksheet process for the affected scope when correctness
+Use numbered plans and a worksheet for the affected scope when correctness
 depends on a sequence of domain operations, coupled rules across operations, or
 derived results that several consumers must keep consistent after writes. Also
 use it for required traceability. Approval states are one source of complexity;
 their absence does not establish that a flow is simple.
 
-Record the selected scope and its reason in the design. Keep independent CRUD
-on the standard path. Reassess the choice when new dependencies appear. If the
-full process becomes necessary, organize the affected draft content under the
-full contract; preserve settled decisions and valid evidence. Both paths use
-the same framework contracts and quality requirements.
+Record the selected execution path, scope and reason in the design when the
+required flow is known. Keep independent CRUD on the standard path. Reassess
+the path when new dependencies appear; preserve settled decisions and valid
+evidence. Both paths use the same design and quality requirements.
 
 ## One work record
 
-Use `plans/<feature>/design.md` for the draft and approved design. When the
-standard path is selected, use the
-[simplified design template](../assets/simple-design-template.md). Keep its five
-sections and replace the prompts with task facts. Use “None” for an inapplicable
-section; include only useful detail within each section. For full-process scope,
-use the [module contract](../../carta-module-design/references/module-contract.md)
-in the same file.
+Use `plans/<feature>/design.md` for the draft and approved design. Follow the
+same module contract on both execution paths. Add detailed rules for behavior
+that needs them; summarize standard CRUD by resource and reference its existing
+pattern.
 
 Describe custom behavior sufficiently to implement and test it. Reference the
 existing pattern for standard CRUD; ordinary fields need no separate acceptance
@@ -56,9 +50,9 @@ Record the approving reply, revision and scope in the design. Approval of that
 exact unchanged revision survives resume. A material behavior revision returns
 to this gate; technical detail added within the approved behavior does not.
 
-No separate implementation plan, worksheet, obligation/journey IDs, UI JSON or
-recorder JSON is required on this path. Update at a usable result, decision,
-material failure or handoff, not after each command.
+On the standard path, keep the work plan and evidence in the design; create no
+numbered plans or worksheet. Update at a usable result, decision, material
+failure or handoff, not after each command.
 
 ## Resolve behavior
 
@@ -92,7 +86,7 @@ Use YAML for custom workflows, not CRUD. Select control placement from
 require new document types or a restart.
 
 Apply the process selection above to combined behavior. Reference the existing
-base for unaffected work instead of repeating it in the full contract.
+base for unaffected work instead of repeating it in the design.
 
 Use the standard API/resource/View path. Keep standard actions in their normal
 locations and add custom controls only for a named user need. A related feature

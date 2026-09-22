@@ -2,9 +2,9 @@
 
 Add custom workflow behavior to the
 [standard module base](../../carta-module-development/references/standard-module.md).
-Keep rules and YAML records in the existing work record. Use names to reference
-shared conditions; IDs and the full inventory are needed only when a scoped
-[module contract](module-contract.md) already requires them.
+Keep rules and YAML records in the [design record](module-contract.md). Use names
+to reference shared conditions. Add stable IDs for defined rules; use the full
+inventory when the selected execution path needs a worksheet.
 The templates below show available properties, not a required field checklist.
 Keep only properties needed to settle the action and its checks.
 

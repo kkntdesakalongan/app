@@ -1,22 +1,26 @@
 # Module contract
 
-This is the full-process contract for a scope that needs explicit traceability.
+Use this contract for every module design, from the first draft through approval.
 Start with the [standard module base](../../carta-module-development/references/standard-module.md),
-including custom workflows. A relation, filter or custom action alone does not
-require this inventory. Record the scope covered here and reference the rest.
+including custom workflows. Keep one decision record as requirements emerge.
+Start the draft with the authority table and open questions. Add behavior rules
+as facts become clear. Add the workflow inventory when the selected execution
+path needs a worksheet.
 
-`plans/<feature>/design.md` owns intended behavior and approval. Plans own
-technical decisions; the worksheet owns progress; reports own observed results.
-Use tables for data, standard CRUD actions and their acceptance cases. Use YAML
-only for custom workflows. Use Mermaid when it clarifies a branched workflow;
-diagrams reference the authoritative rules.
+`plans/<feature>/design.md` owns intended behavior, decisions and approval. On
+the full execution path, plans own technical decisions, the worksheet owns
+progress, and reports own observed results. On the standard path, the design
+also records the work plan and evidence. Use tables for data, resource summaries
+and acceptance cases. Use YAML only for custom workflows. Use Mermaid when it
+clarifies a branched workflow; diagrams reference the authoritative rules.
 Existing approved artifacts can retain their format when they meet this contract.
 
 ## Record rules
 
-Assign stable IDs to workflows (`W-01`), behaviors (`B-01`), transitions (`T-01`),
-invariants (`I-01`) and acceptance cases (`A-01`). Define each rule once and link
-its consumers. Keep reasons and source notes outside executable conditions.
+Assign stable IDs to defined workflows (`W-01`), behaviors (`B-01`), transitions
+(`T-01`), invariants (`I-01`) and acceptance cases (`A-01`). Standard CRUD that
+uses the Carta pattern needs no action ID. Define each distinct rule once and
+link its consumers. Keep reasons and source notes outside executable conditions.
 IDs are unique across the design. Tables can repeat under resource headings;
 the checker combines tables with the same header and rejects duplicate IDs.
 A blank required property is incomplete. `NONE` is an explicit absence;
@@ -31,7 +35,7 @@ does not imply additional CRUD actions, collections or administration screens. R
 entry points, outcomes, exclusions, affected owners and consumers using
 [context discovery](context-discovery.md).
 
-| Claim ID | Statement | Authority | Source | Affected IDs |
+| Claim ID | Statement | Authority | Source | Affected behavior |
 |---|---|---|---|---|
 
 Authority is `OBSERVED` for current evidence, `CONFIRMED` for user requirements,
@@ -39,8 +43,9 @@ Authority is `OBSERVED` for current evidence, `CONFIRMED` for user requirements,
 classification per claim; separate observed facts from proposed decisions. Record conflicts
 and their resolution. Approval identifies the exact revision; silence is not approval.
 
-Trace supplied process branches and UI requirements to rule IDs or explicit
-exclusions. When sources differ, name which source governs each affected behavior.
+Trace supplied process branches and UI requirements to design statements, rule
+IDs or explicit exclusions. When sources differ, name which source governs each
+affected behavior.
 Treat an inferred rule as a proposal until confirmed; general approval does not
 resolve contradictory rules within the same revision.
 
@@ -61,7 +66,9 @@ schema owners instead of copying them.
 
 ## Workflow inventory
 
-List every in-scope branch, invariant and required sequence in this coverage table.
+For the full execution path, list every in-scope branch, invariant and required
+sequence in this coverage table. Standard CRUD that follows the named Carta
+pattern needs no obligation row.
 Use one row per obligation; `Obligation` is a unique ID, including workflow path
 IDs such as `W-01.normal`. Include alternative entry points, return/resubmit paths,
 permitted prerequisite orders and cross-module effects when they exist.
@@ -69,21 +76,23 @@ permitted prerequisite orders and cross-module effects when they exist.
 | Obligation | Rule references | Acceptance IDs |
 |---|---|---|
 
-Keep this legacy checker table empty in module delivery:
+For a full-path worksheet, keep this legacy checker table empty:
 
 | Journey | Obligation | Acceptance IDs | Distinct interaction |
 |---|---|---|---|
 
 Reason: E2E is outside module delivery under the
 [verification boundary](../../carta-module-development/references/verification-strategy.md#browser-journeys).
-Describe UI behavior in action records, not browser test mappings. On resume,
+Describe UI behavior in resource summaries and custom action records, not
+browser test mappings. On resume,
 move old journey obligations to separately scoped work; do not mark them passed.
 
-Present this inventory during design review. The worksheet checker cannot discover
-business work omitted here. Explicit exclusions belong in scope, not this table.
+Present the inventory during full-path design review. The worksheet checker
+cannot discover business work omitted here. Explicit exclusions belong in scope,
+not this table.
 
-Every defined behavior, transition and invariant must appear in the inventory's
-Rule references. Use exact IDs, not ID ranges.
+On the full execution path, every defined behavior, transition and invariant
+must appear in the inventory's Rule references. Use exact IDs, not ID ranges.
 
 ## Shared rules
 
@@ -94,22 +103,25 @@ Define a condition used by several actions once, as an invariant:
 | I-01 | Each newly selected division is active when the write occurs. |
 
 Use the existing I-ID family. State when the condition applies, including whether
-it applies to existing records or only new selections. Action and acceptance rows
-reference the ID; field definitions remain the owner of field rules.
+it applies to existing records or only new selections. Resource summaries,
+custom actions and acceptance rows reference the ID; field definitions remain
+the owner of field rules.
 
-## Standard CRUD actions
+## Standard resources
 
-Use one row per requested List, Detail, Create, Update or Delete action:
+Summarize requested standard actions once per resource:
 
-| ID | Action | Access and scope | Inputs | Rules or exceptions | Expected result | Acceptance IDs |
-|---|---|---|---|---|---|---|
+| Resource | Requested actions | Access and scope | UI entry and result | Carta pattern | Differences |
+|---|---|---|---|---|---|
 
-Reference field definitions for requiredness, defaults, writable fields and
-omitted/null values. Define shared rules once. Add UI entry, visible inputs and
-save/reload outcomes once per distinct interaction. Reference unchanged Carta
-behavior by its owner instead of copying it into every action.
+Name action-specific access in the resource row when it differs. Reference field
+definitions for requiredness, defaults, writable fields and omitted/null values.
+Reference the existing Carta owner for ordinary behavior. Give each required
+difference, such as an immutable field, relation constraint, custom filter or
+action restriction, one rule and a suitable acceptance case. Define shared
+rules once. Describe distinct UI interactions and save/reload outcomes where
+they affect the requested result.
 
-An immutable field, relation constraint or custom filter stays in this table.
 Choose YAML when an action implements a custom workflow with conditions,
 transitions or coupled effects. A feature can contain both formats.
 
@@ -126,7 +138,9 @@ Cover each independent condition, transition branch and invariant. Include bound
 and rejection cases that distinguish plausible wrong results, plus complete sequence
 cases where isolated action tests cannot prove the workflow.
 
-For standard CRUD, use one independently checkable outcome per row:
+For a required difference in standard CRUD, use one independently checkable
+outcome per row. Ordinary actions covered by the named Carta pattern need no
+separate acceptance row:
 
 | ID | Rule references | Given | Action and input | Expected result and stored/unchanged values | Required visible result |
 |---|---|---|---|---|---|
@@ -143,10 +157,12 @@ reserved for planning. The planner settles architecture; the executor receives
 routine coding freedom only. Framework edits and external/destructive writes
 require explicit authority; design approval does not authorize deployment.
 
-Ready means all inventory obligations have acceptance cases, each action and
-invariant has one unambiguous definition, sources and owners are identifiable,
-and no in-scope business decision remains unresolved. Review conflicts and missing
-behavior, not headings alone. Record the approved revision and decision sources.
+Ready means each requested resource and action is in scope, each distinct rule
+has an unambiguous definition and suitable check, sources and owners are
+identifiable, and no in-scope business decision remains unresolved. On the full
+execution path, every inventory obligation has acceptance cases. Review conflicts
+and missing behavior, not headings alone. Record the approved revision and
+decision sources.
 A changed rule reopens its affected approval, plans and evidence; preserve valid work.
 Only new or changed business decisions need approval. Technical completion of a
 record preserves the existing approval scope.
