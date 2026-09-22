@@ -17,7 +17,8 @@ journey. Follow the [non-browser boundary](references/verification-strategy.md#b
 
 Start with the [standard module base](references/standard-module.md). It owns
 the single design record and how to add custom behavior to requested CRUD.
-Read its process-selection rule before creating artifacts.
+Read its process-selection rule before setting the design format or creating
+plans and a worksheet.
 
 Use `$carta-module-design` for unresolved behavior and `$carta-module-plan` for
 implementation planning. Apply the selected process to its recorded scope;

@@ -22,9 +22,10 @@ document. Complete the standard module's design approval gate before a
 design-only handoff or return to the requesting workflow. Custom actions alone
 do not require the full procedure below.
 
-Use the remaining sections for the full-process scope selected by the standard
-module base. State its scope in the design record; preserve unaffected
-behavior and reference it instead of copying it into a second record.
+During discovery, keep findings in the draft design and reassess the process
+as the flow becomes clear. Use the remaining sections for full-process scope
+when selected by the standard module base. State its scope in the design;
+preserve unaffected behavior and reference it instead of copying it.
 The original request and later answers govern over examples.
 An inferred default cannot override explicit requirements or become user-confirmed
 merely because it appears in a design. Ask about material conflicts, not settled

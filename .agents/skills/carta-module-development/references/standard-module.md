@@ -6,10 +6,14 @@ use a different structure when the requested task does not fit CRUD.
 
 ## Select the process
 
-Select from the complete user flow before choosing a record. Use the standard
-path for CRUD and custom operations whose rules and results can be specified
-and checked locally. A relation, custom control or shared access predicate alone
-does not require the full process.
+Use one draft design to record findings as the user flow becomes clear. Before
+selecting the standard path, establish the in-scope actions, results and
+dependencies from the request and user answers; keep material gaps open in the
+draft. If the initial request establishes the full process, use that format
+at once; otherwise keep the draft open to either level of detail. Use the
+standard path for CRUD and custom operations whose rules and results can be
+specified and checked locally. A relation, custom control or shared access
+predicate alone does not require the full process.
 
 Use the full design/plan/worksheet process for the affected scope when correctness
 depends on a sequence of domain operations, coupled rules across operations, or
@@ -17,17 +21,21 @@ derived results that several consumers must keep consistent after writes. Also
 use it for required traceability. Approval states are one source of complexity;
 their absence does not establish that a flow is simple.
 
-Record the selected scope and its reason in the existing design. Keep independent
-CRUD on the standard path. Reassess the choice when new dependencies appear;
-preserve settled decisions and valid evidence. Both paths use the same framework
-contracts and quality requirements.
+Record the selected scope and its reason in the design. Keep independent CRUD
+on the standard path. Reassess the choice when new dependencies appear. If the
+full process becomes necessary, organize the affected draft content under the
+full contract; preserve settled decisions and valid evidence. Both paths use
+the same framework contracts and quality requirements.
 
 ## One work record
 
-Use `plans/<feature>/design.md`. Start from the
+Use `plans/<feature>/design.md` for the draft and approved design. When the
+standard path is selected, use the
 [simplified design template](../assets/simple-design-template.md). Keep its five
 sections and replace the prompts with task facts. Use “None” for an inapplicable
-section; include only useful detail within each section.
+section; include only useful detail within each section. For full-process scope,
+use the [module contract](../../carta-module-design/references/module-contract.md)
+in the same file.
 
 Describe custom behavior sufficiently to implement and test it. Reference the
 existing pattern for standard CRUD; ordinary fields need no separate acceptance

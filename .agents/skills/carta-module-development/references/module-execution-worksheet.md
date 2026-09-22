@@ -4,10 +4,13 @@ Use this record only for the full process or to resume an existing worksheet.
 Ordinary CRUD uses the [standard module path](standard-module.md). Its short
 record does not need this checker or conversion into these tables.
 
-The feature folder contains `design.md`, numbered plans, `worksheet.md` and
-`reports/`. The design owns behavior, approval and the obligation inventory.
-Plans own technical decisions. The worksheet owns status and test/result links.
-Reports contain observed results. Acceptance IDs join these artifacts.
+Create the worksheet during planning, after approval of the full design. During
+discovery, keep the draft workflow inventory in `design.md`; the worksheet is
+not the research catalog. The feature folder then contains `design.md`, numbered
+plans, `worksheet.md` and `reports/`. The design owns behavior, approval and the
+obligation inventory. Plans own technical decisions. The worksheet owns status
+and test/result links. Reports contain observed results. Acceptance IDs join
+these artifacts.
 
 ## Ownership and evidence
 
