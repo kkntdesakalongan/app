@@ -1,6 +1,8 @@
 # Agent rules
 
 - Use ASD-STE100 Simplified Technical English.
+- DO NOT WRITE ANY COMMENTS on your code implementation.
+- Make sure each code that you write justifies itself.
 - Keep changes within the user request and preserve unrelated work.
 - Use destructive, production, or external writes only when the user authorizes them.
 - Prefer existing code and the smallest change that meets the requirement.
@@ -14,3 +16,4 @@
 - Read [DESIGN.md](DESIGN.md) before you design, build, or review an `apps/web` page.
 - Use `$verify-carta-module` to verify a completed module.
 - Report failed checks, blocked work, and unverified results.
+

@@ -1,5 +1,62 @@
 # File-routing plans
 
+## Resource surface architecture overhaul — 2026-09-23
+
+Planned with `improve` at `40afee2` against
+`docs/resource_system_overhaul/ARCHITECTURE.md`. This is a focused migration
+audit of Loom, Carta web callers, module tooling, and active guidance. The user
+selected the complete breaking change and no backwards compatibility. The
+eight plans below are one delivery track. Each file is self-contained; read it
+in full before execution. Intermediate plans can have documented unmigrated
+caller errors. Plan 058 cannot be marked DONE until the executable old path is
+gone and all required, available gates pass.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [051](051-surface-contracts-and-schema-compiler.md) | Independent contracts, raw-schema compiler, labels, registries, inventory and cold baseline | P1 | L | HIGH | — | TODO |
+| [052](052-form-session-and-dialog-parity.md) | One Form session and flat DialogForm parity | P1 | L | HIGH | 051 | TODO |
+| [053](053-display-primitives-and-export.md) | Shared Table/TreeTable/Detail display and export reads | P1 | L | HIGH | 051 | TODO |
+| [054](054-resource-binding-and-view-bags.md) | One-object resources and complete primitive/View bags | P1 | L | HIGH | 052, 053 | TODO |
+| [055](055-composite-input-ownership.md) | Explicit filters, row forms, lookup loaders, and location editor | P1 | L | HIGH | 052, 053, 054 | TODO |
+| [056](056-migrate-web-surfaces-and-app-seams.md) | All web settings modules, routes, app seams, and presets migrated | P1 | L | HIGH | 054, 055 | TODO |
+| [057](057-scaffolding-checkers-and-guidance.md) | Generator, checker, active docs, skills, and fixture output migrated | P1 | L | MED | 056 | TODO |
+| [058](058-remove-legacy-paths-and-prove-completion.md) | Old code/exports removed; architecture gate and full verification | P1 | L | HIGH | 051–057 | TODO |
+
+Recommended order: **051 → 052 and 053 → 054 → 055 → 056 → 057 → 058**.
+052 and 053 can proceed separately after 051, but merge their shared contract
+edits before 054. Do not ship a partial migration as the final architecture.
+Keep framework/API and app transport contracts unchanged, as the specification
+requires. The user request explicitly includes Loom framework changes.
+
+### Vetted migration findings
+
+| Finding | Impact | Effort | Fix risk | Confidence | Evidence | Plan |
+|---|---|---|---|---|---|---|
+| Universal fields and wrapped schemas couple the three surfaces | Blocks independent type-safe authoring and raw input/output inference | L | HIGH | HIGH | `packages/loom/src/contracts/fields.ts:97-125`; `packages/loom/src/validation/zod.ts:66-90` | 051 |
+| Form and DialogForm have different binding paths | Override, model-presence, and session parity cannot follow the target contract | L | HIGH | HIGH | `packages/loom/src/components/core/Form.vue:62-70`; `packages/loom/src/components/composites/DialogForm.vue:51-76` | 052 |
+| Read-only surfaces and export depend on universal resolved fields | Shared accessor/format and relation captions cannot have one owner | L | HIGH | HIGH | `packages/loom/src/components/core/Detail.vue:21-45`; `packages/loom/src/services/export.ts:1-13` | 053 |
+| Resources and Views still expose dual/aggregate shapes | Extracted primitive bags are not the target guarded operation contract | L | HIGH | HIGH | `packages/loom/src/resources/defineResource.ts:25-44`; `packages/loom/src/components/views/FormView.vue:41-82` | 054 |
+| Composite inputs own implicit fields and cross-form writes | Nested rows/lookup cannot share the new form/display boundaries | L | HIGH | HIGH | `packages/loom/src/components/composites/form-inputs/TableInput.vue:23-35`; `LookupInput.vue:27-47` in the same directory | 055 |
+| Web declarations and defaults remain on the old model | Current settings pages cannot compile after old API deletion | L | HIGH | HIGH | `apps/web/src/routes/(authenticated)/settings/users/users.resource.ts:1-19`; `apps/web/src/configs/defaults.ts:23-55` | 056 |
+| Generator and active guidance recreate old code | A fresh module would regress the migration | L | MED | HIGH | `scripts/scaffold-bounded-module.mjs:610-628`; `scripts/module-ui-check.mjs:516-544` | 057 |
+| Public exports and normal validation still allow old paths | A clean break cannot be proved | L | HIGH | HIGH | `packages/loom/src/index.ts:1-8`; `packages/loom/vitest.browser.config.ts:12` | 058 |
+
+### Scope and decisions
+
+- This audit covered `packages/loom`, the relevant `apps/web` resources and
+  framework adapters, module generators/checkers, active docs/skills, and their
+  verification configuration. It did not audit Sprindle, SDK, utilities, API
+  implementation, dependency security, unrelated product features, or broad
+  performance. Those areas are outside this migration except final workspace
+  regression gates.
+- The checked-out revision has no working-tree changes before these plans.
+  Planning did not run type-check, unit, browser, build, or E2E commands. Plan
+  051 records the cold baseline; Plan 058 records the candidate and final gates.
+- Considered and rejected: compatibility overloads and aliases, because the
+  requested architecture explicitly removes them; backend response changes,
+  because the target preserves transport envelopes; one plan for the entire
+  overhaul, because it would hide ownership, test, and dependency boundaries.
+
 ## Chokidar watcher migration — 2026-09-17
 
 Planned with `improve` at `bf9a7ce`. The user approved the Chokidar
