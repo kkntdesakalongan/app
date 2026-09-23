@@ -1,8 +1,9 @@
 # Agent rules
 
 - Use ASD-STE100 Simplified Technical English.
-- DO NOT WRITE ANY COMMENTS on your code implementation.
+- DO NOT WRITE ANY COMMENTS in your code implementation.
 - Make sure each code that you write justifies itself.
+- Make sure each test that you write justifies itself. Tautological tests ARE BANNED.
 - Keep changes within the user request and preserve unrelated work.
 - Use destructive, production, or external writes only when the user authorizes them.
 - Prefer existing code and the smallest change that meets the requirement.
