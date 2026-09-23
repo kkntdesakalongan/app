@@ -18,8 +18,7 @@ Do not create a second renderer list in application code.
 | `text` | One-line text, email, telephone, URL, or native input type | string; `type`, `required` |
 | `textarea` | Multi-line plain text | string; `required`, native textarea props |
 | `password` | Secret text entry | string; `required` |
-| `number` | Counts, measures, percentages, or other numbers | number; `min`, `max`, `step`, `required` |
-| `currency` | Money entry with a visible currency format | number; `currency`, `locale`, numeric props |
+| `number` | Counts, measures, percentages, or money | number; `min`, `max`, `step`, `required`; `currency` and `locale` for money |
 | `tag` | A short string list entered as tags | string array; `placeholder` |
 | `color` | A color value | color string; native color props |
 | `rich-text` | Formatted text that the API stores in the approved rich-text shape | string; current catalog props |
