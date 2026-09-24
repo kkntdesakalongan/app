@@ -5,8 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
-import { checkUiContract, checkResourceRowOps, fieldNeedsDisplay } from './module-ui-check.mjs'
-import { requiresExplicitDisplay } from '../packages/loom/src/fields/displayRequirement.ts'
+import { checkUiContract, checkResourceDisplay, checkResourceRowOps } from './module-ui-check.mjs'
 
 const contract = { surfaces: [{ file: 'page.vue', kind: 'detail', components: [{ name: 'DetailView', from: '@southneuhof/loom' }] }] }
 const page = '<script setup lang="ts">import { DetailView as RecordView, Button } from "@southneuhof/loom"</script><template><RecordView><template #controls><Button>Close</Button></template></RecordView></template>'
@@ -111,81 +110,94 @@ test('global declarations require source registration, not a type or stub', () =
 })
 
 
-test('resource display risk flags non-string fields without an explicit display', t => {
+test('resource display checks follow aliases, spreads, raw schemas, and independent surface maps', t => {
   const root = mkdtempSync(join(tmpdir(), 'carta-ui-display-'))
   t.after(() => rmSync(root, { recursive: true, force: true }))
+  mkdirSync(join(root, 'apps/web/src/configs'), { recursive: true })
   mkdirSync(join(root, 'items'))
   writeFileSync(join(root, 'items', 'items.schema.ts'), [
     "import { z } from 'zod/v4'",
-    'export const itemFormSchema = z.object({',
+    'export const itemRecordSchema = z.object({',
+    '  id: z.string(),',
     '  name: z.string(),',
-    '  price: z.number(),',
-    '  active: z.boolean(),',
+    '  createdAt: z.date(),',
+    '  metadata: z.object({ caption: z.string() }),',
+    '  roles: z.array(z.object({ id: z.string() })),',
+    '  payload: z.object({ parts: z.array(z.string()) }),',
+    '  relOwner: z.object({ name: z.string() }),',
     '})',
-    'const itemRecordSchema = z.object({',
-    '  name: z.string(),',
-    '  price: z.number(),',
-    '  active: z.boolean(),',
-    '  ownerId: z.string(),',
-    '})',
-    'export const itemSchema = defineSchema(null, { create: itemFormSchema, record: itemRecordSchema })',
+    'export const itemCreateSchema = z.object({ name: z.string() })',
     '',
+  ].join('\n'))
+  writeFileSync(join(root, 'apps/web/src/configs/display.ts'), [
+    'export const displayPresets = {',
+    "  createdAt: { format: 'date' },",
+    '  metadata: { read: record => record.metadata.caption },',
+    "  roles: { renderer: 'table' },",
+    '  ownerName: { read: record => record.relOwner.name },',
+    '  brokenOwner: { read: record => record.missingRel.name },',
+    '}',
   ].join('\n'))
   writeFileSync(join(root, 'items', 'items.resource.ts'), [
-    "import { defineFields, defineResource } from '@southneuhof/loom'",
-    "import { itemSchema } from './items.schema'",
-    'const fields = defineFields(itemSchema, {',
-    "  name: { label: 'Name', form: { renderer: 'text' } },",
-    "  price: { label: 'Price', form: { renderer: 'currency' } },",
-    "  active: { label: 'Active', form: { renderer: 'switch' } },",
-    "  ownerId: { label: 'Owner', form: { renderer: 'lookup', source: 'owners' } },",
-    '})',
-    'export const items = defineResource(itemSchema, {',
+    "import { defineDetail as makeDetail, defineForm as makeForm, defineResource as bindResource, defineTable as makeTable } from '@southneuhof/loom'",
+    "import { displayPresets as sharedDisplay } from '@/configs/display'",
+    "import { itemCreateSchema, itemRecordSchema } from './items.schema'",
+    'const tableColumns = {',
+    '  name: {},',
+    '  createdAt: {},',
+    '  metadata: { ...sharedDisplay.metadata },',
+    '  roles: sharedDisplay.roles,',
+    '  payload: {},',
+    '  ownerName: sharedDisplay.ownerName,',
+    '  brokenOwner: sharedDisplay.brokenOwner,',
+    '}',
+    'const itemTable = makeTable({ schema: itemRecordSchema, columns: { ...tableColumns, createdAt: { ...sharedDisplay.createdAt } } })',
+    'const itemDetail = makeDetail({ schema: itemRecordSchema, fields: { ...tableColumns, createdAt: sharedDisplay.createdAt } })',
+    "const itemForm = makeForm({ schema: itemCreateSchema, fields: { name: { renderer: 'text' }, missing: { renderer: 'text' } } })",
+    'export const items = bindResource({',
     "  key: 'items',",
-    '  actions: {',
-    '    list: { run: () => {}, fields: [fields.name, fields.price, fields.ownerId], permission: \'view\', route: { name: \'items\' } },',
-    '    detail: { run: () => {}, fields: [fields.name, fields.price, fields.active, fields.ownerId], permission: \'view\', route: { name: \'item\' } },',
-    '  },',
+    '  identity: record => record.id,',
+    '  list: { permission: null, table: { ...itemTable, load: async () => [] } },',
+    '  detail: { permission: null, detail: ({ id }) => ({ ...itemDetail, load: async () => ({ id }) }) },',
+    '  create: { permission: null, form: itemForm },',
     '})',
     '',
   ].join('\n'))
-  writeFileSync(join(root, 'page.vue'), page)
-  const run = (...paths) => spawnSync(process.execPath,
-    [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), '--sources', ...paths], { encoding: 'utf8' })
-  const result = run(root)
-  assert.equal(result.status, 2)
-  assert.match(result.stdout, /items\.resource\.ts:\d+: price \(number, list\) needs explicit display/)
-  assert.match(result.stdout, /items\.resource\.ts:\d+: price \(number, detail\) needs explicit display/)
-  assert.match(result.stdout, /items\.resource\.ts:\d+: active \(boolean, detail\) needs explicit display/)
-  assert.match(result.stdout, /items\.resource\.ts:\d+: ownerId \(string, list\) needs explicit display/)
-  assert.match(result.stdout, /items\.resource\.ts:\d+: ownerId \(string, detail\) needs explicit display/)
-  assert.ok(!result.stdout.split('\n').some(line => line.includes('name (')), 'plain string stays silent')
-})
+  const result = checkResourceDisplay(['items/items.resource.ts'], { root })
+  assert.match(result.review.join('\n'), /items\.resource\.ts:\d+: payload \(object, table\) needs explicit display/)
+  assert.match(result.review.join('\n'), /items\.resource\.ts:\d+: payload \(object, detail\) needs explicit display/)
+  assert.match(result.errors.join('\n'), /form surface field 'missing' is missing from its schema/)
+  assert.match(result.errors.join('\n'), /table read accessor for 'brokenOwner' uses 'missingRel', which is missing from its schema/)
+  assert.ok(!result.errors.some(line => line.includes("ownerName' is missing")), 'declared relation accessor is a valid display key')
+  assert.ok(!result.review.some(line => line.includes('name (')), 'plain string stays silent')
+  assert.ok(!result.review.some(line => line.includes('createdAt (')), 'format fragment satisfies date')
+  assert.ok(!result.review.some(line => line.includes('metadata (object, detail)')), 'read accessor satisfies detail')
+  assert.ok(!result.review.some(line => line.includes('roles (array, detail)')), 'renderer reference satisfies detail')
 
-test('static display mirror agrees with requiresExplicitDisplay for every schema kind', () => {
-  const kinds = ['unknown', 'string', 'number', 'boolean', 'date', 'object', 'array',
-    'string[]', 'number[]', 'boolean[]', 'object[]', 'selection[]']
-  const signalSets = [
-    {}, { format: true }, { renderer: true }, { read: true },
-    { format: true, renderer: true, read: true },
-    { options: true }, { options: true, format: true }, { options: true, renderer: true }, { options: true, read: true },
-    { source: true }, { source: true, format: true }, { source: true, renderer: true }, { source: true, read: true },
-  ]
-  for (const kind of kinds) {
-    for (const set of signalSets) {
-      const field = {}
-      if (set.format) field.format = 'fmt'
-      if (set.renderer) field.renderer = 'rend'
-      if (set.read) field.read = () => 'value'
-      if (set.source) field.source = 'lookup'
-      if (set.options) field.props = { options: ['a'] }
-      const expected = requiresExplicitDisplay(kind, field)
-      const actual = fieldNeedsDisplay({ kind, options: !!set.options }, {
-        format: !!set.format, renderer: !!set.renderer, read: !!set.read, source: !!set.source,
-      })
-      assert.equal(actual, expected, `${kind} ${JSON.stringify(set)}`)
-    }
-  }
+  const cliRoot = mkdtempSync(join(tmpdir(), 'carta-ui-display-cli-'))
+  t.after(() => rmSync(cliRoot, { recursive: true, force: true }))
+  mkdirSync(join(cliRoot, 'items'))
+  writeFileSync(join(cliRoot, 'items', 'items.schema.ts'), [
+    "import { z } from 'zod/v4'",
+    'export const itemRecordSchema = z.object({ payload: z.object({ parts: z.array(z.string()) }) })',
+  ].join('\n'))
+  writeFileSync(join(cliRoot, 'items', 'items.resource.ts'), [
+    "import { defineResource, defineTable } from '@southneuhof/loom'",
+    "import { itemRecordSchema } from './items.schema'",
+    'const table = defineTable({ schema: itemRecordSchema, columns: { payload: {} } })',
+    "export const items = defineResource({ key: 'items', identity: record => record.id, list: { permission: null, table: { ...table, load: async () => ({ data: [] }) } } })",
+  ].join('\n'))
+  writeFileSync(join(cliRoot, 'index.route.vue'), [
+    '<script setup lang="ts">',
+    "import { ListView } from '@southneuhof/loom'",
+    "import { items } from './items/items.resource'",
+    '</script>',
+    '<template><ListView v-bind="items.list" /></template>',
+  ].join('\n'))
+  const cli = spawnSync(process.execPath,
+    [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), '--sources', cliRoot], { encoding: 'utf8' })
+  assert.equal(cli.status, 2)
+  assert.match(cli.stdout, /REVIEW: .*items\/items\.resource\.ts:\d+: payload \(object, table\) needs explicit display/)
 })
 
 test('surface kind prevents declaring only the hand-written replacement', () => {
@@ -269,23 +281,23 @@ test('resource row-op sync warns when a declared route or row control misses the
   const write = (name, content) => writeFileSync(join(root, name), content)
   // Detail declared with a route, but the row enum omits 'detail'.
   write('detail-missing.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['update'])) })\n")
-  write('detail-missing.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './detail-missing.entity'\nexport const r = defineResource({}, { key: 'detail-missing', actions: { list: { run: async () => ({}), route: { name: 'l' } }, detail: { run: async () => ({}), permission: 'view', route: { name: 'd' } } } })\n")
+  write('detail-missing.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './detail-missing.entity'\nexport const r = defineResource({ key: 'detail-missing', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, detail: { permission: 'view', route: { name: 'd' }, detail: () => ({}) } })\n")
   // Update declared with a route, but the row enum omits 'update'.
   write('update-missing.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
-  write('update-missing.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './update-missing.entity'\nexport const r = defineResource({}, { key: 'update-missing', actions: { list: { run: async () => ({}), route: { name: 'l' } }, update: { run: async () => ({}), permission: 'edit', route: { name: 'e' } } } })\n")
+  write('update-missing.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './update-missing.entity'\nexport const r = defineResource({ key: 'update-missing', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, update: { permission: 'edit', route: { name: 'e' }, form: () => ({}) } })\n")
   // Custom pay consumed as a row control, but the row enum omits 'pay'.
   write('pay-row.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
-  write('pay-row.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './pay-row.entity'\nexport const r = defineResource({}, { key: 'pay-row', actions: { list: { run: async () => ({}), route: { name: 'l' } }, pay: { run: async () => ({}), permission: 'pay' } } })\n")
+  write('pay-row.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './pay-row.entity'\nexport const r = defineResource({ key: 'pay-row', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, actions: { pay: { run: async () => ({}), permission: 'pay' } } })\n")
   write('pay-row.vue', "<script>const ok = r.actions.pay.can(id, input, { record })</script><template><div>x</div></template>\n")
   // List-only: no detail declaration, so the enum gap passes.
   write('list-only.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['update'])) })\n")
-  write('list-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './list-only.entity'\nexport const r = defineResource({}, { key: 'list-only', actions: { list: { run: async () => ({}), route: { name: 'l' } } } })\n")
+  write('list-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './list-only.entity'\nexport const r = defineResource({ key: 'list-only', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} } })\n")
   // Collection-only: custom action never called with a row, so it passes.
   write('export-collection.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
-  write('export-collection.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './export-collection.entity'\nexport const r = defineResource({}, { key: 'export-collection', actions: { list: { run: async () => ({}), route: { name: 'l' } }, exportAll: { run: async () => ({}), permission: 'export' } } })\n")
+  write('export-collection.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './export-collection.entity'\nexport const r = defineResource({ key: 'export-collection', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, actions: { exportAll: { run: async () => ({}), permission: 'export' } } })\n")
   write('export-collection.vue', "<script>const ok = r.actions.exportAll.can({ format: 'csv' })</script><template><div>x</div></template>\n")
   // Permission-only rows carry no enum, so a declared detail route passes.
-  write('permission-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nexport const r = defineResource({}, { key: 'permission-only', actions: { list: { run: async () => ({}), route: { name: 'l' } }, detail: { run: async () => ({}), permission: 'view', route: { name: 'd' } } } })\n")
+  write('permission-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nexport const r = defineResource({ key: 'permission-only', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, detail: { permission: 'view', route: { name: 'd' }, detail: () => ({}) } })\n")
   const files = ['detail-missing.resource.ts', 'update-missing.resource.ts', 'pay-row.resource.ts', 'list-only.resource.ts', 'export-collection.resource.ts', 'permission-only.resource.ts']
   const vueContents = [
     "<script>const ok = r.actions.pay.can(id, input, { record })</script>",

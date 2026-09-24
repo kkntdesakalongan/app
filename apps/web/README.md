@@ -6,8 +6,13 @@ Check readiness with `pnpm module:preflight -- --needs web,browser`.
 Change `WEB_PORT` and `VITE_API_URL` only in `apps/web/.env`; the sample values
 in `.env.example` are templates. The API port and URLs live in `apps/api/.env`.
 
-The accepted direction for the next web architecture is documented in
+The current web and resource architecture is documented in
 [`docs/architecture/web-application-architecture.md`](../../docs/architecture/web-application-architecture.md).
+The approved Loom resource contract is in
+[`docs/resource_system_overhaul/ARCHITECTURE.md`](../../docs/resource_system_overhaul/ARCHITECTURE.md).
+Resources use raw operation schemas, separate form/table/detail definitions,
+and one-object `defineResource` declarations. Read those contracts before
+changing a module or scaffold.
 
 ## Tech Stack
 
@@ -62,6 +67,7 @@ Or run the web app directly from `apps/web` with the package scripts defined in 
 - `preview` - preview production build with the port from `apps/web/.env`
 - `test` - run unit tests with Vitest (`jsdom`)
 - `test:unit` - same as `test`
+- `test:browser` - run the registered surface parity tests in a browser
 - `type-check` - run type checking via `vue-tsc`
 - `lint` - run Oxlint, the ESLint fallback, and Oxfmt
 - `format` - format supported files with Oxfmt
@@ -85,8 +91,9 @@ envPrefix: ['VITE_', 'GOOGLE_MAP_API_KEY']
 - Permission bypass comes from `VITE_APP_BYPASS_ALL_PERMISSIONS`
 - Company code is set in `src/company.ts`
 
-## Current Baseline
+## Module checks
 
-- unit tests pass
-- type-check passes
-- production build currently fails due to a missing asset: `src/assets/corporate/assets/logo-hka.png`
+Run the affected API or web tests, type checks, lint, and the module source
+checker. Run browser parity when a change affects browser-rendered component
+contracts. The repository architecture document lists the current verification
+commands.

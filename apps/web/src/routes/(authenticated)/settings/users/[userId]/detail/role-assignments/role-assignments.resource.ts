@@ -1,23 +1,30 @@
-import { defineFields, defineResource } from '@southneuhof/loom'
+import { defineResource, defineTable } from '@southneuhof/loom'
+import { appDisplayPresets } from '@/configs/display-presets'
+import { appLabels } from '@/configs/labels'
 import { roleAssignmentsActions } from './role-assignments.actions'
-import { roleAssignmentsSchema } from './role-assignments.schema'
+import { roleAssignmentRecordSchema, roleAssignmentsQuerySchema } from './role-assignments.schema'
 
-const fields = defineFields(roleAssignmentsSchema, {
-  roleCode: { label: 'Code' },
-  name: { label: 'Name' },
-  description: { label: 'Description' },
+const assignmentLabels = { ...appLabels, roleCode: 'Code', name: 'Name', description: 'Description' }
+
+const roleAssignmentsTable = defineTable({
+  schema: roleAssignmentRecordSchema,
+  labels: assignmentLabels,
+  columns: {
+    roleCode: {},
+    name: {},
+    description: { class: 'line-clamp-3 overflow-ellipsis' },
+    active: appDisplayPresets.active,
+  },
 })
 
-export const roleAssignments = defineResource(roleAssignmentsSchema, {
+export const roleAssignments = defineResource({
   key: 'role-assignments',
+  identity: (record: { id: string }) => record.id,
+  list: {
+    permission: 'view-role-assignments',
+    table: { ...roleAssignmentsTable, querySchema: roleAssignmentsQuerySchema, pagination: false, load: roleAssignmentsActions.list },
+  },
   actions: {
-    list: {
-      run: roleAssignmentsActions.list,
-      fields: [fields.roleCode, fields.name, fields.description, 'active'],
-      permission: 'view-role-assignments',
-      route: { name: 'settings-users-detail-role-assignments' },
-      pagination: false,
-    },
     set: {
       run: roleAssignmentsActions.set,
       permission: ['create-role-assignments', 'delete-role-assignments'],

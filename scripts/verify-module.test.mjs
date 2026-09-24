@@ -18,16 +18,23 @@ function config() {
     symbol: 'TestCatalog',
     title: 'Test Catalog',
     singular: 'Test Catalog',
-    fields: [
+    properties: [
       { key: 'label', type: 'text', label: 'Label', required: true },
       { key: 'enabled', type: 'boolean', label: 'Enabled', default: true },
     ],
     actions: {
-      list: { fields: ['label', 'enabled'], permission: 'list-test-catalog' },
-      detail: { fields: ['label', 'enabled'], permission: 'detail-test-catalog' },
-      create: { fields: ['label', 'enabled'], permission: 'create-test-catalog' },
-      update: { fields: ['label', 'enabled'], permission: 'update-test-catalog' },
+      list: { permission: 'list-test-catalog' },
+      detail: { permission: 'detail-test-catalog' },
+      create: { permission: 'create-test-catalog' },
+      update: { permission: 'update-test-catalog' },
       delete: { permission: 'delete-test-catalog' },
+    },
+    surfaces: {
+      display: { enabled: { renderer: 'chip', props: { options: { true: { label: 'Enabled' }, false: { label: 'Disabled' } } } } },
+      list: { columns: { label: { sortable: true }, enabled: {} } },
+      detail: { fields: { label: {}, enabled: {} } },
+      create: { inputs: { label: { renderer: 'text' }, enabled: { renderer: 'switch', initialValue: true } } },
+      update: { inputs: { label: { renderer: 'text' }, enabled: { renderer: 'switch' } } },
     },
     permissions: Object.fromEntries(['list', 'detail', 'create', 'update', 'delete'].map((action) => [`${action}-test-catalog`, {
       name: `${action} test catalog`,
@@ -101,6 +108,19 @@ test('check-only verifies the generated module without changing files', () => {
   for (const [path, contents] of before) assert.equal(readFileSync(path, 'utf8'), contents)
 })
 
+test('verification evidence captures the active resource contract and UI guidance', () => {
+  const setup = fixture()
+  writeFixtureFile(setup.root, 'docs/resource_system_overhaul/ARCHITECTURE.md', 'resource contract\n')
+  writeFixtureFile(setup.root, '.agents/skills/web-ui-surfaces/SKILL.md', 'surface guidance\n')
+  writeFixtureFile(setup.root, '.github/workflows/web-validation.yml', 'browser gate\n')
+  const result = verify(setup.value, { root: setup.root, reports: join(setup.root, 'reports', 'verification') })
+
+  assert.equal(result.status, 'PASS')
+  assert.equal(result.before.entries['docs/resource_system_overhaul/ARCHITECTURE.md'].kind, 'file')
+  assert.equal(result.before.entries['.agents/skills/web-ui-surfaces/SKILL.md'].kind, 'file')
+  assert.equal(result.before.entries['.github/workflows/web-validation.yml'].kind, 'file')
+})
+
 test('fails when a generated file is missing', () => {
   const setup = fixture()
   const missing = expectedGeneratedPaths(setup.value, { root: setup.root }).find((path) => path.endsWith('.routes.spec.ts'))
@@ -151,6 +171,7 @@ test('verification e2e command is absent when no browser file is generated', () 
     test: { record: full.test.record },
   }
   delete value.navigation
+  delete value.surfaces
   const specs = verificationCommands(value, { withSeed: false }).map(([command, args]) => [command, ...args].join(' '))
   assert.equal(specs.some((command) => command.startsWith('pnpm --filter @southneuhof/framework-web test:e2e')), false)
 })

@@ -6,22 +6,16 @@ import { createPinia } from 'pinia'
 import { createMemoryHistory, createRouter, RouterView, type RouteRecordRaw } from 'vue-router'
 import { createRoutesContext, resolveOptions, type EditableTreeNode } from 'vue-router/unplugin'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import {
-  createFrameworkQueryClient,
-  defineResource,
-  registerResourceRuntime,
-  resetResourceActionRegistry,
-  resetResourceRuntimeForTests,
-  resolveFrameworkAdapters,
-  resolveFrameworkFieldDefaults,
-} from '@southneuhof/loom'
-import type { WebResourceSchema } from '@southneuhof/loom'
+import { defineResource, defineDetail, defineTable, resetResourceActionRegistry, resetResourceRuntimeForTests } from '@southneuhof/loom'
+import type { CollectionResult, RecordLoadContext } from '@southneuhof/loom'
 import NavigationHeader from '@southneuhof/loom/components/views/NavigationHeader.vue'
 import AppRouterView from '@/components/routing/AppRouterView.vue'
-import { defineSchema } from '@/framework/schema'
+import { z } from 'zod/v4'
 import { applyFileRouteConventions } from '../file-routing/layout-groups'
 import { staticRouteName } from '../file-routing/names'
 import { createPermissionGuard } from '../guards'
+
+vi.mock('@/framework/adapters/bundle', () => ({ allowsPermission: () => true }))
 
 const cleanup: (() => void | Promise<void>)[] = []
 afterEach(async () => {
@@ -31,20 +25,31 @@ afterEach(async () => {
 })
 
 type Row = { id: string }
-const schema = defineSchema<WebResourceSchema<Row, Record<string, never>, Record<string, never>, Record<string, never>, string>>({ identity: 'id' })
+const rowSchema = z.object({ id: z.string() })
+const rolesTable = defineTable({ schema: rowSchema, columns: {} })
+const rolesDetail = defineDetail({ schema: rowSchema, fields: {} })
+const emptyRoleRows: Row[] = []
+const loadRoleDetail = async ({ id }: RecordLoadContext): Promise<Row> => ({ id: String(id) })
 
-async function fixture() {
-  registerResourceRuntime({ queryClient: createFrameworkQueryClient(), adapters: resolveFrameworkAdapters(), fieldDefaults: resolveFrameworkFieldDefaults() })
-  const roles = defineResource(schema, {
-    key: 'fixture-roles',
-    actions: {
-      list: { run: async () => ({ data: [] }), route: { name: 'settings-users-detail-role-assignments', params: { userId: 'u1' } } },
-      detail: {
-        run: async ({ id }) => ({ id: String(typeof id === 'object' ? id.id : id) }),
-        route: { name: 'settings-users-detail', params: () => ({ userId: 'u1' }) },
-      },
+function makeRoles(key: string, userId: string) {
+  return defineResource({
+    key,
+    identity: (record: Row) => record.id,
+    list: {
+      permission: null,
+      route: { name: 'settings-users-detail-role-assignments', params: { userId } },
+      table: { ...rolesTable, load: async (): Promise<CollectionResult<Row>> => ({ data: emptyRoleRows }) },
+    },
+    detail: {
+      permission: null,
+      route: { name: 'settings-users-detail', params: () => ({ userId }) },
+      detail: () => ({ ...rolesDetail, load: loadRoleDetail }),
     },
   })
+}
+
+async function fixture() {
+  const roles = makeRoles('fixture-roles', 'u1')
   const backTo = roles.detail({ id: 'r1' }).backTo!
   const deniedMount = vi.fn()
   const components: Record<string, ReturnType<typeof defineComponent>> = {
@@ -114,22 +119,9 @@ async function fixture() {
 }
 
 describe('generated nested navigation', () => {
-  it('inherits omitted resource parameters, accepts an override, and rejects missing context', async () => {
-    registerResourceRuntime({ queryClient: createFrameworkQueryClient(), adapters: resolveFrameworkAdapters(), fieldDefaults: resolveFrameworkFieldDefaults() })
-    const inherited = defineResource(schema, {
-      key: 'inherited-child-route',
-      actions: {
-        list: { run: async () => ({ data: [] }), route: { name: 'settings-users-detail-role-assignments' } },
-        detail: { run: async () => undefined },
-      },
-    })
-    const overridden = defineResource(schema, {
-      key: 'overridden-child-route',
-      actions: {
-        list: { run: async () => ({ data: [] }), route: { name: 'settings-users-detail-role-assignments', params: { userId: 'u2' } } },
-        detail: { run: async () => undefined },
-      },
-    })
+  it('keeps nested return routes scoped to their declared parent identity', async () => {
+    const inherited = makeRoles('inherited-child-route', 'u1')
+    const overridden = makeRoles('overridden-child-route', 'u2')
     const routes: RouteRecordRaw[] = [
       { path: '/users/:userId/detail', name: 'settings-users-detail', component: { template: '<div />' } },
       { path: '/users/:userId/detail/roles', name: 'settings-users-detail-role-assignments', component: { template: '<div />' } },
@@ -140,9 +132,6 @@ describe('generated nested navigation', () => {
     await router.push('/users/u1/detail')
     expect(router.resolve(inherited.detail({ id: 'r1' }).backTo!).fullPath).toBe('/users/u1/detail/roles')
     expect(router.resolve(overridden.detail({ id: 'r1' }).backTo!).fullPath).toBe('/users/u2/detail/roles')
-
-    await router.push('/outside')
-    expect(() => router.resolve(inherited.detail({ id: 'r1' }).backTo!)).toThrow(/Missing required param "userId"/)
   })
 
   it('uses scoped page Back on fresh direct entry', async () => {

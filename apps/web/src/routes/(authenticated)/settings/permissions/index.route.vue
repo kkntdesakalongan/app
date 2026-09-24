@@ -2,4 +2,4 @@
 import { ListView } from '@southneuhof/loom'
 import { permissionResource } from './permissions.resource'
 </script>
-<template><ListView v-bind="permissionResource.list()" title="Permissions" /></template>
+<template><ListView v-bind="permissionResource.list" title="Permissions" /></template>

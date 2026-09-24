@@ -40,8 +40,8 @@ For uploads, read the shared
 [asset contract](../../carta-module-development/references/frontend-field-contract.md#asset-fields).
 The server validates ownership and use. Test the real form schema and submit
 boundary: capture the request object, pass it to the API write schema, and check
-the stored identity. Keep form parsing, field writers and serialization real in
-this check; a direct call to a mocked action cannot prove this boundary.
+the stored identity. Keep schema parsing and serialization real in this check;
+a direct call to a mocked action cannot prove this boundary.
 
 Keep a multi-row operation atomic when partial success would violate the task.
 Use a distinct custom action schema when input, permission, or state transition

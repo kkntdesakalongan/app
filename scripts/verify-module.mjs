@@ -107,6 +107,31 @@ function staticVerify(config, { root = repoRoot, manifest = config } = {}) {
     requireText(contents, text, checks, `${name} content`)
   }
 
+  if (group && [...selected].some(action => ['list', 'detail', 'create', 'update'].includes(action))) {
+    const plural = metadata.plural
+    const resourcePath = resolve(outputRoot, `apps/web/src/routes/(authenticated)/${group}/${config.slug}/${config.slug}.resource.ts`)
+    const resource = read(resourcePath, checks, 'web resource declaration')
+    requireText(resource, 'defineResource({', checks, 'one-object resource declaration')
+    if (resource !== null) {
+      checks.push({ name: 'no universal field catalog', status: /defineFields|defineSchema|fromZod/.test(resource) ? 'FAIL' : 'PASS', detail: 'resource uses direct surface constructors' })
+      if (selected.has('list')) requireText(resource, `table: { ...${plural}Table, load: api.list }`, checks, 'static list table bag')
+      if (selected.has('create')) requireText(resource, 'form: createForm', checks, 'static create form bag')
+      if (selected.has('detail')) requireText(resource, 'detail: ({ id }) => ({', checks, 'identity-bound detail bag')
+      if (selected.has('update')) {
+        requireText(resource, 'form: ({ id }) => ({', checks, 'identity-bound update bag')
+        requireText(resource, 'const record = await api.detail({ ...context, id })', checks, 'update-owned draft load')
+      }
+      if (selected.has('update')) requireText(resource, 'submit: output => api.update(id, output)', checks, 'identity-bound update submit')
+    }
+    const schemaPath = resolve(outputRoot, `apps/web/src/routes/(authenticated)/${group}/${config.slug}/${config.slug}.schema.ts`)
+    const schema = read(schemaPath, checks, 'raw operation schemas')
+    if (schema !== null) {
+      requireText(schema, `${plural}RecordSchema =`, checks, 'raw record schema')
+      if (selected.has('create')) requireText(schema, `${plural}CreateSchema =`, checks, 'raw create schema')
+      if (selected.has('update')) requireText(schema, `${plural}UpdateSchema =`, checks, 'raw update schema')
+    }
+  }
+
   if (config.seed) {
     const seedPath = resolve(outputRoot, `apps/api/src/routes/(authenticated)/${config.slug}/${config.slug}.seed.ts`)
     const seed = read(seedPath, checks, 'module seed')
@@ -155,7 +180,8 @@ export function verificationCommands(config, { withSeed = false } = {}) {
     if (selected.has('detail')) webFiles.push(`src/routes/(authenticated)/${group}/${slug}/[${metadata.routeParam}]/detail.route.vue`)
     if (selected.has('update')) webFiles.push(`src/routes/(authenticated)/${group}/${slug}/[${metadata.routeParam}]/edit.route.vue`)
   }
-  const unsupportedRenderer = (normalized.fields ?? []).some((field) => field.rendererSupported === false)
+  const unsupportedRenderer = Object.values(normalized.surfaces ?? {}).some(surface =>
+    Object.values(surface.inputs ?? {}).some(input => input.rendererSupported === false))
   const hasBrowserFile = hasWebAction && normalized.navigation && !unsupportedRenderer && (selected.has('create') || normalized.seed)
   const e2eFiles = hasBrowserFile ? [`apps/web/e2e/${slug}.spec.ts`] : []
   const specs = []
@@ -175,6 +201,13 @@ export function verificationCommands(config, { withSeed = false } = {}) {
 function verificationInputs() {
   return [
     'scripts', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig.base.json',
+    'AGENTS.md', 'DESIGN.md', 'docs/resource_system_overhaul/ARCHITECTURE.md',
+    'docs/architecture/web-application-architecture.md', 'docs/ui/forms.md', 'docs/ui/collections.md',
+    'packages/loom/README.md', 'apps/web/README.md', '.github/workflows/web-validation.yml',
+    '.agents/skills/build-resource-form', '.agents/skills/web-ui-surfaces',
+    '.agents/skills/migrate-web-resource', '.agents/skills/implement-schema-first-zod',
+    '.agents/skills/carta-module-design', '.agents/skills/carta-module-plan',
+    '.agents/skills/carta-module-development', '.agents/skills/verify-carta-module',
     'apps/api/src', 'apps/api/drizzle', 'apps/api/scripts', 'apps/api/package.json',
     'apps/api/vitest.config.ts', 'apps/api/tsconfig.json', 'apps/api/drizzle.config.ts',
     'apps/api/.env', 'apps/api/.env.test', 'apps/web/src', 'apps/web/package.json',

@@ -92,22 +92,11 @@ function validateNavigation(value, { hasList }) {
   return { group, position: 'after', anchor, title, icon, separator: null }
 }
 
-function validateActionEntry(value, name, { fields, allowFields, usedPermissions }) {
+function validateActionEntry(value, name, { usedPermissions }) {
   if (!isObject(value)) throw new Error(`${name} must be an object.`)
-  knownKeys(value, [...(allowFields ? ['fields', 'permission'] : ['permission']), 'redirect'], name)
+  knownKeys(value, ['permission', 'redirect'], name)
   if (value.redirect !== undefined && name !== 'actions.create' && name !== 'actions.update') {
     throw new Error(`${name}.redirect is allowed only on create and update actions.`)
-  }
-  let actionFields = []
-  if (allowFields) {
-    if (!Array.isArray(value.fields)) throw new Error(`${name}.fields must be an array.`)
-    actionFields = value.fields.map((key, index) => identifier(key, `${name}.fields[${index}]`))
-    if (new Set(actionFields).size !== actionFields.length) throw new Error(`${name}.fields must be unique.`)
-    for (const key of actionFields) {
-      if (!fields.some((field) => field.key === key)) throw new Error(`${name}.fields contains unsupported field "${key}".`)
-    }
-  } else if (value.fields !== undefined) {
-    throw new Error(`${name} must not define fields.`)
   }
   const permission = requiredString(value.permission, `${name}.permission`)
   if (!Object.hasOwn(usedPermissions, permission)) usedPermissions[permission] = []
@@ -116,10 +105,10 @@ function validateActionEntry(value, name, { fields, allowFields, usedPermissions
   if (value.redirect !== undefined) {
     redirect = requiredString(value.redirect, `${name}.redirect`)
   }
-  return { fields: actionFields, permission, ...(redirect !== undefined ? { redirect } : {}) }
+  return { permission, ...(redirect !== undefined ? { redirect } : {}) }
 }
 
-function validateActions(value, { fields }) {
+function validateActions(value) {
   if (!isObject(value)) throw new Error('actions is required.')
   const names = Object.keys(value)
   if (names.length === 0) throw new Error('actions must have at least one key.')
@@ -129,7 +118,7 @@ function validateActions(value, { fields }) {
   const usedPermissions = {}
   const actions = Object.fromEntries(names.map((name) => [
     name,
-    validateActionEntry(value[name], `actions.${name}`, { fields, allowFields: name !== 'delete', usedPermissions }),
+    validateActionEntry(value[name], `actions.${name}`, { usedPermissions }),
   ]))
   const hasDetail = Object.hasOwn(actions, 'detail')
   const hasList = Object.hasOwn(actions, 'list')
@@ -154,22 +143,17 @@ function rejectUnsupportedTopLevel(value) {
 function deriveIdentity() {
   return {
     key: 'id',
-    type: 'text',
-    label: 'ID',
-    required: false,
-    renderer: 'text',
-    rendererSupported: true,
     column: 'id',
     identity: true,
   }
 }
-function validateSeed(value, { fields }) {
+function validateSeed(value, { properties }) {
   if (value === undefined || value === null) return null
   if (!isObject(value)) throw new Error('seed must be an object when provided.')
   knownKeys(value, ['records', 'updateFields'], 'seed')
   if (!Array.isArray(value.records) || value.records.length === 0) throw new Error('seed.records must be a non-empty array when seed is provided.')
   if (!Array.isArray(value.updateFields) || value.updateFields.length === 0) throw new Error('seed.updateFields must be a non-empty array when seed is provided.')
-  const allowedKeys = new Set(['id', ...fields.map((field) => field.key)])
+  const allowedKeys = new Set(['id', ...properties.map((property) => property.key)])
   const updateFields = value.updateFields.map((key, index) => identifier(key, `seed.updateFields[${index}]`))
   if (new Set(updateFields).size !== updateFields.length) throw new Error('seed.updateFields must be unique.')
   for (const key of updateFields) {
@@ -186,7 +170,7 @@ function validateSeed(value, { fields }) {
   return { records, updateFields }
 }
 
-function validateTestFixture(value, { actions, fields, seed }) {
+function validateTestFixture(value, { actions, properties, surfaces, seed }) {
   const hasMutation = ['create', 'update', 'delete'].some((action) => Object.hasOwn(actions, action))
   if (value === undefined || value === null) {
     if (hasMutation) throw new Error('test.record is required for a selected mutation.')
@@ -195,21 +179,21 @@ function validateTestFixture(value, { actions, fields, seed }) {
   if (!isObject(value)) throw new Error('test must be an object when provided.')
   knownKeys(value, ['record', 'update'], 'test')
   if (!isObject(value.record)) throw new Error('test.record is required for a selected mutation.')
-  const fieldByKey = Object.fromEntries(fields.map((field) => [field.key, field]))
-  const allowedRecordKeys = new Set(fields.map((field) => field.key))
+  const propertyByKey = Object.fromEntries(properties.map((property) => [property.key, property]))
+  const allowedRecordKeys = new Set(properties.map((property) => property.key))
   const recordKeys = Object.keys(value.record)
   if (hasMutation && recordKeys.length === 0) throw new Error('test.record must include at least one field for a selected mutation.')
   for (const key of recordKeys) {
     if (!allowedRecordKeys.has(key)) throw new Error(`test.record contains unsupported field "${key}".`)
   }
   for (const [key, fieldValue] of Object.entries(value.record)) {
-    const field = fieldByKey[key]
-    const expected = field.type === 'boolean' ? 'boolean' : field.type === 'number' ? 'number' : 'string'
+    const property = propertyByKey[key]
+    const expected = property.type === 'boolean' ? 'boolean' : property.type === 'number' ? 'number' : 'string'
     if (typeof fieldValue !== expected) throw new Error(`test.record.${key} must be ${expected}.`)
-    if (field.type === 'number' && !Number.isFinite(fieldValue)) throw new Error(`test.record.${key} must be a finite number.`)
+    if (property.type === 'number' && !Number.isFinite(fieldValue)) throw new Error(`test.record.${key} must be a finite number.`)
   }
   if (Object.hasOwn(actions, 'update')) {
-    const updateFields = actions.update.fields
+    const updateFields = surfaces.update?.inputs ? Object.keys(surfaces.update.inputs) : properties.map((property) => property.key)
     if (value.update === undefined) {
       // Partial paths get no browser file, so test.update stays optional
       // there. The slim journey validates it for list+create+update below.
@@ -226,10 +210,10 @@ function validateTestFixture(value, { actions, fields, seed }) {
       }
       if (!changesField) throw new Error('test.update must change at least one update field.')
       for (const [key, fieldValue] of Object.entries(value.update)) {
-        const field = fieldByKey[key]
-        const expected = field.type === 'boolean' ? 'boolean' : field.type === 'number' ? 'number' : 'string'
+        const property = propertyByKey[key]
+        const expected = property.type === 'boolean' ? 'boolean' : property.type === 'number' ? 'number' : 'string'
         if (typeof fieldValue !== expected) throw new Error(`test.update.${key} must be ${expected}.`)
-        if (field.type === 'number' && !Number.isFinite(fieldValue)) throw new Error(`test.update.${key} must be a finite number.`)
+        if (property.type === 'number' && !Number.isFinite(fieldValue)) throw new Error(`test.update.${key} must be a finite number.`)
       }
     }
   } else if (value.update !== undefined) {
@@ -249,23 +233,14 @@ function validateTestFixture(value, { actions, fields, seed }) {
   }
 }
 
-function validateField(value, name) {
+function validateProperty(value, name) {
   if (!isObject(value)) throw new Error(`${name} must be an object.`)
-  knownKeys(value, ['key', 'type', 'label', 'required', 'default', 'renderer'], name)
+  knownKeys(value, ['key', 'type', 'label', 'required', 'default'], name)
   const key = identifier(value.key, `${name}.key`)
   if (key === 'id') throw new Error(`${name}.key "id" is reserved for the derived identity.`)
   const type = requiredString(value.type, `${name}.type`)
   if (!supportedTypes.has(type)) throw new Error(`${name}.type "${type}" is unsupported; use text, boolean, or number.`)
   const label = requiredString(value.label, `${name}.label`)
-
-  let renderer
-  let rendererSupported = true
-  if (value.renderer === undefined || value.renderer === null) {
-    renderer = defaultRenderers[type]
-  } else {
-    renderer = requiredString(value.renderer, `${name}.renderer`)
-    if (!renderersByType[type].has(renderer)) rendererSupported = false
-  }
 
   if (value.required !== undefined && typeof value.required !== 'boolean') throw new Error(`${name}.required must be boolean.`)
   if (Object.hasOwn(value, 'default')) {
@@ -280,15 +255,86 @@ function validateField(value, name) {
     label,
     required: value.required ?? false,
     ...(Object.hasOwn(value, 'default') ? { default: value.default } : {}),
-    renderer,
-    rendererSupported,
     column: snakeCase(key),
   }
 }
 
+function validateSurfaceMap(value, name, properties, members, { inputs = false } = {}) {
+  if (!isObject(value)) throw new Error(`${name} must be an object map.`)
+  const propertyByKey = new Map(properties.map((property) => [property.key, property]))
+  const normalized = {}
+  for (const [key, entry] of Object.entries(value)) {
+    identifier(key, `${name} key`)
+    const property = propertyByKey.get(key)
+    if (!property) throw new Error(`${name} contains unsupported property "${key}".`)
+    if (!isObject(entry)) throw new Error(`${name}.${key} must be an object.`)
+    knownKeys(entry, members, `${name}.${key}`)
+    const next = { ...entry }
+    if (entry.renderer !== undefined) {
+      next.renderer = requiredString(entry.renderer, `${name}.${key}.renderer`)
+      if (inputs && !renderersByType[property.type].has(next.renderer)) next.rendererSupported = false
+    }
+    if (entry.props !== undefined) {
+      if (!isObject(entry.props)) throw new Error(`${name}.${key}.props must be an object.`)
+      if (inputs && Object.hasOwn(entry.props, 'required')) throw new Error(`${name}.${key}.props.required is not supported; the raw schema owns requiredness.`)
+    }
+    if (inputs && Object.hasOwn(entry, 'initialValue')) {
+      const expected = property.type === 'boolean' ? 'boolean' : property.type === 'number' ? 'number' : 'string'
+      if (typeof entry.initialValue !== expected) throw new Error(`${name}.${key}.initialValue must be ${expected}.`)
+      if (property.type === 'number' && !Number.isFinite(entry.initialValue)) throw new Error(`${name}.${key}.initialValue must be a finite number.`)
+    }
+    if (entry.format !== undefined) requiredString(entry.format, `${name}.${key}.format`)
+    if (entry.sortable !== undefined && typeof entry.sortable !== 'boolean') throw new Error(`${name}.${key}.sortable must be boolean.`)
+    if (entry.sortKey !== undefined) identifier(entry.sortKey, `${name}.${key}.sortKey`)
+    if (entry.align !== undefined && !['start', 'center', 'end'].includes(entry.align)) throw new Error(`${name}.${key}.align must be start, center, or end.`)
+    if (entry.class !== undefined && typeof entry.class !== 'string') throw new Error(`${name}.${key}.class must be a string.`)
+    if (entry.headerClass !== undefined && typeof entry.headerClass !== 'string') throw new Error(`${name}.${key}.headerClass must be a string.`)
+    if (entry.emphasis !== undefined && !['strong', 'muted'].includes(entry.emphasis)) throw new Error(`${name}.${key}.emphasis must be strong or muted.`)
+    if (entry.span !== undefined && (!Number.isInteger(entry.span) || entry.span < 1)) throw new Error(`${name}.${key}.span must be a positive integer.`)
+    normalized[key] = next
+  }
+  return normalized
+}
+
+function validateSurfaces(value, { actions, properties, hasNavigation }) {
+  if (value === undefined && !hasNavigation) return {}
+  if (!isObject(value)) throw new Error('surfaces must be an object when web pages are generated.')
+  knownKeys(value, ['display', 'list', 'detail', 'create', 'update'], 'surfaces')
+  if (!hasNavigation && Object.keys(value).length) throw new Error('surfaces require navigation so the generator can create web pages.')
+  const propertyKeys = new Set(properties.map((property) => property.key))
+  const displayMembers = ['renderer', 'props', 'format']
+  const display = validateSurfaceMap(value.display ?? {}, 'surfaces.display', properties, displayMembers)
+  const specs = {
+    list: ['columns', ['renderer', 'props', 'format', 'sortable', 'sortKey', 'align', 'class', 'headerClass']],
+    detail: ['fields', ['renderer', 'props', 'format', 'emphasis', 'span']],
+    create: ['inputs', ['renderer', 'props', 'initialValue']],
+    update: ['inputs', ['renderer', 'props', 'initialValue']],
+  }
+  const surfaces = { display }
+  for (const [action, [member, allowed]] of Object.entries(specs)) {
+    const selected = value[action]
+    if (!Object.hasOwn(actions, action)) {
+      if (selected !== undefined) throw new Error(`surfaces.${action} requires the ${action} action.`)
+      continue
+    }
+    if (!hasNavigation) continue
+    if (!isObject(selected)) throw new Error(`surfaces.${action} is required when the ${action} page is generated.`)
+    knownKeys(selected, [member], `surfaces.${action}`)
+    const map = validateSurfaceMap(selected[member], `surfaces.${action}.${member}`, properties, allowed, { inputs: action === 'create' || action === 'update' })
+    for (const key of Object.keys(map)) if (!propertyKeys.has(key)) throw new Error(`surfaces.${action}.${member} contains unsupported property "${key}".`)
+    surfaces[action] = { [member]: map }
+  }
+  const referencedDisplayKeys = new Set([
+    ...Object.keys(surfaces.list?.columns ?? {}),
+    ...Object.keys(surfaces.detail?.fields ?? {}),
+  ])
+  for (const key of Object.keys(display)) if (!referencedDisplayKeys.has(key)) throw new Error(`surfaces.display.${key} is not used by a table or detail surface.`)
+  return surfaces
+}
+
 export function validateConfig(value) {
   if (!isObject(value)) throw new Error('Scaffold configuration must be a JSON object.')
-  knownKeys(value, ['kind', 'slug', 'table', 'symbol', 'title', 'singular', 'fields', 'actions', 'permissions', 'navigation', 'seed', 'test'], 'manifest')
+  knownKeys(value, ['kind', 'slug', 'table', 'symbol', 'title', 'singular', 'properties', 'actions', 'permissions', 'navigation', 'surfaces', 'seed', 'test'], 'manifest')
 
   if (value.kind !== 'bounded-module') throw new Error('kind must be bounded-module.')
   rejectUnsupportedTopLevel(value)
@@ -300,14 +346,14 @@ export function validateConfig(value) {
   const title = requiredString(value.title, 'title')
   const singular = requiredString(value.singular, 'singular')
 
-  if (!Array.isArray(value.fields) || value.fields.length === 0) throw new Error('fields must be a non-empty array.')
-  const fields = value.fields.map((field, index) => validateField(field, `fields[${index}]`))
-  const keys = fields.map((field) => field.key)
+  if (!Array.isArray(value.properties) || value.properties.length === 0) throw new Error('properties must be a non-empty array.')
+  const properties = value.properties.map((property, index) => validateProperty(property, `properties[${index}]`))
+  const keys = properties.map((property) => property.key)
   if (new Set(keys).size !== keys.length) throw new Error('Field keys must be unique.')
 
   const identity = deriveIdentity()
   const labels = deriveLabels(title, singular)
-  const { actions, usedPermissions } = validateActions(value.actions, { fields })
+  const { actions, usedPermissions } = validateActions(value.actions)
   const permissions = validatePermissions(value.permissions)
   for (const code of Object.keys(usedPermissions)) {
     if (!Object.hasOwn(permissions, code)) throw new Error(`Permission "${code}" is used but missing in permissions.`)
@@ -315,9 +361,10 @@ export function validateConfig(value) {
   for (const code of Object.keys(permissions)) {
     if (!Object.hasOwn(usedPermissions, code)) throw new Error(`Permission "${code}" is defined but unused. Remove the unused definition.`)
   }
-  const seed = validateSeed(value.seed, { fields })
-  const test = validateTestFixture(value.test, { actions, fields, seed })
   const navigation = validateNavigation(value.navigation, { hasList: Object.hasOwn(actions, 'list') })
+  const surfaces = validateSurfaces(value.surfaces, { actions, properties, hasNavigation: !!navigation })
+  const seed = validateSeed(value.seed, { properties })
+  const test = validateTestFixture(value.test, { actions, properties, surfaces, seed })
 
   const selectedActions = Object.keys(actions).sort((left, right) => left.localeCompare(right))
   const needsTechnicalDetailRead = selectedActions.includes('update') && !selectedActions.includes('detail')
@@ -327,15 +374,10 @@ export function validateConfig(value) {
     permission: actions.update.permission,
     reason: 'Update without a Detail page still needs the API record-read route for edit hydration.',
   }] : []
-  const technicalActions = needsTechnicalDetailRead
-    ? { ...actions, detail: { fields: [...actions.update.fields], permission: actions.update.permission, technical: true } }
-    : actions
-  const actionFields = Object.fromEntries(
-    Object.entries(actions).map(([action, entry]) => [action, entry.fields]),
-  )
-  const customRenderers = fields
-    .filter((field) => !field.rendererSupported)
-    .map((field) => `${field.key}:${field.renderer}`)
+  const customRenderers = Object.entries(surfaces)
+    .filter(([surface]) => ['create', 'update'].includes(surface))
+    .flatMap(([surface, config]) => Object.entries(config.inputs ?? {}).filter(([, input]) => input.rendererSupported === false)
+      .map(([key, input]) => `${surface}.${key}:${input.renderer}`))
   const unsupported = []
   if (customRenderers.length) unsupported.push(`custom renderer for ${customRenderers.join(', ')} makes that UI action manual`)
 
@@ -366,10 +408,9 @@ export function validateConfig(value) {
     title,
     singular,
     identity,
-    fields,
+    properties,
     actions,
-    technicalActions,
-    actionFields,
+    surfaces,
     redirects,
     usedPermissions,
     permissions,
@@ -427,8 +468,8 @@ function tableColumn(field) {
 
 function renderEntity(config) {
   const imports = ['boolean', 'doublePrecision', 'pgTable', 'text'].filter((value) => {
-    if (value === 'boolean') return config.fields.some((field) => field.type === 'boolean')
-    if (value === 'doublePrecision') return config.fields.some((field) => field.type === 'number')
+    if (value === 'boolean') return config.properties.some((property) => property.type === 'boolean')
+    if (value === 'doublePrecision') return config.properties.some((property) => property.type === 'number')
     return true
   })
   const identity = `${config.identity.key}: text(${literal(config.identity.column)}).primaryKey().$defaultFn(() => crypto.randomUUID()),`
@@ -442,7 +483,7 @@ import { createInsertSchema, createSelectSchema, createUpdateSchema } from 'driz
 
 export const ${plural} = pgTable(${literal(config.table)}, {
   ${identity}
-${config.fields.map(tableColumn).map((line) => `  ${line}`).join('\n')}
+${config.properties.map(tableColumn).map((line) => `  ${line}`).join('\n')}
 })
 
 const write = { ${write} } as const
@@ -498,7 +539,7 @@ function renderSeed(config) {
     const values = Object.entries(record).map(([key, value]) => `${key}: ${literal(value)}`).join(', ')
     return `  { ${values} },`
   }).join('\n')
-  const updates = config.seed.updateFields.map((key) => `${key}: sql\`excluded.${config.fields.find((field) => field.key === key).column}\``).join(', ')
+  const updates = config.seed.updateFields.map((key) => `${key}: sql\`excluded.${config.properties.find((property) => property.key === key).column}\``).join(', ')
   return `import { sql } from 'drizzle-orm'
 import { getDb } from '../../../db'
 import { ${plural} } from './${config.slug}.entity'
@@ -520,83 +561,110 @@ export async function seed${config.symbol}() {
 function renderSchema(config) {
   const entity = lowerCamel(config.symbol)
   const plural = `${entity}s`
-  const head = `import { ${entity} } from '@southneuhof/api/routes/(authenticated)/${config.slug}/${config.slug}.entity'
-import { rpc } from '@/framework/rpc'
+  return `import { ${entity} } from '@southneuhof/api/routes/(authenticated)/${config.slug}/${config.slug}.entity'
 import type { z } from 'zod/v4'
 
-export type ${config.symbol} = z.output<typeof ${entity}.schemas.select>
-export type ${config.symbol}Create = z.input<typeof ${entity}.schemas.create>
-export type ${config.symbol}Update = z.input<typeof ${entity}.schemas.update>
-`
-  return `import { defineSchema } from '@/framework/schema'
-${head}
-export const ${plural}Schema = defineSchema(rpc['${config.slug}'], {
-  identity: ${literal(config.identity.key)},
-  record: ${entity}.schemas.select,
-  create: ${entity}.schemas.create,
-  update: ${entity}.schemas.update,
-})
+export const ${plural}RecordSchema = ${entity}.schemas.select
+export const ${plural}CreateSchema = ${entity}.schemas.create
+export const ${plural}UpdateSchema = ${entity}.schemas.update
+
+export type ${config.symbol} = z.output<typeof ${plural}RecordSchema>
+export type ${config.symbol}Create = z.input<typeof ${plural}CreateSchema>
+export type ${config.symbol}Update = z.input<typeof ${plural}UpdateSchema>
 `
 }
 
-function renderField(field) {
-  const formParts = [`renderer: ${literal(field.renderer)}`]
-  if (field.options) formParts.push(`source: ${literal(field.options)} as const`)
-  if (field.required) formParts.push('props: { required: true }')
-  return `  ${field.key}: { label: ${literal(field.label)}, form: { ${formParts.join(', ')} } },`
+function renderMapEntry(key, entry, { fragment, input = false } = {}) {
+  const parts = []
+  if (fragment) parts.push(`...displayFragments.${key}`)
+  if (entry.renderer) parts.push(`renderer: ${literal(entry.renderer)}`)
+  if (entry.props) parts.push(`props: ${literal(entry.props)}`)
+  if (input && Object.hasOwn(entry, 'initialValue')) parts.push(`initialValue: () => ${literal(entry.initialValue)}`)
+  if (entry.format) parts.push(`format: ${literal(entry.format)}`)
+  for (const member of ['sortable', 'sortKey', 'align', 'class', 'headerClass', 'emphasis', 'span']) {
+    if (Object.hasOwn(entry, member)) parts.push(`${member}: ${literal(entry[member])}`)
+  }
+  const body = parts.join(', ')
+  return `    ${key}: {${body ? ` ${body} ` : ''}},`
+}
+
+function renderDefinitionMap(map, { fragments = {}, input = false } = {}) {
+  const entries = Object.entries(map ?? {}).map(([key, entry]) => renderMapEntry(key, entry, {
+    fragment: Object.hasOwn(fragments, key),
+    input,
+  }))
+  return `{
+${entries.join('\n')}
+  }`
+}
+
+function renderLabels(config) {
+  const entries = config.properties.map((property) => `  ${property.key}: ${literal(property.label)},`).join('\n')
+  return `const labels = {
+${entries}
+}`
+}
+
+function renderDisplayFragments(config) {
+  const fragments = config.surfaces.display ?? {}
+  if (!Object.keys(fragments).length) return ''
+  return `const displayFragments = ${renderDefinitionMap(fragments)} as const\n\n`
 }
 
 function resourceEntry(config, action) {
   const metadata = moduleMetadata(config)
+  const plural = `${lowerCamel(config.symbol)}s`
   const routeParam = metadata.routeParam
-  const source = config.actions
-  const fieldKeys = source[action].fields.map((key) => `fields.${key}`).join(', ')
-  const permission = source[action].permission
-  const initial = config.fields
-    .filter((field) => Object.hasOwn(field, 'default'))
-    .map((field) => `${field.key}: ${literal(field.default)}`)
-    .join(', ')
-  const initialData = initial ? `\n      initialData: { ${initial} },` : ''
+  const permission = config.actions[action].permission
   // Redirect rule (plan 018 §2 plus the Loom list fallback): Create/Update
   // carry no explicit defaultTo when Detail or List exists; Loom redirects
   // to Detail when Detail exists, else to List when List exists. Only the
   // explicit manifest redirect (no Detail and no List) emits defaultTo.
   // Loom's formDefaultTo with a string defaultTo navigates by route NAME via
   // router.replace.
-  const redirectLine = !Object.hasOwn(source, 'detail') && !Object.hasOwn(source, 'list') && (action === 'create' || action === 'update')
+  const redirectLine = !Object.hasOwn(config.actions, 'detail') && !Object.hasOwn(config.actions, 'list') && (action === 'create' || action === 'update')
     ? `\n      defaultTo: ${literal(config.redirects[action])},`
     : ''
   if (action === 'list') {
     return `    list: {
-      run: api.list,
-      fields: [${fieldKeys}],
       permission: '${permission}',
       route: { name: '${metadata.routes.list}' },
+      table: { ...${plural}Table, load: api.list },
     },`
   }
   if (action === 'detail') {
     return `    detail: {
-      run: api.detail,
-      fields: [${fieldKeys}],
       permission: '${permission}',
       route: { name: '${metadata.routes.detail}', params: (id) => ({ ${routeParam}: String(id) }) },
       title: ${literal(config.labels.detailTitle)},
+      detail: ({ id }) => ({
+        ...${plural}Detail,
+        load: context => api.detail({ ...context, id }),
+      }),
     },`
   }
   if (action === 'create') {
     return `    create: {
-      run: api.create,
-      fields: [${fieldKeys}],
       permission: '${permission}',
-      route: { name: '${metadata.routes.create}' },${initialData}${redirectLine}
+      route: { name: '${metadata.routes.create}' },
+      form: createForm,${redirectLine}
     },`
   }
   if (action === 'update') {
+    const draft = Object.keys(config.surfaces.update?.inputs ?? {})
+      .map((key) => `${key}: record.${key}`)
+      .join(',\n            ')
     return `    update: {
-      run: api.update,
-      fields: [${fieldKeys}],
       permission: '${permission}',
-      route: { name: '${metadata.routes.edit}', params: (id) => ({ ${routeParam}: String(id) }) },${redirectLine}
+      route: { name: '${metadata.routes.edit}', params: (id) => ({ ${routeParam}: String(id) }) },
+      form: ({ id }) => ({
+        ...updateForm,
+        load: async context => {
+          const record = await api.detail({ ...context, id })
+          return record ? { ${draft} } : undefined
+        },
+        submit: output => api.update(id, output),
+      }),${redirectLine}
     },`
   }
   return `    delete: { run: api.delete, permission: '${permission}' },`
@@ -605,24 +673,49 @@ function resourceEntry(config, action) {
 function renderResource(config) {
   const entity = lowerCamel(config.symbol)
   const plural = `${entity}s`
+  const selected = new Set(config.selectedActions)
   const entries = config.selectedActions.map((action) => resourceEntry(config, action)).join('\n')
+  const constructors = ['defineResource']
+  const schemas = []
+  const definitions = [renderLabels(config)]
+  const displayFragments = renderDisplayFragments(config)
+  if (selected.has('list')) {
+    constructors.push('defineTable')
+    schemas.push(`${plural}RecordSchema`)
+    definitions.push(`const ${plural}Table = defineTable({ schema: ${plural}RecordSchema, labels, columns: ${renderDefinitionMap(config.surfaces.list.columns, { fragments: config.surfaces.display })} })`)
+  }
+  if (selected.has('detail')) {
+    constructors.push('defineDetail')
+    if (!schemas.includes(`${plural}RecordSchema`)) schemas.push(`${plural}RecordSchema`)
+    definitions.push(`const ${plural}Detail = defineDetail({ schema: ${plural}RecordSchema, labels, fields: ${renderDefinitionMap(config.surfaces.detail.fields, { fragments: config.surfaces.display })} })`)
+  }
+  if (selected.has('create')) {
+    constructors.push('defineForm')
+    schemas.push(`${plural}CreateSchema`)
+    definitions.push(`const createForm = defineForm({ schema: ${plural}CreateSchema, labels, fields: ${renderDefinitionMap(config.surfaces.create.inputs, { input: true })}, submit: api.create })`)
+  }
+  if (selected.has('update')) {
+    constructors.push('defineForm')
+    if (!schemas.includes(`${plural}UpdateSchema`)) schemas.push(`${plural}UpdateSchema`)
+    definitions.push(`const updateForm = defineForm({ schema: ${plural}UpdateSchema, labels, fields: ${renderDefinitionMap(config.surfaces.update.inputs, { input: true })} })`)
+  }
+  const typeImports = `import type { ${config.symbol} } from './${config.slug}.schema'\n`
+  const definitionLines = [displayFragments, ...definitions].filter(Boolean).join('\n\n')
 
-  return `import { defineFields, defineResource } from '@southneuhof/loom'
+  return `import { ${[...new Set(constructors)].join(', ')} } from '@southneuhof/loom'
 import { createHonoResourceActions } from '@/framework/hono'
 import { rpc } from '@/framework/rpc'
-import { ${plural}Schema } from './${config.slug}.schema'
+import { ${[...new Set(schemas)].join(', ')} } from './${config.slug}.schema'
+${typeImports}
 
 const api = createHonoResourceActions(rpc['${config.slug}'])
 
-const fields = defineFields(${plural}Schema, {
-${config.fields.map(renderField).join('\n')}
-})
+${definitionLines}
 
-export const ${plural} = defineResource(${plural}Schema, {
+export const ${plural} = defineResource({
   key: '${config.slug}',
-  actions: {
+  identity: (record: Pick<${config.symbol}, '${config.identity.key}'>) => record.${config.identity.key},
 ${entries}
-  },
 })
 
 export type { ${config.symbol}, ${config.symbol}Create, ${config.symbol}Update } from './${config.slug}.schema'
@@ -630,36 +723,13 @@ export type { ${config.symbol}, ${config.symbol}Create, ${config.symbol}Update }
 }
 
 function renderRoutes(config) {
-  const entity = lowerCamel(config.symbol)
-  const plural = `${entity}s`
+  const plural = `${lowerCamel(config.symbol)}s`
   const metadata = moduleMetadata(config)
   const routeParam = metadata.routeParam
   const listTitle = html(config.labels.listTitle)
   const createTitle = html(config.labels.createTitle)
   const editTitle = html(config.labels.editTitle)
-  // Update without Detail hydrates through the technical read route: pass a
-  // `load` function to FormView that calls the technical read via
-  // createHonoResourceActions. The technical detail action is not a page or
-  // resource entry; only the Update page uses it. The spread order matters:
-  // `load` must come AFTER the resource spread so it overrides the
-  // resource's own (absent) load with the technical read.
-  const editTemplate = config.needsTechnicalDetailRead
-    ? `<script setup lang="ts">
-import { useRoute } from 'vue-router'
-import { FormView } from '@southneuhof/loom'
-import { createHonoResourceActions } from '@/framework/hono'
-import { rpc } from '@/framework/rpc'
-import { ${plural} } from '../${config.slug}.resource'
-
-const route = useRoute('${metadata.routes.edit}')
-const id = String(route.params.${routeParam})
-const api = createHonoResourceActions(rpc['${config.slug}'])
-const load = (context: { signal?: AbortSignal }) => api.detail({ id, searchParameters: {}, signal: context.signal })
-</script>
-
-<template><FormView v-bind="{ load, ...${plural}.update({ id } as never) }" title="${editTitle}" /></template>
-`
-    : `<script setup lang="ts">
+  const editTemplate = `<script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { FormView } from '@southneuhof/loom'
 import { ${plural} } from '../${config.slug}.resource'
@@ -675,14 +745,14 @@ import { ListView } from '@southneuhof/loom'
 import { ${plural} } from './${config.slug}.resource'
 </script>
 
-<template><ListView v-bind="${plural}.list()" title="${listTitle}" /></template>
+<template><ListView v-bind="${plural}.list" title="${listTitle}" /></template>
 `,
     create: `<script setup lang="ts">
 import { FormView } from '@southneuhof/loom'
 import { ${plural} } from './${config.slug}.resource'
 </script>
 
-<template><FormView v-bind="${plural}.create()" title="${createTitle}" /></template>
+<template><FormView v-bind="${plural}.create" title="${createTitle}" /></template>
 `,
     detail: `<script setup lang="ts">
 import { useRoute } from 'vue-router'
@@ -726,14 +796,14 @@ function wrongJsonType(field) {
   return field.type === 'text' ? 123 : 'invalid-type'
 }
 
-function invalidPayloadLiteral(valid, actionKeys, fields) {
-  const required = fields.find((field) => field.required && actionKeys.includes(field.key))
+function invalidPayloadLiteral(valid, actionKeys, properties) {
+  const required = properties.find((property) => property.required && actionKeys.includes(property.key))
   if (required && Object.hasOwn(valid ?? {}, required.key)) {
     const copy = { ...(valid ?? {}) }
     copy[required.key] = wrongJsonType(required)
     return JSON.stringify(copy)
   }
-  const first = fields.find((field) => field.key === actionKeys[0])
+  const first = properties.find((property) => property.key === actionKeys[0])
   if (!first) return '[]'
   return JSON.stringify({ ...(valid ?? {}), [first.key]: wrongJsonType(first) })
 }
@@ -755,8 +825,12 @@ function renderApiSpec(config) {
   const hasDelete = selected.has('delete')
   const needsSetup = (hasList || hasDetail || hasUpdate || hasDelete) && Object.keys(record).length > 0
   const defineRecord = needsSetup || hasCreate
-  const invalidCreate = hasCreate ? invalidPayloadLiteral(record, config.actions.create.fields, config.fields) : null
-  const invalidUpdate = hasUpdate ? invalidPayloadLiteral(updatePayload, config.actions.update.fields, config.fields) : null
+  const modelKeys = config.properties.map((property) => property.key)
+  const allModelKeys = Object.fromEntries(modelKeys.map((key) => [key, true]))
+  const createKeys = Object.keys(config.surfaces.create?.inputs ?? allModelKeys)
+  const updateKeys = Object.keys(config.surfaces.update?.inputs ?? allModelKeys)
+  const invalidCreate = hasCreate ? invalidPayloadLiteral(record, createKeys, config.properties) : null
+  const invalidUpdate = hasUpdate ? invalidPayloadLiteral(updatePayload, updateKeys, config.properties) : null
   // Seed rows through the API when create exists, else insert directly.
   // One record proves the read and write path.
   const setupInsert = needsSetup && !hasCreate ? `    await db.insert(${plural}).values({ id, ...record })\n` : ''
@@ -778,8 +852,19 @@ function browserManualReason(config) {
   const hasFullPath = ['list', 'create', 'update'].every((action) => selected.has(action))
   if (!hasFullPath || Object.keys(config.test?.update ?? {}).length === 0) return 'slim journey needs list, create, update, and test.update'
   if (!config.navigation) return 'slim journey needs navigation'
-  const unsupportedField = config.fields.find((field) => !field.rendererSupported)
-  if (unsupportedField) return `custom renderer for ${unsupportedField.key}:${unsupportedField.renderer} makes that UI action manual`
+  const unsupportedInput = Object.entries(config.surfaces.create?.inputs ?? {})
+    .concat(Object.entries(config.surfaces.update?.inputs ?? {}))
+    .find(([, input]) => input.rendererSupported === false)
+  if (unsupportedInput) return `custom renderer for ${unsupportedInput[0]}:${unsupportedInput[1].renderer} makes that UI action manual`
+  const createTextInput = Object.entries(config.surfaces.create?.inputs ?? {}).find(([key, input]) => {
+    const property = config.properties.find((candidate) => candidate.key === key)
+    return property?.type === 'text' && (!input.renderer || ['text', 'textarea'].includes(input.renderer))
+  })
+  const updateTextInput = Object.entries(config.surfaces.update?.inputs ?? {}).find(([key, input]) => {
+    const property = config.properties.find((candidate) => candidate.key === key)
+    return property?.type === 'text' && (!input.renderer || ['text', 'textarea'].includes(input.renderer))
+  })
+  if (!createTextInput || !updateTextInput) return 'slim journey needs text inputs on Create and Update'
   return null
 }
 
@@ -790,7 +875,7 @@ function renderBrowserSpec(config) {
   // Callers check browserManualReason first; this returns null there too.
   if (browserManualReason(config) !== null) return null
   const selected = new Set(config.selectedActions)
-  const firstField = config.fields[0]
+  const firstListKey = Object.keys(config.surfaces.list.columns)[0]
   const record = config.test?.record ?? config.seed?.records[0] ?? {}
   const updatePayload = config.test?.update ?? {}
   const updateKey = Object.keys(updatePayload)[0]
@@ -805,7 +890,8 @@ function renderBrowserSpec(config) {
   lines.push(`  await page.goto('/${config.navigation.group}/${config.slug}/create')`)
   for (const [key, value] of Object.entries(record)) {
     if (typeof value === 'boolean') continue
-    lines.push(`  await page.getByRole('textbox', { name: ${literal(config.fields.find((field) => field.key === key)?.label ?? key)} }).fill(${literal(String(value))})`)
+    if (!Object.hasOwn(config.surfaces.create.inputs, key)) continue
+    lines.push(`  await page.getByRole('textbox', { name: ${literal(config.properties.find((property) => property.key === key)?.label ?? key)} }).fill(${literal(String(value))})`)
   }
   // Submit through the native submit control, not through one locale
   // copy. The app can translate the submit label, so the test must not
@@ -817,11 +903,11 @@ function renderBrowserSpec(config) {
   lines.push(`  await page.waitForResponse((response) => response.url().includes('/${config.slug}/create') && response.request().method() === 'POST')`)
   // Navigation leaves the create page. The exact target route is UI
   // behavior, so only prove that the save lands on a saved value.
-  lines.push(`  await expect(page.getByRole('cell', { name: ${literal(String(record[firstField.key]))}, exact: true }).first()).toBeVisible()`)
+  lines.push(`  await expect(page.getByRole('cell', { name: ${literal(String(record[firstListKey]))}, exact: true }).first()).toBeVisible()`)
   // Edit the created row through its Edit link, then prove reload persistence.
   lines.push(`  await page.goto('/${config.navigation.group}/${config.slug}')`)
-  lines.push(`  await page.getByRole('row', { name: new RegExp(${literal(String(record[firstField.key]))}) }).getByRole('link', { name: /edit/i }).click()`)
-  lines.push(`  await page.getByRole('textbox', { name: ${literal(config.fields.find((field) => field.key === updateKey)?.label ?? updateKey)} }).fill(${literal(String(updateValue))})`)
+  lines.push(`  await page.getByRole('row', { name: new RegExp(${literal(String(record[firstListKey]))}) }).getByRole('link', { name: /edit/i }).click()`)
+  lines.push(`  await page.getByRole('textbox', { name: ${literal(config.properties.find((property) => property.key === updateKey)?.label ?? updateKey)} }).fill(${literal(String(updateValue))})`)
   lines.push(`  await page.locator('form button[type="submit"]').click()`)
   lines.push(`  await page.waitForResponse((response) => response.url().includes('/${config.slug}/update/') && response.request().method() === 'PATCH')`)
   lines.push(`  await page.goto('/${config.navigation.group}/${config.slug}')`)
@@ -1256,7 +1342,7 @@ export function describeBoundedModule(value, { root = repoRoot } = {}) {
   const outputRoot = resolve(root)
   const generated = filesFor(config, outputRoot).map((file) => file.path).sort((left, right) => left.localeCompare(right))
   const integration = integrationOwnerPaths(config, outputRoot)
-  const migrationIntent = { table: config.table, columns: ['id', ...config.fields.map((field) => field.column)] }
+  const migrationIntent = { table: config.table, columns: ['id', ...config.properties.map((property) => property.column)] }
   const seed = { registered: config.seed !== null && config.seed !== undefined }
   const hasApiAction = ['list', 'detail', 'create', 'update', 'delete'].some((action) => config.selectedActions.includes(action))
   const apiTest = hasApiAction
@@ -1490,7 +1576,7 @@ export async function applyBoundedModule({ manifest, root = repoRoot, runner = d
   } catch {
     failApply({ root: outputRoot, createdFiles, ownerBytes, message: 'Drizzle explain output is not JSON:', cause: String(explain.stdout ?? '').slice(0, 2000) })
   }
-  const gate = { table: config.table, columns: ['id', ...config.fields.map((field) => field.column)] }
+  const gate = { table: config.table, columns: ['id', ...config.properties.map((property) => property.column)] }
   const gated = parseDrizzleExplain(explainJson, gate)
   if (!gated.ok) {
     failApply({ root: outputRoot, createdFiles, ownerBytes, message: 'Drizzle explain reports unrelated operations:', cause: gated.explanation })

@@ -1,23 +1,29 @@
-import { defineFields, defineResource } from '@southneuhof/loom'
+import { defineResource, defineTable } from '@southneuhof/loom'
+import { appLabels } from '@/configs/labels'
 import { rolePermissionsActions } from './role-permissions.actions'
-import { rolePermissionsSchema } from './role-permissions.schema'
+import { rolePermissionRecordSchema, rolePermissionsQuerySchema } from './role-permissions.schema'
 
-const fields = defineFields(rolePermissionsSchema, {
-  permissionCode: { label: 'Permission code' },
-  name: { label: 'Permission name' },
-  description: { label: 'Description' },
-  assigned: { label: 'Assigned' },
+const rolePermissionLabels = { ...appLabels, permissionCode: 'Permission code', name: 'Permission name', description: 'Description', assigned: 'Assigned' }
+
+const rolePermissionsTable = defineTable({
+  schema: rolePermissionRecordSchema,
+  labels: rolePermissionLabels,
+  columns: {
+    permissionCode: { sortable: true },
+    name: { sortable: true },
+    description: { class: 'line-clamp-3 overflow-ellipsis' },
+    assigned: { sortable: true },
+  },
 })
 
-export const rolePermissions = defineResource(rolePermissionsSchema, {
+export const rolePermissions = defineResource({
   key: 'role-permissions',
+  identity: (record: { id: string }) => record.id,
+  list: {
+    permission: 'list-role-permissions',
+    table: { ...rolePermissionsTable, querySchema: rolePermissionsQuerySchema, load: rolePermissionsActions.list },
+  },
   actions: {
-    list: {
-      run: rolePermissionsActions.list,
-      fields: [fields.permissionCode, fields.name, fields.description, fields.assigned],
-      permission: 'list-role-permissions',
-      route: { name: 'settings-roles-detail-permissions' },
-    },
     set: {
       run: rolePermissionsActions.set,
       permission: (roleId: string, permissionId: string, assigned: boolean) => (assigned ? 'create-role-permissions' : 'delete-role-permissions'),

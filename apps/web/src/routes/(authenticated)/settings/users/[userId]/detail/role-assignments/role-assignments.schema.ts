@@ -1,16 +1,21 @@
-import type { WebResourceSchema } from '@southneuhof/loom'
-import { defineSchema } from '@/framework/schema'
+import { z } from 'zod/v4'
+import { rpc } from '@/framework/rpc'
+import { checkedHonoResponseRecordSchema } from '@/framework/schema'
 
-export type RoleAssignment = {
-  id: string
-  roleCode: string
-  name: string
-  description: string | null
-  active: boolean
-  assigned: boolean
-}
+const endpoint = rpc.users[':userId']['role-assignments'].$get
 
-export type RoleAssignmentQuery = Record<string, never>
-export type RoleAssignmentSchema = WebResourceSchema<RoleAssignment, RoleAssignmentQuery, Record<string, never>, Record<string, never>, string>
+export const roleAssignmentRecordSchema = checkedHonoResponseRecordSchema(
+  endpoint,
+  z.object({
+    id: z.string(),
+    roleCode: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    active: z.boolean(),
+    assigned: z.boolean(),
+  })
+)
 
-export const roleAssignmentsSchema = defineSchema<RoleAssignmentSchema>({ identity: 'id' })
+export const roleAssignmentsQuerySchema = z.object({ search: z.string().optional() })
+
+export type RoleAssignment = z.output<typeof roleAssignmentRecordSchema>

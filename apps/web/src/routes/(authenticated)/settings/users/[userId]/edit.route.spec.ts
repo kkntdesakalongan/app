@@ -12,23 +12,21 @@ vi.stubGlobal('confirm', mocks.confirm)
 vi.mock('vue-router', () => ({ useRoute: () => ({ params: { userId: 'u1' } }) }))
 vi.mock('../users.resource', () => ({
   users: {
-    detail: vi.fn(() => ({ run: mocks.detail })),
-    update: vi.fn(() => ({ run: mocks.update, fields: [], id: 'u1' })),
+    detail: vi.fn(() => ({ detail: { load: mocks.detail } })),
+    update: vi.fn(() => ({ form: { submit: mocks.update } })),
   },
 }))
 vi.mock('@southneuhof/loom', async () => {
   const { h } = await import('vue')
   return {
     FormView: {
-      props: { run: { type: Function, required: true } },
-      setup(props: { run: (input: unknown) => unknown }) {
+      props: { form: { type: Object, required: true } },
+      setup(props: { form: { submit: (input: unknown) => unknown } }) {
         return () =>
           h(
             'button',
             {
-              onClick: () => {
-                void Promise.resolve(props.run(mocks.input)).catch(() => undefined)
-              },
+              onClick: () => void Promise.resolve(props.form.submit(mocks.input)).catch(() => undefined),
             },
             'submit'
           )

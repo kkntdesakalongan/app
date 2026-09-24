@@ -18,22 +18,21 @@ page composition and `docs/ui/forms.md` for an unresolved app form default.
 
 ## Define the value contract
 
-Bind standard resources with app `defineSchema` from `@/framework/schema`.
-Pass raw Zod schemas; the app seam calls `fromZod` and infers parsed types.
-A Hono route or an explicit custom contract supplies the expected types.
-For non-asset fields, add a local form transform only when the control and API
-shapes differ.
-Keep custom action schemas separate from standard CRUD schemas.
+Use raw schemas for record, query, create, and update operations. Export the
+schemas and inferred types from the module schema file. Do not add a resource
+schema wrapper. A form definition selects its own input keys with
+`defineForm({ schema, fields, ... })`. Keep custom action schemas separate
+from standard operation schemas.
 
 For file/image fields in standard or custom actions, read the
 [asset-object contract](../carta-module-development/references/frontend-field-contract.md#asset-fields)
 before selecting the write schema. Use that contract to resolve an input mismatch.
 
-Use one `defineFields` catalog. Select only each action's fields in its required
-order. A schema key string uses the app field default; a field reference adds
-module behavior. One terminal `.override(...)` handles one action difference.
-Keep `display.read` for display projection and `form.write` for necessary submit
-conversion. Omit identity functions and copied input/output type wrappers.
+Define form inputs, table columns, and detail fields independently with
+`defineForm`, `defineTable`, and `defineDetail`. Each map uses keys from its own
+schema. Reuse plain display fragments with object spread in the table and
+detail maps. A display fragment does not define an input. Use schema transforms
+for input-to-output conversion and display definitions for read-only values.
 
 For state-dependent inputs, supply the current record through form context.
 Match required state and submit validation to the server predicate, including
@@ -44,10 +43,10 @@ server-owned data. Show editable required fields. Supply fixed values through
 `initialData`; keep server-owned values out of client write schemas. Do not add
 hidden controls merely to satisfy a schema.
 
-Use `form.initialValue` for a fresh omitted-key default. Loaded values and
-explicit `false`, `null`, or empty values must win. The draft stores control
-values; the submit copy passes through the field writer, schema, then business
-validators. A failed submit must preserve the draft.
+Use an input `initialValue` factory only for a fresh omitted-key default. Use
+`initialData` for a fixed draft. Loaded values and explicit `false`, `null`, or
+empty values must win. The draft stores control values; the schema parses the
+draft before submit. A failed submit must preserve the draft.
 
 ## Select controls
 
@@ -65,9 +64,8 @@ for form-owned row arrays. If those cannot express one domain value, use the
 
 The outer form owns label, required state, error, help, and grid span.
 
-Use `defineFields` for component-derived prop checks. Include `form.renderer`
-when overriding props so the override is checked. For separate prop objects,
-use `satisfies FormRendererProps<'renderer-key'>` from
+Use `defineForm` to infer its selected input keys and renderer props. For a
+separate prop object, use `satisfies FormRendererProps<'renderer-key'>` from
 `@southneuhof/loom/renderers/formContracts`. Known props keep their
 component types; extra props remain open. Broad field annotations do not prove
 prop validity. Check extra prop names against the component; type checks cannot
@@ -97,10 +95,12 @@ For each new or changed relation, use the
 Complete its API display data and list/detail projection with the form, rather
 than leaving display work for a later assignment.
 
-Use the owner resource as `source`. Its `list` action supplies server search and
-paging; `detail` resolves a selected record outside the current page. Static
-arrays are for closed choices, not database collections. Pass filters through
-`searchParameters`; the owner endpoint owns their contract.
+Pass explicit loaders in `source`: standard option inputs use
+`{ load, namespace? }`, such as `roles.list.table.load` and its namespace.
+Lookup adds `loadDetail(context)` that delegates to the owner's detail loader;
+its props include a separate table definition. Use renderer `data` props for
+static choices. Pass filters through `searchParameters`; the owner endpoint
+owns their contract.
 
 For a parent-dependent field:
 
@@ -123,9 +123,10 @@ supply reserved `context.operation` and `context.permission`. Where the source
 requires action scope, use that permission rather than a hard-coded create
 permission. The server validates it; a query parameter grants no authority.
 
-For multi lookup/select, use `selectionValues(exactItemSchema)`: keep exact
-selected record objects and submit them unchanged. Do not add an ID-array
-writer.
+Match multi-selection values to the raw form schema. Multi-choice controls can
+emit selected record objects; accept that input shape or transform it in the
+raw schema when the operation takes identities. The `users` form shows this
+contract for role selections.
 
 ## Connect writes
 

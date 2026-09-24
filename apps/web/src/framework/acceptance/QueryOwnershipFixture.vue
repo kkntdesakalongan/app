@@ -1,25 +1,9 @@
 <script setup lang="ts">
-/**
- * Acceptance fixture for the design requirements that are easiest to regress
- * during simplification. It is a framework contract test, not demo code, and it
- * is deliberately not reachable from production navigation.
- *
- * It proves:
- *  - two different resources own independent URL query namespaces with no
- *    `v-model:query`;
- *  - one resource mounted twice needs an explicit `namespace` only on the
- *    second instance;
- *  - synchronous/offline and asynchronous loaders use the same contract;
- *  - a local query object never touches the URL;
- *  - an exceptional `read` field and a `behavior` option coexist with ordinary
- *    fields that need neither.
- */
 import { ref } from 'vue'
-import { defineFields, defineResource, Form, Table } from '@southneuhof/loom'
-import type { FieldsInput, WebResourceSchema } from '@southneuhof/loom'
-import { defineSchema } from '@/framework/schema'
+import { defineForm, defineResource, defineTable, Form, Table } from '@southneuhof/loom'
+import { z } from 'zod/v4'
 
-interface Row extends Record<string, unknown> {
+type Row = {
   id: string
   name: string
   owner: string
@@ -31,75 +15,78 @@ const rows: Row[] = [
   { id: '2', name: 'Kedua', owner: '', rel_owner_name: 'Sari' },
 ]
 
-type FixtureSchema = WebResourceSchema<Row, Record<string, unknown>, Record<string, never>, Record<string, never>, string>
-const schema = defineSchema<FixtureSchema>({ identity: 'id' })
-const fields = defineFields(schema, {
-  name: { label: 'Nama', table: { sortable: true } },
-  owner: { label: 'Pemilik', display: { read: (record) => record.rel_owner_name } },
-})
-
-/** Ordinary resource: everything it needs is the catalog plus a loader. */
-const alpha = defineResource(schema, {
-  key: 'alpha',
-  actions: { list: { run: async () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } }), fields: [fields.name, fields.owner] } },
-})
-
-const beta = defineResource(schema, {
-  key: 'beta',
-  actions: { list: { run: async () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } }), fields: [fields.name, fields.owner] } },
-})
-
-/** The same contract, resolved synchronously with no promise in sight. */
-const offline = defineResource(schema, {
-  key: 'offline',
-  actions: { list: { run: () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } }), fields: [fields.name, fields.owner] } },
-})
-
-const alphaList = alpha.list()
-const alphaArchivedList = alpha.list({ namespace: 'archived' })
-const betaList = beta.list()
-const offlineList = offline.list()
-
-const localQuery = ref<Record<string, unknown>>({ page: 1, limit: 10 })
-
-interface Draft extends Record<string, unknown> {
-  kind?: string
-  reason?: string
-}
-
-const draftFields: FieldsInput<Draft> = {
-  kind: { label: 'Jenis', form: { renderer: undefined } },
-  reason: {
-    label: 'Alasan',
-    form: { behavior: { visible: ({ draft }) => draft.kind === 'lain' } },
+const rowSchema = z.object({ id: z.string(), name: z.string(), owner: z.string(), rel_owner_name: z.string() })
+const table = defineTable({
+  schema: rowSchema,
+  labels: { name: 'Nama', owner: 'Pemilik' },
+  columns: {
+    name: { sortable: true },
+    owner: { read: (record: Row) => record.rel_owner_name },
   },
-}
+})
 
-const submitted = ref<Draft>()
+const alpha = defineResource({
+  key: 'alpha',
+  identity: (record: Row) => record.id,
+  list: { permission: null, table: { ...table, load: async () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } }) } },
+})
+
+const beta = defineResource({
+  key: 'beta',
+  identity: (record: Row) => record.id,
+  list: { permission: null, table: { ...table, load: async () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } }) } },
+})
+
+const offline = defineResource({
+  key: 'offline',
+  identity: (record: Row) => record.id,
+  list: { permission: null, table: { ...table, load: () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } }) } },
+})
+
+const alphaList = alpha.list
+const alphaArchivedList = {
+  ...alpha.list,
+  table: { ...alpha.list.table, namespace: 'archived' },
+}
+const betaList = beta.list
+const offlineList = offline.list
+const localQuery = ref<Record<string, unknown>>({ page: 1, limit: 10 })
+const localLoad = () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } })
+
+const draftSchema = z.object({ kind: z.string().optional(), reason: z.string().optional() })
+const draftForm = defineForm({
+  schema: draftSchema,
+  fields: {
+    kind: { label: 'Jenis', renderer: 'text' },
+    reason: { label: 'Alasan', behavior: { visible: ({ draft }) => draft.kind === 'lain' } },
+  },
+  submit: (draft) => draft,
+})
+const submitted = ref<z.output<typeof draftSchema>>()
 </script>
 
 <template>
   <div>
-    <section data-fixture="two-resources">
-      <Table :fields="alphaList.fields" :load="alphaList.run" :namespace="alphaList.namespace" />
-      <Table :fields="betaList.fields" :load="betaList.run" :namespace="betaList.namespace" />
+    <section id="fixture-two-resources">
+      <Table v-bind="alphaList.table" />
+      <Table v-bind="betaList.table" />
     </section>
 
-    <section data-fixture="duplicate-resource">
-      <Table :fields="alphaList.fields" :load="alphaList.run" :namespace="alphaList.namespace" />
-      <Table :fields="alphaArchivedList.fields" :load="alphaArchivedList.run" :namespace="alphaArchivedList.namespace" />
+    <section id="fixture-duplicate-resource">
+      <Table v-bind="alphaList.table" />
+      <Table v-bind="alphaArchivedList.table" />
     </section>
 
-    <section data-fixture="offline">
-      <Table :fields="offlineList.fields" :load="offlineList.run" :namespace="offlineList.namespace" />
+    <section id="fixture-offline">
+      <Table v-bind="offlineList.table" />
     </section>
 
-    <section data-fixture="local-query">
-      <Table :fields="alphaList.fields" :load="() => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } })" :query="localQuery" />
+    <section id="fixture-local-query">
+      <Table v-bind="table" :load="localLoad" :query="localQuery" />
     </section>
 
-    <section data-fixture="draft">
-      <Form :fields="draftFields" :initial-data="{ kind: 'biasa' }" :submit="(draft: Draft) => (submitted = draft)" />
+    <section id="fixture-draft">
+      <Form v-bind="draftForm" :initial-data="{ kind: 'biasa' }" @submitted="submitted = $event" />
     </section>
   </div>
 </template>

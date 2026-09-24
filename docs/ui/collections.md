@@ -41,11 +41,18 @@ are not clearable and do not own router query state.
 A required query filter remains a `ChipFilter`; its required selection does
 not turn it into a tab surface.
 
-## Field display values
+## Display values
 
-Plain string fields use the default text. Each other visible field needs an
-explicit display choice in `defineFields`. Numbers, booleans, and dates
-accept a `format`, a `renderer`, or a `read`. Enums, selections, lookups,
-objects, and arrays need a `renderer` or a `read`; a format alone cannot
-render chips, tags, or lookups. This covers list, detail, and table rows.
-Unknown schema kinds never require a choice.
+`defineTable` owns an ordered `columns` map. `defineDetail` owns an independent
+`fields` map. Reuse plain display fragments with object spread when several
+surfaces need the same renderer, accessor, or format. Keep a column or detail
+field in the map only when it belongs on that surface.
+
+Scalar values can use their default text display. Dates need a date format.
+Structured values need a renderer or an accessor/formatter that returns
+displayable text. Do not show `[object Object]`. Use a named relation value,
+not its stored ID. Run the source checker after resource changes:
+
+```sh
+node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
+```

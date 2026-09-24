@@ -129,7 +129,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onGlobalKeydown))
 <template>
   <button
     ref="trigger"
-    data-command-palette-trigger
+    v-bind="{ 'data-command-palette-trigger': true }"
     type="button"
     aria-label="Open navigation"
     aria-haspopup="dialog"
@@ -151,7 +151,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onGlobalKeydown))
         <input
           ref="input"
           v-model="query"
-          data-command-palette-input
+          v-bind="{ 'data-command-palette-input': true }"
           type="search"
           autocomplete="off"
           placeholder="Search navigation..."

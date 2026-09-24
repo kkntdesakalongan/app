@@ -1,13 +1,26 @@
-import type { WebResourceSchema } from '@southneuhof/loom'
-import { defineSchema } from '@/framework/schema'
+import { z } from 'zod/v4'
+import { rpc } from '@/framework/rpc'
+import { checkedHonoRecordSchema } from '@/framework/schema'
 
-export type RolePermission = {
-  id: string
-  permissionCode: string
-  name: string
-  description: string | null
-  assigned: boolean
-}
-export type RolePermissionSchema = WebResourceSchema<RolePermission, Record<string, unknown>, Record<string, never>, Record<string, never>, string>
+const endpoint = { list: { $get: rpc.roles[':roleId'].permissions.$get } }
 
-export const rolePermissionsSchema = defineSchema<RolePermissionSchema>({ identity: 'id' })
+export const rolePermissionRecordSchema = checkedHonoRecordSchema(
+  endpoint,
+  z.object({
+    id: z.string(),
+    permissionCode: z.string(),
+    name: z.string(),
+    description: z.string().nullable(),
+    assigned: z.boolean(),
+  })
+)
+
+export const rolePermissionsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().optional(),
+  search: z.string().optional(),
+  sort_by: z.enum(['permissionCode', 'name', 'description', 'assigned']).optional(),
+  sort: z.enum(['asc', 'desc']).optional(),
+})
+
+export type RolePermission = z.output<typeof rolePermissionRecordSchema>

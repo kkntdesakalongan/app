@@ -1,150 +1,48 @@
-import { fromZod } from '@southneuhof/loom'
-import type {
-  CheckedSchemaIdentity,
-  FormValidatorInput,
-  IdentityFunction,
-  IdentityKeyOf,
-  InvalidSchemaIdentity,
-  RecordIdentity,
-  SchemaIdentityDeclaration,
-  WebResourceCreateOf,
-  WebResourceQueryOf,
-  WebResourceRecordOf,
-  WebResourceSchema,
-  WebResourceSchemaBoundary,
-  WebResourceUpdateOf,
-} from '@southneuhof/loom'
-import type { AppResourceContract, HonoCreateOf, HonoQueryOf, HonoRecordOf, HonoUpdateOf } from './hono/contracts'
+import type { HonoCreateOf, HonoQueryOf, HonoRecordOf, HonoResponseRecordOf, HonoUpdateOf } from './hono/contracts'
 
-type SchemaSource = Parameters<typeof fromZod>[0] & { _input: unknown; _output: object }
-type SchemaOutput<TSchema> = TSchema extends { _output: infer TOutput } ? TOutput : never
-type Exact<TActual, TExpected> = [TActual] extends [TExpected] ? ([TExpected] extends [TActual] ? true : false) : false
-type ShapeOf<TSchema> = TSchema extends { shape: infer TShape } ? (TShape extends (...args: never[]) => infer TResult ? TResult : TShape) : never
-type FieldInput<TField> = TField extends { _input: infer TInput } ? TInput : never
-type RequiredKeys<TSchema> =
-  ShapeOf<TSchema> extends infer TShape
-    ? TShape extends Record<string, { _input: unknown }>
-      ? { [TKey in keyof TShape]: undefined extends FieldInput<TShape[TKey]> ? never : TKey }[keyof TShape]
+type RawSchemaSource = { readonly _input: unknown; readonly _output: object }
+type SchemaOutput<TSchema> = TSchema extends { readonly _output: infer TOutput } ? TOutput : never
+type SameType<TLeft, TRight> =
+  (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight ? 1 : 2 ? ((<T>() => T extends TRight ? 1 : 2) extends <T>() => T extends TLeft ? 1 : 2 ? true : false) : false
+type IsAny<TValue> = 0 extends 1 & TValue ? true : false
+type SchemaShape<TSchema> = TSchema extends { shape: infer TShape } ? (TShape extends (...args: never[]) => infer TResult ? TResult : TShape) : never
+type SchemaFieldInput<TField> = TField extends { readonly _input: infer TInput } ? TInput : never
+type RequiredSchemaKeys<TSchema> =
+  SchemaShape<TSchema> extends infer TShape
+    ? TShape extends Record<string, { readonly _input: unknown }>
+      ? { [TKey in keyof TShape]: undefined extends SchemaFieldInput<TShape[TKey]> ? never : TKey }[keyof TShape]
       : never
     : never
-type SourceAt<TDefinition, TKey extends PropertyKey> = TDefinition extends Record<TKey, infer TSchema> ? TSchema : never
-type WriteContract<TWire extends object, TSchema> = TSchema extends SchemaSource
-  ? [SchemaOutput<TSchema>] extends [TWire]
-    ? [RequiredKeys<TSchema>] extends [keyof TWire]
-      ? TSchema
+type RecordOutputGuard<TSchema extends RawSchemaSource, TRecord extends object> = SameType<SchemaOutput<TSchema>, TRecord> extends true ? unknown : never
+type ResponseRecordOutputGuard<TSchema extends RawSchemaSource, TRecord> = IsAny<TRecord> extends true ? unknown : TRecord extends object ? RecordOutputGuard<TSchema, TRecord> : never
+type QueryOutputGuard<TSchema extends RawSchemaSource, TQuery extends object> = [SchemaOutput<TSchema>] extends [TQuery] ? unknown : never
+type WriteOutputGuard<TSchema extends RawSchemaSource, TWrite extends object> = [SchemaOutput<TSchema>] extends [TWrite]
+  ? Exclude<keyof SchemaOutput<TSchema>, keyof TWrite> extends never
+    ? Exclude<RequiredSchemaKeys<TSchema>, keyof TWrite> extends never
+      ? unknown
       : never
     : never
   : never
 
-type CheckedIdentity<TRecord extends object, TDefinition> = CheckedSchemaIdentity<TRecord, TDefinition extends { identity?: infer TDeclaration } ? TDeclaration : undefined>
-
-type Definition<TRecord extends object, TQuery extends object, TCreate extends object, TUpdate extends object, TDefinition extends object = { identity?: SchemaIdentityDeclaration<TRecord> }> = {
-  identity?: TDefinition extends { identity?: infer TDeclaration }
-    ? [TDeclaration] extends [IdentityKeyOf<TRecord>]
-      ? TDeclaration
-      : [TDeclaration] extends [readonly IdentityKeyOf<TRecord>[]]
-        ? TDeclaration
-        : [TDeclaration] extends [IdentityFunction<TRecord>]
-          ? TDeclaration
-          : SchemaIdentityDeclaration<TRecord>
-    : SchemaIdentityDeclaration<TRecord>
-  record?: SchemaSource
-  query?: SchemaSource
-  create?: SchemaSource
-  update?: SchemaSource
-  validators?: {
-    create?: readonly FormValidatorInput<TCreate>[]
-    update?: readonly FormValidatorInput<TUpdate>[]
-  }
-} & CheckedIdentity<TRecord, TDefinition>
-type RouteDefinitionShape<TRoute> = Omit<Definition<HonoRecordOf<TRoute>, HonoQueryOf<TRoute>, HonoCreateOf<TRoute>, HonoUpdateOf<TRoute>>, 'record' | 'create' | 'update' | 'validators'> & {
-  validators?: ('create' extends keyof TRoute ? { create?: readonly FormValidatorInput<HonoCreateOf<TRoute>>[] } : { create?: never }) &
-    ('update' extends keyof TRoute ? { update?: readonly FormValidatorInput<HonoUpdateOf<TRoute>>[] } : { update?: never })
-} & ('create' extends keyof TRoute ? { create: SchemaSource } : { create?: never }) &
-  ('update' extends keyof TRoute ? { update: SchemaSource } : { update?: never })
-type RouteDefinitionContract<TRoute, TDefinition extends RouteDefinitionShape<TRoute>, TRecordSchema extends SchemaSource> = {
-  record: Exact<SchemaOutput<TRecordSchema>, HonoRecordOf<TRoute>> extends true ? TRecordSchema : never
-} & (TDefinition extends { query: infer TQuery } ? { query: Exact<SchemaOutput<TQuery>, HonoQueryOf<TRoute>> extends true ? TQuery : never } : object) &
-  ('create' extends keyof TRoute ? { create: WriteContract<HonoCreateOf<TRoute>, SourceAt<TDefinition, 'create'>> } : object) &
-  ('update' extends keyof TRoute ? { update: WriteContract<HonoUpdateOf<TRoute>, SourceAt<TDefinition, 'update'>> } : object)
-
-type CustomDefinition<TContract extends WebResourceSchemaBoundary> = {
-  identity?: SchemaIdentityDeclaration<WebResourceRecordOf<TContract>>
-  record?: SchemaSource & { _output: WebResourceRecordOf<TContract> }
-  query?: SchemaSource & { _output: WebResourceQueryOf<TContract> }
-  create?: SchemaSource & { _output: WebResourceCreateOf<TContract> }
-  update?: SchemaSource & { _output: WebResourceUpdateOf<TContract> }
-  validators?: {
-    create?: readonly FormValidatorInput<WebResourceCreateOf<TContract>>[]
-    update?: readonly FormValidatorInput<WebResourceUpdateOf<TContract>>[]
-  }
+export function checkedHonoRecordSchema<const TRoute, const TSchema extends RawSchemaSource>(_route: TRoute, schema: TSchema & RecordOutputGuard<TSchema, HonoRecordOf<TRoute>>): TSchema {
+  return schema
 }
-type RuntimeDefinition = Omit<Definition<object, object, object, object>, 'identity'> & {
-  identity?: string | readonly string[] | ((record: never) => RecordIdentity)
-}
-type OutputAt<TDefinition, TKey extends PropertyKey> = SourceAt<TDefinition, TKey> extends SchemaSource ? SchemaOutput<SourceAt<TDefinition, TKey>> : object
-type IdentityAt<TDefinition> = SourceAt<TDefinition, 'identity'>
-type InferredRecord<TDefinition> = SchemaOutput<SourceAt<TDefinition, 'record'>> & object
-type HasRecordSource<TDefinition> = [SourceAt<TDefinition, 'record'>] extends [never]
-  ? false
-  : [IdentityAt<TDefinition>] extends [undefined]
-    ? // With no explicit identity the record source decides: the overload
-      // guard checks the `id` default through CheckedSchemaIdentity.
-      true
-    : [IdentityAt<TDefinition>] extends [string]
-      ? [Extract<keyof InferredRecord<TDefinition>, string>] extends [never]
-        ? false
-        : 'id' extends Extract<keyof InferredRecord<TDefinition>, string>
-          ? true
-          : IdentityAt<TDefinition> extends Extract<keyof InferredRecord<TDefinition>, string>
-            ? true
-            : false
-      : true
-type InferredContract<TDefinition> = WebResourceSchema<
-  OutputAt<TDefinition, 'record'>,
-  OutputAt<TDefinition, 'query'>,
-  OutputAt<TDefinition, 'create'>,
-  OutputAt<TDefinition, 'update'>,
-  RecordIdentity
->
 
-export function defineSchema<const TRoute, const TRecordSchema extends SchemaSource, const TDefinition extends RouteDefinitionShape<TRoute>>(
-  route: TRoute,
-  definition: TDefinition & { record: TRecordSchema } & RouteDefinitionContract<TRoute, TDefinition, TRecordSchema>
-): AppResourceContract<TRoute>
-export function defineSchema<const TDefinition extends RuntimeDefinition>(
-  definition: HasRecordSource<TDefinition> extends true
-    ? [IdentityAt<TDefinition>] extends [undefined]
-      ? TDefinition & CheckedSchemaIdentity<InferredRecord<TDefinition>, undefined>
-      : [IdentityAt<TDefinition>] extends [readonly []]
-        ? TDefinition & InvalidSchemaIdentity
-        : [IdentityAt<TDefinition>] extends [SchemaIdentityDeclaration<InferredRecord<TDefinition>>]
-          ? TDefinition & CheckedSchemaIdentity<InferredRecord<TDefinition>, IdentityAt<TDefinition>>
-          : TDefinition & InvalidSchemaIdentity
-    : TDefinition
-): InferredContract<TDefinition>
-export function defineSchema<const TContract extends WebResourceSchemaBoundary>(definition: CustomDefinition<TContract>): TContract
-export function defineSchema(routeOrDefinition: unknown, definition?: RuntimeDefinition): WebResourceSchemaBoundary {
-  const source = definition ?? (routeOrDefinition as RuntimeDefinition)
-  return {
-    ...(source.identity === undefined ? {} : { identity: source.identity }),
-    ...(source.record === undefined ? {} : { record: { schema: fromZod(source.record) } }),
-    ...(source.query === undefined ? {} : { query: { schema: fromZod(source.query) } }),
-    ...(source.create === undefined && source.validators?.create === undefined
-      ? {}
-      : {
-          create: {
-            ...(source.create === undefined ? {} : { schema: fromZod(source.create) }),
-            ...(source.validators?.create === undefined ? {} : { validators: source.validators.create }),
-          },
-        }),
-    ...(source.update === undefined && source.validators?.update === undefined
-      ? {}
-      : {
-          update: {
-            ...(source.update === undefined ? {} : { schema: fromZod(source.update) }),
-            ...(source.validators?.update === undefined ? {} : { validators: source.validators.update }),
-          },
-        }),
-  }
+export function checkedHonoResponseRecordSchema<const TEndpoint, const TSchema extends RawSchemaSource>(
+  _endpoint: TEndpoint,
+  schema: TSchema & ResponseRecordOutputGuard<TSchema, HonoResponseRecordOf<TEndpoint, 200>>
+): TSchema {
+  return schema
+}
+
+export function checkedHonoQuerySchema<const TRoute, const TSchema extends RawSchemaSource>(_route: TRoute, schema: TSchema & QueryOutputGuard<TSchema, HonoQueryOf<TRoute>>): TSchema {
+  return schema
+}
+
+export function checkedHonoCreateSchema<const TRoute, const TSchema extends RawSchemaSource>(_route: TRoute, schema: TSchema & WriteOutputGuard<TSchema, HonoCreateOf<TRoute>>): TSchema {
+  return schema
+}
+
+export function checkedHonoUpdateSchema<const TRoute, const TSchema extends RawSchemaSource>(_route: TRoute, schema: TSchema & WriteOutputGuard<TSchema, HonoUpdateOf<TRoute>>): TSchema {
+  return schema
 }

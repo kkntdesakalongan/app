@@ -1,3 +1,4 @@
+<route>{ "meta": { "permission": "list-role-permissions" } }</route>
 <script setup lang="ts">
 import { computed, ref, type DirectiveBinding } from 'vue'
 import { useRoute } from 'vue-router'
@@ -11,14 +12,13 @@ import { rolePermissions } from './role-permissions.resource'
 const route = useRoute('settings-roles-detail-permissions')
 const roleId = computed(() => String(route.params.roleId))
 const pending = ref(new Map<string, boolean>())
-const list = computed(() => rolePermissions.list({ searchParameters: { role_id: roleId.value } }))
+const list = computed(() => ({
+  ...rolePermissions.list,
+  table: { ...rolePermissions.list.table, searchParameters: { role_id: roleId.value } },
+}))
 
 function rowKey(id: string) {
   return `${roleId.value}:${id}`
-}
-
-function permissionRow(record: Record<string, unknown>) {
-  return record as unknown as RolePermission
 }
 
 function assigned(row: RolePermission) {
@@ -45,7 +45,6 @@ async function toggle(row: RolePermission) {
   pending.value.set(key, next)
   try {
     await rolePermissions.actions.set.run(roleId.value, row.id, next)
-    await rolePermissions.invalidate()
   } catch (error) {
     toast.error(errorMessage(error, 'Permission update failed.'))
   } finally {
@@ -58,11 +57,11 @@ async function toggle(row: RolePermission) {
   <ListView v-bind="list" title="Permissions" :export="false">
     <template #cell:assigned="{ record }">
       <Switch
-        v-permission-switch="permissionRow(record)"
-        :model-value="assigned(permissionRow(record))"
-        :data-permission="permissionRow(record).id"
-        :disabled="!canToggle(permissionRow(record)) || pending.has(rowKey(permissionRow(record).id))"
-        @update:model-value="toggle(permissionRow(record))"
+        v-permission-switch="record"
+        :model-value="assigned(record)"
+        v-bind="{ 'data-permission': record.id }"
+        :disabled="!canToggle(record) || pending.has(rowKey(record.id))"
+        @update:model-value="toggle(record)"
       />
     </template>
   </ListView>

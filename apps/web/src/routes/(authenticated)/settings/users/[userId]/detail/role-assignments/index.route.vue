@@ -1,3 +1,4 @@
+<route>{ "meta": { "permission": "view-role-assignments" } }</route>
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -16,18 +17,13 @@ function canToggle(row: RoleAssignment) {
   return roleAssignments.actions.set.can(userId.value, String(row.id), !row.assigned)
 }
 
-const list = computed(() =>
-  roleAssignments.list({
-    searchParameters: { userId: userId.value },
-  })
-)
+const list = computed(() => ({
+  ...roleAssignments.list,
+  table: { ...roleAssignments.list.table, searchParameters: { userId: userId.value } },
+}))
 
 function isPending(roleId: string) {
   return pending.value.has(roleId)
-}
-
-function roleRow(record: Record<string, unknown>) {
-  return record as unknown as RoleAssignment
 }
 
 async function toggle(row: RoleAssignment) {
@@ -37,7 +33,6 @@ async function toggle(row: RoleAssignment) {
   pending.value = new Set(pending.value).add(roleId)
   try {
     await roleAssignments.actions.set.run(userId.value, roleId, assigned)
-    await roleAssignments.invalidate()
   } catch (error) {
     toast.error(errorMessage(error, 'Role assignment update failed.'))
   } finally {
@@ -53,13 +48,10 @@ async function toggle(row: RoleAssignment) {
     <ListView title="Role Assignments" v-bind="list">
       <template #row-actions="{ record }">
         <Switch
-          :model-value="roleRow(record).assigned"
-          role="switch"
-          :data-role="roleRow(record).id"
-          :aria-checked="roleRow(record).assigned"
-          :disabled="isPending(String(roleRow(record).id)) || !canToggle(roleRow(record))"
-          :aria-label="`Role ${roleRow(record).name}`"
-          @update:model-value="toggle(roleRow(record))"
+          :model-value="record.assigned"
+          v-bind="{ role: 'switch', 'data-role': record.id, 'aria-checked': record.assigned, 'aria-label': `Role ${record.name}` }"
+          :disabled="isPending(record.id) || !canToggle(record)"
+          @update:model-value="toggle(record)"
         />
       </template>
     </ListView>

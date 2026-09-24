@@ -3,10 +3,6 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { FormView } from '@southneuhof/loom'
 import { users } from '../users.resource'
-import { user } from '@southneuhof/api/routes/(authenticated)/users/users.entity'
-import type { z } from 'zod/v4'
-
-type UserUpdate = z.input<typeof user.schemas.update>
 
 // Not listed in the parent tab array, so it is reachable from the update
 // control and by URL, but is never a tab.
@@ -14,15 +10,19 @@ type UserUpdate = z.input<typeof user.schemas.update>
 const route = useRoute('settings-users-edit')
 const userId = computed(() => route.params.userId)
 const form = computed(() => {
-  const action = users.update({ id: userId.value })
+  const page = users.update({ id: userId.value })
+  const submit = page.form.submit
   return {
-    ...action,
-    run: async (input: UserUpdate) => {
-      const current = await users.detail({ id: userId.value }).run()
-      if (!current) throw new Error('User not found.')
-      if (current.statusCode === 'active' && input.statusCode && input.statusCode !== 'active' && !window.confirm('Disabling this user will end all active sessions. Continue?'))
-        throw new Error('Status change cancelled.')
-      return action.run(input)
+    ...page,
+    form: {
+      ...page.form,
+      submit: async (input: Parameters<typeof submit>[0]) => {
+        const current = await users.detail({ id: userId.value }).detail.load({ searchParameters: {} })
+        if (!current) throw new Error('User not found.')
+        if (current.statusCode === 'active' && input.statusCode && input.statusCode !== 'active' && !window.confirm('Disabling this user will end all active sessions. Continue?'))
+          throw new Error('Status change cancelled.')
+        return submit(input)
+      },
     },
   }
 })

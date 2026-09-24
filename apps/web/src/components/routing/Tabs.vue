@@ -97,7 +97,7 @@ watchEffect(() => {
         :key="tab.action.to?.name"
         :to="tab.to"
         class="min-w-max text-start focus-visible:outline-none"
-        :data-tab="tab.action.to?.name"
+        v-bind="{ 'data-tab': tab.action.to?.name }"
         :aria-current="tab.active ? 'page' : undefined"
       >
         <Card :color="tab.active ? 'primaryContainer' : 'surfaceContainer'">

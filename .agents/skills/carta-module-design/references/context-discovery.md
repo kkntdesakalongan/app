@@ -52,7 +52,7 @@ work establishes cross-module knowledge worth retaining, create
 - pointers to source owners and approved feature designs;
 - known gaps and application-specific examples explicitly marked as such.
 
-Keep field catalogs, command lists and code details in their existing owners.
+Keep surface definitions, command lists and code details in their existing owners.
 Revalidate the entries this change depends on, including relevant dirty or
 untracked source. A stale entry is a lead to investigate, not a settled fact.
 Update changed map entries after implementation is verified; desired behavior

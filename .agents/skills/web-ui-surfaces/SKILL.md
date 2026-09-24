@@ -27,7 +27,10 @@ refresh ownership, or a named framework gap. Keep these
 decisions in the existing work record and reuse them for matching interactions.
 
 Read `docs/architecture/web-application-architecture.md` when ownership or app
-integration is unclear; use `docs/ui/README.md` for technical UI references.
+integration is unclear. Read
+`docs/resource_system_overhaul/ARCHITECTURE.md` before changing resource
+declarations or their type boundaries. Use `docs/ui/README.md` for technical UI
+references.
 Inspect `apps/web/src/main.ts`, app defaults or the authenticated layout only
 when changing their setup or resolving a registration/default problem. Read
 the navigation manifest when adding an entry. Keep framework changes within scope.
@@ -65,13 +68,14 @@ against the required result, not merely whether a slot supports them.
 | Any user input, including custom actions and inline uploads; read before selecting controls | [Build resource forms](../build-resource-form/SKILL.md) |
 
 Routes own URLs, query state, navigation, dialogs, and workflow feedback.
-Schemas own data validation. A resource owns standard actions and one shared
-field catalog. Pass the returned action directly to its View:
+Schemas own data validation. A resource binds independent form, table, and
+detail definitions to standard operations. Its list and create bags are static;
+detail and update bags bind an identity:
 
 ```vue
-<ListView v-bind="records.list()" />
+<ListView v-bind="records.list" />
 <DetailView v-bind="records.detail({ id })" />
-<FormView v-bind="records.create()" />
+<FormView v-bind="records.create" />
 <FormView v-bind="records.update({ id })" />
 ```
 

@@ -18,6 +18,7 @@ Table and Detail currently resolve universal fields and invoke separate renderer
 - `packages/loom/src/components/core/Detail.vue:21-29,40-45,74-83` resolves fields, reads values, and renders with the `detail` registry.
 - `packages/loom/src/services/export.ts:1-13,60-70` accepts `ResolvedSurfaceField[]` for workbook export.
 - `packages/loom/src/renderers/registry.ts:36-40` has separate `table` and `detail` registries. Existing browser pattern: `components/core/__tests__/Table.browser.spec.ts`.
+- `packages/utilities/src/parse.ts:12-32` allows app-configured custom formatter keys. Keep those keys valid after configuration, while rejecting unknown keys at display execution.
 - `DESIGN.md:59-63,90-93` calls for readable collection columns, relation names, status chips, dates, and asset previews. Use explicit definitions, not property-name defaults.
 
 Current export type (`services/export.ts:1-13`):
@@ -39,17 +40,17 @@ export interface ExportRequest<TRecord extends object, TQuery extends object> {
 
 ## Scope
 
-**In:** `packages/loom/src/display/{resolveDisplay,DisplayValue,requirements}.*`, `components/core/{Table,TableContent,TreeTable,Detail,Collection,useCoreData,useTablePreferences}.vue` or `.ts` as applicable, `services/{export,excel}.ts`, display renderer files, their tests and type fixtures, browser config if a new spec is added.
+**In:** `packages/loom/src/display/{resolveDisplay,DisplayValue,requirements}.*`, `components/core/{Table,TableContent,TreeTable,Detail,Collection,useCoreData,useTablePreferences}.vue` or `.ts` as applicable, `services/{export,excel}.ts`, display renderer files, their tests and type fixtures, browser config if a new spec is added. `packages/utilities/src/parse.ts` and its tests are in scope only if display execution needs a read-only way to check configured formatter keys.
 
 **Out:** Form sessions, resources, app defaults, transport/backend, unrelated provider operations. Keep current collection query, slot, pagination, reorder, preference, and resize behavior.
 
 ## Git workflow
 
-Continue on `advisor/resource-surface-overhaul` after Plan 051. Do not ship an intermediate state. Do not commit or push unless asked.
+Continue on `resource_system_overhaul` after Plan 051. Do not ship an intermediate state. Do not commit or push unless asked.
 
 ## Steps
 
-1. Resolve ordered columns/detail entries from their own definitions and labels. Implement one pure `record -> read/property -> format -> renderer` path in `display/resolveDisplay.ts` and `DisplayValue.vue`. A missing renderer renders scalar/nullish text; reject structured fallback, unknown renderer/format, and invalid `sortKey` with §10.2 diagnostics. **Verify:** `pnpm --filter @southneuhof/loom exec vitest run src/display/__tests__/resolveDisplay.spec.ts --environment jsdom` exits 0; tests cover keys, computed entries, status/date/asset formatting, no mutation, and diagnostics.
+1. Resolve ordered columns/detail entries from their own definitions and labels. Implement one pure `record -> read/property -> format -> renderer` path in `display/resolveDisplay.ts` and `DisplayValue.vue`. A missing renderer renders scalar/nullish text; reject structured fallback, unknown renderer/format, and invalid `sortKey` with §10.2 diagnostics. Accept app-configured formatter keys after configuration; constructors cannot inspect app state. **Verify:** `pnpm --filter @southneuhof/loom exec vitest run src/display/__tests__/resolveDisplay.spec.ts --environment jsdom` exits 0; tests cover keys, configured and unknown formats, computed entries, status/date/asset formatting, no mutation, and diagnostics.
 2. Bind Table, TreeTable, TableContent, and Detail to `columns` or detail `fields`. Keep `Collection` as the data/query owner and preserve `data` versus `load` guard. Use one display registry. **Verify:** `pnpm --filter @southneuhof/loom exec vitest run src/components/core/__tests__/table.spec.ts src/components/core/__tests__/TreeTable.spec.ts src/components/core/__tests__/detail.spec.ts --environment jsdom` exits 0; included type negatives reject old/cross-surface props.
 3. Make export use resolved visible columns and their accessor/format, without mounting a Vue component. Keep `mapValue`, exclusions, filenames, paging, and query ownership. **Verify:** `pnpm --filter @southneuhof/loom exec vitest run src/services/__tests__/export.spec.ts --environment jsdom` exits 0; tests compare rendered and workbook values, visible columns, and paging.
 4. Add the architecture §2.6 joined-role fixture: a single pure `roleIds` accessor reads joined names for Table and Detail. Count network calls at zero and show that mutation output need not carry the display join. **Verify:** `pnpm --filter @southneuhof/loom test:browser` exits 0 and the joined-role spec runs; `pnpm --filter @southneuhof/loom type-check` checks its typed fixture.

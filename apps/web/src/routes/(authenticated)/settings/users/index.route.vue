@@ -5,6 +5,6 @@ import { users } from './users.resource'
 
 <template>
   <div>
-    <ListView v-bind="users.list()" title="Users" />
+    <ListView v-bind="users.list" title="Users" />
   </div>
 </template>

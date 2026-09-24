@@ -1,0 +1,42 @@
+{
+  "kind": "bounded-module",
+  "slug": "users",
+  "table": "users",
+  "symbol": "User",
+  "title": "User",
+  "singular": "User",
+  "properties": [
+    { "key": "name", "type": "text", "label": "Name", "required": true },
+    { "key": "email", "type": "text", "label": "Email", "required": true },
+    { "key": "statusCode", "type": "text", "label": "Status" }
+  ],
+  "actions": {
+    "list": { "permission": "view-users" },
+    "detail": { "permission": "view-users" },
+    "update": { "permission": "update-users" }
+  },
+  "permissions": {
+    "view-users": { "name": "View users", "description": "View user records." },
+    "update-users": { "name": "Update users", "description": "Update user records." }
+  },
+  "navigation": { "group": "settings", "after": "settings-roles", "title": "User", "icon": "user" },
+  "surfaces": {
+    "display": {
+      "statusCode": {
+        "renderer": "chip",
+        "props": { "options": { "active": { "label": "Active" }, "expired": { "label": "Expired" } } }
+      }
+    },
+    "list": { "columns": { "name": { "sortable": true }, "email": {}, "statusCode": {} } },
+    "detail": { "fields": { "name": {}, "email": {}, "statusCode": {} } },
+    "update": { "inputs": { "name": { "renderer": "text" } } }
+  },
+  "seed": {
+    "records": [{ "id": "fixture-user", "name": "One", "email": "one@example.test", "statusCode": "active" }],
+    "updateFields": ["name"]
+  },
+  "test": {
+    "record": { "name": "One", "email": "one@example.test", "statusCode": "active" },
+    "update": { "name": "Two" }
+  }
+}

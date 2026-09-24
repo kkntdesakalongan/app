@@ -1,19 +1,84 @@
 # Forms
 
-Read this file for form fields, defaults, labels, actions, and structured input
-selection.
+Read this file for form schemas, input maps, defaults, labels, and custom
+actions. Read [DESIGN.md](../../DESIGN.md#actions-and-forms) before selecting
+the form surface or action placement.
 
-## Standard form path
+## Form definition
 
-Select the form surface and action placement from
-[DESIGN.md](../../DESIGN.md#actions-and-forms). The View supplies its navigation
-header. Framework forms use the app dictionary for default action text.
+Use a raw input schema with `defineForm`. Keep the selected inputs in that
+form's own ordered `fields` map. The keys must belong to the schema. A display
+map does not configure form inputs.
+
+```ts
+const createUserForm = defineForm({
+  schema: createUserSchema,
+  labels: userLabels,
+  fields: {
+    name: { renderer: 'text' },
+    email: { renderer: 'text', props: { type: 'email' } },
+    active: { renderer: 'switch', initialValue: true },
+  },
+  submit: usersActions.create,
+})
+```
+
+Use `initialData` for a fixed draft value. Use an input's `initialValue` only
+when that input needs a fresh value for each form session. Do not add hidden
+inputs only to satisfy a schema. The schema owns requiredness and the submitted
+shape.
+
+The draft uses control values. The schema parses that draft before `submit`
+runs. Use schema transforms for input-to-output conversion. Keep business
+validators in the form definition when they belong to the client workflow, and
+enforce the same rule on the server.
+
+## Resource forms
+
+Create uses one static form bag. Update binds identity and loads its draft in the
+resource form factory. Select update values explicitly in that loader:
+
+```ts
+const updateForm = defineForm({
+  schema: updateUserSchema,
+  labels: userLabels,
+  fields: { name: { renderer: 'text' }, active: { renderer: 'switch' } },
+})
+
+export const users = defineResource({
+  key: 'users',
+  identity: (record: Pick<User, 'id'>) => record.id,
+  create: {
+    permission: 'create-users',
+    form: createUserForm,
+  },
+  update: {
+    permission: 'update-users',
+    form: ({ id }) => ({
+      ...updateForm,
+      load: async context => {
+        const record = await usersActions.detail({ ...context, id })
+        return record ? { name: record.name, active: record.active } : undefined
+      },
+      submit: output => usersActions.update(id, output),
+    }),
+  },
+})
+```
+
+The route passes the resulting page bag to `FormView`:
+
+```vue
+<FormView v-bind="users.update({ id: String(route.params.userId) })" />
+```
+
+The update form owns its technical load and write. Do not add a page loader or
+show a fake detail operation to load the draft.
 
 ## Dialog forms
 
-Let `DialogForm` own its visibility for an ordinary contextual form. Supply the
-action, title, and trigger. For a row action, render one keyed dialog for each
-record:
+Use `DialogForm` for a short contextual form. Its trigger opens the form and it
+owns ordinary visibility and completion:
 
 ```vue
 <DialogForm :key="record.id" v-bind="items.update({ id: record.id })" title="Edit item">
@@ -23,90 +88,50 @@ record:
 </DialogForm>
 ```
 
-One dialog per record is the normal path. It keeps record identity and draft
-state local to that action. A shared selected-record ref is not necessary.
+Use one keyed dialog for each record action. Use `v-model:open` only when
+another page control must coordinate visibility. Validation and rejected writes
+keep the dialog and draft available. A successful write closes the dialog
+before `submitted` listeners run.
 
-Keep a custom submit target limited to the write. Start later cache invalidation
-and refetch from the `submitted` event. Report its failure as stale data. Do not
-rerun the write:
-
-```vue
-<DialogForm
-  :fields="fields"
-  :schema="schema"
-  :submit="saveEvaluation"
-  title="Add evaluation"
-  @submitted="invalidateAfterSave"
->
-  <template #trigger>
-    <Button>Add evaluation</Button>
-  </template>
-</DialogForm>
-```
-
-```ts
-const staleDataError = ref<string>()
-
-async function invalidateAfterSave() {
-  try {
-    await evaluations.invalidate()
-  } catch (error) {
-    staleDataError.value = errorMessage(error, 'Saved, but current data could not be refreshed.')
-  }
-}
-```
-
-A failed validation or write keeps the dialog and its draft available. A
-successful write closes the dialog before `submitted` listeners run. Use the
-named `v-model:open` only when another page control must coordinate visibility.
-This controlled form is the advanced option; it keeps the same validation and
-completion behavior.
-
-## Field defaults
-
-Select each schema field needed by the action. When a selected field has no
-resource override, the app field default owns its renderer, label, props, and
-initial value. This rule applies to recurring fields such as `active`.
-
-A resource defines a recurring field only when that resource needs behavior
-that differs from the app default. The presence of the field in the action is
-not an override.
-
-Use the registered framework renderer for each value. Calendar dates use the
-framework `date` renderer. Arrays of form-owned editable rows use the
-framework `table` renderer and `TableInput`.
-
-Field props use the component contract at compile time. A known component
-prop keeps its declared type, so `accept` on the `file` renderer takes
-`string[]`. Extra props stay valid, and required component props stay
-optional at authoring because defaults, sources, and adapters can supply
-them later. A custom renderer declares its key through module augmentation
-on `FormRendererComponents` and still needs runtime registration under the
-same key. No runtime prop validator is added.
-
-## Labels and instructions
-
-The outer form field owns the visible label, required state, error, help text,
-and grid span. A nested input or custom field renders the control only. This
-keeps one visible label for one field.
-
-Use disabled, hidden, and validation states to communicate field dependencies.
-Instructional prose follows [DESIGN.md](../../DESIGN.md#text-and-spacing).
+For a custom submit, keep the callback limited to the write. Start later refresh
+work from `submitted`. Report a refresh failure as stale data. Do not run the
+write again.
 
 ## Select a field implementation
 
-Use the first option that expresses the complete value contract:
+Use a registered input renderer, a framework composite, or `TableInput` for
+editable row arrays. Build a local custom field only for a named requirement
+that these controls do not support. The outer form owns the visible label,
+required state, error, help text, and grid span. A custom input renders the
+control only.
 
-1. A registered renderer with its source, props, and behavior.
-2. A framework composite.
-3. The `table` renderer and `TableInput` for editable row arrays.
-4. A module-owned custom field composed from framework inputs.
-5. A new framework primitive after an approved framework gap.
+Check renderer props against the component contract. Use a `satisfies`
+expression with the exported renderer prop type when a separate prop object
+needs a check. Keep input and display renderer registries separate.
 
-After selecting a custom field, read the local
-[custom field contract](../../.agents/skills/build-resource-form/references/custom-field-contract.md).
+## Relations and dependencies
 
-## Custom form pages
+Keep the submitted relation value separate from its display label. A form
+source loads choices; a display `read` accessor or display renderer shows the
+returned name in table and detail surfaces. Return the relation data needed for
+display from the API. Do not fetch one label per row.
 
-Apply [DESIGN.md](../../DESIGN.md#actions-and-forms) to custom form pages.
-The outer form retains field-label ownership when its body uses custom slots.
+Use pure synchronous behavior for dependencies. Keep hidden fields out of the
+form schema unless the submit contract needs their values. The server remains
+the authority for relation access and validation.
+
+## Assets
+
+Keep the stored asset object shape through read, edit, and submit. A single
+asset field stores one object or `null`; a multi asset field stores an array.
+Do not add client identity conversion or an input writer. Use shared upload
+readiness so a form cannot submit while upload work remains pending. The
+boundary example is
+[`assets.form.spec.ts`](../../apps/web/src/framework/adapters/assets.form.spec.ts).
+
+## Verification
+
+Use `$build-resource-form` and [UI verification](../../.agents/skills/web-ui-surfaces/references/verification.md).
+Choose a check that can fail on the changed behavior, such as draft loading,
+dependency reset, a selected relation, or failed-save recovery. Do not add tests
+that repeat input order, labels, renderer names, or standard framework behavior.

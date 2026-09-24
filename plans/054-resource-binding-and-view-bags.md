@@ -43,7 +43,7 @@ Current delegation (`resources/defineResource.ts:43-45`):
 
 ## Git workflow
 
-Continue on `advisor/resource-surface-overhaul` after Plans 052-053. Do not ship an intermediate state. Do not commit or push unless asked.
+Continue on `resource_system_overhaul` after Plans 052-053. Do not ship an intermediate state. Do not commit or push unless asked.
 
 ## Steps
 
@@ -55,10 +55,14 @@ Continue on `advisor/resource-surface-overhaul` after Plans 052-053. Do not ship
 ## Test plan and done criteria
 
 - Use existing resource/route tests as setup patterns, and add extraction tests for direct `<Form>`, `<Table>`, `<Detail>` bags.
-- [ ] No new resource code imports field defaults or input hydration.
-- [ ] Every standard operation returns the target shape and enforces policy at extraction.
-- [ ] Current route names, permissions, row policies, query keys, and invalidation are preserved.
-- [ ] `git diff --check` exits 0; unmigrated app errors are listed.
+- [x] No new resource code imports field defaults or input hydration.
+- [x] Every standard operation returns the target shape and enforces policy at extraction.
+- [x] Current route names, permissions, row policies, query keys, and invalidation are preserved.
+- [x] `git diff --check` exits 0; unmigrated app errors are listed.
+
+## Review result
+
+DONE after independent review. Six focused resource/View files pass 106 tests; the ListView browser test passes. The full Loom unit suite passes 499 of 501 tests, with only two TableInput failures assigned to Plan 055. The full browser suite passes 28 of 29 tests, with only the LookupInput failure and its two setup errors assigned to Plan 055. Loom type-check reports 35 diagnostics outside Plan 054: 33 assigned to Plan 055 and two Drawer/Tabs diagnostics assigned to Plan 058. `git diff --check` passes. No commit or push was made.
 
 ## STOP conditions
 

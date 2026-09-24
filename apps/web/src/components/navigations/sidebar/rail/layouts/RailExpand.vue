@@ -22,7 +22,7 @@ defineProps<{ menus?: VisibleNavigationModule }>()
                 v-else-if="String($route.name) === submenu.name"
                 class="overlay flex w-full flex-row items-center gap-4 rounded-full bg-primary p-4 text-on-primary after:bg-on-primary-hover focus-visible:after:bg-on-primary-active active:after:bg-on-primary-active"
               >
-                <Icon :FILL="1" :name="submenu.icon"></Icon>
+                <Icon :fill="true" :name="submenu.icon"></Icon>
                 <div class="text-left">{{ titleCase(submenu.title) }}</div>
               </button>
               <button

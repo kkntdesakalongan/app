@@ -61,6 +61,11 @@ including standard Views and custom actions. Compare composition with
 fields. A missing component import, raw asset JSON, a raw state code, or an unsupported custom
 control requires `REWORK`. An unexplained difference from the app design also
 requires `REWORK`; a passing static check does not approve that difference.
+Check resource declarations against the
+[current architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md):
+raw operation schemas, independent surface definitions, static list/create
+bags, and identity-bound detail/update bags. Run the source checker when the
+resource changed.
 Check scope, unrelated work and unauthorized writes. Existing example code is
 not justification for overriding the request or copying an unnecessary control.
 

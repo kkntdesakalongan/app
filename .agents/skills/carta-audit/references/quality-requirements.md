@@ -39,7 +39,7 @@ and SDK contracts, and a production build that runs without route source files.
   Framework-supplied `ModelSource` implementations SHALL obey the declared source contract. Custom source implementations SHALL have an explicit conformance contract and testable obligations.
 
 - **CAR-FS-COR-04 — Loom standard-surface correctness [GATE, Loom, FRAMEWORK]**  
-  Resource actions, field projections, form value lifecycle, validation order, loading/error/empty states, access presentation, query/cache identity, and standard View prop/run contracts SHALL behave as documented.
+  Resource actions, display definitions, form value lifecycle, validation order, loading/error/empty states, access presentation, query/cache identity, and standard View prop bags and command execution SHALL behave as documented.
 
 ### Functional appropriateness — 3.1.3
 

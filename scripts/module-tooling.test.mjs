@@ -51,6 +51,7 @@ test('generator supports action subsets but refuses unknown actions and unused p
     ...value,
     actions: { list: value.actions.list },
     permissions: Object.fromEntries(Object.entries(value.permissions).filter(([code]) => used.has(code))),
+    surfaces: { display: value.surfaces.display, list: value.surfaces.list },
     navigation: value.navigation,
     seed: value.seed,
   }
@@ -122,7 +123,8 @@ test('integration rejects mutually exclusive check/apply flags without touching 
 test('unknown manifest keys are rejected rather than silently ignored', () => {
   const value = boundedConfig()
   for (const candidate of [
-    { ...value, fields: [{ ...value.fields[0], relation: 'customers' }] },
+    { ...value, properties: [{ ...value.properties[0], relation: 'customers' }] },
+    { ...value, fields: [{ ...value.properties[0] }] },
     { ...value, permissions: { ...value.permissions, 'extra-test-catalog': { name: 'Extra', description: 'Extra.' } } },
     { ...value, identity: { key: 'id', type: 'text', primary: true, generated: 'uuid' } },
     { ...value, labels: { listTitle: 'Test Catalog' } },

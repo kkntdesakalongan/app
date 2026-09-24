@@ -13,18 +13,17 @@ gone and all required, available gates pass.
 
 | Plan | Result | Priority | Effort | Risk | Depends on | Status |
 |---|---|---|---|---|---|---|
-| [051](051-surface-contracts-and-schema-compiler.md) | Independent contracts, raw-schema compiler, labels, registries, inventory and cold baseline | P1 | L | HIGH | — | TODO |
-| [052](052-form-session-and-dialog-parity.md) | One Form session and flat DialogForm parity | P1 | L | HIGH | 051 | TODO |
-| [053](053-display-primitives-and-export.md) | Shared Table/TreeTable/Detail display and export reads | P1 | L | HIGH | 051 | TODO |
-| [054](054-resource-binding-and-view-bags.md) | One-object resources and complete primitive/View bags | P1 | L | HIGH | 052, 053 | TODO |
-| [055](055-composite-input-ownership.md) | Explicit filters, row forms, lookup loaders, and location editor | P1 | L | HIGH | 052, 053, 054 | TODO |
-| [056](056-migrate-web-surfaces-and-app-seams.md) | All web settings modules, routes, app seams, and presets migrated | P1 | L | HIGH | 054, 055 | TODO |
-| [057](057-scaffolding-checkers-and-guidance.md) | Generator, checker, active docs, skills, and fixture output migrated | P1 | L | MED | 056 | TODO |
-| [058](058-remove-legacy-paths-and-prove-completion.md) | Old code/exports removed; architecture gate and full verification | P1 | L | HIGH | 051–057 | TODO |
+| [051](051-surface-contracts-and-schema-compiler.md) | Independent contracts, raw-schema compiler, labels, registries, inventory and cold baseline | P1 | L | HIGH | — | DONE — 24 focused and 515 Loom tests pass; web types pass; 37 Loom template-prop diagnostics and 4 baseline web test suites are recorded in the inventory |
+| [052](052-form-session-and-dialog-parity.md) | One Form session and flat DialogForm parity | P1 | L | HIGH | 051 | DONE — 36 focused and 27 browser tests pass; 37 prior template errors, 9 old caller type errors, and 17 old view tests are recorded for later plans |
+| [053](053-display-primitives-and-export.md) | Shared Table/TreeTable/Detail display and export reads | P1 | L | HIGH | 051 | DONE — 79 focused Loom, 11 focused browser, and 7 utility tests pass; later caller failures and 50 type diagnostics are recorded in the inventory |
+| [054](054-resource-binding-and-view-bags.md) | One-object resources and complete primitive/View bags | P1 | L | HIGH | 052, 053 | DONE — 106 focused tests and ListView browser pass; full suites leave only Plan 055 TableInput/LookupInput failures; 35 later-plan/final-gate type diagnostics are recorded in the inventory |
+| [055](055-composite-input-ownership.md) | Explicit filters, row forms, lookup loaders, and location editor | P1 | L | HIGH | 052, 053, 054 | DONE — reviewed after revisions; full Loom unit 502/502 and browser 34/34 pass; only two Plan 058 Drawer/Tabs type diagnostics remain |
+| [056](056-migrate-web-surfaces-and-app-seams.md) | All web settings modules, routes, app seams, and presets migrated | P1 | L | HIGH | 054, 055 | DONE |
+| [057](057-scaffolding-checkers-and-guidance.md) | Generator, checker, active docs, skills, and fixture output migrated | P1 | L | MED | 056 | DONE |
+| [058](058-remove-legacy-paths-and-prove-completion.md) | Old code/exports removed; architecture gate and full verification | P1 | L | HIGH | 051–057 | DONE — reviewed after revisions; all required gates pass |
 
-Recommended order: **051 → 052 and 053 → 054 → 055 → 056 → 057 → 058**.
-052 and 053 can proceed separately after 051, but merge their shared contract
-edits before 054. Do not ship a partial migration as the final architecture.
+Execution order: **051 → 052 → 053 → 054 → 055 → 056 → 057 → 058**.
+Complete and review each plan before starting the next. Do not ship a partial migration as the final architecture.
 Keep framework/API and app transport contracts unchanged, as the specification
 requires. The user request explicitly includes Loom framework changes.
 

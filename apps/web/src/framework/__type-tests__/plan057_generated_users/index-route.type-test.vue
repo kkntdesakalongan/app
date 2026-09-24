@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { ListView } from '@southneuhof/loom'
+import { users } from './users.resource'
+</script>
+
+<template><ListView v-bind="users.list" title="User" /></template>

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { configureParser, parse, resetParserConfigForTests } from '../parse'
+import { configureParser, hasFormatter, parse, resetParserConfigForTests } from '../parse'
 
 describe('parse utilities', () => {
   afterEach(() => {
@@ -10,6 +10,18 @@ describe('parse utilities', () => {
     expect(parse('number', 1234)).toBe('1.234')
     expect(parse('delta', 3)).toBe('+3.00%')
     expect(parse('hour', '2026-05-14 09:30')).toBe('09:30')
+  })
+
+  it('reports configured formatter keys without accepting dictionary keys', () => {
+    configureParser({
+      dictionary: { status: { active: 'Active' } },
+      formatters: { compact: (value) => String(value) },
+    })
+
+    expect(hasFormatter('number')).toBe(true)
+    expect(hasFormatter('compact')).toBe(true)
+    expect(hasFormatter('status')).toBe(false)
+    expect(hasFormatter('missing')).toBe(false)
   })
 
   it('configures dictionary values for the shared parser', () => {

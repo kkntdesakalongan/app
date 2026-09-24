@@ -1,53 +1,93 @@
-# Display fields
+# Display and input maps
 
-Use the app default when it gives the required readable result. Otherwise declare `display` in `defineFields`. A form renderer does not configure table or detail display.
-
-For each visible field, trace the returned value through its app default,
-shared `display` settings, and any `table` or `detail` override.
-For assets, check empty, single, and multiple values as applicable. For states,
-check each label and colour. Reuse the registered renderer before adding a slot.
-
-A relation is complete when the user can select its label, save its identity,
-see its name in list and detail, and load that selection on edit. Treat these as
-one implementation result. Verify with a real named record before reusing the
-pattern. Lookup configuration alone covers only the input side.
-
-For a lookup inside `table` rows, define the row cell separately. The row
-lookup `view` covers the selection dialog only. Add a row `table` read or
-renderer for the cell. Without it, the row shows the raw stored identity.
-
-Use `defineFields(schema, definitions)` for shared labels and projections.
-Select field references in each action's visible order. Use a schema key string
-when the app default supplies all needed configuration. Use one terminal
-`.override(...)` for an action-specific difference.
-
-`display.read` projects returned data; without it, the field reads its own key.
-Keep the submitted relation identity separate from its display label:
+Keep the form input schema and record display schema separate. Use
+`defineForm` for input fields, `defineTable` for columns, and `defineDetail`
+for detail fields. Each constructor checks its map against its own schema.
 
 ```ts
-projectId: {
-  label: 'Project',
-  display: { read: (record) => record.project?.name },
-  form: {
-    renderer: 'lookup',
-    source: projects,
-    props: { pick: 'id', view: 'name', required: true },
+const statusDisplay = { renderer: 'chip', props: { options: statusLabels } }
+
+const usersTable = defineTable({
+  schema: usersRecordSchema,
+  labels: userLabels,
+  columns: {
+    name: { sortable: true },
+    statusCode: { ...statusDisplay },
   },
-}
+})
+
+const userDetail = defineDetail({
+  schema: usersRecordSchema,
+  labels: userLabels,
+  fields: {
+    name: {},
+    statusCode: { ...statusDisplay },
+  },
+})
+
+const createForm = defineForm({
+  schema: usersCreateSchema,
+  labels: userLabels,
+  fields: { name: { renderer: 'text' } },
+  submit: usersActions.create,
+})
 ```
 
-Request the relation in the API read contract. Do not fetch one label per row
-or replace a missing relation with an unexplained raw ID. A missing optional
-value uses the app's empty-value convention.
+Use ordinary object references and spread for reusable fragments. Configure
+form inputs with input renderers. Configure Table columns and Detail fields
+with display definitions.
 
-Keep status labels and formats with their field definition. Static enums can
-use local options. Let the schema infer record types; fix a missing projection
-at its contract instead of casting records to `any` or fields to `never`.
+## Display values
 
-Form controls and display fields have separate contracts. Check list and detail
-output with representative returned values. Include required workflow results and
-history in the visible field selection. Verify these outcomes through the
-[UI checks](verification.md), rather than asserting field configuration.
+With no display renderer, Loom renders scalar values as text and nullish values
+as `-`. Dates need an explicit format. Structured values need a renderer or an
+accessor/formatter that returns displayable text. Check the actual API result;
+do not return an object to a text display.
 
-For form values and dependencies, use
-[build-resource-form](../../build-resource-form/SKILL.md).
+An accessor handles a value supplied by the record schema, such as a joined
+relation:
+
+```ts
+const relationDisplay = {
+  read: record => record.relOwner.name,
+}
+
+const ownerDetail = defineDetail({
+  schema: itemRecordSchema,
+  fields: { ownerName: { ...relationDisplay } },
+})
+```
+
+Return the joined relation data from the API. Do not fetch one label per row
+or display a stored ID when the task needs the name. The display key may be a
+derived key when it has a `read` accessor. Its accessor properties must exist
+in the record schema.
+
+Use app display presets only when they express the required behavior. Keep a
+shared fragment for values used by both table and detail. Keep each surface map
+limited to its visible keys. Run `module-ui-check.mjs --sources` after resource
+changes; it checks map membership, relation accessors, and display choices.
+
+## Form values
+
+Use a form schema that accepts the control value. Keep the draft in input
+shape and use the schema transform for output conversion. Do not add a generic
+field writer. Use `initialData` for a fixed draft value and an input
+`initialValue` factory only for a fresh omitted-key default.
+
+For database-backed relation inputs, pass explicit loaders in `source`:
+standard option inputs use `{ load, namespace? }`; lookup also uses
+`loadDetail(context)` for scalar identity hydration and its own table definition
+in `props.table`. Delegate those loaders to the owning resource's
+`list.table.load` and `detail({ id }).detail.load(context)`. Static choices use
+the renderer's `data` prop. Keep filters in `searchParameters` and relation
+labels in the table/detail display maps.
+
+The raw form schema defines the selection value and any conversion to operation
+input. Multi-choice controls can emit selected record objects; accept that
+shape or transform it in the raw schema when the operation takes identities.
+The users form shows this pattern for role selections.
+
+For form dependencies or a custom input, read
+[$build-resource-form](../../build-resource-form/SKILL.md). For value choices,
+read [the form guide](../../../../docs/ui/forms.md).

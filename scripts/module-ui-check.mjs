@@ -4,6 +4,7 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { basename, dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { displayRequirement } from '../packages/loom/src/display/requirements.policy.mjs'
 
 const require = createRequire(new URL('../apps/web/package.json', import.meta.url))
 const { parse, compileScript } = require('vue/compiler-sfc')
@@ -67,7 +68,9 @@ export function checkUiSources(paths, { root = process.cwd() } = {}) {
   const surfaces = [...new Set(paths.flatMap(collect))].map(file => ({ file }))
   const result = checkSurfaces({ surfaces }, { root }, false)
   const resourceFiles = [...new Set(paths.flatMap(collectResources))]
-  for (const item of checkResourceDisplay(resourceFiles, { root })) result.review.push(item)
+  const displayResult = checkResourceDisplay(resourceFiles, { root })
+  result.errors.push(...displayResult.errors)
+  result.review.push(...displayResult.review)
   const vueContents = []
   for (const surface of surfaces) {
     try { vueContents.push(readFileSync(resolve(root, surface.file), 'utf8')) } catch { /* surface already reported */ }
@@ -150,35 +153,15 @@ function checkSurfaces(contract, { root = process.cwd(), read = path => readFile
   return { errors, review }
 }
 
-// Visible-field display risk (plan 045). Static mirror of
-// requiresExplicitDisplay in packages/loom/src/fields/displayRequirement.ts:
-// plain strings keep the default text; numbers, booleans, and dates accept
-// format, renderer, or read; enums, selections, objects, arrays, and lookups
-// need read or renderer. A plain-node share is impractical, so the agreement
-// test in scripts/module-ui-check.test.mjs runs both functions over every
-// InternalSchemaKind plus source-present rows. Update all three together.
-const displayKindByFormRenderer = {
-  text: 'string',
-  number: 'number',
-  currency: 'number',
-  switch: 'boolean',
-  date: 'date',
-  datetime: 'date',
-  select: 'selection[]',
-  lookup: 'selection[]',
-  table: 'array',
-}
-
 export function fieldNeedsDisplay(kindInfo, signals) {
-  const kind = kindInfo?.kind ?? 'unknown'
-  if (signals.source) return !(signals.read || signals.renderer)
-  if (kind === 'unknown') return false
-  const readOrRenderer = signals.read || signals.renderer
-  if (kind === 'string' || kind === 'string[]') return !!kindInfo.options && !readOrRenderer
-  if (kind === 'selection[]') return !readOrRenderer
-  if (kind === 'number' || kind === 'boolean' || kind === 'date'
-    || kind === 'number[]' || kind === 'boolean[]') return !(readOrRenderer || signals.format)
-  return !readOrRenderer
+  let kind = kindInfo?.kind ?? 'unknown'
+  if (kind === 'string[]' || kind === 'number[]' || kind === 'boolean[]' || kind === 'object[]' || kind === 'selection[]') kind = 'array'
+  if (kindInfo?.options && kind === 'string') kind = 'enum'
+  return displayRequirement(kind, {
+    read: signals.read ? true : undefined,
+    renderer: signals.renderer ? 'configured' : undefined,
+    format: signals.format ? 'configured' : undefined,
+  }) !== undefined
 }
 
 function displayKindLabel(kindInfo) {
@@ -205,10 +188,6 @@ function stringValue(node) {
   return node && ts.isStringLiteralLike(node) ? node.text : undefined
 }
 
-function isFalseKeyword(node) {
-  return !!node && node.kind === ts.SyntaxKind.FalseKeyword
-}
-
 // One-hop file index over resource, schema, and entity sources. Reads go
 // through the injected reader so tests can use memory files.
 function makeFileIndex(root, read) {
@@ -224,13 +203,15 @@ function makeFileIndex(root, read) {
           for (const decl of stmt.declarationList.declarations) {
             if (ts.isIdentifier(decl.name) && decl.initializer) entry.consts.set(decl.name.text, decl.initializer)
           }
+        } else if (ts.isFunctionDeclaration(stmt) && stmt.name) {
+          entry.consts.set(stmt.name.text, stmt)
         } else if (ts.isTypeAliasDeclaration(stmt) && ts.isIdentifier(stmt.name)) {
           entry.aliases.set(stmt.name.text, stmt.type)
         } else if (ts.isImportDeclaration(stmt) && ts.isStringLiteral(stmt.moduleSpecifier)) {
           const names = []
           const clause = stmt.importClause
           if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings)) {
-            for (const el of clause.namedBindings.elements) names.push({ alias: el.name.text, target: (el.propertyName ?? el.name).text })
+            for (const el of clause.namedBindings.elements) names.push({ alias: el.name.text, target: (el.propertyName ?? el.name).text, typeOnly: clause.isTypeOnly || el.isTypeOnly })
           }
           entry.imports.push({ spec: stmt.moduleSpecifier.text, names })
         }
@@ -246,6 +227,8 @@ function makeFileIndex(root, read) {
       candidates.push(`${base}.ts`, base)
     } else if (spec.startsWith('@southneuhof/api/')) {
       candidates.push(join(root, 'apps/api/src', `${spec.slice('@southneuhof/api/'.length)}.ts`))
+    } else if (spec.startsWith('@/')) {
+      candidates.push(join(root, 'apps/web/src', `${spec.slice(2)}.ts`))
     } else {
       return undefined
     }
@@ -253,6 +236,83 @@ function makeFileIndex(root, read) {
     return undefined
   }
   return { load, resolveImport }
+}
+
+function importedBinding(name, entry, index) {
+  for (const imp of entry.imports) {
+    const binding = imp.names.find(item => item.alias === name && !item.typeOnly)
+    if (!binding) continue
+    const target = index.resolveImport(imp.spec, entry.absPath)
+    return { entry: target, name: binding.target, spec: imp.spec }
+  }
+  return undefined
+}
+
+function resolveValue(node, entry, index, seen = new Set()) {
+  const target = unwrapExpr(node)
+  if (!target) return undefined
+  if (ts.isIdentifier(target)) {
+    const key = `${entry.absPath}::${target.text}`
+    if (seen.has(key)) return undefined
+    seen.add(key)
+    if (entry.consts.has(target.text)) return resolveValue(entry.consts.get(target.text), entry, index, seen)
+    const binding = importedBinding(target.text, entry, index)
+    return binding?.entry ? resolveValue(binding.entry.consts.get(binding.name), binding.entry, index, seen) : undefined
+  }
+  if (ts.isPropertyAccessExpression(target)) {
+    const object = resolveObject(target.expression, entry, index, seen)
+    const property = object?.get(target.name.text)
+    return property ? { node: property.node, entry: property.entry } : undefined
+  }
+  return { node: target, entry }
+}
+
+function resolveObject(node, entry, index, seen = new Set()) {
+  const resolved = resolveValue(node, entry, index, seen)
+  if (!resolved || !ts.isObjectLiteralExpression(resolved.node)) return undefined
+  return objectEntries(resolved.node, resolved.entry, index, seen)
+}
+
+function objectEntries(node, entry, index, seen = new Set()) {
+  const result = new Map()
+  const target = unwrapExpr(node)
+  if (!target || !ts.isObjectLiteralExpression(target)) return result
+  for (const property of target.properties) {
+    if (ts.isSpreadAssignment(property)) {
+      const spread = resolveObject(property.expression, entry, index, new Set(seen))
+      for (const [key, value] of spread ?? []) result.set(key, value)
+      continue
+    }
+    if (ts.isPropertyAssignment(property)) {
+      const name = property.name
+      if (ts.isIdentifier(name) || ts.isStringLiteral(name)) result.set(name.text, { node: property.initializer, entry })
+      continue
+    }
+    if (ts.isShorthandPropertyAssignment(property)) result.set(property.name.text, { node: property.name, entry })
+  }
+  return result
+}
+
+function resolvedProperties(node, entry, index) {
+  const resolved = resolveValue(node, entry, index)
+  if (!resolved || !ts.isObjectLiteralExpression(resolved.node)) return new Map()
+  return objectEntries(resolved.node, resolved.entry, index)
+}
+
+function resolvedProperty(node, name, entry, index) {
+  return resolvedProperties(node, entry, index).get(name)
+}
+
+function resolvedCalleeName(node, entry, index, seen = new Set()) {
+  const target = unwrapExpr(node)
+  if (!target || !ts.isIdentifier(target)) return undefined
+  const key = `${entry.absPath}::${target.text}`
+  if (seen.has(key)) return undefined
+  seen.add(key)
+  const binding = importedBinding(target.text, entry, index)
+  if (binding) return binding.spec === '@southneuhof/loom' ? binding.name : undefined
+  const init = entry.consts.get(target.text)
+  return init ? resolvedCalleeName(init, entry, index, seen) : target.text
 }
 
 const transparentWrappers = new Set(['optional', 'nullable', 'nullish', 'default', 'partial', 'min', 'max', 'int',
@@ -323,22 +383,13 @@ function unwrapExpr(node) {
 }
 
 // Raw property initializers; callers apply zod or column kinds.
-function shapeNodesOf(obj) {
-  const shape = new Map()
-  const target = unwrapExpr(obj)
-  if (!target || !ts.isObjectLiteralExpression(target)) return shape
-  for (const prop of target.properties) {
-    if (!ts.isPropertyAssignment(prop)) continue
-    const name = prop.name
-    if (!ts.isIdentifier(name) && !ts.isStringLiteral(name)) continue
-    shape.set(name.text, prop.initializer)
-  }
-  return shape
+function shapeNodesOf(obj, entry, index) {
+  return resolvedProperties(obj, entry, index)
 }
 
 function shapeKindOf(obj, entry, index, seen) {
   const shape = new Map()
-  for (const [key, init] of shapeNodesOf(obj)) shape.set(key, zodKindOf(init, entry, index, seen))
+  for (const [key, value] of shapeNodesOf(obj, entry, index)) shape.set(key, zodKindOf(value.node, value.entry, index, seen))
   return shape
 }
 
@@ -430,6 +481,9 @@ function zodKindOf(node, entry, index, seen) {
   }
   if (ts.isCallExpression(head) && ts.isIdentifier(head.expression)) {
     const name = head.expression.text
+    if (/^checkedHono(?:Record|Create|Update|Query)Schema$/.test(name) && head.arguments.length >= 2) {
+      return zodKindOf(head.arguments[head.arguments.length - 1], entry, index, seen)
+    }
     if ((name === 'createSelectSchema' || name === 'createInsertSchema' || name === 'createUpdateSchema')
       && head.arguments.length >= 1 && ts.isIdentifier(head.arguments[0])) {
       const table = resolveNameKind(head.arguments[0].text, entry, index, seen)
@@ -443,7 +497,7 @@ function zodKindOf(node, entry, index, seen) {
     }
     if (name === 'pgTable' && head.arguments.length >= 2) {
       const columns = new Map()
-      for (const [key, init] of shapeNodesOf(head.arguments[1])) columns.set(key, columnKindOf(init, entry, index, seen))
+      for (const [key, value] of shapeNodesOf(head.arguments[1], entry, index)) columns.set(key, columnKindOf(value.node, value.entry, index, seen))
       const shape = applyShapeFrames(columns, frames, entry, index, seen)
       return shape ? { kind: 'shape', shape } : { kind: 'unknown' }
     }
@@ -457,221 +511,155 @@ function zodKindOf(node, entry, index, seen) {
   if (frames.every(frame => transparentWrappers.has(frame.method))) return base
   return { kind: 'unknown' }
 }
-function eachCall(source, name) {
+function eachCall(source, name, entry, index) {
   const found = []
   function visit(node) {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) found.push(node)
+    if (ts.isCallExpression(node) && (entry && index
+      ? resolvedCalleeName(node.expression, entry, index) === name
+      : ts.isIdentifier(node.expression) && node.expression.text === name)) found.push(node)
     ts.forEachChild(node, visit)
   }
   visit(source)
   return found
 }
 
-function projectionSignals(obj) {
-  const target = unwrapExpr(obj)
-  if (!target || !ts.isObjectLiteralExpression(target)) return { read: false, renderer: false, format: false }
-  return {
-    read: propInit(target, 'read') !== undefined,
-    renderer: propInit(target, 'renderer') !== undefined,
-    format: propInit(target, 'format') !== undefined,
-  }
+function schemaShapeOf(node, entry, index) {
+  if (!node) return undefined
+  const info = zodKindOf(node, entry, index, new Set())
+  return info.kind === 'shape' ? info.shape : undefined
 }
 
-function parseFieldProp(prop, source) {
-  const name = prop.name
-  if (!ts.isIdentifier(name) && !ts.isStringLiteral(name)) return undefined
-  const init = unwrapExpr(prop.initializer)
-  const parsed = {
-    key: name.text,
-    line: ts.getLineAndCharacterOfPosition(source, prop.name.getStart(source)).line + 1,
-    display: { read: false, renderer: false, format: false },
-    table: { read: false, renderer: false, format: false },
-    detail: { read: false, renderer: false, format: false },
-    tableFalse: false,
-    detailFalse: false,
-    formRenderer: undefined,
-    formSource: false,
-    rowFields: undefined,
-  }
-  if (!init || !ts.isObjectLiteralExpression(init)) return parsed
-  const display = propInit(init, 'display')
-  const table = propInit(init, 'table')
-  const detail = propInit(init, 'detail')
-  parsed.display = projectionSignals(display)
-  parsed.table = projectionSignals(table)
-  parsed.detail = projectionSignals(detail)
-  parsed.tableFalse = isFalseKeyword(table)
-  parsed.detailFalse = isFalseKeyword(detail)
-  const form = unwrapExpr(propInit(init, 'form'))
-  if (form && ts.isObjectLiteralExpression(form)) {
-    parsed.formRenderer = stringValue(propInit(form, 'renderer'))
-    parsed.formSource = propInit(form, 'source') !== undefined
-    const props = unwrapExpr(propInit(form, 'props'))
-    const rowInit = props ? propInit(props, 'fields') : undefined
-    if (rowInit && ts.isIdentifier(rowInit)) parsed.rowFields = rowInit.text
-  }
-  return parsed
+function surfaceKind(kind, schemaKind) {
+  if (schemaKind?.kind === 'shape') return { kind: 'object' }
+  if (schemaKind?.kind === 'array' || /\[\]$/.test(schemaKind?.kind ?? '')) return { kind: 'array' }
+  if (schemaKind?.kind === 'entity' || schemaKind?.kind === 'columns') return { kind: 'unknown' }
+  if (schemaKind) return schemaKind
+  if (kind === 'form') return { kind: 'unknown' }
+  return { kind: 'unknown' }
 }
 
-function parseResourceFile(entry) {
-  const fields = new Map()
-  let schemaName
-  for (const call of eachCall(entry.source, 'defineFields')) {
-    if (!schemaName && call.arguments.length >= 1 && ts.isIdentifier(call.arguments[0])) schemaName = call.arguments[0].text
-    const catalog = unwrapExpr(call.arguments[1])
-    if (!catalog || !ts.isObjectLiteralExpression(catalog)) continue
-    for (const prop of catalog.properties) {
-      if (!ts.isPropertyAssignment(prop)) continue
-      const parsed = parseFieldProp(prop, entry.source)
-      if (parsed) fields.set(parsed.key, parsed)
+function displaySignals(node, entry, index) {
+  const fields = resolvedProperties(node, entry, index)
+  const configured = name => {
+    const value = fields.get(name)?.node
+    if (!value || value.kind === ts.SyntaxKind.UndefinedKeyword) return false
+    return !(ts.isIdentifier(value) && value.text === 'undefined')
+  }
+  return { read: configured('read'), renderer: configured('renderer'), format: configured('format') }
+}
+
+function readPaths(node, entry, index) {
+  const read = resolvedProperty(node, 'read', entry, index)
+  const value = read ? resolveValue(read.node, read.entry, index) : undefined
+  const fn = value?.node
+  if (!fn || !(ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionDeclaration(fn))) return []
+  const parameter = fn.parameters[0]?.name
+  if (!parameter) return []
+  if (ts.isObjectBindingPattern(parameter)) {
+    return parameter.elements.flatMap(element => {
+      const key = element.propertyName ?? element.name
+      return ts.isIdentifier(key) ? [[key.text]] : []
+    })
+  }
+  if (!ts.isIdentifier(parameter)) return []
+  const paths = new Map()
+  function pathFrom(current) {
+    const target = unwrapExpr(current)
+    if (ts.isIdentifier(target) && target.text === parameter.text) return []
+    if (ts.isPropertyAccessExpression(target)) {
+      const parent = pathFrom(target.expression)
+      return parent ? [...parent, target.name.text] : undefined
     }
-  }
-  const actionFields = { list: [], detail: [] }
-  for (const call of eachCall(entry.source, 'defineResource')) {
-    const config = unwrapExpr(call.arguments[1])
-    const actions = config ? propInit(config, 'actions') : undefined
-    for (const surface of ['list', 'detail']) {
-      const action = actions ? unwrapExpr(propInit(actions, surface)) : undefined
-      const list = action && ts.isObjectLiteralExpression(action) ? unwrapExpr(propInit(action, 'fields')) : undefined
-      if (!list || !ts.isArrayLiteralExpression(list)) continue
-      for (const el of list.elements) {
-        if (ts.isPropertyAccessExpression(el) && ts.isIdentifier(el.expression)
-          && el.expression.text === 'fields' && ts.isIdentifier(el.name)
-          && !actionFields[surface].includes(el.name.text)) actionFields[surface].push(el.name.text)
-      }
+    if (ts.isElementAccessExpression(target) && ts.isStringLiteralLike(target.argumentExpression)) {
+      const parent = pathFrom(target.expression)
+      return parent ? [...parent, target.argumentExpression.text] : undefined
     }
+    return undefined
   }
-  return { fields, actionFields, schemaName }
+  function visit(current) {
+    if (ts.isPropertyAccessExpression(current) || ts.isElementAccessExpression(current)) {
+      const path = pathFrom(current)
+      if (path?.length) paths.set(path.join('.'), path)
+    }
+    ts.forEachChild(current, visit)
+  }
+  if (fn.body) visit(fn.body)
+  return [...paths.values()]
 }
 
-function resolveImportedEntry(name, entry, index) {
-  if (entry.consts.has(name)) return entry
-  for (const imp of entry.imports) {
-    const binding = imp.names.find(item => item.alias === name)
-    if (!binding) continue
-    const target = index.resolveImport(imp.spec, entry.absPath)
-    if (target && (target.consts.has(binding.target) || target.aliases.has(binding.target))) return target
+function missingReadPath(path, shape) {
+  let current = shape
+  for (const key of path) {
+    const info = current?.get(key)
+    if (!info) return key
+    current = info.kind === 'shape' ? info.shape : undefined
   }
   return undefined
 }
 
-function asShape(info) {
-  return info && info.kind === 'shape' ? info : undefined
+function entryLine(item) {
+  const entry = item?.entry
+  const node = item?.node
+  if (!entry || !node) return 1
+  return ts.getLineAndCharacterOfPosition(entry.source, node.getStart(entry.source)).line + 1
 }
 
-// Merges record, form, and inferred shapes for one resource. Record shapes
-// win; every source is best-effort and unknown keys stay silent.
-function schemaPoolFor(schemaEntry, index) {
-  const pool = new Map()
-  const addShape = (info) => {
-    if (!asShape(info)) return
-    for (const [key, value] of info.shape) if (!pool.has(key)) pool.set(key, value)
-  }
-  for (const call of eachCall(schemaEntry.source, 'defineSchema')) {
-    const config = unwrapExpr(call.arguments[call.arguments.length - 1])
-    for (const key of ['record', 'create', 'update']) {
-      const init = config ? propInit(config, key) : undefined
-      if (init) addShape(zodKindOf(init, schemaEntry, index, new Set()))
+function surfaceDefinitions(entry, index) {
+  const definitions = []
+  for (const name of ['defineTable', 'defineDetail', 'defineForm']) {
+    for (const call of eachCall(entry.source, name, entry, index)) {
+      const config = call.arguments[0]
+      const kind = name === 'defineTable' ? 'table' : name === 'defineDetail' ? 'detail' : 'form'
+      const key = kind === 'table' ? 'columns' : 'fields'
+      const schema = resolvedProperty(config, 'schema', entry, index)
+      const map = resolvedProperty(config, key, entry, index)
+      const schemaShape = schema ? schemaShapeOf(schema.node, schema.entry, index) : undefined
+      const members = map ? resolvedProperties(map.node, map.entry, index) : new Map()
+      definitions.push({ kind, schemaShape, members, map, call })
     }
   }
-  const queries = []
-  function visit(node) {
-    if (ts.isTypeQueryNode(node) && ts.isIdentifier(node.exprName)) queries.push(node.exprName.text)
-    ts.forEachChild(node, visit)
-  }
-  visit(schemaEntry.source)
-  for (const name of queries) addShape(asShape(resolveNameKind(name, schemaEntry, index, new Set())))
-  for (const [name, init] of schemaEntry.consts) {
-    if (!/form|input|write|create|update|schema/i.test(name)) continue
-    addShape(asShape(zodKindOf(init, schemaEntry, index, new Set())))
-  }
-  return pool
-}
-
-function normalizeKind(info) {
-  if (!info) return { kind: 'unknown' }
-  if (info.kind === 'shape') return { kind: 'object' }
-  if (info.kind === 'entity' || info.kind === 'columns') return { kind: 'unknown' }
-  return info
-}
-
-function effectiveKind(schemaInfo, formRenderer) {
-  const schema = normalizeKind(schemaInfo)
-  if (schema.kind !== 'unknown') return schema
-  const rendered = formRenderer ? displayKindByFormRenderer[formRenderer] : undefined
-  return rendered ? { kind: rendered } : { kind: 'unknown' }
-}
-
-function parseRowFields(entry, ident) {
-  const obj = unwrapExpr(entry.consts.get(ident))
-  if (!obj || !ts.isObjectLiteralExpression(obj)) return []
-  const rows = []
-  for (const prop of obj.properties) {
-    if (!ts.isPropertyAssignment(prop)) continue
-    const parsed = parseFieldProp(prop, entry.source)
-    if (parsed) rows.push(parsed)
-  }
-  return rows
-}
-
-function displayHint(kindInfo, signals) {
-  if (signals.source || kindInfo.kind === 'object' || kindInfo.kind === 'array' || kindInfo.kind === 'object[]') {
-    return 'add display read or renderer'
-  }
-  return 'add display format, renderer, or read'
+  return definitions
 }
 
 export function checkResourceDisplay(files, { root = process.cwd(), read = absPath => readFileSync(absPath, 'utf8') } = {}) {
+  const errors = []
   const review = []
   const index = makeFileIndex(root, read)
   for (const file of files) {
-    const abs = resolve(root, file)
-    const entry = index.load(abs)
+    const entry = index.load(resolve(root, file))
     if (!entry) {
-      review.push(`${file}: cannot parse resource for display check`)
+      review.push(`${file}: cannot parse resource for surface check`)
       continue
     }
-    const { fields, actionFields, schemaName } = parseResourceFile(entry)
-    let pool = new Map()
-    if (schemaName) {
-      const schemaEntry = resolveImportedEntry(schemaName, entry, index)
-      if (schemaEntry) pool = schemaPoolFor(schemaEntry, index)
-    }
-    for (const [surface, keys, projection] of [['list', actionFields.list, 'table'], ['detail', actionFields.detail, 'detail']]) {
-      for (const key of keys) {
-        const field = fields.get(key)
-        if (!field) continue
-        if (projection === 'table' && field.tableFalse) continue
-        if (projection === 'detail' && field.detailFalse) continue
-        const signals = {
-          read: field.display.read || field[projection].read,
-          renderer: field.display.renderer || field[projection].renderer,
-          format: field.display.format || field[projection].format,
-          source: field.formSource,
+    for (const definition of surfaceDefinitions(entry, index)) {
+      for (const [key, field] of definition.members) {
+        const signals = displaySignals(field.node, field.entry, index)
+        if (definition.kind === 'form') {
+          if (definition.schemaShape && !definition.schemaShape.has(key)) {
+            errors.push(`${file}:${entryLine(field)}: form surface field '${key}' is missing from its schema`)
+          }
+          continue
         }
-        const kindInfo = effectiveKind(pool.get(key), field.formRenderer)
+        if (definition.schemaShape && !definition.schemaShape.has(key) && !signals.read) {
+          errors.push(`${file}:${entryLine(field)}: ${definition.kind} surface field '${key}' is missing from its schema or a read accessor`)
+          continue
+        }
+        if (definition.schemaShape && signals.read) {
+          for (const path of readPaths(field.node, field.entry, index)) {
+            const missing = missingReadPath(path, definition.schemaShape)
+            if (missing) errors.push(`${file}:${entryLine(field)}: ${definition.kind} read accessor for '${key}' uses '${missing}', which is missing from its schema`)
+          }
+        }
+        if (definition.kind === 'form') continue
+        const schemaKind = definition.schemaShape?.get(key)
+        const kindInfo = surfaceKind(definition.kind, schemaKind)
         if (fieldNeedsDisplay(kindInfo, signals)) {
-          review.push(`${file}:${field.line}: ${key} (${displayKindLabel(kindInfo)}, ${surface}) needs explicit display (${displayHint(kindInfo, signals)})`)
-        }
-      }
-    }
-    for (const field of fields.values()) {
-      if (!field.rowFields) continue
-      for (const row of parseRowFields(entry, field.rowFields)) {
-        const signals = {
-          read: row.display.read,
-          renderer: row.display.renderer,
-          format: row.display.format,
-          source: row.formSource,
-        }
-        const kindInfo = effectiveKind(undefined, row.formRenderer)
-        if (fieldNeedsDisplay(kindInfo, signals)) {
-          review.push(`${file}:${row.line}: ${row.key} (${displayKindLabel(kindInfo)}, row) needs explicit display (${displayHint(kindInfo, signals)})`)
+          review.push(`${file}:${entryLine(field)}: ${key} (${displayKindLabel(kindInfo)}, ${definition.kind}) needs explicit display`)
         }
       }
     }
   }
-  return review
+  return { errors, review }
 }
 
 // Row-op sync (plan 049). Static mirror of plans 047 and 048: permission
@@ -688,31 +676,25 @@ export function checkResourceDisplay(files, { root = process.cwd(), read = absPa
 // the warning explicitly.
 const standardRowOps = new Set(['detail', 'update', 'delete'])
 
-function parseResourceActions(entry) {
+function parseResourceActions(entry, index) {
   const found = []
-  function visit(node) {
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)
-      && (node.expression.text === 'defineResource' || node.expression.text === 'defineActionResource')
-      && node.arguments.length >= 2) {
-      const config = unwrapExpr(node.arguments[node.arguments.length - 1])
-      const key = stringValue(propInit(config, 'key')) ?? 'unknown'
-      const actions = propInit(config, 'actions')
-      const target = unwrapExpr(actions)
-      if (target && ts.isObjectLiteralExpression(target)) {
-        for (const prop of target.properties) {
-          if (!ts.isPropertyAssignment(prop)) continue
-          const name = prop.name
-          if (!ts.isIdentifier(name) && !ts.isStringLiteral(name)) continue
-          const value = unwrapExpr(prop.initializer)
-          const hasRoute = !!value && ts.isObjectLiteralExpression(value) && propInit(value, 'route') !== undefined
-          const line = ts.getLineAndCharacterOfPosition(entry.source, prop.name.getStart(entry.source)).line + 1
-          found.push({ key, name: name.text, hasRoute, line, declared: !!value && ts.isObjectLiteralExpression(value) })
-        }
-      }
+  for (const call of eachCall(entry.source, 'defineResource', entry, index)) {
+    const config = call.arguments[0]
+    const props = resolvedProperties(config, entry, index)
+    const keyValue = props.get('key')
+    const key = stringValue(unwrapExpr(keyValue?.node)) ?? 'unknown'
+    const add = (name, item) => {
+      const operation = resolvedProperties(item.node, item.entry, index)
+      const line = entryLine(item)
+      found.push({ key, name, hasRoute: operation.has('route'), line, declared: operation.size > 0 })
     }
-    ts.forEachChild(node, visit)
+    for (const name of ['list', 'create', 'detail', 'update', 'delete']) {
+      const operation = props.get(name)
+      if (operation) add(name, operation)
+    }
+    const actions = props.get('actions')
+    for (const [name, action] of resolvedProperties(actions?.node, actions?.entry, index)) add(name, action)
   }
-  visit(entry.source)
   return found
 }
 
@@ -787,7 +769,7 @@ export function checkResourceRowOps(files, { root = process.cwd(), read = absPat
       review.push(`${file}: cannot parse resource for row-op check`)
       continue
     }
-    const declared = parseResourceActions(entry)
+    const declared = parseResourceActions(entry, index)
     if (!declared.length) continue
     const key = declared[0].key
     const byName = new Map(declared.map(item => [item.name, item]))
@@ -818,7 +800,7 @@ export function checkResourceRowOps(files, { root = process.cwd(), read = absPat
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (!process.argv[2] || process.argv[2] === '--help') {
-    console.log('Usage: node scripts/module-ui-check.mjs --sources <Vue/resource file or directory>...\n       node scripts/module-ui-check.mjs <ui-contract.json> [repository-root]\nSource mode checks bindings, native controls, and field display risk. Contract mode also checks declared composition. Review design, fields, globals and dynamic components in source.')
+    console.log('Usage: node scripts/module-ui-check.mjs --sources <Vue/resource file or directory>...\n       node scripts/module-ui-check.mjs <ui-contract.json> [repository-root]\nSource mode checks bindings, surface membership, display requirements, and native controls. Contract mode also checks declared composition. Review design, fields, globals and dynamic components in source.')
     process.exitCode = process.argv[2] ? 0 : 1
   } else {
     try {

@@ -19,7 +19,7 @@ const breadcrumbs = computed(() => routeBreadcrumbs(route, router, visibleNaviga
     class="sticky top-0 grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center border-b border-outline-variant bg-surface-container-low px-4 text-on-surface lg:relative lg:z-[2] lg:h-full lg:border-b-0 lg:pl-8 lg:pr-11"
   >
     <div class="flex min-w-0 items-center gap-3">
-      <button data-mobile-menu-trigger type="button" aria-label="Open menu" class="flex size-11 shrink-0 items-center justify-center lg:hidden" @click="$emit('openNavigation')">
+      <button v-bind="{ 'data-mobile-menu-trigger': true }" type="button" aria-label="Open menu" class="flex size-11 shrink-0 items-center justify-center lg:hidden" @click="$emit('openNavigation')">
         <Icon name="menu" />
       </button>
       <Logo class="w-9 shrink-0 lg:hidden" />

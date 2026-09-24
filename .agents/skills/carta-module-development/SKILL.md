@@ -74,7 +74,10 @@ review leaves the work in `verifying`, including after a repair.
 
 - Use `$api-conventions` for API edits. Before planning or writing any web
   surface, use `$web-ui-surfaces` and read [DESIGN.md](../../../DESIGN.md).
-  Apply this path to custom actions and playgrounds as well as CRUD.
+  Read the current
+  [resource architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md)
+  before changing web resource declarations, surface maps, or their type
+  boundaries. Apply this path to custom actions and playgrounds as well as CRUD.
 - Before selecting controls for any user input, use `$build-resource-form`.
   This includes custom actions, playgrounds and inline uploads. For every visible field, read the
   [display and form pattern](../web-ui-surfaces/references/fields.md).

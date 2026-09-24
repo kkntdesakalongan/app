@@ -4,5 +4,5 @@ import { roles } from './roles.resource'
 </script>
 
 <template>
-  <FormView v-bind="roles.create()" title="Create Role" />
+  <FormView v-bind="roles.create" title="Create Role" />
 </template>

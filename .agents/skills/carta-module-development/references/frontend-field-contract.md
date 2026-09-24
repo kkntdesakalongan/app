@@ -1,155 +1,94 @@
-# Frontend field and input contract
+# Frontend schema and surface contract
 
-Read this reference before a Carta web resource or form edit. The framework
-owns the normal input behavior. A module declares only its domain difference.
+Read this file before a Carta web resource or form edit. The approved detail is
+in [resource system architecture](../../../../docs/resource_system_overhaul/ARCHITECTURE.md).
 
-## Public field shape
+## Surface owners
 
-```ts
-{
-  label,
-  display: { read?, renderer?, props?, format? },
-  table: { ... },
-  detail: { ... },
-  form: { renderer?, props?, source?, validate?, write?, behavior? },
-}
-```
+Export raw operation schemas and their inferred types from the module schema
+file. Do not wrap schemas in an app or Loom resource schema.
 
-- If `display.read` is absent, display reads `record[field.key]`.
-- If `form.write` is absent, submit keeps the control value unchanged.
-- Do not add `(value) => value` or an identity display reader.
-- There is no public top-level field `read` or `write`.
-- Field `form.validate` replaces the renderer's default non-empty control-shape
-  validation.
+| Surface | Constructor | Map | Schema |
+|---|---|---|---|
+| Form | `defineForm` | `fields` | Form input schema |
+| Table | `defineTable` | `columns` | Record schema |
+| Detail | `defineDetail` | `fields` | Record schema |
 
-## Value and validation flow
+Each map is independent, ordered, and checked against its own schema. A form
+input is not a display definition. Reuse plain display fragments with object
+spread. Table/detail fields use `read`, `renderer`, `props`, and `format` where
+needed; form inputs use their input renderer contract.
+
+Use one-object `defineResource`. Put standard operations at the resource top
+level. `list` and `create` are static bags. `detail` and `update` factories
+bind identity. Keep their loaders inside the returned bag. An update loader
+must map record values to `Partial<TInput>` explicitly.
+
+## Value flow
 
 ```text
-loaded API value
-  -> framework prepares the control value
-  -> live control draft
-  -> input default or form.validate
-  -> form.write, when present, on a shallow submit copy
-  -> resource schema
-  -> action business validators
+API record --detail read accessor--> visible value
+API record --update.form.load mapping--> editable input
+editable input --raw schema parse--> submitted output
+submitted output --submit function--> operation result
 ```
 
-Field authors do not configure another load or write path. The framework owns
-the loaded-value preparation, and `form.write` remains the only field writer.
+Do not add generic field reads, writers, identity conversions, or hidden
+controls. Use schema transforms for input-to-output conversion. The API schema
+owns requiredness and the final write shape. The update loader selects draft
+keys explicitly; it does not cast a full record into a draft.
 
-The framework runs field writers before the submit callback or resource
-action. Submit callbacks and actions send their input unchanged. They do not
-run a full-payload writer. Readiness checks inspect control values and do not
-write them.
+## Relations and identifiers
 
-For a nested custom form block that has a non-asset submit conversion, put one
-writer on the owning top-level field. Do not also write its child fields or
-write the block again during submit. For assets, use the
-[asset field contract](#asset-fields).
+Keep the submitted relation value separate from its display label. Standard
+option inputs use an explicit source `{ load, namespace? }`; lookup also takes
+`loadDetail(context)` and its own table definition. Delegate these loaders to
+the owner's `list.table.load` and `detail({ id }).detail.load(context)`. The
+table/detail accessor reads the returned relation name. Include relation data
+in the record contract; do not fetch one label per row. Static choices use the
+renderer `data` prop.
 
-The live draft always keeps the control value. A writer is pure, changes only
-its field on the submit copy, and never replaces a preview or selected record
-in the live draft.
+Use the owner resource identity for detail, CRUD, and cache operations. A
+lookup's `pick` and `view` keys configure the selection control; they do not
+change resource identity.
 
-The input contract owns basic non-empty control shape:
+The raw form schema defines the selection value and any conversion to operation
+input. Multi-choice controls can emit selected record objects; accept that
+shape or transform it in the raw schema when the operation takes identities.
+The users form shows this contract for role selections. The API validates the
+submitted identities at persistence.
 
-- `number`: a finite JavaScript number;
-- `file` and `image`: the [asset field contract](#asset-fields);
-- `lookup` or `select` with `multi: true`: an array of exact selection record
-  objects from the field schema. The schema must use
-  `selectionValues(itemSchema)`; the framework rejects a missing or different
-  schema and rejects `form.write`.
+## Assets
 
-Empty values go to the resource schema. The resource schema owns requiredness
-and the final submitted shape. Use action validators only for extra business
-rules. For example, a number renderer already rejects text; use
-`form.validate` only to replace that rule with a domain rule such as 1–15.
-
-Built-in override parameters follow the renderer value type. An arbitrary custom
-renderer receives `unknown` until its own contract narrows it. Check current
-exports before relying on a planned type change.
-
-## Objects and identifiers
-
-Do not apply one identifier rule to all inputs:
-
-- A database-backed single relation keeps its scalar ID or code as the write
-  field. The API also returns the named relation object for display, and
-  `display.read` reads its label. Do not fetch only to label it.
-- A lookup field keeps the source resource identity separate from its `pick` and
-  `view` keys. Use the source identity for detail, CRUD, and cache operations.
-  When a pre-filled value uses a different picked key, load it through a loader
-  that accepts that key or through returned list records. Never pass `pick` as a
-  detail ID. Review the actual form's load wiring and relation source. Do not
-  add a browser journey for the lookup.
-- A multi lookup or select keeps the exact selected records in the live draft
-  and sends them unchanged. The backend extracts identity fields only at the
-  persistence boundary, then sends current labels in the same record array.
-  Do not map these values to IDs and do not add a field writer.
-
-## Asset fields
-
-Use the same field name and asset shape in API reads, the live form draft and
-submitted writes. A single field contains `StoredAsset` (or `null` when allowed);
-a multi field contains `StoredAsset[]`. Preserve every asset property, including
-optional metadata. Array position carries UI order. Framework controls add no
-category, row identity or ordering property to an asset.
+Use the same asset field name and object shape in API reads, the form draft,
+and submitted writes. A single field holds `StoredAsset` or `null` when
+allowed. A multi field holds `StoredAsset[]`. Preserve optional metadata and
+array order. Do not add client ID conversion or a generic writer.
 
 The API owns `storedAssetSchema` and its inferred `StoredAsset` type in
-`apps/api/src/schema.ts`. Use that schema for client parsing, including `fromZod`.
-Use `storedAssetInput` only on the server to extract storage IDs. Its HTTP input
-is still the complete object. Project stored IDs with the existing
+`apps/api/src/schema.ts`. Use the web operation schema that has the same
+contract. Use `storedAssetInput` only on the server to extract storage IDs.
+Project stored IDs with the existing
 `apps/api/src/storage/assets.ts` owner before returning records.
 
 Reuse `apps/web/src/framework/adapters/assets.ts` and the input registry for
-load, upload and preview. Keep asset objects through submission: no asset field
-writer, client ID transform, copied asset type or per-action object reconstruction.
-The contract applies to custom workflow actions as well as create/update.
-Raw keys, URLs, partial objects and compatibility aliases are not asset values.
+load, upload, and preview. Keep asset objects through submission. Shared form
+readiness blocks submit while upload, conversion, or model commit is pending.
+Do not persist client URLs as authority. The server validates ownership and
+use. Removing a record association does not authorize deletion of the shared
+file.
 
-For ordinary collection edits, submit the desired complete array. On PATCH,
-omission means unchanged; an included array replaces the collection; `[]` requests
-clearing. Keep optional patch arrays free of empty-array defaults. The server
-validates requiredness, access and allowed files before applying the collection
-atomically through the existing persistence owner. Keep client add/remove diffs
-out of this path. An existing domain command with different semantics needs an
-authorized contract change before migration.
+For a changed asset field, prove unchanged save, addition, allowed removal or
+clear, retained metadata, and reload. Test omitted PATCH separately from an
+empty array. Capture a real form submission and parse it through the server
+input schema; a mocked action cannot prove the boundary. Reuse
+[`assets.form.spec.ts`](../../../../apps/web/src/framework/adapters/assets.form.spec.ts)
+and keep business checks local.
 
-Business data belongs in the app. An app can declare separate asset fields or
-wrap an asset in an app-owned record when its behavior requires extra fields.
-Keep that record symmetric across its read/form/write path. A category is never
-a framework asset requirement. Use the app's existing field extension for such
-values; preserve the nested asset object.
+## Verification
 
-The frontend preserves metadata; the server decides authoritative metadata and
-can issue fresh URLs. Do not persist client URLs as authority. A stored key alone
-does not preserve all metadata after reload. Removing a record association does
-not authorize deletion of the shared file. Apply the module's concurrent-edit
-policy and file-access rules on the server.
-
-### Availability and proof
-
-The object schema, app adapter, shared file/image field typing, uniform asset
-validation, metadata refresh, and form upload readiness are implemented.
-Inspect current source before using those capabilities. Report a type/runtime
-mismatch at its owner; use an authorized supported local extension only if it
-preserves this contract. A cast or client conversion must not hide the
-mismatch.
-
-Use shared form readiness when available. Keep module-specific pending flags
-out of the normal form path. Module delivery does not run browser checks.
-
-For changed asset fields, prove unchanged save, addition, permitted removal or
-clear, retained metadata and reload. Cover omitted PATCH separately from empty
-arrays at the API boundary. Capture a real form submission and parse it through
-the server input schema; a mocked action alone cannot prove symmetry. Reuse
-[the shared integration example](../../../../apps/web/src/framework/adapters/assets.form.spec.ts),
-and keep business-rule tests local.
-
-## Check the boundary
-
-Trace one loaded value through the control, submit and stored result. For a
-changed conversion, check a value that differs across those stages. For a
-lookup, check a pre-filled selection and an invalid parent reference. For an
-asset, use the checks in [Asset fields](#asset-fields). Use the [verification strategy](verification-strategy.md) to select
-checks; repeated assertions of field configuration do not prove this flow.
+Trace one changed value through schema, form input, submit, and stored result.
+For a relation, check a prefilled selection and an invalid parent reference.
+For a structured display, check a returned record with the relation data. Use
+the [verification strategy](verification-strategy.md) to choose checks; field
+configuration snapshots do not prove value flow.

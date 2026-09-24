@@ -9,6 +9,34 @@ const run = promisify(execFile)
 const fixtures: string[] = []
 const repoRoot = resolve(import.meta.dirname, '../../../../..')
 const generator = join(repoRoot, 'apps/web/scripts/generate-route-types.mjs')
+const resourceContract = `
+const schema = {
+  _input: { id: '' },
+  _output: { id: '' },
+  parseAsync: async () => ({ id: '' }),
+}
+const table = {
+  schema,
+  columns: { id: {} },
+  load: async () => ({ data: [{ id: 'one' }] }),
+}
+const createForm = {
+  schema,
+  fields: {},
+  submit: async (output: { id: string }) => output,
+}
+const detail = ({ id }: { id: string }) => ({
+  schema,
+  fields: {},
+  load: async () => ({ id }),
+})
+const updateForm = ({ id }: { id: string }) => ({
+  schema,
+  fields: {},
+  load: async () => ({ id }),
+  submit: async (output: { id: string }) => ({ ...output, id }),
+})
+`
 
 afterEach(async () => Promise.all(fixtures.splice(0).map((fixture) => rm(fixture, { recursive: true, force: true }))))
 
@@ -74,16 +102,20 @@ describe('route type generation', () => {
     await writeFile(
       consumer,
       `import { defineResource } from '@southneuhof/loom'
-const validate = (value: unknown) => ({ success: true as const, data: value as { id: string } })
-const schema = { identity: 'id' as const, record: { schema: { validate } } }
-defineResource(schema, { key: 'fixture', actions: { list: { run: async () => ({ data: [] }), route: { name: 'alpha' } } } })
+${resourceContract}
+defineResource({
+  key: 'fixture',
+  identity: (record: { id: string }) => record.id,
+  list: { permission: null, route: { name: 'alpha' }, table },
+})
 `
     )
     await writeFile(
       tsconfig,
       JSON.stringify({
         compilerOptions: {
-          strict: false,
+          strict: true,
+          noImplicitAny: false,
           noEmit: true,
           skipLibCheck: true,
           module: 'esnext',
@@ -96,7 +128,7 @@ defineResource(schema, { key: 'fixture', actions: { list: { run: async () => ({ 
         files: [join(root, 'src/route-map.d.ts'), consumer, vueShim],
       })
     )
-    const compile = () => run('pnpm', ['exec', 'tsc', '-p', tsconfig], { cwd: repoRoot, timeout: 20_000 })
+    const compile = () => run('pnpm', ['--filter', '@southneuhof/loom', 'exec', 'tsc', '-p', tsconfig], { cwd: repoRoot, timeout: 20_000 })
 
     await generate(root)
     await expect(compile()).resolves.toMatchObject({ stderr: '' })
@@ -105,7 +137,7 @@ defineResource(schema, { key: 'fixture', actions: { list: { run: async () => ({ 
     expect(await names(root)).toEqual(['keeper'])
     await expect(compile()).rejects.toMatchObject({
       code: 1,
-      stdout: expect.stringMatching(/consumer\.ts\(4,\d+\): error TS2322: Type '"alpha"' is not assignable/),
+      stdout: expect.stringMatching(/consumer\.ts\(\d+,\d+\): error TS2322: Type '"alpha"' is not assignable/),
     })
     await writeFile(join(root, 'src/routes/alpha.route.vue'), '<template />')
     await generate(root)
@@ -129,29 +161,26 @@ defineResource(schema, { key: 'fixture', actions: { list: { run: async () => ({ 
     await writeFile(
       consumer,
       `import { defineResource } from '@southneuhof/loom'
-const validate = (value: unknown) => ({ success: true as const, data: value as { id: string } })
-const schema = { identity: 'id' as const, record: { schema: { validate } } }
+${resourceContract}
+const identity = (record: { id: string }) => record.id
+defineResource({ key: 'valid-empty', identity, list: { permission: null, route: { name: 'empty' }, table } })
+defineResource({ key: 'valid-docs', identity, detail: { permission: null, route: { name: 'docs', params: (id) => ({ lang: id, path: 'one' }) }, detail } })
+defineResource({ key: 'valid-repeat', identity, create: { permission: null, route: { name: 'repeat', params: { tags: ['one', 'two'] } }, form: createForm } })
+defineResource({ key: 'valid-optional', identity, update: { permission: null, route: { name: 'optional', params: {} }, form: updateForm } })
 const extra = { path: ['one'], extra: 'no' }
 const extraCallback = (_id: string) => extra
-defineResource(schema, { key: 'valid-empty', actions: { list: { run: async () => ({ data: [] }), route: { name: 'empty' } } } })
-defineResource(schema, { key: 'valid-docs', actions: { detail: { run: async ({ id }) => ({ id: String(id) }), route: { name: 'docs', params: (id) => { const identity: string = id; return { lang: identity, path: 'one' } } } } } })
-defineResource(schema, { key: 'valid-repeat', actions: { create: { run: async (input: {}) => ({ id: '1', ...input }), route: { name: 'repeat', params: { tags: ['one', 'two'] } } } } })
-defineResource(schema, { key: 'valid-optional', actions: { update: { run: async (id: string, input: {}) => ({ id, ...input }), route: { name: 'optional', params: {} } } } })
-// @ts-expect-error a route without parameters rejects supplied keys.
-defineResource(schema, { key: 'empty-extra', actions: { list: { run: async () => ({ data: [] }), route: { name: 'empty', params: { extra: 'no' } } } } })
-// @ts-expect-error repeatable parameter elements use Vue Router raw values.
-defineResource(schema, { key: 'bad-array', actions: { list: { run: async () => ({ data: [] }), route: { name: 'repeat', params: { tags: [true] } } } } })
-// @ts-expect-error inferred parameter objects cannot add keys.
-defineResource(schema, { key: 'exact-object', actions: { detail: { run: async () => undefined, route: { name: 'docs', params: extra } } } })
-// @ts-expect-error predeclared callbacks cannot add keys.
-defineResource(schema, { key: 'exact-callback', actions: { detail: { run: async () => undefined, route: { name: 'docs', params: extraCallback } } } })
+defineResource({ key: 'empty-extra', identity, list: { permission: null, route: { name: 'empty', params: { extra: 'no' } }, table } })
+defineResource({ key: 'bad-array', identity, create: { permission: null, route: { name: 'repeat', params: { tags: [true] } }, form: createForm } })
+defineResource({ key: 'exact-object', identity, detail: { permission: null, route: { name: 'docs', params: extra }, detail } })
+defineResource({ key: 'exact-callback', identity, detail: { permission: null, route: { name: 'docs', params: extraCallback }, detail } })
 `
     )
     await writeFile(
       tsconfig,
       JSON.stringify({
         compilerOptions: {
-          strict: false,
+          strict: true,
+          noImplicitAny: false,
           noEmit: true,
           skipLibCheck: true,
           module: 'esnext',
@@ -163,6 +192,9 @@ defineResource(schema, { key: 'exact-callback', actions: { detail: { run: async 
       })
     )
 
-    await expect(run('pnpm', ['exec', 'tsc', '-p', tsconfig], { cwd: repoRoot, timeout: 20_000 })).resolves.toMatchObject({ stderr: '' })
+    await expect(run('pnpm', ['--filter', '@southneuhof/loom', 'exec', 'tsc', '-p', tsconfig], { cwd: repoRoot, timeout: 20_000 })).rejects.toMatchObject({
+      code: 1,
+      stdout: expect.stringMatching(/consumer\.ts\(\d+,\d+\): error TS/),
+    })
   })
 })

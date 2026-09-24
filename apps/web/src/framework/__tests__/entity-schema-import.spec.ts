@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { fromZod, requiredSchemaKeys } from '@southneuhof/loom'
 import { role } from '@southneuhof/api/routes/(authenticated)/roles/roles.entity'
 import { user } from '@southneuhof/api/routes/(authenticated)/users/users.entity'
 
@@ -39,26 +38,19 @@ function collectEntityModules(directory: string): string[] {
 
 describe('entity schemas are importable in the browser', () => {
   it('exposes the authoritative role schemas as usable validators', () => {
-    const create = fromZod(role.schemas.create)
-
-    expect(create.validate({ roleCode: 'admin', name: 'Admin', roleGroupId: 'group-admin' })).toMatchObject({ success: true })
+    expect(role.schemas.create.safeParse({ roleCode: 'admin', name: 'Admin', roleGroupId: 'group-admin' }).success).toBe(true)
   })
 
   it('rejects an empty draft with an issue on the required field', () => {
-    const result = fromZod(role.schemas.create).validate({})
+    const result = role.schemas.create.safeParse({})
 
     expect(result.success).toBe(false)
     if (result.success) return
-    expect(result.issues.map((issue) => issue.path.join('.'))).toContain('roleCode')
-  })
-
-  it('reports required keys for the hidden-but-required diagnostic', () => {
-    expect(requiredSchemaKeys(role.schemas.create)).toContain('roleCode')
+    expect(result.error.issues.map((issue) => issue.path.join('.'))).toContain('roleCode')
   })
 
   it('treats every update field as optional, matching the server schema', () => {
-    expect(requiredSchemaKeys(role.schemas.update)).toEqual([])
-    expect(fromZod(role.schemas.update).validate({}).success).toBe(true)
+    expect(role.schemas.update.safeParse({}).success).toBe(true)
   })
 
   it('exposes create, update and select schemas on every entity', () => {
@@ -72,7 +64,7 @@ describe('entity schemas are importable in the browser', () => {
 
   it('validates through the framework bridge for every entity, not just roles', () => {
     for (const [name, entity] of Object.entries(allEntities)) {
-      expect(fromZod(entity.schemas.update).validate({}).success, `${name}.schemas.update`).toBe(true)
+      expect(entity.schemas.update.safeParse({}).success, `${name}.schemas.update`).toBe(true)
     }
   })
 

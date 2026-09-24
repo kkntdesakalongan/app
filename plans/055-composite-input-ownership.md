@@ -45,7 +45,7 @@ Current cross-form props (`LookupInput.vue:43-47`):
 
 ## Git workflow
 
-Continue on `advisor/resource-surface-overhaul` after Plans 052-054. Do not ship an intermediate state. Do not commit or push unless asked.
+Continue on `resource_system_overhaul` after Plans 052-054. Do not ship an intermediate state. Do not commit or push unless asked.
 
 ## Steps
 
@@ -71,3 +71,11 @@ Continue on `advisor/resource-surface-overhaul` after Plans 052-054. Do not ship
 ## Maintenance notes
 
 Use distinct types for stored row output and editable row input. A row form is reusable outside TableInput, so keep it submit-free and let the owner bind the mutation.
+
+Plan 054 already migrated ListView filters to a submit-free Form definition and added stale parsed-result, transformed-key clearing, and reset coverage. Verify Step 1 against that implementation; do not create a second filter path. Plan 054's full Loom checks leave two failing `TableInput.spec.ts` cases, one failing `LookupInput.browser.spec.ts` case, and 33 diagnostics in input/composite files and fixtures for this plan. The browser run also warns that `FileInput` does not receive Form's ID and ARIA attributes through its fragment root; address that input integration while preserving its upload behavior.
+
+## Review result
+
+DONE after review. TableInput uses separate row table and submit-free form definitions with `toDraft`; its local array updates have mounted behavior tests. LookupInput owns loading, hydration, selection, and cancellation through an explicit source. LocationInput binds a raw schema through a submit-free Form definition. FileInput keeps its native control mounted for Form ID and error links and keeps the add controls available for sequential multi-file uploads. The unused lookup customization props and TableInput array wrappers were removed during review.
+
+Independent checks after the final revision: Loom unit tests passed (71 files, 502 tests), Loom browser tests passed (10 files, 34 tests), and `git diff --check` passed. Loom type-check still reports only `Drawer.vue:66` and `Tabs.vue:28`, both assigned to Plan 058. The full browser run reports non-failing DialogContent title/description warnings outside the focused LookupInput suite.

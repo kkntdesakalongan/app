@@ -2,12 +2,37 @@ import { strict as assert } from 'node:assert'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync, symlinkSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
-import { isAbsolute, join, resolve } from 'node:path'
+import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { test } from 'node:test'
-import { applyBoundedModule, checkMigrationAttribution, checkMigrationSql, describeBoundedModule, execute, parseDrizzleExplain, rollbackInvocation, selectNewMigration, validateConfig } from './scaffold-bounded-module.mjs'
+import { applyBoundedModule, checkMigrationAttribution, checkMigrationSql, describeBoundedModule, execute, parseDrizzleExplain, rollbackInvocation, scaffold, selectNewMigration, validateConfig } from './scaffold-bounded-module.mjs'
 import { copyCurrentOwners } from './test-support/bounded-fixture.mjs'
 
 const temporaryDirectories = []
+const webRequire = createRequire(new URL('../apps/web/package.json', import.meta.url))
+const ts = webRequire('typescript')
+
+function syntaxTree(source) {
+  const file = ts.createSourceFile('fixture.ts', source, ts.ScriptTarget.Latest, true)
+  function visit(node) {
+    const children = []
+    ts.forEachChild(node, (child) => { children.push(visit(child)) })
+    if (ts.isStringLiteral(node) && ts.isPropertyAssignment(node.parent) && node.parent.name === node) {
+      return [ts.SyntaxKind.Identifier, node.text, children]
+    }
+    const value = ts.isIdentifier(node) || ts.isStringLiteralLike(node) || ts.isNumericLiteral(node)
+      ? node.text
+      : children.length ? undefined : ts.SyntaxKind[node.kind]
+    return [node.kind, value, children]
+  }
+  return visit(file)
+}
+
+function semanticGeneratedSource(path, source) {
+  if (!path.endsWith('.vue')) return syntaxTree(source)
+  const script = source.match(/<script setup lang="ts">([\s\S]*?)<\/script>/)?.[1] ?? ''
+  const template = source.match(/<template>([\s\S]*?)<\/template>/)?.[1]?.trim() ?? ''
+  return { script: syntaxTree(script), template }
+}
 
 function workspace(config) {
   const directory = mkdtempSync(join(tmpdir(), 'scaffold-bounded-module-'))
@@ -26,16 +51,23 @@ function config() {
     symbol: 'TestCatalog',
     title: 'Test Catalog',
     singular: 'Test Catalog',
-    fields: [
+    properties: [
       { key: 'label', type: 'text', label: 'Label', required: true },
       { key: 'enabled', type: 'boolean', label: 'Enabled', default: true },
     ],
     actions: {
-      list: { fields: ['label', 'enabled'], permission: 'list-test-catalog' },
-      detail: { fields: ['label', 'enabled'], permission: 'detail-test-catalog' },
-      create: { fields: ['label', 'enabled'], permission: 'create-test-catalog' },
-      update: { fields: ['label', 'enabled'], permission: 'update-test-catalog' },
+      list: { permission: 'list-test-catalog' },
+      detail: { permission: 'detail-test-catalog' },
+      create: { permission: 'create-test-catalog' },
+      update: { permission: 'update-test-catalog' },
       delete: { permission: 'delete-test-catalog' },
+    },
+    surfaces: {
+      display: { enabled: { renderer: 'chip', props: { options: { true: { label: 'Enabled' }, false: { label: 'Disabled' } } } } },
+      list: { columns: { label: { sortable: true }, enabled: {} } },
+      detail: { fields: { label: {}, enabled: {} } },
+      create: { inputs: { label: { renderer: 'text' }, enabled: { renderer: 'switch', initialValue: true } } },
+      update: { inputs: { label: { renderer: 'text' }, enabled: { renderer: 'switch' } } },
     },
     permissions: Object.fromEntries(['list', 'detail', 'create', 'update', 'delete'].map((action) => [`${action}-test-catalog`, {
       name: `${action} test catalog`,
@@ -61,9 +93,16 @@ function config() {
 function withoutActions(value, keep) {
   const kept = Object.fromEntries(keep.map((action) => [action, value.actions[action]]))
   const used = new Set(Object.values(kept).map((entry) => entry.permission))
+  const surfaces = Object.fromEntries(keep.filter((action) => action !== 'delete').map((action) => [action, value.surfaces[action]]))
+  const usedDisplayKeys = new Set([
+    ...Object.keys(surfaces.list?.columns ?? {}),
+    ...Object.keys(surfaces.detail?.fields ?? {}),
+  ])
+  const display = Object.fromEntries(Object.entries(value.surfaces.display ?? {}).filter(([key]) => usedDisplayKeys.has(key)))
   return {
     ...value,
     actions: kept,
+    surfaces: { ...surfaces, display },
     permissions: Object.fromEntries(Object.entries(value.permissions).filter(([code]) => used.has(code))),
   }
 }
@@ -97,7 +136,6 @@ test('creates explicit source files and stable absolute output', () => {
   assert.deepEqual(result.generated, expectedRelative)
   assert.ok(!result.generated.some((path) => path.endsWith('.integration.spec.ts')))
 
-  assert.deepEqual(result.generated, expectedRelative)
   assert.deepEqual(result.generated, [...result.generated].sort())
   assert.deepEqual(result.integration, [...result.integration].sort())
   assert.deepEqual(result.manual, [...result.manual].sort())
@@ -121,7 +159,7 @@ test('creates explicit source files and stable absolute output', () => {
   const createRoute = readFileSync(result.generated.find((path) => path.endsWith('/create.route.vue')), 'utf8')
   assert.match(createRoute, /title="Create Test Catalog"/)
   assert.doesNotMatch(createRoute, /submit-label=/)
-  assert.match(createRoute, /<template><FormView v-bind="testCatalogs\.create\(\)" title="Create Test Catalog" \/><\/template>/)
+  assert.match(createRoute, /<template><FormView v-bind="testCatalogs\.create" title="Create Test Catalog" \/><\/template>/)
 
   const editRoute = readFileSync(result.generated.find((path) => path.endsWith('/edit.route.vue')), 'utf8')
   assert.match(editRoute, /title="Edit Test Catalog"/)
@@ -131,6 +169,8 @@ test('creates explicit source files and stable absolute output', () => {
   const resource = readFileSync(result.generated.find((path) => path.endsWith('.resource.ts')), 'utf8')
   assert.match(resource, /title: 'Test Catalog'/)
   assert.match(resource, /createHonoResourceActions\(rpc\['test-catalog'\]\)/)
+  assert.match(resource, /label: \{\},/)
+  assert.doesNotMatch(resource, /\{\s{2,}\}/)
 
   const detailRoute = readFileSync(result.generated.find((path) => path.endsWith('/detail.route.vue')), 'utf8')
   assert.doesNotMatch(detailRoute, /title=|back-to=/)
@@ -141,13 +181,12 @@ test('creates explicit source files and stable absolute output', () => {
   assert.match(seed, /label: sql`excluded\.label`/)
 
   const schema = readFileSync(result.generated.find((path) => path.endsWith('.schema.ts')), 'utf8')
-  assert.match(schema, /import \{ defineSchema \} from '@\/framework\/schema'/)
-  assert.match(schema, /export const testCatalogsSchema = defineSchema\(rpc\['test-catalog'\], \{/)
-  assert.match(schema, /identity: 'id'/)
-  assert.match(schema, /record: testCatalog\.schemas\.select/)
-  assert.match(schema, /create: testCatalog\.schemas\.create/)
-  assert.match(schema, /update: testCatalog\.schemas\.update/)
-  assert.doesNotMatch(schema, new RegExp(['define', 'EntitySchema'].join('') + '|fromZod|@southneuhof/loom.*defineSchema'))
+  assert.match(schema, /export const testCatalogsRecordSchema = testCatalog\.schemas\.select/)
+  assert.match(schema, /export const testCatalogsCreateSchema = testCatalog\.schemas\.create/)
+  assert.match(schema, /export const testCatalogsUpdateSchema = testCatalog\.schemas\.update/)
+  assert.doesNotMatch(schema, /defineSchema|fromZod|WebResourceSchema/)
+  assert.doesNotMatch(resource, /defineFields|defineResource\([^\n]+Schema,|actions: \{/)
+  assert.doesNotMatch(resource, /as never/)
 })
 
 test('validates selected actions with derived identity, labels, and technical reads', () => {
@@ -192,7 +231,7 @@ test('validates selected actions with derived identity, labels, and technical re
     }
     if (item.seed === null) delete value.seed
     else if (item.seed) value.seed = item.seed
-    if (item.navigation === null) delete value.navigation
+    if (item.navigation === null) { delete value.navigation; delete value.surfaces }
     if (item.test === null) delete value.test
     else if (item.test) value.test = item.test
     else if (!Object.hasOwn(value.actions, 'update')) delete value.test.update
@@ -219,11 +258,11 @@ test('rejects invalid selected actions, permission use, navigation, seed, and te
   const cases = [
     ['empty actions', (value) => { value.actions = {}; value.permissions = {} }, /actions must have at least one key/],
     ['unknown action', (value) => { value.actions.archive = { permission: 'archive-test-catalog' } }, /actions\.archive is unsupported/],
-    ['unknown action field', (value) => { value.actions.list.fields = ['missing'] }, /actions\.list\.fields contains unsupported field/],
+    ['old action field list', (value) => { value.actions.list.fields = ['missing'] }, /actions\.list contains unsupported keys: fields/],
     ['delete with fields', (value) => { value.actions.delete.fields = [] }, /actions\.delete contains unsupported keys/],
     ['missing permission', (value) => { delete value.permissions['list-test-catalog'] }, /used but missing/],
     ['unused permission', (value) => { value.permissions['extra-test-catalog'] = { name: 'Extra', description: 'Extra.' } }, /defined but unused/],
-    ['navigation without list', (value) => { const kept = withoutActions(value, ['list', 'detail']); delete kept.test.update; kept.navigation = { group: 'settings', after: 'settings-roles', title: 'Test Catalog', icon: 'folder' }; delete kept.actions.list; kept.permissions = Object.fromEntries(Object.entries(kept.permissions).filter(([code]) => code !== 'list-test-catalog')); Object.assign(value, kept) }, /navigation is allowed only when the list action exists/],
+    ['navigation without list', (value) => { const kept = withoutActions(value, ['list', 'detail']); delete kept.test.update; kept.navigation = { group: 'settings', after: 'settings-roles', title: 'Test Catalog', icon: 'folder' }; delete kept.actions.list; delete kept.surfaces.list; kept.permissions = Object.fromEntries(Object.entries(kept.permissions).filter(([code]) => code !== 'list-test-catalog')); Object.assign(value, kept) }, /navigation is allowed only when the list action exists/],
     ['legacy identity', (value) => { value.identity = { key: 'id', type: 'text', primary: true, generated: 'uuid' } }, /unsupported keys: identity/],
     ['legacy labels', (value) => { value.labels = { listTitle: 'Test Catalog' } }, /unsupported keys: labels/],
     ['missing test update', (value) => { delete value.test.update }, /test\.update is required for the list, create, and update journey/],
@@ -231,7 +270,7 @@ test('rejects invalid selected actions, permission use, navigation, seed, and te
     ['missing singular', (value) => { delete value.singular }, /singular is required/],
     ['redirect on list', (value) => { value.actions.list.redirect = 'other' }, /allowed only on create and update/],
     ['redirect with detail', (value) => { value.actions.create.redirect = 'other' }, /allowed only when neither Detail nor List exists/],
-    ['missing redirect without targets', (value) => { const kept = withoutActions(value, ['create']); delete kept.navigation; kept.test = { record: { label: 'One', enabled: true } }; Object.assign(value, kept) }, /must give a valid existing route name via `redirect`/],
+    ['missing redirect without targets', (value) => { const kept = withoutActions(value, ['create']); delete kept.navigation; delete kept.surfaces; kept.test = { record: { label: 'One', enabled: true } }; Object.assign(value, kept) }, /must give a valid existing route name via `redirect`/],
   ]
 
   for (const [, mutate, error] of cases) {
@@ -259,17 +298,16 @@ test('renders only selected actions and redirects', () => {
   assert.ok(technical)
   assert.match(readFileSync(technical, 'utf8'), /requirePermission\('update-test-catalog'\)/)
   const edit = readFileSync(result.generated.find((path) => path.endsWith('edit.route.vue')), 'utf8')
-  assert.match(edit, /const load = /)
-  assert.match(edit, /createHonoResourceActions/)
-  assert.match(edit, /createHonoResourceActions\(rpc\['test-catalog'\]\)/)
-  assert.match(edit, /api\.detail\(/)
-  assert.match(edit, /FormView v-bind="\{ load, \.\.\..*\.update\(.*\) \}"/)
+  assert.doesNotMatch(edit, /const load = |createHonoResourceActions|as never/)
+  assert.match(edit, /FormView v-bind="testCatalogs\.update\(/)
   const resource = readFileSync(result.generated.find((path) => path.endsWith('.resource.ts')), 'utf8')
-  assert.doesNotMatch(resource, /detail: \{/)
+  assert.doesNotMatch(resource, /\n    detail: \{/)
   assert.doesNotMatch(resource, /delete: \{/)
   assert.match(resource, /create: \{/)
   assert.match(resource, /update: \{/)
   assert.match(resource, /list: \{/)
+  assert.match(resource, /form: \(\{ id \}\) => \(\{/)
+  assert.match(resource, /const record = await api\.detail\(\{ \.\.\.context, id \}\)/)
   // No Detail selected: Loom infers the detail redirect, so no explicit
   // defaultTo is emitted (matches hand-written modules). Only the
   // no-Detail-no-List manifest redirect emits defaultTo (see solo below).
@@ -285,6 +323,7 @@ test('renders only selected actions and redirects', () => {
 
   const solo = withoutActions(config(), ['create'])
   delete solo.navigation
+  delete solo.surfaces
   solo.test = { record: { label: 'One', enabled: true } }
   assert.throws(() => validateConfig(solo), /must give a valid existing route name via `redirect`/)
   solo.actions.create.redirect = 'settings-home'
@@ -296,6 +335,28 @@ test('renders only selected actions and redirects', () => {
   assert.ok(!soloResult.generated.some((path) => path.endsWith('.schema.ts')))
   assert.ok(!soloResult.generated.some((path) => path.endsWith('.integration.spec.ts')))
   assert.ok(soloResult.generated.some((path) => path.endsWith('create/+server.ts')))
+})
+
+test('checked-in web type fixture matches the current generator output', (t) => {
+  const fixture = resolve('apps/web/src/framework/__type-tests__/plan057_generated_users')
+  const manifest = JSON.parse(readFileSync(join(fixture, 'manifest.json'), 'utf8'))
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-web-type-fixture-'))
+  t.after(() => rmSync(root, { recursive: true, force: true }))
+
+  const result = scaffold(manifest, { root })
+  const generatedRoot = resolve(root, 'apps/web/src/routes/(authenticated)/settings/users')
+  const generated = result.generated.filter((path) => path.startsWith(`${generatedRoot}${sep}`))
+  const generatedRelative = generated.map((path) => relative(generatedRoot, path)).sort()
+  const fixtureFiles = ['[userId]/detail.route.vue', '[userId]/edit.route.vue', 'index.route.vue', 'users.resource.ts', 'users.schema.ts'].sort()
+  assert.deepEqual(generatedRelative, fixtureFiles)
+
+  for (const path of generated) {
+    const pathFromRoot = relative(generatedRoot, path)
+    const fixturePath = pathFromRoot.replace(/\.route\.vue$/, '-route.type-test.vue')
+    const checkedIn = readFileSync(join(fixture, fixturePath), 'utf8')
+    const actual = readFileSync(path, 'utf8')
+    assert.deepEqual(semanticGeneratedSource(path, checkedIn), semanticGeneratedSource(path, actual), pathFromRoot)
+  }
 })
 
 test('slim browser journey proves create, edit, and reload persistence', () => {
@@ -425,53 +486,49 @@ test('generates the minimal API proof spec', () => {
 
 test('marks an explicit unsupported renderer as unsupported and manual', () => {
   const value = config()
-  value.fields[0].renderer = 'lookup'
+  value.surfaces.create.inputs.label.renderer = 'lookup'
   const normalized = validateConfig(value)
-  assert.equal(normalized.fields[0].renderer, 'lookup')
-  assert.equal(normalized.fields[0].rendererSupported, false)
-  assert.ok(normalized.unsupported.some((entry) => entry.includes('label:lookup') && entry.includes('manual')))
+  assert.equal(normalized.surfaces.create.inputs.label.renderer, 'lookup')
+  assert.equal(normalized.surfaces.create.inputs.label.rendererSupported, false)
+  assert.ok(normalized.unsupported.some((entry) => entry.includes('create.label:lookup') && entry.includes('manual')))
   const setup = workspace(value)
   const result = JSON.parse(execute(['--config', setup.configPath, '--json'], { root: setup.outputRoot, cwd: setup.directory }))
   const resource = readFileSync(result.generated.find((path) => path.endsWith('.resource.ts')), 'utf8')
   assert.match(resource, /renderer: 'lookup'/)
 })
 
-test('generates different field lists for each resource action', () => {
+test('generates independent maps for each resource surface', () => {
   const value = config()
-  value.fields.push({ key: 'category', type: 'text', label: 'Category', required: true })
-  value.actions.list.fields = ['label', 'enabled']
-  value.actions.detail.fields = ['label']
-  value.actions.create.fields = ['category', 'label', 'enabled']
-  value.actions.update.fields = ['category', 'label', 'enabled']
+  value.properties.push({ key: 'category', type: 'text', label: 'Category', required: true })
+  value.surfaces.list.columns = { label: { sortable: true }, enabled: {} }
+  value.surfaces.detail.fields = { label: {} }
+  value.surfaces.create.inputs = { category: { renderer: 'text' }, label: { renderer: 'text' }, enabled: { renderer: 'switch' } }
+  value.surfaces.update.inputs = { category: { renderer: 'text' }, label: { renderer: 'text' }, enabled: { renderer: 'switch' } }
   const setup = workspace(value)
   const result = JSON.parse(execute(['--config', setup.configPath, '--json'], { root: setup.outputRoot, cwd: setup.directory }))
   const resource = readFileSync(result.generated.find((path) => path.endsWith('.resource.ts')), 'utf8')
 
-  assert.match(resource, /fields: \[fields\.label, fields\.enabled\]/)
-  assert.match(resource, /fields: \[fields\.label\]/)
-  assert.match(resource, /fields: \[fields\.category, fields\.label, fields\.enabled\]/)
+  assert.match(resource, /columns: \{[\s\S]*label: \{ sortable: true \}[\s\S]*enabled: \{ \.\.\.displayFragments\.enabled \}/)
+  assert.match(resource, /fields: \{[\s\S]*label: \{\}/)
+  assert.match(resource, /fields: \{[\s\S]*category: \{ renderer: 'text' \}/)
   assert.ok(!result.generated.some((path) => path.endsWith('.resource.spec.ts')))
-  // Renderer decisions stay covered here: derived text/checkbox renderers
-  // appear in the resource output, which the removed shape spec used to
-  // check (number is covered in 'generates bounded numeric fields').
-  assert.match(resource, /label: \{ label: 'Label', form: \{ renderer: 'text'/)
-  assert.match(resource, /category: \{ label: 'Category', form: \{ renderer: 'text'/)
-  assert.match(resource, /enabled: \{ label: 'Enabled', form: \{ renderer: 'checkbox'/)
+  assert.match(resource, /category: \{ renderer: 'text' \}/)
+  assert.match(resource, /enabled: \{ renderer: 'switch' \}/)
 })
 
 test('generates bounded numeric fields', () => {
   const value = config()
-  value.fields.push({ key: 'rank', type: 'number', label: 'Rank', required: true, default: 1 })
-  value.actions.list.fields.push('rank')
-  value.actions.detail.fields.push('rank')
-  value.actions.create.fields.push('rank')
-  value.actions.update.fields.push('rank')
+  value.properties.push({ key: 'rank', type: 'number', label: 'Rank', required: true, default: 1 })
+  value.surfaces.list.columns.rank = {}
+  value.surfaces.detail.fields.rank = {}
+  value.surfaces.create.inputs.rank = { renderer: 'number' }
+  value.surfaces.update.inputs.rank = { renderer: 'number' }
   const setup = workspace(value)
   const result = JSON.parse(execute(['--config', setup.configPath, '--json'], { root: setup.outputRoot, cwd: setup.directory }))
   const entity = readFileSync(result.generated.find((path) => path.endsWith('.entity.ts')), 'utf8')
   const resource = readFileSync(result.generated.find((path) => path.endsWith('.resource.ts')), 'utf8')
   assert.match(entity, /rank: doublePrecision\('rank'\)\.notNull\(\)\.default\(1\)/)
-  assert.match(resource, /rank: \{ label: 'Rank', form: \{ renderer: 'number'/)
+  assert.match(resource, /rank: \{ renderer: 'number' \}/)
 })
 
 test('human output lists generated and manual absolute paths', () => {
@@ -513,9 +570,9 @@ test('rejects missing metadata, duplicate keys, and unsupported types', () => {
     ['missing title', (value) => { delete value.title }, /title is required/],
     ['missing kind', (value) => { delete value.kind }, /kind must be bounded-module/],
     ['missing singular', (value) => { delete value.singular }, /singular is required/],
-    ['duplicate keys', (value) => { value.fields[1].key = value.fields[0].key }, /Field keys.*unique/],
-    ['unsupported type', (value) => { value.fields[0].type = 'date' }, /unsupported/],
-    ['unknown action field', (value) => { value.actions.list.fields = ['missing'] }, /actions\.list\.fields contains unsupported field/],
+    ['duplicate keys', (value) => { value.properties[1].key = value.properties[0].key }, /Field keys.*unique/],
+    ['unsupported type', (value) => { value.properties[0].type = 'date' }, /unsupported/],
+    ['unknown surface property', (value) => { value.surfaces.list.columns.missing = {} }, /surfaces\.list\.columns contains unsupported property/],
   ]
 
   for (const [, mutate, error] of cases) {

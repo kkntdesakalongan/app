@@ -87,12 +87,13 @@ standard interactions, including custom business actions. A custom action does
 not require custom controls. Import each component from its public export, or
 verify its runtime registration.
 
-Choose display behavior for every visible field. Use the app defaults when
-they give the required result. Keep other shared display settings in
-`defineFields`, so list and detail show the same meaning. Show attachments as
-previews or named file links, states as labelled framework chips, relations as
-names, and dates and units with the applicable format. Show structured values
-as readable content; use raw JSON only when the task requires JSON.
+Choose display behavior for every visible field. Use a reusable display
+fragment when several fields share a renderer, accessor, or format. Pass the
+needed fragments to each `defineTable` column map and `defineDetail` field map.
+Keep form inputs in their own `defineForm` map. Show attachments as previews
+or named file links, states as labelled framework chips, relations as names,
+and dates and units with the applicable format. Show structured values as
+readable content; use raw JSON only when the task requires JSON.
 
 ## Text and spacing
 

@@ -13,6 +13,14 @@ on:
       - 'pnpm-lock.yaml'
       - 'tsconfig.base.json'
       - '.github/workflows/web-validation.yml'
+      - 'scripts/check-surface-architecture.*'
+      - 'AGENTS.md'
+      - 'DESIGN.md'
+      - '.agents/skills/**'
+      - 'docs/ui/**'
+      - 'docs/architecture/**'
+      - 'packages/loom/README.md'
+      - 'apps/web/README.md'
   push:
     paths:
       - 'apps/web/**'
@@ -25,6 +33,14 @@ on:
       - 'pnpm-lock.yaml'
       - 'tsconfig.base.json'
       - '.github/workflows/web-validation.yml'
+      - 'scripts/check-surface-architecture.*'
+      - 'AGENTS.md'
+      - 'DESIGN.md'
+      - '.agents/skills/**'
+      - 'docs/ui/**'
+      - 'docs/architecture/**'
+      - 'packages/loom/README.md'
+      - 'apps/web/README.md'
 
 permissions:
   contents: read
@@ -58,6 +74,9 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check surface architecture
+        run: pnpm run test:surface-architecture
+
       - name: Lint affected packages
         run: pnpm exec turbo run lint --affected --output-logs=errors-only
 
@@ -66,6 +85,12 @@ jobs:
 
       - name: Test affected packages
         run: pnpm exec turbo run test --affected --filter=@southneuhof/framework-web --output-logs=errors-only
+
+      - name: Install Chromium
+        run: pnpm --filter @southneuhof/loom exec playwright install --with-deps chromium
+
+      - name: Check Loom browser parity
+        run: pnpm --filter @southneuhof/loom test:browser
 
       - name: Build web app
         run: pnpm --filter @southneuhof/framework-web build-only

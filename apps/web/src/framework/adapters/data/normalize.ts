@@ -1,4 +1,4 @@
-import type { CollectionResult, DataAdapter, RecordResult, SubmitError, ValidationIssue } from '@southneuhof/loom'
+import type { CollectionResult, DataAdapter, RecordResult, SchemaIssue, SubmitError } from '@southneuhof/loom'
 
 /**
  * Backend conventions of this project, kept out of framework components.
@@ -35,9 +35,9 @@ export function normalizeRecord<TRecord extends object>(payload: unknown): Recor
   return payload as TRecord
 }
 
-function collectIssues(errors: unknown): ValidationIssue[] | undefined {
+function collectIssues(errors: unknown): SchemaIssue[] | undefined {
   if (!isRecord(errors)) return undefined
-  const issues: ValidationIssue[] = []
+  const issues: SchemaIssue[] = []
   for (const [path, messages] of Object.entries(errors)) {
     const list = Array.isArray(messages) ? messages : [messages]
     for (const message of list) {

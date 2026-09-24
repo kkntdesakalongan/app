@@ -13,10 +13,9 @@ vi.mock('./detail/permissions/index.route.vue', () => ({ default: { template: '<
 vi.mock('@/framework/access', () => ({ resourceCan: () => () => true }))
 vi.mock('../roles.resource', () => ({
   roles: {
-    detail: vi.fn(() => ({ run: vi.fn(), fields: [], id: 'role-1', can: () => true })),
+    detail: vi.fn(() => ({ detail: { load: vi.fn() } })),
   },
 }))
-import { roles } from '../roles.resource'
 const Route = (await import('./detail.route.vue')).default
 
 function mountRoute() {

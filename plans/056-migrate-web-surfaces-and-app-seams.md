@@ -49,7 +49,7 @@ export const users = defineResource(usersSchema, {
 
 ## Git workflow
 
-Continue on `advisor/resource-surface-overhaul` after Plans 054-055. Do not ship an intermediate state. Do not commit or push unless asked.
+Continue on `resource_system_overhaul` after Plans 054-055. Do not ship an intermediate state. Do not commit or push unless asked.
 
 ## Steps
 
@@ -75,3 +75,15 @@ Continue on `advisor/resource-surface-overhaul` after Plans 054-055. Do not ship
 ## Maintenance notes
 
 Keep small-module labels, fragments, surfaces, and resource composition together in `.resource.ts`; raw schemas stay in `.schema.ts`, transport in `.actions.ts`. Review all role/permission command and denied-row paths, not only standard CRUD.
+
+Users, roles, and permissions use `sort_by` and `sort` in their table query schemas. Their list actions map these keys to the existing API keys `sort` and `order`. Keep the table and API query schemas separate.
+
+The nested role permission route has no usable inferred query type, so its table query schema stays local. The role assignment response item is `any` in the RPC type. Its action parses each item with the record schema at runtime; this does not provide a static Hono record check. Revisit these limits if the API route types become more precise.
+
+Node 26 exposes a Web Storage global that conflicts with jsdom in this workspace. Run the web unit suite with `NODE_OPTIONS=--no-experimental-webstorage` so jsdom provides `localStorage`.
+
+## Review result
+
+Accepted on 2026-09-24. All five settings resources use independent surfaces and the one-object resource contract. The app source has no executable `defineFields`, `defineSchema`, `fromZod`, or `appFieldDefaults` use. Nested list routes use file-route permission metadata for direct access; their resource list bags do not hold fabricated route IDs. The users route mounts with the real resource and loads its list.
+
+The web unit suite passed (47 files, 230 tests), and the full web E2E suite passed (10 tests). `git diff --check` passed. The web type-check still reports only Loom type-fixture errors, and the Loom type-check still reports the `Drawer.vue` and `Tabs.vue` errors assigned to Plan 058. The route test was revised to wait for visible content and always unmount.

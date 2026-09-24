@@ -1,37 +1,32 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-vi.hoisted(() => {
-  vi.stubEnv('VITE_API_URL', 'https://api.test/')
-})
 import { appInputProps } from './registry'
 
-const list = () => Promise.resolve({ data: [] })
-const detail = () => Promise.resolve({ id: 'x' })
+const list = vi.fn(async () => ({ data: [] }))
+const detail = vi.fn(async () => ({ id: 'x' }))
 const asset = { kind: 'file' as const, id: 'uploads/a.png', url: 'https://api.test/files/object?key=uploads%2Fa.png', name: 'a.png', mimeType: 'image/png' }
-const resource = {
-  key: 'sections',
-  list: () => ({ run: list, fields: { name: {} } }),
-  detail: () => ({ run: detail }),
-}
 
 describe('app input props registry', () => {
-  it('resolves lookup actions and keeps explicit overrides', async () => {
+  it('forwards explicit lookup loaders and keeps field props', async () => {
     const resolved = appInputProps.resolve('lookup', {
-      source: resource,
+      source: { load: list, loadDetail: detail, namespace: 'sections' },
       props: { searchParameters: { private: true } },
     })
-    expect(resolved).toMatchObject({ fields: resource.list().fields, load: list, namespace: 'sections', searchParameters: { private: true } })
+
+    expect(resolved).toMatchObject({ load: list, loadDetail: detail, namespace: 'sections', searchParameters: { private: true } })
     const loadDetail = resolved.loadDetail as (context: { id: string }) => Promise<unknown>
     await expect(loadDetail({ id: 'x' })).resolves.toEqual({ id: 'x' })
+    expect(detail).toHaveBeenCalledWith({ id: 'x' })
   })
 
-  it('maps arrays to data and never emits source', () => {
-    const data = [{ id: 'active', name: 'Aktif' }]
-    expect(appInputProps.resolve('radio', { source: data })).toEqual({ data })
+  it('requires lookup identity hydration to have an explicit loader', () => {
+    expect(() => appInputProps.resolve('lookup', { source: { load: list } })).toThrow('Lookup input source needs a loadDetail function.')
   })
 
-  it('shares stable file and image defaults', () => {
+  it('forwards explicit option loaders without deriving a namespace', () => {
+    expect(appInputProps.resolve('select', { source: { load: list } })).toEqual({ load: list })
+  })
+
+  it('shares file and image upload defaults', () => {
     expect(appInputProps.resolve('file', {}).upload).toBe(appInputProps.resolve('image', {}).upload)
   })
 
@@ -46,11 +41,5 @@ describe('app input props registry', () => {
 
   it('hydrates asset values for Form', () => {
     expect(appInputProps.hydrate('image', asset)).toMatchObject({ id: 'uploads/a.png', name: 'a.png' })
-  })
-
-  it('keeps the runtime registry out of production field declarations', () => {
-    const defaults = readFileSync(resolve(process.cwd(), 'src/configs/defaults.ts'), 'utf8')
-
-    expect(defaults).not.toContain('appInputProps')
   })
 })

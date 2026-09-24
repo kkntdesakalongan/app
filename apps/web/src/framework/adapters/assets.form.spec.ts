@@ -2,11 +2,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { createApp, defineComponent, h, nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { z } from 'zod/v4'
-import { defineFields, defineResource, Form, FrameworkPlugin, createFrameworkQueryClient } from '@southneuhof/loom'
+import { defineForm, Form, FrameworkPlugin, createFrameworkQueryClient } from '@southneuhof/loom'
 import { storedAssetInput, storedAssetSchema } from '@southneuhof/api/schema'
 import { assetAdapter } from './assets'
 import { appInputProps } from '../inputs/registry'
-import { defineSchema } from '../schema'
 
 const { uploadFile } = vi.hoisted(() => ({ uploadFile: vi.fn() }))
 vi.mock('./storage', () => ({ uploadFile }))
@@ -41,30 +40,13 @@ const patchSchema = z.object({
   attachments: storedAssetInput.array().optional(),
 })
 
-const formSchema = defineSchema({
-  identity: 'id',
-  record: readSchema,
-  create: readSchema,
-  update: readSchema,
-})
-
-const assetFields = defineFields(formSchema, {
-  document: { label: 'Document', form: { renderer: 'file' } },
-  attachments: { label: 'Attachments', form: { renderer: 'file', props: { multi: true } } },
-})
-
-const assets = defineResource(formSchema, {
-  key: 'assets-form-proof',
-  actions: {
-    detail: {
-      run: async () => ({ document: assetA, attachments: [assetA] }),
-      fields: [assetFields.document, assetFields.attachments],
-    },
-    create: {
-      run: async (input) => input,
-      fields: [assetFields.document, assetFields.attachments],
-    },
+const assetForm = defineForm({
+  schema: readSchema,
+  fields: {
+    document: { label: 'Document', renderer: 'file' },
+    attachments: { label: 'Attachments', renderer: 'file', props: { multi: true } },
   },
+  submit: async (value) => value,
 })
 
 async function flush(times = 8) {
@@ -86,16 +68,13 @@ async function mountAssetForm(options: { load?: () => Promise<Record<string, unk
     history: createMemoryHistory(),
     routes: [{ path: '/:pathMatch(.*)*', name: 'test-route', component: { render: () => null } }],
   })
-  const create = assets.create()
   const app = createApp(
     defineComponent({
       setup() {
         return () =>
-          // @ts-expect-error jsdom test host passes Form props through h(); vue-tsc strict slots typing is covered by Loom type-check
           h(Form, {
-            fields: create.fields,
+            ...assetForm,
             load: options.load ?? (async () => apiResponse()),
-            schema: create.schema,
             submit: async (value: Record<string, unknown>) => {
               submitted.push(value)
               await options.submit?.(value)

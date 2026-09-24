@@ -38,6 +38,10 @@ export function resetParserConfigForTests() {
   }
 }
 
+export function hasFormatter(key: string): boolean {
+  return Object.hasOwn(parserConfig.formatters, key)
+}
+
 export function parse(key: string, value: any): any {
   if (!parserConfig.formatters[key]) return parserConfig.dictionary[key]?.[value] || value
   return parserConfig.formatters[key](value)

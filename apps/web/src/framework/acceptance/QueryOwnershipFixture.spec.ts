@@ -34,7 +34,7 @@ async function mountFixture() {
   app.mount(host)
   await flush()
 
-  const section = (name: string) => host.querySelector<HTMLElement>(`[data-fixture="${name}"]`)!
+  const section = (name: string) => host.querySelector<HTMLElement>(`#fixture-${name}`)!
   const nextPage = async (element: HTMLElement, tableIndex: number) => {
     const navs = element.querySelectorAll('nav')
     navs[tableIndex].querySelectorAll('button')[1].dispatchEvent(new MouseEvent('click'))

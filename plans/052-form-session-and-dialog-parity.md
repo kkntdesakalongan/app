@@ -44,7 +44,7 @@ if (hasDraftModelValue) bindings.modelValue = props.modelValue
 
 ## Git workflow
 
-Continue on `advisor/resource-surface-overhaul` after Plan 051. Do not ship an intermediate state. Do not commit or push unless asked.
+Continue on `resource_system_overhaul` after Plan 051. Do not ship an intermediate state. Do not commit or push unless asked.
 
 ## Steps
 
@@ -70,3 +70,5 @@ Continue on `advisor/resource-surface-overhaul` after Plan 051. Do not ship an i
 ## Maintenance notes
 
 Review async generation checks before every dispatch. A later component prop must replace the definition's submit function, including its result type. Do not duplicate form parsing in DialogForm, FormView, or resources.
+
+Define editable-value compatibility through a typed renderer/control adapter owned by the form session. The adapter must map between the schema input value and the renderer control value in both directions, and the constructor checks must cover both the base renderer and every renderer selected by `behavior.presentation.renderer`. The current `InputValueAdapter.hydrate` handles loaded values only, and `adaptVModelInput` passes values through unchanged. Resolve `DateInput`'s `string | null | undefined` model against the architecture's inferred `date` renderer for raw `Date` inputs before enforcing the value guard; do not claim a conversion unless the adapter implements it.

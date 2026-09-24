@@ -30,19 +30,22 @@ Use `text` with a native `type` only when the form contract still owns a string.
 
 | Renderer | Use it for | Value and common props |
 | --- | --- | --- |
-| `select` | A compact closed choice set | scalar or array; `source`, `pick`, `view`, `multi`, `searchable`, `clearable` |
-| `radio` | A small exclusive set that must stay visible | scalar; `source`, `pick`, `view`, `variant`, `direction` |
+| `select` | A compact closed choice set | scalar or array; `source: { load, namespace? }` or static `data`; `pick`, `view`, `multi`, `searchable`, `clearable` |
+| `radio` | A small exclusive set that must stay visible | scalar; `source: { load, namespace? }` or static `data`; `pick`, `view`, `variant`, `direction` |
 | `checkbox` | One boolean agreement or flag | boolean; `required` |
 | `switch` | One on/off value | boolean; `required` |
-| `checkbox-group` | A small visible multi-choice set | array; `source`, `pick`, `view`, `searchParameters` |
-| `lookup` | A searchable database-backed relation | scalar ID or code; owner resource `source`, `pick`, `view`, `searchParameters` |
+| `checkbox-group` | A small visible multi-choice set | selected record array; `source: { load, namespace? }` or static `data`; `pick`, `view`, `searchParameters` |
+| `lookup` | A searchable database-backed relation | scalar identity; `source: { load, namespace?, loadDetail }`; `props.table`, `pick`, `view`, `searchParameters` |
 
-Use a static source only for a small closed set owned by the form contract. Use
-`lookup` for database rows and parent-filtered relations. The owner resource
-must expose `list` and `detail`, and both actions must return the selected
-identity and label. A multi lookup or select uses `selectionValues(exactItemSchema)` and keeps the
-selected record array. A switch inside a form edits the draft; it does not
-write immediately unless that interaction is explicitly implemented.
+Use static `data` props only for a small closed set. For database-backed
+options, pass the owner's loader, for example
+`source: { load: roles.list.table.load, namespace: roles.list.table.namespace }`.
+For lookup, add `loadDetail(context)` using the owner's detail loader and pass
+its own table definition in `props.table`. Keep filters in `searchParameters`.
+The raw form schema defines accepted multi-selection values and any transform
+to operation input; the users form accepts role records and transforms them to
+IDs. A switch inside a form edits the draft; it does not write immediately
+unless that interaction is explicitly implemented.
 
 ## Date and time values
 
@@ -54,8 +57,8 @@ write immediately unless that interaction is explicitly implemented.
 | `year` | One year | number or year string; `required` |
 | `time` | One time of day | time string; native time props |
 
-Match the API schema to the value emitted by the input. Add `form.write` only
-when the API contract uses another representation.
+Match the form schema to the value emitted by the input. Use a schema transform
+when the submitted output needs another representation.
 
 ## Assets, location, and drawing values
 
@@ -71,8 +74,8 @@ when the API contract uses another representation.
 For file/image values, read the shared
 [asset contract](../../carta-module-development/references/frontend-field-contract.md#asset-fields),
 including current framework limits.
-Location inputs use the app location operations. Use one `form.write` on the
-owning field only when the API location shape differs from the control shape.
+Location inputs use the app location operations. Use the form schema when the
+submitted API shape differs from the control shape.
 
 ## Structured and layout values
 
@@ -81,8 +84,9 @@ owning field only when the API location shape differs from the control shape.
 | `table` | An array of form-owned rows | row object array; `fields`, `form`, `table`, optional `rowKey` and reorder props |
 | `separator` | A labelled section break in a form | no submitted value; label and layout props |
 
-Use `table` and its row field catalog before you build manual repeatable rows.
-A row lookup `view` covers the selection dialog only. Define the row cell
-through [display and form pattern](../../web-ui-surfaces/references/fields.md).
+Use `TableInput` with separate `defineTable` and `defineForm` row definitions
+before you build manual repeatable rows. Supply `toDraft` when table rows and
+form input differ. A row lookup `view` covers the selection dialog only. Define
+the row cell through [display and form pattern](../../web-ui-surfaces/references/fields.md).
 Use a separate child resource when rows need their own permissions, paging, or
 actions.

@@ -1,9 +1,11 @@
 import type { InferRequestType, InferResponseType } from 'hono/client'
 import type { StatusCode } from 'hono/utils/http-status'
-import type { CollectionLoadContext, CollectionResult, RecordIdentity, WebResourceSchema } from '@southneuhof/loom'
+import type { CollectionLoadContext, CollectionResult, RecordIdentity } from '@southneuhof/loom'
 
 export type HonoRequestOf<TEndpoint> = InferRequestType<TEndpoint>
 export type HonoResponseOf<TEndpoint, TStatus extends StatusCode> = InferResponseType<TEndpoint, TStatus>
+export type HonoResponseRecordOf<TEndpoint, TStatus extends StatusCode> =
+  DataOf<HonoResponseOf<TEndpoint, TStatus>> extends readonly (infer TRecord)[] ? TRecord : DataOf<HonoResponseOf<TEndpoint, TStatus>>
 
 type EndpointAt<TRoute, TKey extends string, TMethod extends string> = TKey extends keyof TRoute
   ? TRoute[TKey] extends infer TNode
@@ -91,8 +93,6 @@ export type HonoRecordOf<TRoute> = [ListEndpoint<TRoute>] extends [never]
 export type HonoQueryOf<TRoute> = [ListEndpoint<TRoute>] extends [never] ? Record<string, never> : AdapterQuery<QueryOfEndpoint<ListEndpoint<TRoute>> & object>
 export type HonoCreateOf<TRoute> = AdapterPayload<ObjectJsonOf<CreateEndpoint<TRoute>>>
 export type HonoUpdateOf<TRoute> = AdapterPayload<ObjectJsonOf<UpdateEndpoint<TRoute>>>
-
-export type AppResourceContract<TRoute, TRecord extends object = HonoRecordOf<TRoute>> = WebResourceSchema<TRecord, HonoQueryOf<TRoute>, HonoCreateOf<TRoute>, HonoUpdateOf<TRoute>, RecordIdentity>
 
 type MutationRecordOf<TEndpoint, TStatus extends StatusCode> = DataOf<HonoResponseOf<TEndpoint, TStatus>> extends object ? DataOf<HonoResponseOf<TEndpoint, TStatus>> : Record<string, unknown>
 

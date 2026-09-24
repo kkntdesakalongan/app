@@ -34,14 +34,6 @@ export const uiAdapter: UiAdapter = {
   colorPreference: () => ({ value: useColorPreference().value }),
 }
 
-/**
- * Project-specific adapter bundle installed with the framework plugin.
- *
- * There is no `schemas` adapter: resources declare `schemas` directly from the API
- * entity modules, which is the documented path and the only one now that the mirror
- * is gone. `SchemaAdapter` remains an optional framework seam for projects whose
- * schemas do not travel with their resource definitions.
- */
 export function createFrameworkAdapters(router: Router): FrameworkAdaptersInput {
   return {
     data: dataAdapter,

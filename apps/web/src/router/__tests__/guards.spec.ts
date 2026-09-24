@@ -1,13 +1,59 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineResource, resetResourceActionRegistry } from '@southneuhof/loom'
-import type { WebResourceSchema } from '@southneuhof/loom'
+import { defineDetail, defineForm, defineResource, resetResourceActionRegistry } from '@southneuhof/loom'
+import type { RecordLoadContext } from '@southneuhof/loom'
+import { z } from 'zod/v4'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { defineSchema } from '@/framework/schema'
 
 const authState = { identity: null as null | { userId: string } }
 const loadIdentitySpy = vi.hoisted(() => vi.fn())
 const saveRedirectSpy = vi.fn()
 const getDefaultRouteSpy = vi.fn(() => ({ name: 'dashboard' }))
+
+const rowSchema = z.object({ id: z.string() })
+const detailSurface = defineDetail({ schema: rowSchema, fields: {} })
+const createForm = defineForm({
+  schema: z.object({ name: z.string() }),
+  fields: { name: { renderer: 'text' } },
+  submit: async ({ name }) => ({ id: 'created', name }),
+})
+const updateForm = defineForm({ schema: z.object({ name: z.string().optional() }), fields: { name: { renderer: 'text' } } })
+const loadRoleDetail = async ({ id }: RecordLoadContext) => ({ id: String(id) })
+
+function createResource(key: string, permission: string, route: 'settings-users-create' | 'settings-roles-create') {
+  return defineResource({
+    key,
+    identity: (record: { id: string }) => record.id,
+    create: { permission, route: { name: route }, form: createForm },
+  })
+}
+
+function updateResource(key: string, permission: string) {
+  return defineResource({
+    key,
+    identity: (record: { id: string }) => record.id,
+    update: {
+      permission,
+      route: { name: 'settings-users-edit', params: (id) => ({ userId: String(id) }) },
+      form: ({ id }) => ({
+        ...updateForm,
+        load: async () => ({ name: 'One' }),
+        submit: async (input) => ({ id, name: input.name ?? 'One' }),
+      }),
+    },
+  })
+}
+
+function detailResource(key: string) {
+  return defineResource({
+    key,
+    identity: (record: { id: string }) => record.id,
+    detail: {
+      permission: 'view-roles',
+      route: { name: 'settings-roles-detail', params: (id) => ({ roleId: String(id) }) },
+      detail: () => ({ ...detailSurface, load: loadRoleDetail }),
+    },
+  })
+}
 
 vi.mock('@/framework/identity', () => ({ loadIdentity: loadIdentitySpy }))
 
@@ -22,7 +68,6 @@ vi.mock('../navigation', () => ({
 import { createAuthGuard, createPermissionGuard } from '../guards'
 
 const next = (() => {}) as any
-const schema = defineSchema<WebResourceSchema<{ id: string }, Record<string, never>, Record<string, never>, Record<string, never>, string>>({ identity: 'id' })
 
 afterEach(() => resetResourceActionRegistry())
 
@@ -134,46 +179,19 @@ describe('permission guard', () => {
   })
 
   it('checks a registered project create action through the access adapter', () => {
-    defineResource(schema, {
-      key: 'project-create-route',
-      actions: {
-        create: {
-          run: async (input) => ({ id: 'project-created', input }),
-          permission: 'create-quality-inspection',
-          route: { name: 'settings-users-create' },
-        },
-      },
-    })
+    createResource('project-create-route', 'create-quality-inspection', 'settings-users-create')
 
     expect(createPermissionGuard(denyAll)({ name: 'settings-users-create', meta: {} } as any, {} as any, next)).toEqual({ name: 'dashboard' })
   })
 
   it('checks a registered project update action through the access adapter', () => {
-    defineResource(schema, {
-      key: 'project-update-route',
-      actions: {
-        update: {
-          run: async (id, input) => ({ id: String(id), input }),
-          permission: 'update-quality-inspection',
-          route: { name: 'settings-users-edit', params: (id) => ({ userId: String(id) }) },
-        },
-      },
-    })
+    updateResource('project-update-route', 'update-quality-inspection')
 
     expect(createPermissionGuard(denyAll)({ name: 'settings-users-edit', meta: {} } as any, {} as any, next)).toEqual({ name: 'dashboard' })
   })
 
   it('still rejects denied browser access for a registered system create action', () => {
-    defineResource(schema, {
-      key: 'system-create-route',
-      actions: {
-        create: {
-          run: async (input) => ({ id: 'system-created', input }),
-          permission: 'create-users',
-          route: { name: 'settings-roles-create' },
-        },
-      },
-    })
+    createResource('system-create-route', 'create-users', 'settings-roles-create')
 
     expect(createPermissionGuard(denyAll)({ name: 'settings-roles-create', meta: {} } as any, {} as any, next)).toEqual({ name: 'dashboard' })
   })
@@ -187,16 +205,7 @@ describe('permission guard', () => {
           path: '/detail/:id',
           name: 'settings-roles-detail',
           component: async () => {
-            defineResource(schema, {
-              key: 'lazy-roles',
-              actions: {
-                detail: {
-                  run: async () => undefined,
-                  permission: 'view-roles',
-                  route: { name: 'settings-roles-detail', params: (id) => ({ roleId: String(id) }) },
-                },
-              },
-            })
+            detailResource('lazy-roles')
             return { default: { template: '<main>detail</main>' } }
           },
         },

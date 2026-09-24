@@ -52,7 +52,7 @@ export const ${plural} = defineResource(${plural}Schema, {
 
 ## Git workflow
 
-Continue on `advisor/resource-surface-overhaul` after Plan 056. Do not ship an intermediate state. Do not commit or push unless asked.
+Continue on `resource_system_overhaul` after Plan 056. Do not ship an intermediate state. Do not commit or push unless asked.
 
 ## Steps
 
@@ -79,3 +79,9 @@ Continue on `advisor/resource-surface-overhaul` after Plan 056. Do not ship an i
 ## Maintenance notes
 
 Treat generator output as a product caller: every public API change must update its fixture and type-check. Keep historical design records marked historical and out of active instructions.
+
+## Review result
+
+Accepted on 2026-09-24 after revisions. The generator emits raw operation schemas, independent surfaces, the one-object resource, static list/create bags, and identity-bound detail/update bags. A checked-in web type fixture has a manifest and a test that compares it with fresh generator output. The static checker follows assembled fragments, aliases, and spreads; its CLI reports missing display choices. Active docs and skills now teach explicit option and lookup loaders.
+
+`pnpm test:module-tooling` passed (99 Node tests and 3 Python tests), `pnpm --filter @southneuhof/loom test:browser` passed (10 files, 34 tests), `pnpm lint` passed, and `git diff --check` passed. The web and Loom type-checks still report only the known Loom diagnostics assigned to Plan 058.
