@@ -1,0 +1,510 @@
+{
+  "target_commit": "223fc622d9a897014fcbad48df838a19cec398db",
+  "generated_at": "2026-09-24",
+  "source_archive": "carta-resource_system_overhaul(2).zip",
+  "status": "PLANNED_NOT_IMPLEMENTED",
+  "original_findings_count": 27,
+  "plans": [
+    {
+      "id": "062",
+      "file": "062-track-form-edits-and-async-ownership.md",
+      "title": "Make edits, validation, and completion belong to one form session",
+      "priority": "P1",
+      "effort": "L",
+      "depends": "none",
+      "findings": "F01, F02, F03, F04"
+    },
+    {
+      "id": "063",
+      "file": "063-provide-one-global-asset-service.md",
+      "title": "Configure asset input and preview behavior once per application",
+      "priority": "P2",
+      "effort": "L",
+      "depends": "062 session ownership",
+      "findings": "F17, F27; global asset configuration and input/preview parity"
+    },
+    {
+      "id": "064",
+      "file": "064-use-canonical-component-contracts.md",
+      "title": "Make form inputs use component props and Vue models without translation",
+      "priority": "P1",
+      "effort": "L",
+      "depends": "062 tracked session and 063 global asset service",
+      "findings": "F07, F08, F09; explicit native attributes, loaders, renderers, and component-owned models"
+    },
+    {
+      "id": "065",
+      "file": "065-bind-safe-operations-and-complete-view-props.md",
+      "title": "Bind immutable operation identities and forward complete View contracts",
+      "priority": "P1",
+      "effort": "L",
+      "depends": "062, 064; the tracked session and canonical component-prop boundaries must exist",
+      "findings": "F10, F11, F12, F13, F18 (runtime result identity), F24"
+    },
+    {
+      "id": "066",
+      "file": "066-preserve-wrapper-query-and-display-parity.md",
+      "title": "Make wrappers preserve live props, queries, selection, and rendering",
+      "priority": "P2",
+      "effort": "L",
+      "depends": "062, 064, 065; one session, canonical component props, and shared View contracts must exist",
+      "findings": "F05, F06, F14, F15, F16, F26"
+    },
+    {
+      "id": "067",
+      "file": "067-narrow-types-and-close-union-escapes.md",
+      "title": "Enforce whole-contract type checks and export compact definitions",
+      "priority": "P2",
+      "effort": "L",
+      "depends": "064, 065, 066; canonical component and View contracts must be stable",
+      "findings": "F18 (static guards), F19, F22"
+    },
+    {
+      "id": "068",
+      "file": "068-centralize-frontend-transport-query-encoding.md",
+      "title": "Put collection wire encoding in the existing Hono adapter",
+      "priority": "P3",
+      "effort": "M",
+      "depends": "064, 065, 066, 067; canonical loader/query types and wrapper ownership must exist",
+      "findings": "F23"
+    },
+    {
+      "id": "069",
+      "file": "069-prove-contracts-and-remove-stale-guidance.md",
+      "title": "Make tests, CI, generators, and agent guidance prove the same architecture",
+      "priority": "P2",
+      "effort": "L",
+      "depends": "062\u2013068; all runtime/type/transport owners must have their final contracts",
+      "findings": "F20, F21, F25; completion gates for F01\u2013F27 and every accepted transparency decision"
+    }
+  ],
+  "findings": [
+    {
+      "id": "F01",
+      "baseline_priority": "P1",
+      "baseline_title": "The public draft bypasses edit tracking, validation cancellation, and isolation",
+      "owners": [
+        "062"
+      ],
+      "required_outcome": "Track private edits; detach read-only drafts and Dates; preserve explicit transient empty values.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F02",
+      "baseline_priority": "P1",
+      "baseline_title": "Invalid control text can be submitted as an absent optional value",
+      "owners": [
+        "062"
+      ],
+      "required_outcome": "A component-owned invalid-edit event blocks submission independently of candidate key presence.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F03",
+      "baseline_priority": "P1",
+      "baseline_title": "A completed mutation can report success or errors into a newer form session",
+      "owners": [
+        "062"
+      ],
+      "required_outcome": "Bind post-await completion, errors and pending flags to the originating form generation.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F04",
+      "baseline_priority": "P2",
+      "baseline_title": "Submitting while blur validation is pending silently drops the request",
+      "owners": [
+        "062"
+      ],
+      "required_outcome": "A single Save intent supersedes blur validation instead of disappearing.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F05",
+      "baseline_priority": "P2",
+      "baseline_title": "DialogForm freezes which Form props are present at setup",
+      "owners": [
+        "066"
+      ],
+      "required_outcome": "Forward current component props and current model presence, not an initial snapshot.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F06",
+      "baseline_priority": "P2",
+      "baseline_title": "ListView no longer implements a controlled query round trip",
+      "owners": [
+        "066"
+      ],
+      "required_outcome": "Use one controlled-parent/uncontrolled-Collection query owner with exactly one update event.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F07",
+      "baseline_priority": "P1",
+      "baseline_title": "Default enum inference does not feed the built-in SelectInput",
+      "owners": [
+        "064"
+      ],
+      "required_outcome": "Delete automatic renderer/enum-choice synthesis; require canonical explicit selector props.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F08",
+      "baseline_priority": "P2",
+      "baseline_title": "Hard-coded renderer-kind checks reject supported numeric selections",
+      "owners": [
+        "064"
+      ],
+      "required_outcome": "Derive model/prop compatibility from components; remove the independent renderer-kind matrix.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F09",
+      "baseline_priority": "P2",
+      "baseline_title": "Schema-derived requiredness stops before reaching the input component",
+      "owners": [
+        "064"
+      ],
+      "required_outcome": "Pass schema-derived requiredness to the component after authored props.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F10",
+      "baseline_priority": "P2",
+      "baseline_title": "permission: null bypasses server-declared row-operation policy",
+      "owners": [
+        "065"
+      ],
+      "required_outcome": "Null permission still goes through the row-policy access seam.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F11",
+      "baseline_priority": "P1",
+      "baseline_title": "A bound delete can mutate a different identity than the one checked",
+      "owners": [
+        "065"
+      ],
+      "required_outcome": "Bind immutable scalar/composite identities and detached policy context.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F12",
+      "baseline_priority": "P2",
+      "baseline_title": "Custom commands guess context from Function.length and can drop real payloads",
+      "owners": [
+        "065"
+      ],
+      "required_outcome": "Bind context with withContext; preserve the exact business run/can argument tuple.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F13",
+      "baseline_priority": "P2",
+      "baseline_title": "Resources are not complete page-prop composers",
+      "owners": [
+        "065"
+      ],
+      "required_outcome": "Derive declarations and forwarding from complete canonical View contracts.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F14",
+      "baseline_priority": "P2",
+      "baseline_title": "FormView replaces inherited action labels and the normal actions slot",
+      "owners": [
+        "066"
+      ],
+      "required_outcome": "Use nested Form labels and the standard actions slot; remove wrapper aliases.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F15",
+      "baseline_priority": "P2",
+      "baseline_title": "TreeTable bypasses shared rendering for its tree column",
+      "owners": [
+        "066"
+      ],
+      "required_outcome": "Render the tree column through DisplayValue with original-record/accessor semantics.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F16",
+      "baseline_priority": "P2",
+      "baseline_title": "Lookup hydration overwrites a newer staged selection",
+      "owners": [
+        "066"
+      ],
+      "required_outcome": "Separate committed hydration from edited staging generations.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F17",
+      "baseline_priority": "P2",
+      "baseline_title": "FileInput ignores its disabled contract at mutation entry points",
+      "owners": [
+        "063"
+      ],
+      "required_outcome": "Block disabled asset mutation handlers and govern accepted in-flight work by token.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F18",
+      "baseline_priority": "P2",
+      "baseline_title": "Union guards accept a valid member and overlook an invalid one",
+      "owners": [
+        "065",
+        "067"
+      ],
+      "required_outcome": "Check whole unions/all keys; validate result identity before presentation independently of routes.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F19",
+      "baseline_priority": "P2",
+      "baseline_title": "Managed input slots erase field-specific value and setter types",
+      "owners": [
+        "067"
+      ],
+      "required_outcome": "Use field-keyed typed slots and one read-only draft/ref contract across wrappers.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F20",
+      "baseline_priority": "P2",
+      "baseline_title": "The test suite has useful coverage, but several claimed guarantees are not tested",
+      "owners": [
+        "069"
+      ],
+      "required_outcome": "Use real controls and plausible broken counterexamples; remove tautological/incidental assertions.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F21",
+      "baseline_priority": "P2",
+      "baseline_title": "The web workflow does not run Loom unit tests",
+      "owners": [
+        "069"
+      ],
+      "required_outcome": "Run Loom unit and tooling suites explicitly; include matching workflow triggers.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F22",
+      "baseline_priority": "P3",
+      "baseline_title": "The public type surface retains the full schema/literal graph and exports its proof machinery",
+      "owners": [
+        "067"
+      ],
+      "required_outcome": "Return compact named contracts with useful refinements; hide proof aliases and measure fairly.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F23",
+      "baseline_priority": "P3",
+      "baseline_title": "UI-to-transport query conversion is copied into each resource module",
+      "owners": [
+        "068"
+      ],
+      "required_outcome": "Encode the unchanged HTTP query protocol once in the existing Hono adapter.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F24",
+      "baseline_priority": "P3",
+      "baseline_title": "Unused legacy identity declarations and redundant runtime aliases remain",
+      "owners": [
+        "065"
+      ],
+      "required_outcome": "Delete unused identity declaration helpers and identical runtime aliases.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F25",
+      "baseline_priority": "P2",
+      "baseline_title": "Active agent guidance still teaches contracts the implementation removed",
+      "owners": [
+        "069"
+      ],
+      "required_outcome": "Compile actual examples; align root docs, nested skills and generators with real owners.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F26",
+      "baseline_priority": "P2",
+      "baseline_title": "An asynchronous close guard can close a dialog after submission begins",
+      "owners": [
+        "066"
+      ],
+      "required_outcome": "Recheck close generation/busy state after awaited guard approval.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    },
+    {
+      "id": "F27",
+      "baseline_priority": "P2",
+      "baseline_title": "Input hydration discards an adapter\u2019s intentional null result",
+      "owners": [
+        "063",
+        "064"
+      ],
+      "required_outcome": "Delete generic input hydration; preserve global asset reader null without raw-value fallback.",
+      "final_gate": "069",
+      "implementation_status": "TODO",
+      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "D01",
+      "decision": "Supported native attributes are explicit typed component API; flat props, no arbitrary extras or blanket Partial.",
+      "plans": [
+        "064",
+        "067",
+        "069"
+      ]
+    },
+    {
+      "id": "D02",
+      "decision": "Configure one app-level asset service for direct/managed inputs, previews and display. No per-field adapter.",
+      "plans": [
+        "063",
+        "064",
+        "066",
+        "069"
+      ]
+    },
+    {
+      "id": "D03",
+      "decision": "Every authored input names its renderer; schemas derive requiredness, not UI choices.",
+      "plans": [
+        "064",
+        "069"
+      ]
+    },
+    {
+      "id": "D04",
+      "decision": "Resource loaders are passed through canonical component props. Delete field source and generic input prop adapters.",
+      "plans": [
+        "064",
+        "065",
+        "068",
+        "069"
+      ]
+    },
+    {
+      "id": "D05",
+      "decision": "Form forwards actual component Vue models and validity events; no Form-only coercion or hydration.",
+      "plans": [
+        "062",
+        "063",
+        "064",
+        "067"
+      ]
+    },
+    {
+      "id": "D06",
+      "decision": "Keep default submit, explicit overrides, flat Form/DialogForm and nested complete View bags.",
+      "plans": [
+        "062",
+        "064",
+        "065",
+        "066",
+        "067",
+        "069"
+      ]
+    },
+    {
+      "id": "D07",
+      "decision": "Share labels, input props, business catalogs, display accessors/renderers/formats without a universal field.",
+      "plans": [
+        "064",
+        "066",
+        "067",
+        "069"
+      ]
+    },
+    {
+      "id": "D08",
+      "decision": "Keep backend contracts unchanged; deliberate schema, asset-service and transport boundaries have explicit owners.",
+      "plans": [
+        "062",
+        "063",
+        "064",
+        "065",
+        "068",
+        "069"
+      ]
+    },
+    {
+      "id": "D09",
+      "decision": "Finish with no executable legacy paths, duplicate contracts, unsupported tests, or stale active authoring examples.",
+      "plans": [
+        "064",
+        "065",
+        "066",
+        "067",
+        "068",
+        "069"
+      ]
+    }
+  ],
+  "excluded_from_execution": [
+    "059-make-form-session-transitions-safe.md",
+    "060-close-resource-binding-footguns.md",
+    "061-prove-wrapper-and-renderer-parity.md"
+  ],
+  "limits": "Plans use source inspection and previously recorded isolated evidence. No implementation, pinned workspace/Vue/browser test run, storage/API integration, or new benchmark was performed in this planning pass."
+}

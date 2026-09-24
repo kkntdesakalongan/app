@@ -1,0 +1,484 @@
+{
+  "method": "Actual checkout TypeScript modules transpiled by TypeScript 5.8.3; explicit composition/query/access/schema test doubles, not installed Vue/Zod or mounted browser. Probe assertions verify observed behavior, including bug reproductions and controls.",
+  "reports": [
+    {
+      "name": "enum inference produces options, not SelectInput data",
+      "status": "confirmed",
+      "observed": {
+        "key": "status",
+        "renderer": "select",
+        "required": true,
+        "kind": "enum",
+        "props": {
+          "options": [
+            "draft",
+            "active"
+          ]
+        },
+        "options": [
+          "draft",
+          "active"
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/forms/props.ts"
+      ]
+    },
+    {
+      "name": "numeric SelectInput rejected by compileForm",
+      "status": "confirmed",
+      "observed": {
+        "error": "[loom][SURFACE_OPTION_INVALID] Form field \"roleId\" member \"renderer\" expects a control for schema input kind \"number\"; received \"select\"."
+      },
+      "executed_source": [
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/forms/props.ts"
+      ]
+    },
+    {
+      "name": "own undefined default write omitted from draft",
+      "status": "confirmed",
+      "observed": {
+        "hasOwnAfterExplicitSet": false
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "direct draft write submits stale validated snapshot",
+      "status": "confirmed",
+      "observed": {
+        "draft": {
+          "name": "after"
+        },
+        "submitted": [
+          {
+            "name": "before"
+          }
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "setValue control correctly cancels stale validated snapshot",
+      "status": "confirmed",
+      "observed": {
+        "draft": {
+          "name": "after"
+        },
+        "submitted": []
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "blur validation drops simultaneous submit request",
+      "status": "confirmed",
+      "observed": {
+        "submitted": [],
+        "requestDuringBlurWasDropped": true
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "late successful mutation emits after form unmount",
+      "status": "confirmed",
+      "observed": {
+        "events": [
+          [
+            "submitted",
+            {
+              "id": "old",
+              "name": "old"
+            }
+          ]
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "invalid optional date text does not block submit",
+      "status": "confirmed",
+      "observed": {
+        "submitted": [
+          {}
+        ],
+        "issues": [
+          {
+            "path": [
+              "date"
+            ],
+            "message": "[loom][FORM_CONTROL_VALUE_INVALID] Form field \"date\" expects a valid date value."
+          }
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "Form state does not supply schema required to renderer props",
+      "status": "confirmed",
+      "observed": {
+        "required": true,
+        "props": {}
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "form initialData skips input hydration, load applies it",
+      "status": "confirmed",
+      "observed": {
+        "initial": {
+          "asset": {
+            "id": "a"
+          }
+        },
+        "loaded": {
+          "asset": {
+            "hydrated": {
+              "id": "a"
+            }
+          }
+        }
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "Date initial value aliases baseline and external value",
+      "status": "confirmed",
+      "observed": {
+        "externalYear": 2026,
+        "dirty": false
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "DialogForm ignores newly added disabled and context props",
+      "status": "confirmed",
+      "observed": {
+        "passedDisabled": true,
+        "forwardedDisabled": "<absent>",
+        "forwardedContext": "<absent>"
+      },
+      "executed_source": [
+        "packages/loom/src/components/views/uiDefaults.ts",
+        "packages/loom/src/components/composites/DialogForm.vue"
+      ]
+    },
+    {
+      "name": "Lookup late hydration replaces user-staged selection",
+      "status": "confirmed",
+      "observed": {
+        "selectedByUser": "b",
+        "selectionAfterHydration": [
+          {
+            "id": "a",
+            "name": "A"
+          }
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/components/composites/form-inputs/LookupInput.vue"
+      ]
+    },
+    {
+      "name": "permission null skips row policy for standard operations",
+      "status": "confirmed",
+      "observed": {
+        "writes": [
+          "a"
+        ],
+        "accessChecks": 0
+      },
+      "executed_source": [
+        "packages/loom/src/resources/defineResource.ts",
+        "packages/loom/src/resources/bindResource.ts",
+        "packages/loom/src/query/keys.ts",
+        "packages/loom/src/resources/identity.ts",
+        "packages/loom/src/resources/operations.ts"
+      ]
+    },
+    {
+      "name": "standard permission string denial control prevents write",
+      "status": "confirmed",
+      "observed": {
+        "writes": []
+      },
+      "executed_source": [
+        "packages/loom/src/resources/defineResource.ts",
+        "packages/loom/src/resources/bindResource.ts",
+        "packages/loom/src/query/keys.ts",
+        "packages/loom/src/resources/identity.ts",
+        "packages/loom/src/resources/operations.ts"
+      ]
+    },
+    {
+      "name": "bound delete identity changes when caller binding mutates",
+      "status": "confirmed",
+      "observed": {
+        "boundIdentity": "a",
+        "writtenIdentity": "b",
+        "invalidations": [
+          {
+            "resource": "things",
+            "id": "b"
+          }
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/resources/defineResource.ts",
+        "packages/loom/src/resources/bindResource.ts",
+        "packages/loom/src/query/keys.ts",
+        "packages/loom/src/resources/identity.ts",
+        "packages/loom/src/resources/operations.ts"
+      ]
+    },
+    {
+      "name": "default parameter causes legitimate record payload to be dropped",
+      "status": "confirmed",
+      "observed": {
+        "received": [
+          {}
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/resources/defineResource.ts",
+        "packages/loom/src/resources/bindResource.ts",
+        "packages/loom/src/query/keys.ts",
+        "packages/loom/src/resources/identity.ts",
+        "packages/loom/src/resources/operations.ts"
+      ]
+    },
+    {
+      "name": "create result with malformed identity accepted by direct submit",
+      "status": "confirmed",
+      "observed": {
+        "result": {
+          "name": "missing id"
+        },
+        "invalidations": [
+          {
+            "resource": "things"
+          }
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/resources/defineResource.ts",
+        "packages/loom/src/resources/bindResource.ts",
+        "packages/loom/src/query/keys.ts",
+        "packages/loom/src/resources/identity.ts",
+        "packages/loom/src/resources/operations.ts"
+      ]
+    },
+    {
+      "name": "optional definition submit preserved and bound resource keeps operation effects",
+      "status": "confirmed",
+      "observed": {
+        "defaultSubmitPreserved": true,
+        "boundMutationInvalidates": true,
+        "result": {
+          "id": "saved",
+          "name": "x"
+        }
+      },
+      "executed_source": [
+        "packages/loom/src/forms/defineForm.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/resources/defineResource.ts",
+        "packages/loom/src/resources/bindResource.ts",
+        "packages/loom/src/query/keys.ts",
+        "packages/loom/src/resources/identity.ts",
+        "packages/loom/src/resources/operations.ts"
+      ]
+    },
+    {
+      "name": "late mutation reports success into a different record session",
+      "status": "confirmed",
+      "observed": {
+        "currentRecord": "new",
+        "currentDraft": {
+          "name": "new"
+        },
+        "events": [
+          [
+            "submitted",
+            {
+              "id": "old"
+            }
+          ]
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/forms/useFormSession.ts",
+        "packages/loom/src/labels/resolveLabel.ts",
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/forms/behavior.ts",
+        "packages/loom/src/forms/compileForm.ts",
+        "packages/loom/src/schemas/compileSchema.ts",
+        "packages/loom/src/forms/props.ts",
+        "packages/loom/src/forms/controlValues.ts"
+      ]
+    },
+    {
+      "name": "ListView ignores parent query replacement and does not emit query updates",
+      "status": "confirmed",
+      "observed": {
+        "parentQuery": {
+          "page": 7,
+          "search": "parent change"
+        },
+        "boundQuery": {
+          "page": 3
+        },
+        "emitted": []
+      },
+      "executed_source": [
+        "packages/loom/src/components/views/ListView.vue"
+      ]
+    },
+    {
+      "name": "resource constructor rejects actual ListView filter props",
+      "status": "confirmed",
+      "observed": {
+        "message": "[loom][SURFACE_OPTION_INVALID] Resource \"things\" operation \"list\" member \"filters\" is not supported."
+      },
+      "executed_source": [
+        "packages/loom/src/resources/defineResource.ts",
+        "packages/loom/src/resources/bindResource.ts",
+        "packages/loom/src/query/keys.ts",
+        "packages/loom/src/resources/identity.ts",
+        "packages/loom/src/resources/operations.ts"
+      ]
+    },
+    {
+      "name": "FileInput starts an upload while disabled",
+      "status": "confirmed",
+      "observed": {
+        "disabled": true,
+        "uploads": [
+          "a.txt"
+        ]
+      },
+      "executed_source": [
+        "packages/loom/src/components/core/useFormInputState.ts",
+        "packages/loom/src/components/inputs/commonprops.ts",
+        "packages/loom/src/components/inputs/assetValue.ts",
+        "packages/loom/src/components/inputs/useUploadMutation.ts",
+        "packages/loom/src/components/inputs/FileInput.vue"
+      ]
+    },
+    {
+      "name": "DialogForm close guard closes after submission starts",
+      "status": "confirmed",
+      "observed": {
+        "submissionInProgress": true,
+        "closed": true
+      },
+      "executed_source": [
+        "packages/loom/src/components/views/uiDefaults.ts",
+        "packages/loom/src/components/composites/DialogForm.vue"
+      ]
+    },
+    {
+      "name": "input hydrate adapter loses an intentional null result",
+      "status": "confirmed",
+      "observed": {
+        "adapterReturn": null,
+        "actualReturn": "missing-role"
+      },
+      "executed_source": [
+        "packages/loom/src/renderers/inputProps.ts",
+        "packages/loom/src/components/inputs/assetValue.ts"
+      ]
+    }
+  ]
+}

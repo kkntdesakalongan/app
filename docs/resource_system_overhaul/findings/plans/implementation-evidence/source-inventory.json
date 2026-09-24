@@ -1,0 +1,248 @@
+{
+  "target_commit": "223fc622d9a897014fcbad48df838a19cec398db",
+  "archive_sha256": "7ff98304fcf07374edccbca517a7092e4e129d282b92370295a0a1337ecad422",
+  "git_metadata_in_archive": false,
+  "inspected_source_files": {
+    "packages/loom/src/forms/useFormSession.ts": {
+      "sha256": "26215590c90a83b60e998bd861113e6ff6fab80886e5724a84f5ec61fcd8173a",
+      "lines": 703
+    },
+    "packages/loom/src/components/core/Form.vue": {
+      "sha256": "62d684256877fe8e4504d8ca3e22e7fe929326deb9d74c06dfdd4656ee21f17c",
+      "lines": 176
+    },
+    "packages/loom/src/components/composites/DialogForm.vue": {
+      "sha256": "cf92d13129249775bccb63568b0dc4467ee3afe3a9bd3b4310b6353f41ce8d45",
+      "lines": 237
+    },
+    "packages/loom/src/components/views/FormView.vue": {
+      "sha256": "07f39bae1fa12da884025671cbdc7291aa44d273611c3e38549d43b7f966eb8e",
+      "lines": 167
+    },
+    "packages/loom/src/components/inputs/BaseInput.vue": {
+      "sha256": "e2bf4d27d6a88bfac89bd95cd2c24eaf4d17859761212dca874a011a179daf43",
+      "lines": 61
+    },
+    "packages/loom/src/forms/props.ts": {
+      "sha256": "7e379a34b78a8845cb372d0d866b2a04179d6dd3d6ed95fb75c13a3a93337089",
+      "lines": 121
+    },
+    "packages/loom/src/components/views/ListView.vue": {
+      "sha256": "a79ae14c61e521f8e50846a76ffd5f4716e70f81656d4c20d713791f2bc283f4",
+      "lines": 561
+    },
+    "packages/loom/src/components/core/Collection.vue": {
+      "sha256": "c6cb19255b13099b2f582d98622e5c2e697242a3c7c874a0d967afc5fa3f7660",
+      "lines": 84
+    },
+    "packages/loom/src/forms/compileForm.ts": {
+      "sha256": "032ffff506366cf03227f3ce5002023806bf8157cad22ca5a0087e46db992eec",
+      "lines": 143
+    },
+    "packages/loom/src/components/inputs/SelectInput.vue": {
+      "sha256": "1a946f50ae1fc7e2e3ced03af13237ab1b44f9b1a60bb4dc5a8c7e3d5fd826f7",
+      "lines": 304
+    },
+    "packages/loom/src/components/inputs/useOptionSource.ts": {
+      "sha256": "ebe35f371c8b8a50ca6f2c87396ffeaed2b6c79c2e0d9a37f85c7276b753aa93",
+      "lines": 38
+    },
+    "packages/loom/src/renderers/inputProps.ts": {
+      "sha256": "9adfc3eac0a0bab1b0b2ca7a472b0e2b6e63fb11de95d2226a0fb08f4c6b7ce0",
+      "lines": 153
+    },
+    "packages/loom/src/forms/behavior.ts": {
+      "sha256": "ae702b20c0079590f39e7d6d101876664373b0d8d0fdc14d3365eeb6c24fa123",
+      "lines": 287
+    },
+    "packages/loom/src/renderers/form.ts": {
+      "sha256": "7b68f910f5e11a1cca2e3a508bb82a280c238bfd0ed7273b5653c17f32389331",
+      "lines": 183
+    },
+    "packages/loom/src/resources/bindResource.ts": {
+      "sha256": "17d4a4c1499a4cd53c533db98d2671eaa6d0643611c5629bc4ee6e6717c67f9b",
+      "lines": 537
+    },
+    "apps/web/src/framework/adapters/bundle.ts": {
+      "sha256": "30bb03a43a63d02f44d4e3d3409f666e2fe6a94736ff661eb33055f2ec1b58f5",
+      "lines": 45
+    },
+    "packages/loom/src/resources/operations.ts": {
+      "sha256": "7931df0a8a9feb478a52afc57d8f46e061d332ff767c3af07042fff6afd3cd2a",
+      "lines": 445
+    },
+    "packages/loom/src/components/core/TreeTable.vue": {
+      "sha256": "313b0b5782362a8554444190282eaad07414c04143cc97bc02e926dfbc729e6d",
+      "lines": 173
+    },
+    "packages/loom/src/display/DisplayValue.vue": {
+      "sha256": "38a85ab3f606cab02fdc1952d919d9e51f18d3fac36bfc951172b27eb4022e9a",
+      "lines": 28
+    },
+    "packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts": {
+      "sha256": "41736b01c36a433cfbf35e60c7f57b736b809ba31dff4134a75db700fd661f3b",
+      "lines": 155
+    },
+    "packages/loom/src/components/composites/form-inputs/LookupInput.vue": {
+      "sha256": "17d580acc20cbd063b1724ae43d73fed5888b6a7f019bafd360ca32e50f987ea",
+      "lines": 352
+    },
+    "packages/loom/src/components/inputs/FileInput.vue": {
+      "sha256": "05b1950ce8cb90f8264f39a36e8ea19f20d369e1db1f766190629aae98e29af1",
+      "lines": 384
+    },
+    "packages/loom/src/components/inputs/commonprops.ts": {
+      "sha256": "11cab467aa0e207e6ee7ec89a4c197001f931d7bf12e57638fd805675ad621ea",
+      "lines": 30
+    },
+    "packages/loom/src/tables/defineTable.ts": {
+      "sha256": "93becff45619f2dd574beea135a13c0218534ff0db833525bffe331b387a4fef",
+      "lines": 157
+    },
+    "packages/loom/src/details/defineDetail.ts": {
+      "sha256": "c658e90f2cd15213e9fddd0738171eb69d1f2d541ef2d3685bb2218f890e126f",
+      "lines": 136
+    },
+    "packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts": {
+      "sha256": "11d07e610d91cbfc9e1afe4a074f3b7028ac07ffd1500e5b30acc27ed5bff388",
+      "lines": 316
+    },
+    "packages/loom/src/__tests__/public-api.spec.ts": {
+      "sha256": "adfb9e392638111c0a77e2b10a7e4a4c5c38f2ed1f097381136587b0483ff914",
+      "lines": 136
+    },
+    "packages/loom/src/forms/__tests__/defineForm.spec.ts": {
+      "sha256": "3d8768b61e7e521cdc881797e219988b3204a5721a97baf383b1abaa06bb3d8f",
+      "lines": 80
+    },
+    ".github/workflows/web-validation.yml": {
+      "sha256": "cf88375326fd1811c1c209ef402c811042fcb964cf07c24117f2c5518f32f3ae",
+      "lines": 96
+    },
+    "turbo.json": {
+      "sha256": "897aa63e2724bd4a820d1a9064c71434b6be69bfb9a2733906f10c9f04af9429",
+      "lines": 38
+    },
+    "packages/loom/package.json": {
+      "sha256": "696879fc2ebb7fa60d3f90c764544ad8c59c1200c3d2b51736c23add4fd04a73",
+      "lines": 65
+    },
+    "packages/loom/src/forms/defineForm.ts": {
+      "sha256": "571c2f873baa8cf92a13a8b42fcba9b30b30e21b4c4e63064f43ee50cee46979",
+      "lines": 223
+    },
+    "packages/loom/src/contracts/display.ts": {
+      "sha256": "b616d8a4065fbf24c7d933eaaf1d94d1efec89e5d81d119b6e8fa9923668b7f4",
+      "lines": 22
+    },
+    "packages/loom/src/resources/index.ts": {
+      "sha256": "f25ed896f6fa1d6ccce945c82893465901ebc9e9f130e5675f63671965b79f85",
+      "lines": 45
+    },
+    "apps/web/src/routes/(authenticated)/settings/users/users.actions.ts": {
+      "sha256": "50ad9c0ba1b15421e711b6597d78b4ed8e24cc8c6be5b71812ff6053450aeecb",
+      "lines": 18
+    },
+    "apps/web/src/routes/(authenticated)/settings/roles/roles.actions.ts": {
+      "sha256": "c29f97f973fbca0e8eb49fbba9b96947f273cc51fc9689764d22599c5f5889ce",
+      "lines": 19
+    },
+    "apps/web/src/routes/(authenticated)/settings/permissions/permissions.actions.ts": {
+      "sha256": "3c3ca410bc4b1542b30bed1ef488bce7fb306d04fef8439e7d35650e061e5da7",
+      "lines": 13
+    },
+    "apps/web/src/routes/(authenticated)/settings/users/users.schema.ts": {
+      "sha256": "80856ba8acddb3071dcf3c11eaeaf68d285216208c554c61a295692de895755d",
+      "lines": 42
+    },
+    "packages/loom/src/resources/identity.ts": {
+      "sha256": "dbd3f64a859bff53510f821f9b9daa601b1381d7566986aacf818d3f8970c6e4",
+      "lines": 36
+    },
+    "packages/loom/src/resources/runtime.ts": {
+      "sha256": "9b3b0121609da55e5cc6ebb6b88f1b69d1b933b82ca0a6b2b04adc7cf7368525",
+      "lines": 46
+    },
+    ".agents/skills/build-resource-form/SKILL.md": {
+      "sha256": "792a428656ae58214303ea644af44f156d8c45085b3b23970bc60a66569b0b36",
+      "lines": 150
+    },
+    ".agents/skills/build-resource-form/references/form-field-types.md": {
+      "sha256": "6378115282cc516545d2f22684a48886eef0ef5ba532ccea14c866c546ae65f9",
+      "lines": 92
+    },
+    "packages/loom/src/components/composites/form-inputs/tableInput.types.ts": {
+      "sha256": "4f41848943ff9b4c6238264c0837bb61ac50cfde880d77660e5220bc60723a87",
+      "lines": 54
+    },
+    "apps/web/src/framework/adapters/assets.ts": {
+      "sha256": "3b73368617e30f99519d67ae192f639dcf3e86db2664cd8bfbe6280350f430ba",
+      "lines": 41
+    },
+    "packages/loom/src/components/inputs/ImageInput.vue": {
+      "sha256": "9349c899ff1e92d38cc69143bf31ab3e6f38e080ea8bbe3e0bf5a5613ad0993b",
+      "lines": 329
+    },
+    "packages/loom/src/renderers/formContracts.ts": {
+      "sha256": "013923426e0bb8554cfd7e5cd9754b549225ad151968ee830a51dcb04d340912",
+      "lines": 108
+    },
+    "packages/loom/src/components/inputs/DateInput.vue": {
+      "sha256": "a8a2ac4a2affac536aed471f36f4a17bef283ffb15db62d9286acc1b6238993b",
+      "lines": 118
+    },
+    "apps/web/src/framework/hono/actions.ts": {
+      "sha256": "6f63b7dd3d6b3083d738079a9b4a777304f36dddf4ae633db1208e17f981105d",
+      "lines": 53
+    },
+    ".agents/skills/improve/SKILL.md": {
+      "sha256": "612bbc6314299c015f1c12228b8cd144f9b5147a466181a04cb3b7680b00e523",
+      "lines": 114
+    },
+    ".agents/skills/improve/references/plan-template.md": {
+      "sha256": "788d9658f1ca6414250bb1096523eae8effd441adc117b99e6140aedd0e9d962",
+      "lines": 197
+    },
+    ".agents/skills/improve/references/audit-playbook.md": {
+      "sha256": "b170fc3fcf1a0bed58fa389fdd33ae13f3a0f70e6334cfe67c627649bdbeb7f3",
+      "lines": 130
+    },
+    ".agents/skills/writing-for-agents/SKILL.md": {
+      "sha256": "551adca942227b44192edba88acd4e8db911f0121ce58ad16944ccf6a896a74a",
+      "lines": 81
+    },
+    "plans/README.md": {
+      "sha256": "0996919ae8b6a446e519e08c5bc199052504a6bb4fc6d43f1c5ef5585da00303",
+      "lines": 891
+    },
+    "README.md": {
+      "sha256": "99345b538c623a21be28315a749c5b0cb1dd9f70665f799117f37c452f0d849d",
+      "lines": 485
+    },
+    "AGENTS.md": {
+      "sha256": "5444568d6e1d2005dba400ffb68bcd04b991e2424391f2137a88775237469d1d",
+      "lines": 22
+    },
+    "package.json": {
+      "sha256": "6f702b43de83cecf94c1e41926b08ab5810735a737906e5fcbed0527b60200f4",
+      "lines": 38
+    },
+    "apps/web/package.json": {
+      "sha256": "4e4253fb70f60942425538fa64642a566c4c7d18b16333e5685e43595416afcc",
+      "lines": 87
+    },
+    "packages/loom/vitest.browser.config.ts": {
+      "sha256": "e121960627619888bc3f635a9f1f0e16b3162875f56c7552c5522f86f35182b3",
+      "lines": 50
+    },
+    "packages/loom/tsconfig.json": {
+      "sha256": "d6263d36738e83b5731bfb2eb35e30deac2de8d403993bfc35b1cb9e7f49783c",
+      "lines": 63
+    },
+    "apps/web/tsconfig.vitest.json": {
+      "sha256": "4f2501f5b67f51d255be6a5ec87204da3aaa19a80afa3e771fbb951cc47e0c90",
+      "lines": 13
+    }
+  },
+  "source_changes": []
+}

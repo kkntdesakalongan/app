@@ -1,0 +1,47 @@
+{
+  "target_commit": "223fc622d9a897014fcbad48df838a19cec398db",
+  "node": "22.16.0",
+  "typescript_for_isolated_probes": "5.8.3",
+  "runtime_observations": {
+    "confirmed": 25,
+    "method": "Actual checkout TypeScript modules transpiled by TypeScript 5.8.3; explicit composition/query/access/schema test doubles, not installed Vue/Zod or mounted browser. Probe assertions verify observed behavior, including bug reproductions and controls."
+  },
+  "type_probes": {
+    "exit_code": 0,
+    "meaning": "Undesired mixed unions accepted; positive/negative controls hold. Not pinned vue-tsc."
+  },
+  "scaffold_tests": {
+    "passed": 21,
+    "skipped": 1,
+    "failed": 0,
+    "exit_code": 0
+  },
+  "architecture_checker_tests": {
+    "status": "blocked",
+    "reason": "vue/compiler-sfc not installed"
+  },
+  "module_ui_tests": {
+    "status": "blocked",
+    "reason": "Required Vue compiler dependency not installed"
+  },
+  "not_executed": [
+    "full workspace/package unit tests",
+    "browser tests",
+    "end-to-end tests",
+    "build",
+    "lint",
+    "advisory scan",
+    "pinned type-check memory benchmark"
+  ],
+  "integrity": {
+    "baseline_file_count": 1146,
+    "changed_original_files": [
+      "plans/README.md"
+    ],
+    "missing_original_files": [],
+    "new_file_count": 23,
+    "new_paths_outside_plans": [],
+    "source_unchanged_outside_plans": true,
+    "method": "SHA-256 of every original checkout file compared with the pre-audit inventory; new files checked for plans-only scope."
+  }
+}

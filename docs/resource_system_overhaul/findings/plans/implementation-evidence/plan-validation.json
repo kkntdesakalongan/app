@@ -1,0 +1,75 @@
+{
+  "status": "PASS",
+  "scope": "Plan structure, finding/decision coverage, local index links, source excerpt bounds, Markdown fences and explicit verification gates only. No framework execution.",
+  "finding_count": 27,
+  "plan_count": 8,
+  "decision_count": 9,
+  "files": [
+    {
+      "id": "062",
+      "file": "062-track-form-edits-and-async-ownership.md",
+      "bytes": 18586,
+      "words": 2361,
+      "steps": 6,
+      "sha256": "2e5513ad1765075ea5f8587734f38771b01f69abe08ae2781d7fa3f235743e50"
+    },
+    {
+      "id": "063",
+      "file": "063-provide-one-global-asset-service.md",
+      "bytes": 19488,
+      "words": 2392,
+      "steps": 5,
+      "sha256": "8f3d5c6e4cfa0f83c25af2d88100090a242fc97496d1561c4abe80db85cfb9af"
+    },
+    {
+      "id": "064",
+      "file": "064-use-canonical-component-contracts.md",
+      "bytes": 21728,
+      "words": 2642,
+      "steps": 5,
+      "sha256": "89b81891c8bc65450ca855f097d4983434569308b45e0325860a58093aca5d64"
+    },
+    {
+      "id": "065",
+      "file": "065-bind-safe-operations-and-complete-view-props.md",
+      "bytes": 19730,
+      "words": 2440,
+      "steps": 6,
+      "sha256": "5cf24bb23de53580e030eb7d2cfb1445a4c2c611fdb47002206e383b2471e499"
+    },
+    {
+      "id": "066",
+      "file": "066-preserve-wrapper-query-and-display-parity.md",
+      "bytes": 20569,
+      "words": 2550,
+      "steps": 7,
+      "sha256": "fb699610a117d3ea3b44efde60e81951f0638ab7c09ed9df8d60b5bbf852df23"
+    },
+    {
+      "id": "067",
+      "file": "067-narrow-types-and-close-union-escapes.md",
+      "bytes": 19851,
+      "words": 2513,
+      "steps": 5,
+      "sha256": "cdfc547bb662dfebbfa10751f7b61258a2da3b99fcc7cd7d969ae900909e387d"
+    },
+    {
+      "id": "068",
+      "file": "068-centralize-frontend-transport-query-encoding.md",
+      "bytes": 15686,
+      "words": 1919,
+      "steps": 4,
+      "sha256": "e3fceef5f4802896461daed762106a129591c00729968bbf2ebd7959b3bea65c"
+    },
+    {
+      "id": "069",
+      "file": "069-prove-contracts-and-remove-stale-guidance.md",
+      "bytes": 21197,
+      "words": 2672,
+      "steps": 6,
+      "sha256": "cd366eff3c3239e2d9c2d7db639a2e4782114ab2c830b4f20c48eebdf3f40878"
+    }
+  ],
+  "errors": [],
+  "archive_unchanged": true
+}

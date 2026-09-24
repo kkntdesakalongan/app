@@ -1,0 +1,759 @@
+{
+  "purpose": "Historical observations only. Required fixes and current contracts live in plans 062\u2013069.",
+  "target_commit": "223fc622d9a897014fcbad48df838a19cec398db",
+  "findings": [
+    {
+      "id": "F01",
+      "title": "The public draft bypasses edit tracking, validation cancellation, and isolation",
+      "priority": "P1",
+      "origin": "Retained writable-draft pattern; new session still exposes the bypass",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 65,
+          "end": 90
+        },
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 230,
+          "end": 249
+        },
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 308,
+          "end": 334
+        },
+        {
+          "path": "packages/loom/src/components/core/Form.vue",
+          "start": 83,
+          "end": 93
+        },
+        {
+          "path": "packages/loom/src/components/core/Form.vue",
+          "start": 130,
+          "end": 150
+        }
+      ],
+      "problem": "The session tracks edits and increments its validation revision in setValue(), but exposes its shallowReactive draft directly through the component ref and input slots. A caller can naturally assign draft.name or mutate a nested selected record without passing that boundary. The late-load edited-key set and asynchronous validation revision then disagree with the actual draft. Date values are also retained by reference in cloning: mutating a draft Date changes the caller's Date and the reset baseline; dirty remains false.",
+      "proof": "The actual session submitted {name: \"before\"} after its public draft changed to \"after\" during an awaited validator. The same experiment using setValue correctly prevented submission. A second probe changed the external Date's year through the draft while dirty stayed false. These are isolated control-flow tests, not mounted Vue tests."
+    },
+    {
+      "id": "F02",
+      "title": "Invalid control text can be submitted as an absent optional value",
+      "priority": "P1",
+      "origin": "New control-value/session path",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 362,
+          "end": 408
+        },
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 496,
+          "end": 516
+        }
+      ],
+      "problem": "setControlValue stores an invalid date string in controlIssues without changing the draft. controlIssuesFor skips fields absent from the candidate before checking their control error. An optional date with invalid visible text is therefore parsed as missing and submitted successfully. Recording such invalid control text also does not advance draftRevision, so a pending validation can outlive a visible input change.",
+      "proof": "With an optional date and empty initial input, setControlValue(\"date\", \"not-a-date\") followed by submit invoked the handler with {} while the date error remained. The schema fixture accepts a missing optional value; the bypass is in the real control/session code. This does not prove that the stock datepicker emits arbitrary malformed text; native-widget reachability remains an integration check. Registered date controls can supply string values, so an existing control error must still block the session's submission path."
+    },
+    {
+      "id": "F03",
+      "title": "A completed mutation can report success or errors into a newer form session",
+      "priority": "P1",
+      "origin": "Retained post-mutation lifecycle gap",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 496,
+          "end": 529
+        },
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 635,
+          "end": 667
+        },
+        {
+          "path": "packages/loom/src/components/composites/DialogForm.vue",
+          "start": 145,
+          "end": 147
+        },
+        {
+          "path": "packages/loom/src/components/views/FormView.vue",
+          "start": 48,
+          "end": 82
+        }
+      ],
+      "problem": "The session checks identity/generation before dispatching a mutation, but not after awaiting it. A route or parent can replace the record while the write is pending. The old result then emits submitted against the new session; old failures can replace its issues. Dialog closing and FormView navigation consume these events, so the consequence extends beyond stale text.",
+      "proof": "A probe started a write for id \"old\", invoked the real identity-change watcher to initialize id \"new\", then resolved the old write. The current draft was \"new\", but submitted({id: \"old\"}) still fired. A separate unmount probe also observed the session callback; that observation alone is not a claim about Vue's handling of emits after component disposal."
+    },
+    {
+      "id": "F04",
+      "title": "Submitting while blur validation is pending silently drops the request",
+      "priority": "P2",
+      "origin": "Retained from the supplied baseline",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 496,
+          "end": 503
+        },
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 532,
+          "end": 535
+        },
+        {
+          "path": "packages/loom/src/components/core/Form.vue",
+          "start": 169,
+          "end": 172
+        },
+        {
+          "path": "packages/loom/src/components/inputs/BaseInput.vue",
+          "start": 36,
+          "end": 45
+        }
+      ],
+      "problem": "submit returns immediately whenever validating is true. Moving focus from an input to Save can start blur validation before submission; asynchronous validation makes this observable. The button is also disabled while validation runs. No pending submit intent is retained, so users must activate Save again after blur validation finishes.",
+      "proof": "A deferred blur validator followed by submit produced zero mutation calls after the validator resolved. Source inspection confirms the focusout trigger and disabled-button path. A real focus/blur/click browser reproduction remains required."
+    },
+    {
+      "id": "F05",
+      "title": "DialogForm freezes which Form props are present at setup",
+      "priority": "P2",
+      "origin": "Expanded snapshot bug in the new forwarding implementation",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/composites/DialogForm.vue",
+          "start": 40,
+          "end": 99
+        },
+        {
+          "path": "packages/loom/src/forms/props.ts",
+          "start": 21,
+          "end": 43
+        }
+      ],
+      "problem": "The wrapper records the initial vnode props and gates forwarded props through that snapshot. A prop introduced later through v-bind is not forwarded, even though the current component props contain it. That violates all-Form-prop parity and is especially dangerous for disabled, context, loaders, and controlled-model ownership. The handwritten forwarding whitelist also duplicates the public Form contract.",
+      "proof": "The actual DialogForm setup was initialized without disabled/context. After both were added to the current props and vnode, formBindings still omitted them. Existing initially present values are not the issue; changing prop presence is."
+    },
+    {
+      "id": "F06",
+      "title": "ListView no longer implements a controlled query round trip",
+      "priority": "P2",
+      "origin": "Introduced relative to the supplied baseline",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/views/ListView.vue",
+          "start": 68,
+          "end": 72
+        },
+        {
+          "path": "packages/loom/src/components/views/ListView.vue",
+          "start": 112,
+          "end": 147
+        },
+        {
+          "path": "packages/loom/src/components/core/Collection.vue",
+          "start": 21,
+          "end": 37
+        }
+      ],
+      "problem": "ListView copies table.query into currentQuery once, forwards that local copy, never watches later parent replacements, and no longer emits update:query. Table/Collection's controlled-query support is therefore broken by the page wrapper. Filter drafts are separately initialized and are not resynchronized when the authoritative query changes.",
+      "proof": "Executing the actual ListView setup with a controlled query, replacing the parent query, and invoking onTableQuery showed the stale bound query and no emitted update event. The older ListView explicitly watched props.query and emitted update:query."
+    },
+    {
+      "id": "F07",
+      "title": "Default enum inference does not feed the built-in SelectInput",
+      "priority": "P1",
+      "origin": "Retained options/data mismatch carried into the new compiler",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/forms/compileForm.ts",
+          "start": 119,
+          "end": 136
+        },
+        {
+          "path": "packages/loom/src/components/inputs/SelectInput.vue",
+          "start": 18,
+          "end": 42
+        },
+        {
+          "path": "packages/loom/src/components/inputs/useOptionSource.ts",
+          "start": 1,
+          "end": 38
+        },
+        {
+          "path": "packages/loom/src/renderers/inputProps.ts",
+          "start": 121,
+          "end": 138
+        }
+      ],
+      "problem": "The compiler infers renderer \"select\" and supplies props.options as an array of strings. SelectInput consumes data records, with default pick \"id\" and view \"name\". Neither the built-in adapter nor Carta's source adapter converts inferred options into that contract. The simplest enum field can therefore render a selector with no choices; merely renaming options to data would still leave the record shape wrong.",
+      "proof": "The compiler probe produced {renderer: \"select\", props: {options: [\"draft\", \"active\"]}} and no data. The actual SelectInput/useOptionSource and registry resolution were inspected to rule out a downstream conversion. This is a compiler-to-control contract failure, not a schema parsing failure."
+    },
+    {
+      "id": "F08",
+      "title": "Hard-coded renderer-kind checks reject supported numeric selections",
+      "priority": "P2",
+      "origin": "New runtime compatibility checks",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/forms/behavior.ts",
+          "start": 11,
+          "end": 38
+        },
+        {
+          "path": "packages/loom/src/forms/compileForm.ts",
+          "start": 119,
+          "end": 127
+        },
+        {
+          "path": "packages/loom/src/components/inputs/SelectInput.vue",
+          "start": 73,
+          "end": 75
+        },
+        {
+          "path": "packages/loom/src/renderers/form.ts",
+          "start": 83,
+          "end": 182
+        }
+      ],
+      "problem": "The renderer compatibility table excludes number for select/radio, while the actual select model supports numeric identities. Valid schema/input combinations fail during construction. Runtime kind tables, the component-prop type map, and the built-in renderer roster are separate descriptions of the same controls and have already drifted.",
+      "proof": "A numeric schema field with renderer \"select\" and numeric-ID records was rejected with the schema-kind diagnostic. SelectModelValue explicitly includes number."
+    },
+    {
+      "id": "F09",
+      "title": "Schema-derived requiredness stops before reaching the input component",
+      "priority": "P2",
+      "origin": "New split between required state and renderer props",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/forms/behavior.ts",
+          "start": 216,
+          "end": 242
+        },
+        {
+          "path": "packages/loom/src/components/core/Form.vue",
+          "start": 125,
+          "end": 158
+        },
+        {
+          "path": "packages/loom/src/forms/props.ts",
+          "start": 100,
+          "end": 106
+        }
+      ],
+      "problem": "Requiredness is stored on field state and used for an asterisk and aria-required, but is absent from renderer props and no required prop is bound to the component. Application props.required is forbidden, so a custom control relying on its required prop has no supported way to receive the authoritative schema hint. Schema validation still runs; this is not a claim that required values are accepted.",
+      "proof": "The state probe observed required: true and props.required: undefined. The actual render template binds aria-required but not required."
+    },
+    {
+      "id": "F10",
+      "title": "permission: null bypasses server-declared row-operation policy",
+      "priority": "P2",
+      "origin": "Pre-existing logic retained in the touched resource boundary",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/resources/bindResource.ts",
+          "start": 143,
+          "end": 166
+        },
+        {
+          "path": "apps/web/src/framework/adapters/bundle.ts",
+          "start": 9,
+          "end": 29
+        },
+        {
+          "path": "packages/loom/src/resources/bindResource.ts",
+          "start": 484,
+          "end": 497
+        }
+      ],
+      "problem": "permissionRequest returns true before calling the access adapter when permission is null. In Carta the adapter also interprets allowedOperations on records. Null should remove the client permission-code requirement, not discard the record's operation restrictions. Custom commands already evaluate their row policy separately, so standard and custom operations disagree.",
+      "proof": "A standard delete with permission null and record.allowedOperations: [] performed the write without any access-adapter call. A permission-string control correctly denied it. This demonstrates a client policy defect, not a bypass of server authorization."
+    },
+    {
+      "id": "F11",
+      "title": "A bound delete can mutate a different identity than the one checked",
+      "priority": "P1",
+      "origin": "New bound-delete closure shape",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/resources/bindResource.ts",
+          "start": 80,
+          "end": 111
+        },
+        {
+          "path": "packages/loom/src/resources/bindResource.ts",
+          "start": 484,
+          "end": 497
+        },
+        {
+          "path": "packages/loom/src/resources/operations.ts",
+          "start": 37,
+          "end": 40
+        }
+      ],
+      "problem": "The delete handle validates binding.id at construction but captures the mutable binding object. Its later run reads binding.id again, while access uses the previously captured record. A caller can change the binding object after obtaining the handle; the operation then writes another identity and invalidates that identity. Composite identity objects also need value snapshots at binding boundaries.",
+      "proof": "The probe bound {id: \"a\", record: {id: \"a\"}}, changed binding.id to \"b\", and invoked the handle. The recorded delete and invalidation both targeted \"b\"."
+    },
+    {
+      "id": "F12",
+      "title": "Custom commands guess context from Function.length and can drop real payloads",
+      "priority": "P2",
+      "origin": "Pre-existing argument-discovery convention retained",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/resources/bindResource.ts",
+          "start": 242,
+          "end": 273
+        },
+        {
+          "path": "packages/loom/src/resources/operations.ts",
+          "start": 91,
+          "end": 99
+        }
+      ],
+      "problem": "Custom command calls append optional row context to business arguments, then detect it using run.length and an object containing record. Default/rest parameters change Function.length. A legitimate payload with a record member can be mistaken for framework context and removed before both permission resolution and execution.",
+      "proof": "A command with run(payload = {}) received {} instead of the supplied {record, note} object. The supplied payload was consumed as context. No mutation or hostile input is needed to trigger the ambiguity."
+    },
+    {
+      "id": "F13",
+      "title": "Resources are not complete page-prop composers",
+      "priority": "P2",
+      "origin": "New declaration/result contract omission",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/resources/operations.ts",
+          "start": 139,
+          "end": 186
+        },
+        {
+          "path": "packages/loom/src/resources/bindResource.ts",
+          "start": 42,
+          "end": 64
+        },
+        {
+          "path": "packages/loom/src/components/views/ListView.vue",
+          "start": 60,
+          "end": 66
+        },
+        {
+          "path": "packages/loom/src/components/views/FormView.vue",
+          "start": 14,
+          "end": 24
+        }
+      ],
+      "problem": "Resource declarations manually duplicate a subset of View props. ListView accepts filters/export, but the resource list declaration rejects them. FormView accepts afterSubmit/backTo, but create/update declarations do not consistently accept/forward them. Authors must rebuild page bags outside the resource, defeating the promised complete v-bind resource.list/resource.create shape.",
+      "proof": "The actual resource constructor rejected a valid ListView filters member. Source inspection shows separate allowed-member rosters and handwritten result bags rather than the complete View contract."
+    },
+    {
+      "id": "F14",
+      "title": "FormView replaces inherited action labels and the normal actions slot",
+      "priority": "P2",
+      "origin": "Retained wrapper duplication conflicts with the new ownership",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/views/FormView.vue",
+          "start": 14,
+          "end": 36
+        },
+        {
+          "path": "packages/loom/src/components/views/FormView.vue",
+          "start": 122,
+          "end": 147
+        },
+        {
+          "path": "packages/loom/src/components/core/Form.vue",
+          "start": 169,
+          "end": 172
+        }
+      ],
+      "problem": "The page uses outer submitLabel/submittingLabel and ignores the same props carried by its nested form. Its custom actions implementation replaces Form's actions slot and exposes another name, form-actions. A reusable form's presentation changes when embedded in the page even though the binding is supposed to be complete.",
+      "proof": "The label computation reads only outer props/defaults, while the action template owns the buttons. This is a statically verified forwarding defect; it was not mounted in this environment."
+    },
+    {
+      "id": "F15",
+      "title": "TreeTable bypasses shared rendering for its tree column",
+      "priority": "P2",
+      "origin": "Pre-existing cell override retained",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/core/TreeTable.vue",
+          "start": 158,
+          "end": 169
+        },
+        {
+          "path": "packages/loom/src/display/DisplayValue.vue",
+          "start": 1,
+          "end": 28
+        },
+        {
+          "path": "packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts",
+          "start": 110,
+          "end": 122
+        }
+      ],
+      "problem": "TreeTable overrides the tree column's cell slot and renders cell.value as text. Other columns use DisplayValue, but the tree column does not. A shared chip/asset/custom renderer on that column disappears. The existing display-parity test selects the text-only roleIds column as treeColumn, so it does not exercise this branch with a renderer.",
+      "proof": "The template's default tree-cell body is plain interpolation. The browser fixture's renderer columns are not the tree column. No browser execution is claimed."
+    },
+    {
+      "id": "F16",
+      "title": "Lookup hydration overwrites a newer staged selection",
+      "priority": "P2",
+      "origin": "Pre-existing staging race; cancellation improvements did not cover user edits",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/composites/form-inputs/LookupInput.vue",
+          "start": 165,
+          "end": 211
+        },
+        {
+          "path": "packages/loom/src/components/composites/form-inputs/LookupInput.vue",
+          "start": 234,
+          "end": 263
+        }
+      ],
+      "problem": "Scalar-selection hydration checks its request generation, but not whether the user has edited the staged selection while the request was pending. The late response replaces both committed and staged records. Choosing B while A's label is loading can silently return the dialog to A.",
+      "proof": "The actual lookup setup began scalar hydration for A, the probe toggled B, and resolving A changed staged selection back to A."
+    },
+    {
+      "id": "F17",
+      "title": "FileInput ignores its disabled contract at mutation entry points",
+      "priority": "P2",
+      "origin": "Pre-existing behavior in a modified component",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/inputs/FileInput.vue",
+          "start": 196,
+          "end": 218
+        },
+        {
+          "path": "packages/loom/src/components/inputs/FileInput.vue",
+          "start": 237,
+          "end": 263
+        },
+        {
+          "path": "packages/loom/src/components/inputs/FileInput.vue",
+          "start": 270,
+          "end": 294
+        },
+        {
+          "path": "packages/loom/src/components/inputs/commonprops.ts",
+          "start": 18,
+          "end": 21
+        }
+      ],
+      "problem": "FileInput declares disabled through commonProps but its upload/drop/delete/asset-selection handlers do not enforce it. The native file-input disabled expression does not include props.disabled, and the outer BaseInput is a div rather than a disabled fieldset. A disabled form can still change its file value or start an upload.",
+      "proof": "Executing FileInput's actual handler with disabled: true invoked the supplied upload operation. The surrounding buttons and mutation entry points were inspected. This is not a claim that a server authorization check is absent."
+    },
+    {
+      "id": "F18",
+      "title": "Union guards accept a valid member and overlook an invalid one",
+      "priority": "P2",
+      "origin": "New surface/resource generic guard implementation",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/tables/defineTable.ts",
+          "start": 11,
+          "end": 35
+        },
+        {
+          "path": "packages/loom/src/details/defineDetail.ts",
+          "start": 11,
+          "end": 35
+        },
+        {
+          "path": "packages/loom/src/resources/operations.ts",
+          "start": 284,
+          "end": 308
+        },
+        {
+          "path": "packages/loom/src/resources/operations.ts",
+          "start": 338,
+          "end": 342
+        },
+        {
+          "path": "packages/loom/src/resources/bindResource.ts",
+          "start": 211,
+          "end": 225
+        }
+      ],
+      "problem": "The display value conditional distributes over a union: one successful branch contributes unknown, swallowing the never branch. A string | object value is accepted for a string-only renderer. Resource identity guards have the same shape; CustomActionGuard unions per-action results instead of requiring every action to pass, and its reserved-name test only rejects an all-reserved map. Direct create submit also returns a malformed-identity result without checking it; navigation is a separate, optional check.",
+      "proof": "A real TypeScript test imported the checkout's defineTable/defineDetail and registered a string-only renderer. Mixed string/object values compiled, while all-number values and bad renderer props were correctly rejected. Extracted unchanged resource guard expressions also accepted a good+bad action map, a mixed reserved-action map, and mixed valid/invalid identity types; that second test isolates guard logic rather than compiling the full Vue/resource graph. A runtime probe returned a malformed create result through the extracted submit function."
+    },
+    {
+      "id": "F19",
+      "title": "Managed input slots erase field-specific value and setter types",
+      "priority": "P2",
+      "origin": "Current new surface boundary does not meet the typed-slot target",
+      "confidence": "High for erased source types; pinned template behavior unexecuted",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/core/Form.vue",
+          "start": 58,
+          "end": 60
+        },
+        {
+          "path": "packages/loom/src/components/core/Form.vue",
+          "start": 130,
+          "end": 140
+        },
+        {
+          "path": "packages/loom/src/components/composites/DialogForm.vue",
+          "start": 99,
+          "end": 107
+        }
+      ],
+      "problem": "Form's slot value comes from a function returning unknown, and its setter accepts unknown. No field-key-specific slot contract restores TInput[K]. The custom-input path therefore loses the value-level type safety that the surface constructors establish. Broad wrapper slot forwarding can widen it further.",
+      "proof": "The erased value/setter types are explicit in the source. The workspace vue-tsc fixture needed to verify exact consumer diagnostics could not run here; no claim of a completed template compilation is made."
+    },
+    {
+      "id": "F20",
+      "title": "The test suite has useful coverage, but several claimed guarantees are not tested",
+      "priority": "P2",
+      "origin": "New parity coverage plus retained brittle assertions",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts",
+          "start": 43,
+          "end": 93
+        },
+        {
+          "path": "packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts",
+          "start": 125,
+          "end": 166
+        },
+        {
+          "path": "packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts",
+          "start": 110,
+          "end": 122
+        },
+        {
+          "path": "packages/loom/src/__tests__/public-api.spec.ts",
+          "start": 14,
+          "end": 37
+        },
+        {
+          "path": "packages/loom/src/__tests__/public-api.spec.ts",
+          "start": 95,
+          "end": 101
+        },
+        {
+          "path": "packages/loom/src/forms/__tests__/defineForm.spec.ts",
+          "start": 28,
+          "end": 32
+        }
+      ],
+      "problem": "The form parity fixture replaces the selection control with a span/setter slot, has no inferred enum, and avoids real focus/blur Save interactions. Display parity never uses a renderer in the tree column. Runtime absence checks for type-only exports are tautological: TypeScript types never appear in the JS namespace. The constructor test also locks unrelated top-level property ordering. These tests can pass while the public defaults fail.",
+      "proof": "This is a test-source audit, supported by the reproduced failures above. The parity tests do validate transformation/default isolation, and the architecture syntax tests have meaningful positive controls; it would be incorrect to label the entire suite fake or tautological."
+    },
+    {
+      "id": "F21",
+      "title": "The web workflow does not run Loom unit tests",
+      "priority": "P2",
+      "origin": "Retained workflow gap despite new browser/architecture gates",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": ".github/workflows/web-validation.yml",
+          "start": 89,
+          "end": 96
+        },
+        {
+          "path": "turbo.json",
+          "start": 19,
+          "end": 24
+        },
+        {
+          "path": "packages/loom/package.json",
+          "start": 59,
+          "end": 65
+        }
+      ],
+      "problem": "The workflow's unit-test command selects only @southneuhof/framework-web together with --affected. Its task dependencies are build tasks, not dependency test tasks. Loom's browser suite and type check run, but the newly important schema/compiler/session/resource unit tests are not covered by this workflow. Module-tooling tests also are not explicitly run here.",
+      "proof": "The workflow and task graph were inspected. Turborepo's official 2.10 documentation says --affected and --filter intersect. No live CI run is claimed; the dependency-less checkout cannot produce a Turbo dry run here."
+    },
+    {
+      "id": "F22",
+      "title": "The public type surface retains the full schema/literal graph and exports its proof machinery",
+      "priority": "P3",
+      "origin": "Introduced by the new definition/binding types",
+      "confidence": "High for structure; performance benefit unmeasured",
+      "evidence": [
+        {
+          "path": "packages/loom/src/forms/defineForm.ts",
+          "start": 144,
+          "end": 165
+        },
+        {
+          "path": "packages/loom/src/contracts/display.ts",
+          "start": 4,
+          "end": 10
+        },
+        {
+          "path": "packages/loom/src/resources/index.ts",
+          "start": 3,
+          "end": 40
+        },
+        {
+          "path": "packages/loom/src/tables/defineTable.ts",
+          "start": 91,
+          "end": 118
+        },
+        {
+          "path": "packages/loom/src/resources/operations.ts",
+          "start": 375,
+          "end": 445
+        }
+      ],
+      "problem": "The agreed narrowing boundary is not implemented: DefinedForm retains the complete TSchema and recursively read-only TFields/TValidators/TSubmit graph. Table/detail and bound resource types preserve similar literal structures. The public barrel also exports internal guards, intermediate bags, and derived proof aliases. This makes consumers traverse a larger generic API and increases the number of names agents encounter.",
+      "proof": "Source structure is conclusive. This audit did not measure pinned checker memory/time, so it does not claim that these types caused a current OOM or promise a percentage saving. Some precise refinements are justified: supplied submit and field-key presence must remain known."
+    },
+    {
+      "id": "F23",
+      "title": "UI-to-transport query conversion is copied into each resource module",
+      "priority": "P3",
+      "origin": "New application integration duplication",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "apps/web/src/routes/(authenticated)/settings/users/users.actions.ts",
+          "start": 1,
+          "end": 12
+        },
+        {
+          "path": "apps/web/src/routes/(authenticated)/settings/roles/roles.actions.ts",
+          "start": 1,
+          "end": 12
+        },
+        {
+          "path": "apps/web/src/routes/(authenticated)/settings/permissions/permissions.actions.ts",
+          "start": 1,
+          "end": 12
+        },
+        {
+          "path": "apps/web/src/routes/(authenticated)/settings/users/users.schema.ts",
+          "start": 1,
+          "end": 28
+        }
+      ],
+      "problem": "Users, roles, and permissions repeat the same UI sort_by/sort to wire sort/order conversion and pair it with near-duplicate query schemas. These declarations describe transport convention, not resource-specific behavior. Every future agent-generated module must remember the same mapping and validation order.",
+      "proof": "The three action wrappers were opened and compared. The separate UI and endpoint contracts are legitimate; duplicating their adapter in each module is the avoidable part."
+    },
+    {
+      "id": "F24",
+      "title": "Unused legacy identity declarations and redundant runtime aliases remain",
+      "priority": "P3",
+      "origin": "Retained implementation debris",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/resources/identity.ts",
+          "start": 15,
+          "end": 28
+        },
+        {
+          "path": "packages/loom/src/resources/runtime.ts",
+          "start": 15,
+          "end": 19
+        },
+        {
+          "path": "packages/loom/src/resources/runtime.ts",
+          "start": 41,
+          "end": 46
+        }
+      ],
+      "problem": "checkIdentityDeclaration still accepts old string/key-array identity declarations but has no callers. ResourceOperationRuntime is a Pick of all ResourceRuntime members and useResourceOperationRuntime forwards unchanged to useResourceRuntime. These are small, concrete remnants of migration-by-layering rather than a clean ownership pass.",
+      "proof": "Workspace symbol search found only checkIdentityDeclaration's definition. Both runtime alias members are exactly the underlying runtime."
+    },
+    {
+      "id": "F25",
+      "title": "Active agent guidance still teaches contracts the implementation removed",
+      "priority": "P2",
+      "origin": "Incomplete guidance migration",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": ".agents/skills/build-resource-form/SKILL.md",
+          "start": 119,
+          "end": 126
+        },
+        {
+          "path": ".agents/skills/build-resource-form/references/form-field-types.md",
+          "start": 80,
+          "end": 90
+        },
+        {
+          "path": "packages/loom/src/resources/bindResource.ts",
+          "start": 404,
+          "end": 422
+        },
+        {
+          "path": "packages/loom/src/components/composites/form-inputs/tableInput.types.ts",
+          "start": 1,
+          "end": 54
+        }
+      ],
+      "problem": "The form-building skill says standard actions supply reserved context.operation/context.permission, but the new binder forwards caller context without injecting those members. Its input table still lists fields for TableInput and says toDraft is needed only when shapes differ, while the actual editable contract requires it. Agents following the current skill can generate undefined context dependencies or rejected configurations.",
+      "proof": "The active instructions and runtime contracts were opened directly. The five main skill groups had no broken relative Markdown links in the limited link check; the problem is semantic drift, not dead links."
+    },
+    {
+      "id": "F26",
+      "title": "An asynchronous close guard can close a dialog after submission begins",
+      "priority": "P2",
+      "origin": "New explicit dialog lifecycle path",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/components/composites/DialogForm.vue",
+          "start": 111,
+          "end": 132
+        }
+      ],
+      "problem": "requestClose checks submitting/validating before awaiting beforeClose, but does not re-check afterward. The Save action remains available while checkingClose is true. A user can start submission during a pending close guard, then approval closes the dialog despite the stated block-during-submission rule. The same missing generation check matters when a parent closes and reopens the dialog while the guard is pending.",
+      "proof": "The actual DialogForm setup began a deferred close guard, switched the managed form to submitting, and resolved approval. requestClose returned true and open became false."
+    },
+    {
+      "id": "F27",
+      "title": "Input hydration discards an adapter\u2019s intentional null result",
+      "priority": "P2",
+      "origin": "Pre-existing registry behavior in the retained input pipeline",
+      "confidence": "High",
+      "evidence": [
+        {
+          "path": "packages/loom/src/renderers/inputProps.ts",
+          "start": 140,
+          "end": 145
+        },
+        {
+          "path": "packages/loom/src/forms/useFormSession.ts",
+          "start": 592,
+          "end": 600
+        }
+      ],
+      "problem": "The registry uses adapter?.hydrate(value) ?? value. This conflates an absent adapter with an adapter intentionally returning null to clear an invalid/removed value. The original raw value reappears instead of the normalized empty selection. The shared adapter boundary therefore does not preserve its callback result.",
+      "proof": "Executing the actual input registry with hydrate: () => null returned the original \"missing-role\" value. This probe used the real registry implementation, not the registry stub used by other session probes."
+    }
+  ],
+  "limits": "Prior probes used transpiled source with explicit Vue/query/access/schema doubles; global TS 5.8.3 is not the pinned Vue checker. A recorded observation is not a passing product test."
+}
