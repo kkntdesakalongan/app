@@ -1,10 +1,16 @@
 # Carta frontend implementation plans
 
-Target: `223fc622d9a897014fcbad48df838a19cec398db` — `resource_system_overhaul initial commit`. Status: **planned, not implemented**.
+Source baseline: `223fc622d9a897014fcbad48df838a19cec398db` — `resource_system_overhaul initial commit`. Live review: `b57c6f8` (2026-09-24). Status: **planned, not implemented**.
 
-Execute 062–069 in order. Each Markdown plan contains its own intent, current-source excerpts, fixed target, scope, ordered work, tests, commands, completion criteria, and stop conditions. No earlier audit or conversation is needed. All 27 original findings and the accepted frontend transparency decisions are assigned below.
+Execute 062–069 in order. Each Markdown plan contains its intent, current-source excerpts, target, scope, ordered work, tests, commands, completion criteria, and stop conditions. All 27 original findings and the approved architecture changes are assigned below.
 
-When integrating this bundle into the checkout, merge this execution section into the existing `plans/README.md`; preserve unrelated status/history records. The original index is retained in `implementation-evidence/repository-plan-index.txt`. Prior audit plans 059–061 are **STALE: do not execute**. Their corrections are fully covered here; no implementation depends on them. Repository plans 051–058 are historical execution records, not acceptance of this repair.
+This bundle is already in the live checkout. Keep its execution status and evidence in this directory; preserve the historical root `plans/README.md`. The original index is retained in `implementation-evidence/repository-plan-index.txt`. Plans 059–061 do not exist in this checkout; no implementation depends on them. Repository plans 051–058 are historical execution records, not acceptance of this repair.
+
+Production source is unchanged since `223fc622d9a897014fcbad48df838a19cec398db`; the later commit added this plan bundle, and the user updated `ARCHITECTURE.md` during live review. All cited production source locations still exist. Node is `v26.9.0` and pnpm is `12.1.0`. Live checks passed: Loom unit (371 tests), Loom browser (34), web unit (230), surface architecture (11), module tooling (110 Node and 3 Python), and cold Loom/web `vue-tsc --noEmit --incremental false`. Web unit tests need `NODE_OPTIONS=--no-experimental-webstorage` on this Node 26 checkout. CI uses Node 20.19.0, so its commands do not need that local flag. These passes establish the current baseline; they do not verify the proposed repairs.
+
+Follow the current `AGENTS.md`: write no implementation comments and add no tautological tests. Read `DESIGN.md` before changing an `apps/web` page. Use the local index and each plan's done criteria for review.
+
+The updated [architecture](../../ARCHITECTURE.md) is the contract for these plans. It requires explicit renderers, component loader props, one app-level asset service, and removal of field `source` and `FrameworkPlugin.inputProps`. Read it before implementation; it supersedes the source baseline's API.
 
 ## Execution order and status
 
@@ -23,7 +29,7 @@ Status values: TODO, IN PROGRESS, DONE, BLOCKED (with reason), REJECTED (with so
 
 Order rationale: tracked form state first; global assets before deleting form adapters; canonical component contracts before wrapper/type proofs; operation and query owners before final generation/CI verification. Type-size and transport duplication are implementation work, not an unassigned backlog.
 
-## Fixed frontend rules
+## Frontend rules
 
 Components own public props, models, events, defaults and supported native attributes. Form adds one tracked session, schema-owned requiredness, validation and submission; it does not make invalid component props valid. Native forwarding stays flat and typed; required component props stay required, component-defaulted props stay optional, and arbitrary extras are rejected. In-progress draft null/undefined values preserve explicit clear/unset states; they do not widen schema validity or authorize nonempty incompatible model values.
 

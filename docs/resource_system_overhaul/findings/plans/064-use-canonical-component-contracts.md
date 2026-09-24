@@ -7,11 +7,11 @@
 - Effort: L
 - Fix risk: HIGH
 - Category: correctness, architecture, types, verification
-- Planned against: `223fc622d9a897014fcbad48df838a19cec398db` (2026-09-24); the supplied ZIP has no `.git` metadata.
+- Source baseline: `223fc622d9a897014fcbad48df838a19cec398db` (2026-09-24). Live source check: `b57c6f8` (2026-09-24); production source is unchanged, and the user revised `ARCHITECTURE.md` during review.
 - Depends on: 062 tracked session and 063 global asset service
 - Findings owned: F07, F08, F09; explicit native attributes, loaders, renderers, and component-owned models
 
-**Execution:** Work on the supplied branch; source paths are repository-relative. Do not commit, push, upgrade dependencies, change backend contracts, or alter unrelated work. Record commands and exit codes in `plans/README.md`. Expected-red regression tests are preparation, not completion. Missing dependencies or services are BLOCKED, never a passing result.
+**Execution:** Work in the current checkout; source paths are repository-relative. Do not commit, push, upgrade dependencies, change backend contracts, or alter unrelated work. Record commands and exit codes in this bundle's `README.md`. Follow `AGENTS.md`: write no implementation comments and no tautological tests. Expected-red regression tests are preparation, not completion. Missing dependencies or services are BLOCKED, never a passing result.
 
 **Architecture:** Components own their public props, model values, events, and explicitly supported native attributes. Form derives requiredness from its schema, owns one tracked session, and forwards canonical component configuration. Authored inputs name their renderer. Inputs receive loaders in component props; no field `source`, inferred choice synthesis, prop-normalizer, or form-only model conversion exists in the completed architecture. App-level asset services are configured once and used by inputs and previews alike. `defineForm` preserves optional `submit`; a later explicit `:submit` replaces it. Form/DialogForm props are flat; page views contain nested primitive bags. Shared labels, input fragments, and read-only display fragments remain ordinary data. Changes are frontend-only; existing transport adapters remain the explicit API boundary.
 
@@ -121,12 +121,12 @@ Out of scope: Backend/SDK protocol changes, replacing Vue or component libraries
 
 ```sh
 git status --short
-git diff --stat 223fc622d9a897014fcbad48df838a19cec398db..HEAD -- packages/loom/src apps/web/src scripts .agents/skills docs .github/workflows
+git diff --stat 223fc622d9a897014fcbad48df838a19cec398db..HEAD -- packages/loom/src apps/web/src scripts .agents/skills docs/ui docs/architecture docs/resource_system_overhaul/ARCHITECTURE.md .github/workflows
 ```
 
-Compare these excerpts with live code. Changes made by declared prerequisite plans are expected; verify their stated end contracts. Report unexplained drift before editing. Do not discard unrelated working-tree changes. In a snapshot without Git, compare source content and record that limitation.
+Compare these excerpts with live code and read the revised `docs/resource_system_overhaul/ARCHITECTURE.md` as the required end contract. Its revision is expected drift from the source baseline. Changes made by declared prerequisite plans are also expected; verify their stated end contracts. Report other unexplained drift before editing. Do not discard unrelated working-tree changes.
 
-Use installed package-local tools pinned by `package.json` and the lockfile. Record the actual Node/pnpm versions. These commands are verification requirements, not previously observed passes:
+Use installed package-local tools pinned by `package.json` and the lockfile. Record the actual Node/pnpm versions. The live baseline passed the listed unit, browser, tooling, architecture, and cold package type gates; rerun them after implementation. The Node 26 Web Storage flag applies to local web and workspace unit runs. CI uses Node 20.19.0.
 
 | Gate | Command | Required result |
 |---|---|---|
@@ -134,10 +134,10 @@ Use installed package-local tools pinned by `package.json` and the lockfile. Rec
 | Browser | `pnpm --filter @southneuhof/loom test:browser` | Exit 0; new files registered in the explicit include list. |
 | Loom types | `pnpm --filter @southneuhof/loom type-check` | Exit 0 with strict Vue fixtures. |
 | Web types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 without boundary suppressions. |
-| Web behavior | `pnpm --filter @southneuhof/framework-web test` | Exit 0. |
+| Web behavior | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test` | Exit 0 on this Node 26 checkout. |
 | Architecture | `pnpm test:surface-architecture` | Exit 0; no acceptance allowlist for removed executable paths. |
 | Tooling | `pnpm test:module-tooling` | Exit 0 when callers, generators, docs fixtures, or checkers change. |
-| Final workspace | `pnpm type-check && pnpm test && pnpm lint && pnpm build` | Exit 0 after the coordinated implementation. |
+| Final workspace | `pnpm type-check && NODE_OPTIONS=--no-experimental-webstorage pnpm test && pnpm lint && pnpm build` | Exit 0 on this Node 26 checkout after the coordinated implementation. |
 
 ## Steps
 
@@ -157,7 +157,7 @@ Read current bindings during rendering. `useAttrs()` reflects current values but
 
 Replace `Partial<Omit<...>> & Record<string, unknown>` with the selected component's public contract excluding only explicitly Form-owned bindings: model/update, validation-touch/error plumbing, managed required/error/field identity, and internal draft state. Preserve requiredness, defaulted optionality, and discriminated unions. Remove `Record<string, unknown>` fallback when component type extraction fails; fail that authoring path instead.
 
-Validate the whole assembled prop bag, including named objects and spreads. Native attributes are accepted because the component publishes them, not through extras. Managed requiredness is forbidden in authored props/behavior prop patches and supplied after authored props to prevent override. Conditional required hints remain in Form's existing behavior presentation; schema validity remains authoritative.
+Validate the whole assembled prop bag, including named objects and spreads. Native attributes are accepted because the component publishes them, not through extras. Managed requiredness is forbidden in authored props/behavior prop patches and supplied after authored props to prevent override. Conditional required hints remain in Form's existing behavior presentation; schema validity remains authoritative. Resolve disabled state from Form, field behavior, and authored component disabled; an authored false cannot enable a parent-disabled field.
 
 Input model compatibility is checked using the selected component's emitted model type and accepted model prop, including cardinality controlled by multi/select props. Every nonempty emitted value must fit the schema input type; canonical null/undefined empty values remain unchanged in FormDraft and may fail schema validation. An incompatible nonempty schema/renderer value fails rather than widening to unknown. Refine the components' own model types by their explicit modes: normal TextInput emits strings; its explicitly numeric constraint modes emit numbers; selection model types follow data/load item keys and multi/asWhole. Preserve those declared component behaviors and make their public types accurate instead of adding form-specific mode guesses. A broad nonempty union must not be accepted merely because one member fits. Runtime checks cover known structural options and component-owned validity; erased generic proofs are not replaced by a handwritten renderer-to-Zod-kind map.
 
@@ -184,7 +184,7 @@ The exact error/id plumbing remains component-owned and typed. Input slots keep 
 
 Remove `forms/controlValues.ts` and date-special branches from Form. Preserve DateInput's canonical string/null/undefined model. Date-to-input formatting belongs in an explicit draft loader; string-to-command conversion belongs in its explicitly declared form schema. A Date schema input bound directly to the string-model component is invalid. Components may format their internal widgets according to their own declared model; direct and managed usage must behave identically. Do not add another Date/string transformer elsewhere in Form or the renderer registry.
 
-**Verify:** Unit, Browser, and both type gates. Test direct versus managed TextInput, numeric SelectInput, DateInput, custom inputs, native attributes, requiredness, and exact emitted model shapes.
+**Verify:** Unit, Browser, and both type gates. Test direct versus managed TextInput, numeric SelectInput, DateInput, custom inputs, native attributes, requiredness, combined disabled state, and exact emitted model shapes.
 
 ### 4. Require explicit renderers and canonical loader props
 
@@ -259,4 +259,3 @@ Native forwarding is an intentional part of a component API. Add supported nativ
 ## References
 
 Vue explicit attribute forwarding and non-reactive useAttrs: `https://vuejs.org/guide/components/attrs`. Imported prop-type conversion limitations: `https://vuejs.org/guide/typescript/composition-api`. Use the pinned compiler to prove the selected public type construction.
-

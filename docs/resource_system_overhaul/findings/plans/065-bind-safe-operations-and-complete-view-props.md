@@ -7,11 +7,11 @@
 - Effort: L
 - Fix risk: HIGH
 - Category: correctness, architecture, types, verification
-- Planned against: `223fc622d9a897014fcbad48df838a19cec398db` (2026-09-24); the supplied ZIP has no `.git` metadata.
+- Source baseline: `223fc622d9a897014fcbad48df838a19cec398db` (2026-09-24). Live source check: `b57c6f8` (2026-09-24); production source is unchanged, and the user revised `ARCHITECTURE.md` during review.
 - Depends on: 062, 064; the tracked session and canonical component-prop boundaries must exist
 - Findings owned: F10, F11, F12, F13, F18 (runtime result identity), F24
 
-**Execution:** Work on the supplied branch; source paths are repository-relative. Do not commit, push, upgrade dependencies, change backend contracts, or alter unrelated work. Record commands and exit codes in `plans/README.md`. Expected-red regression tests are preparation, not completion. Missing dependencies or services are BLOCKED, never a passing result.
+**Execution:** Work in the current checkout; source paths are repository-relative. Do not commit, push, upgrade dependencies, change backend contracts, or alter unrelated work. Record commands and exit codes in this bundle's `README.md`. Follow `AGENTS.md`: write no implementation comments and no tautological tests. Expected-red regression tests are preparation, not completion. Missing dependencies or services are BLOCKED, never a passing result.
 
 **Architecture:** Components own their public props, model values, events, and explicitly supported native attributes. Form derives requiredness from its schema, owns one tracked session, and forwards canonical component configuration. Authored inputs name their renderer. Inputs receive loaders in component props; no field `source`, inferred choice synthesis, prop-normalizer, or form-only model conversion exists in the completed architecture. App-level asset services are configured once and used by inputs and previews alike. `defineForm` preserves optional `submit`; a later explicit `:submit` replaces it. Form/DialogForm props are flat; page views contain nested primitive bags. Shared labels, input fragments, and read-only display fragments remain ordinary data. Changes are frontend-only; existing transport adapters remain the explicit API boundary.
 
@@ -138,12 +138,12 @@ Out of scope: Backend authorization and endpoint identity formats, unrelated rou
 
 ```sh
 git status --short
-git diff --stat 223fc622d9a897014fcbad48df838a19cec398db..HEAD -- packages/loom/src apps/web/src scripts .agents/skills docs .github/workflows
+git diff --stat 223fc622d9a897014fcbad48df838a19cec398db..HEAD -- packages/loom/src apps/web/src scripts .agents/skills docs/ui docs/architecture docs/resource_system_overhaul/ARCHITECTURE.md .github/workflows
 ```
 
-Compare these excerpts with live code. Changes made by declared prerequisite plans are expected; verify their stated end contracts. Report unexplained drift before editing. Do not discard unrelated working-tree changes. In a snapshot without Git, compare source content and record that limitation.
+Compare these excerpts with live code and read the revised `docs/resource_system_overhaul/ARCHITECTURE.md` as the required end contract. Its revision is expected drift from the source baseline. Changes made by declared prerequisite plans are also expected; verify their stated end contracts. Report other unexplained drift before editing. Do not discard unrelated working-tree changes.
 
-Use installed package-local tools pinned by `package.json` and the lockfile. Record the actual Node/pnpm versions. These commands are verification requirements, not previously observed passes:
+Use installed package-local tools pinned by `package.json` and the lockfile. Record the actual Node/pnpm versions. The live baseline passed the listed unit, browser, tooling, architecture, and cold package type gates; rerun them after implementation. The Node 26 Web Storage flag applies to local web and workspace unit runs. CI uses Node 20.19.0.
 
 | Gate | Command | Required result |
 |---|---|---|
@@ -151,10 +151,10 @@ Use installed package-local tools pinned by `package.json` and the lockfile. Rec
 | Browser | `pnpm --filter @southneuhof/loom test:browser` | Exit 0; new files registered in the explicit include list. |
 | Loom types | `pnpm --filter @southneuhof/loom type-check` | Exit 0 with strict Vue fixtures. |
 | Web types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 without boundary suppressions. |
-| Web behavior | `pnpm --filter @southneuhof/framework-web test` | Exit 0. |
+| Web behavior | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test` | Exit 0 on this Node 26 checkout. |
 | Architecture | `pnpm test:surface-architecture` | Exit 0; no acceptance allowlist for removed executable paths. |
 | Tooling | `pnpm test:module-tooling` | Exit 0 when callers, generators, docs fixtures, or checkers change. |
-| Final workspace | `pnpm type-check && pnpm test && pnpm lint && pnpm build` | Exit 0 after the coordinated implementation. |
+| Final workspace | `pnpm type-check && NODE_OPTIONS=--no-experimental-webstorage pnpm test && pnpm lint && pnpm build` | Exit 0 on this Node 26 checkout after the coordinated implementation. |
 
 ## Steps
 
@@ -170,7 +170,7 @@ At binding, validate and copy the scalar/composite identity into binder-owned im
 
 Keep a detached snapshot of supplied record context, including row-operation metadata; preserve its complete shape. Validate that snapshot's identity matches the target. Evaluate visibility, current permission state, and snapshot row policy each time the bound operation executes. Updated row metadata requires a fresh binding; changing a retained caller object is not a supported way to retarget a handle. Backend authorization always checks current server state.
 
-Always invoke the access adapter with the nullable permission. Null disables only permission-code checks. Row-operation restrictions still apply. Retain the app's existing handling of absent versus malformed metadata; document and test it rather than silently interpreting a malformed explicit restriction as permission.
+Always invoke the access adapter with the nullable permission. Null disables only permission-code checks. Row-operation restrictions still apply. Keep absent row metadata distinct from an explicit malformed restriction. In the app adapter, malformed explicit `allowedOperations` must deny the row operation; it cannot fall through to a nullable permission and grant access. Test both states without changing backend authorization.
 
 **Verify:** Unit, Web behavior and both type gates; mutated original bindings do not change targets, policy-denied operations dispatch zero requests, and permitted controls still work.
 
@@ -223,7 +223,7 @@ const users = defineResource({
   },
   create: {
     permission: 'create-users',
-    form: createUserForm, // includes submit; binder wraps this effective function
+    form: createUserForm,
     backTo: { name: 'settings-users' },
     afterSubmit: handlePageCompletion,
   },
@@ -244,7 +244,7 @@ Delete unused `checkIdentityDeclaration` and its private key-list helper. Remove
 
 ## Test plan
 
-Extend boundResource and route/access tests with immutable scalar/composite bindings, conflicting load contexts, null/string permission crossed with row allow/deny, result identity independent of routes, and command argument tuple preservation. Add source-backed View parity fixtures, resource declaration type fixtures, and direct extracted-operation browser cases. Do not claim a client policy test proves backend authorization.
+Extend boundResource and route/access tests with immutable scalar/composite bindings, conflicting load contexts, null/string permission crossed with row allow/deny and malformed explicit row metadata, result identity independent of routes, and command argument tuple preservation. Add source-backed View parity fixtures, resource declaration type fixtures, and direct extracted-operation browser cases. Do not claim a client policy test proves backend authorization.
 
 ## Done criteria
 
@@ -267,4 +267,3 @@ Do not improvise a new backend contract or suppress a required check. Report a r
 ## Maintenance
 
 Keep operation policy at execution, identity at binding, and page presentation in Views. New View props become available to resource declarations through their shared contract, not a second forwarding checklist. Adding a custom command must not add any argument-introspection convention.
-
