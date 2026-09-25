@@ -335,6 +335,11 @@ function analyzeTypeScript(source, file, lineOffset = 0) {
       if (sourceMember) {
         diagnostics.push(diagnostic(file, lineAt(sourceFile, sourceMember.member.getStart(sourceFile), lineOffset), `Form field "${key}" cannot declare the removed source member`))
       }
+      const behavior = objectMembers(expression).get('behavior')
+      const resetMember = behavior && objectMembers(behavior.value).get('resetWhen')
+      if (resetMember) {
+        diagnostics.push(diagnostic(file, lineAt(sourceFile, resetMember.member.getStart(sourceFile), lineOffset), `Form field "${key}" cannot declare the removed behavior member`))
+      }
     }
 
     function inspectFields(expression) {

@@ -65,6 +65,20 @@ makeForm({ fields })`
   assert.match(analyzeSource(source, 'sample.ts')[0], /Form field "roleId" cannot declare the removed source member/)
 })
 
+test('rejects removed Form behavior through aliases and object spreads', () => {
+  const source = `import { defineForm } from '@southneuhof/loom'
+const makeForm = defineForm
+const removedBehavior = { resetWhen: ({ draft }) => draft.divisionId }
+const approverField = { renderer: 'select', behavior: removedBehavior }
+const fields = { approverId: { ...approverField } }
+makeForm({ fields })`
+
+  const diagnostics = analyzeSource(source, 'sample.ts')
+
+  assert.equal(diagnostics.length, 1)
+  assert.match(diagnostics[0], /Form field "approverId" cannot declare the removed behavior member/)
+})
+
 test('checks component prop bags through script aliases and object spreads', () => {
   const source = `<script setup lang="ts">
 import { Form as Editor, FileInput } from '@southneuhof/loom'
@@ -111,6 +125,14 @@ test('allows unrelated source members and component props inside form fields', (
 const cache = { source: 'local-cache' }
 defineForm({ fields: { name: { renderer: 'text', props: { source: 'component-owned' } } } })
 cache.source`
+
+  assert.deepEqual(analyzeSource(source, 'sample.ts'), [])
+})
+
+test('does not treat a similarly named member outside Form behavior as a removed API', () => {
+  const source = `const resetWhen = () => undefined
+const cache = { resetWhen }
+cache.resetWhen()`
 
   assert.deepEqual(analyzeSource(source, 'sample.ts'), [])
 })

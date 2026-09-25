@@ -104,21 +104,19 @@ Use component `data` props for static choices. Pass filters through
 for every authored input. The schema does not create choices or select a
 renderer.
 
-For a parent-dependent field:
+For parent-dependent options, pass the parent value through the option
+component's canonical props. The component owns selection validity:
 
 ```ts
 behavior: {
   disabled: ({ draft }) => !draft.divisionId,
   props: ({ draft }) => ({ searchParameters: { divisionId: draft.divisionId } }),
-  resetWhen: ({ draft }) => draft.divisionId,
 },
 ```
 
 Use pure synchronous behavior. `visible` controls field presence and submission;
 `disabled` controls editing; `derived` calculates a non-editable value. Hidden
 fields are omitted, so the schema and server must agree on conditional values.
-If several dependencies can invalidate a child, the reset key must reflect
-each one; a truthy `a || b` expression can hide changes to `b`.
 
 Pass stable screen information through the form's explicit context. Resource
 operations do not add `context.operation` or `context.permission`. Bind parent

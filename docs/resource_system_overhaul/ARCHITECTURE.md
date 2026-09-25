@@ -107,7 +107,7 @@ Form derives requiredness from the schema and supplies the component's canonical
 
 ### 2.1 Construction
 
-Constructors provide contextual typing and context-free configuration checks. Their results retain meaningful configuration in enumerable properties. An equivalent valid plain object has identical runtime behavior: every primitive uses the same configuration compiler regardless of construction origin.
+Constructors provide contextual typing and context-free configuration checks. Their results retain meaningful configuration in enumerable properties. An equivalent valid plain object has identical runtime behavior: every primitive uses the same runtime validation path regardless of construction origin.
 
 Constructors do not allocate sessions, resolve app injection, start loads, parse sample values, invoke defaults, or attach hidden field payloads. Snapshot framework-owned configuration containers; preserve schemas, components, functions, and external services by reference. Consumers never mutate shared definitions or fragments. Shared-source edits propagate through the declarations; live label changes use reactive getters, not mutation of a definition.
 
@@ -330,7 +330,7 @@ FormDraft represents editing, not validated input. Undefined is unset; null is a
 
 `props` is required when the selected component has required authored props; it is optional when that contract has none. Preserve discriminated configurations, defaults, and model cardinality. There is no field-level `source` or separate `attrs` bag.
 
-`behavior` supports `visible`, `disabled`, `props`, `presentation`, `derived`, and `resetWhen`. Its context is `{ draft, value, context }`, using detached read-only draft values. Retain dependency tracking, derived-value updates, and reset-on-identity-change behavior. `presentation` changes renderer, label, props, span, and the conditional `required` hint. A replacement renderer must accept the same editable value contract; its complete effective props must satisfy that component.
+`behavior` supports exactly `visible`, `disabled`, `props`, `presentation`, and `derived`. Its context is `{ draft, value, context }`, using detached read-only draft values. Derived values retain dependency tracking and cycle detection. `presentation.renderer` remains dynamic; presentation can also change label, props, span, and the conditional `required` hint. A replacement renderer must accept the same editable value contract; its complete effective props must satisfy that component. Form behavior has no generic field reset or dependency callback.
 
 Fields are an ordered map of top-level schema input keys. A selected field has no second `key`; computed display keys are not form inputs. Composite inputs edit nested structures; issues retain nested paths. Reject numeric index-like keys, prototype-sensitive keys, reference arrays, unknown field keys, and a second selection list.
 
@@ -448,11 +448,13 @@ Form forwards model values unchanged. Built-in DateInput uses string/null/undefi
 
 ## 4. Schemas and value ownership
 
-### 4.1 Compilation and validation
+### 4.1 Schema runtime and validation
 
-Accept raw schemas from the repository's installed Zod dialects. One internal compiler supplies parsing, finite input-key discovery, required-state metadata, and normalized issues. Primitives invoke it; constructors use its context-free checks. Resources never adapt schemas. Public pre-wrapped validation schemas and `fromZod` authoring are removed.
+Accept raw schemas from the repository's installed Zod dialects. A narrow internal schema runtime supplies ordered finite input keys, required keys, asynchronous parsing, and normalized issues. Output-key inspection and finite Table `sort_by` choices use separate inspection helpers. Primitives invoke the schema runtime; constructors use context-free checks. Resources never adapt schemas. Public pre-wrapped validation schemas and `fromZod` authoring are removed.
 
 Form schemas expose discoverable finite object input and object output. Inspect supported object wrappers and input-side pipes; reject an undiscoverable input shape. Metadata inspection executes no defaults, refinements, or transformations. Parse asynchronously so async refinements work. Input and parsed-output types remain distinct. [R3]
+
+The authored `FormDefinition` remains canonical. Each private runtime field keeps its selected key, a reference to the authored input, and schema-derived requiredness. Read `renderer`, canonical component props, `span`, `initialValue`, and `behavior` from that input reference. Dynamic renderer changes and `derived` behavior remain supported.
 
 Additional validators are descriptors `{ validate, triggers?, path? }`. Triggers are `blur` and `submit`, defaulting to submit. They run after a successful schema parse and return issues, not replacement data. The context is `{ data, draft, initial, context, field, signal }`: parsed output, read-only input snapshots, caller context, blur target, and cancellation signal. Thrown operational failures block submission and become visible operational issues.
 
@@ -742,7 +744,7 @@ ListView accepts the complete table bag, filters, export, and canonical page act
 
 Observe current query-prop presence and namespace changes, not initial mode snapshots. Never mutate the parent query. Parent replacements and browser-back navigation update filters/toolbars without echo loops. Custom collection slots, exports, sort/search/page controls, and the default table use the same query owner. Standalone Table retains v-model:query.
 
-Extracting list.table retains columns, query settings, loader, and cache/access effects, not page headings, filters, export buttons, or page action menus. FormView and DetailView render their complete nested primitive bags without another load, schema compiler, or session.
+Extracting list.table retains columns, query settings, loader, and cache/access effects, not page headings, filters, export buttons, or page action menus. FormView and DetailView render their complete nested primitive bags without another load or Form session.
 
 FormView reads submitLabel/submittingLabel from form and forwards the standard actions slot with its Form context. Its default actions add page navigation controls. Outer action-label props and form-actions aliases are absent. Preserve afterSubmit, leave guards, navigation, and success policy at the page owner.
 
@@ -789,9 +791,13 @@ const roleLookupInput = {
 
 Track committed-value hydration separately from staged user edits. A response may enrich an unchanged committed selection but cannot overwrite staging edited after the request began. Parent replacements, clearing, stage edits, close/reopen, and disposal obsolete relevant work. Late hydration of A cannot replace chosen B.
 
-Option components consume their own load/data/pick/view/namespace/searchParameters props and preserve cancellation and multi-selection contracts. No field source, resource introspection, inferred lookup columns, or response-shape guessing remains.
+SelectInput, RadioGroupInput, CheckboxGroupInput, and LookupInput own selection validity through their canonical option props. In `data` mode, current `props.data` is the complete valid-value set. Compare values with the component's identity props and model shape. Preserve surviving model objects, extra fields, and order, and emit only when a canonical value changes. A transform that remaps SelectInput's picked key participates in identity; a view-only change does not.
 
-Dependent draft values use Form's derived behavior; command conversion uses its schema. Lookup cross-form setters and field-mapping transform shortcuts are absent.
+In `load` mode, a missing value from a returned page does not prove invalidity. Clear an old selection when external option context changes, including `load` function identity, namespace, deep `searchParameters`, data/load mode, and identity props. SelectInput's `multi` and `asWhole`, CheckboxGroupInput's `uniqueIDAs`, and LookupInput's `multi` change model interpretation. LookupInput also treats `loadDetail` identity as external context. For SelectInput, a transform that changes the picked key's identity mapping is an identity change; a view-only transform is not. Internal search and pagination do not change validity. Initial remote selections survive loading. Observe external context and model together so a parent replacement in the same update wins: validate the new model against complete static data when available; otherwise keep it. Compare picked identities and model shape, not object reference alone. A context-driven clear is an ordinary model update and must not trigger touch or selection callbacks. Component defaults must not refill a value cleared by context reconciliation.
+
+Lookup uses `loadDetail` to validate a remote single selection under a new external context, even when it already has a displayed record. A matching record keeps the value; a missing or mismatched record clears it. A detail error preserves the value and is exposed for retry. Without `loadDetail`, a remote single selection clears on context change. Remote multi selections clear because a page cannot prove membership. Internal lookup search and pagination only load rows. A change between `data` and `load` mode applies the target mode's rules and keeps one valid source. Existing generation checks protect newer model and staging changes from stale detail results.
+
+Option components consume their own load/data/pick/view/namespace/searchParameters props and preserve cancellation and multi-selection contracts. No field source, resource introspection, inferred lookup columns, or response-shape guessing remains. Command conversion uses its schema. Lookup cross-form setters and field-mapping transform shortcuts are absent.
 
 LocationInput uses a raw input schema and a model-bound normal Form definition with explicit renderers. Retain component-owned location operations/coordinate behavior; stale geolocation/error callbacks cannot alter cancelled, disposed, or replaced state. Asset/file/image inputs use section 4.4's global service and pending-input ownership.
 
@@ -826,9 +832,9 @@ Remove module-local sort conversion, duplicate wire-query schemas, and checkedHo
 |---|---|
 | `packages/loom/src/contracts/{forms,tables,details,display,labels,views}.ts` | Canonical public contracts, FormDraft, typed slots/refs, complete View props; shared DisplayField. |
 | `packages/loom/src/contracts/schema.ts` | Compact raw-schema input/output boundary. |
-| `packages/loom/src/forms/{defineForm,compileForm,useFormSession,behavior,props}.ts` | Transparent construction, form checks, tracked session, schema-required hints, complete runtime prop coverage. |
+| `packages/loom/src/forms/{defineForm,assertFormDefinition,useFormSession,behavior,props}.ts` | Transparent construction, shared runtime checks, tracked session, schema-required hints, complete runtime prop coverage. |
 | `packages/loom/src/components/inputs/**` and composite-input contract owners | Actual component props/native targets/defaults/models/validity; no parallel Form contract. |
-| `packages/loom/src/schemas/compileSchema.ts` | Installed Zod dialects, finite input metadata, parsing, normalized issues; no UI synthesis. |
+| `packages/loom/src/schemas/schemaRuntime.ts` | Installed Zod dialects, finite input keys, required keys, parsing, normalized issues, output-key and Table sort-choice inspection. |
 | `packages/loom/src/labels/resolveLabel.ts` | Explicit label precedence. |
 | `packages/loom/src/display/{resolveDisplay.ts,DisplayValue.vue,requirements.ts}` | Shared pure display resolution, rendering, and checker policy. |
 | `packages/loom/src/tables/defineTable.ts`, `details/defineDetail.ts` | Surface authoring checks using private shared display compatibility. |
@@ -854,7 +860,7 @@ Inventory imports/re-exports, caller aliases, templates, generated code, fixture
 | Area | Source targets and required work |
 |---|---|
 | Public types/exports | Loom contracts, root/subpath barrels, renderer/resource exports, public API tests. Publish component-native contracts, FormDraft, AssetValue, and View types; remove proof/legacy exports. |
-| Form/schema runtime | forms/{defineForm,compileForm,useFormSession,behavior,props,controlValues}.ts, schemas/compileSchema.ts, old fields/validation paths. Remove inference/converters; implement tracked transitions and component-validity events. |
+| Form/schema runtime | forms/{defineForm,assertFormDefinition,useFormSession,behavior,props,controlValues}.ts, schemas/schemaRuntime.ts, old fields/validation paths. Remove inference/converters; implement tracked transitions and component-validity events. |
 | Actual controls | TextInput, NumberInput, DateInput, SelectInput, RadioGroupInput, CheckboxGroupInput, CheckboxInput, PasswordInput, YearInput and all registered controls. Publish required/defaulted props, supported native targets, mode-specific models, validity/events; preserve direct usage. |
 | Primitives/query | components/core/{Form,Table,TableContent,TreeTable,Detail,Collection}.vue, useCoreData.ts, useFormInputState.ts, useTablePreferences.ts, query/useNamespacedQuery.ts. Fix model/session/query ownership and shared tree rendering. |
 | Wrappers/views | DialogForm; FormView/ListView/DetailView and FormView.types.ts. Canonical View/Form types, current presence forwarding, typed slots/refs, inherited actions, session-bound completion/closing. |
@@ -958,7 +964,7 @@ Display parity uses section 2.6's joined-role fixture plus status/date/asset fra
 | Transport | Exact existing wire requests, signal identity, endpoint sort restrictions, one query parse; direct loader extraction cannot bypass validation. |
 | Generation/guidance | Fresh generated modules and canonical doc examples compile without casts, hidden context, field source, or asset prop wiring. |
 
-Test installed Zod wrapper/input-discovery edge cases without running defaults/transforms during metadata inspection. Report previously unverified integration behavior as observed outcomes, not assumed passes. Keep service/network mocks at boundaries; do not mock the compiler, control, or state transition being proved. Avoid sleeps, tautological type-export checks, unrelated property-order assertions, and whole-implementation snapshots. Field/column order remains a real contract.
+Test installed Zod wrapper/input-discovery edge cases without running defaults/transforms during metadata inspection. Report previously unverified integration behavior as observed outcomes, not assumed passes. Keep service/network mocks at boundaries; do not mock the schema runtime, control, or state transition being proved. Avoid sleeps, tautological type-export checks, unrelated property-order assertions, and whole-implementation snapshots. Field/column order remains a real contract.
 
 Extend the existing check-surface-architecture script to cover section 9 through aliases, generated templates, and active examples. Verify test discovery and include positive syntax cases. A removal allowlist cannot exempt executable old paths.
 

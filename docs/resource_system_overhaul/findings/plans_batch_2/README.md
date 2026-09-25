@@ -13,12 +13,12 @@ after the preceding resource-overhaul implementation.
 
 | Plan | Result | Priority | Effort | Risk | Depends on | Status |
 |---|---|---|---|---|---|---|
-| [059](059-keep-authored-form-definitions-canonical.md) | Remove compiled Form/schema objects; retain Table query `sort_by` enum validation through narrow inspection | P2 | M | MED | — | TODO — reconciled at `3d5458e` |
-| [060](060-move-dependent-selection-invalidation-to-inputs.md) | Delete `resetWhen`; make option/relation inputs invalidate selections from canonical prop changes | P2 | L | HIGH | 059 | TODO — reconciled at `3d5458e` |
+| [059](059-keep-authored-form-definitions-canonical.md) | Remove compiled Form/schema objects; retain Table query `sort_by` enum validation through narrow inspection | P2 | M | MED | — | DONE — reviewed after revisions; focused tests, Loom unit/browser/type, web type, architecture, and workspace gates pass |
+| [060](060-move-dependent-selection-invalidation-to-inputs.md) | Delete `resetWhen`; make option/relation inputs invalidate selections from canonical prop changes | P2 | L | HIGH | 059 | DONE — reviewed after revisions; Loom unit/browser/type, web type, architecture, module tooling, and workspace gates pass |
 
 Execute **059 → 060**. Plan 059 changes the internal field shape used by behavior; Plan 060 then removes the reset effect from that final runtime shape. Dynamic renderer and `derived` remain supported in both plans. `span` and other surface-owned metadata remain on the authored surface definitions.
 
-Live review found that TableContent consumes query enum values for sort-key checks, so Plan 059 preserves that behavior. Plan 060 touches four controls and their Form integration. Its effort and risk are higher than the static snapshot estimated because the current controls have different model, default, callback, and detail-hydration behavior. The architecture reference still describes the old runtime; each plan updates it when implemented. Neither plan is blocked by that expected revision.
+Live review found that TableContent consumes query enum values for sort-key checks, so Plan 059 preserves that behavior. Plan 060 touches four controls and their Form integration. Its effort and risk are higher than the static snapshot estimated because the current controls have different model, default, callback, and detail-hydration behavior. The architecture reference now describes the target runtime.
 
 Explicitly excluded from this batch: changing `FormDraft<T>` null semantics and moving `id/resource/namespace/searchParameters` out of Form. Those were discussed but not accepted as required revisions.
 
