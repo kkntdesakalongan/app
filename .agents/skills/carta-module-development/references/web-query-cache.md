@@ -36,11 +36,18 @@ another `run` call or repeat invalidation after the write. A successful
 mutation invalidates the resource collection and the affected record/draft
 cache. A detail or update binding carries its identity.
 
-Custom commands live under `resource.actions`. Their `run` function checks
-their declared permission and invalidates the owning resource after success.
-If a command also changes another resource, await that resource's
+Custom commands live under `resource.actions`. `run` and `can` receive exactly
+the declared business arguments. Use `withContext({ record })` to attach row
+policy data; it does not change those arguments. The command checks its policy
+when it runs and invalidates the owning resource after success. If a command
+also changes another resource, await that resource's
 `invalidate({ id? })` call after the write. Report refresh failure separately
 from the successful write.
+
+A successful create or update result must contain a valid resource identity.
+An invalid result fails after the write, invalidates the resource, and reports
+`RESOURCE_RESULT_INVALID` as a non-retryable post-write error. Explain that the
+write may have completed. Do not submit again automatically.
 
 ## Custom data sets
 

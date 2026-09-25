@@ -11,9 +11,9 @@ including when this skill is used directly for a custom action.
 Apply [discovery reuse](../carta-module-development/SKILL.md#discovery-reuse).
 Trace the changed value through its API schema, resource and route; reuse
 current pattern decisions from the plan. Read the field contract in
-`packages/loom/README.md` when its shape is unresolved, and
-`apps/web/src/framework/inputs/registry.ts` when renderer registration or defaults
-are unresolved. Use [web-ui-surfaces](../web-ui-surfaces/SKILL.md) for changed
+`packages/loom/README.md` when its shape is unresolved, and the built-in roster
+in `packages/loom/src/renderers/form.ts` when renderer registration is unclear.
+Use [web-ui-surfaces](../web-ui-surfaces/SKILL.md) for changed
 page composition and `docs/ui/forms.md` for an unresolved app form default.
 
 ## Define the value contract
@@ -66,10 +66,11 @@ The outer form owns label, required state, error, help, and grid span.
 
 Use `defineForm` to infer its selected input keys and renderer props. For a
 separate prop object, use `satisfies FormRendererProps<'renderer-key'>` from
-`@southneuhof/loom/renderers/formContracts`. Known props keep their
-component types; extra props remain open. Broad field annotations do not prove
-prop validity. Check extra prop names against the component; type checks cannot
-detect those spelling errors. These checks do not validate runtime data.
+`@southneuhof/loom/renderers/formContracts`. The prop bag follows the selected
+component's public API. Component-required props stay required, unsupported
+props and misspellings fail type checking, and supported native attributes stay
+flat in the same bag. Form supplies schema-derived requiredness to the control.
+Runtime data still needs normal validation.
 
 Apply the [framework-first composition rule](../web-ui-surfaces/SKILL.md#framework-first-composition)
 once per form pattern. Select the form surface from
@@ -95,12 +96,13 @@ For each new or changed relation, use the
 Complete its API display data and list/detail projection with the form, rather
 than leaving display work for a later assignment.
 
-Pass explicit loaders in `source`: standard option inputs use
-`{ load, namespace? }`, such as `roles.list.table.load` and its namespace.
-Lookup adds `loadDetail(context)` that delegates to the owner's detail loader;
-its props include a separate table definition. Use renderer `data` props for
-static choices. Pass filters through `searchParameters`; the owner endpoint
-owns their contract.
+Pass each loader in the selected component's `props`: option inputs use
+`load` and optional `namespace`, such as `roles.list.table.load` and its
+namespace. Lookup also uses `loadDetail(context)` and its own table definition.
+Use component `data` props for static choices. Pass filters through
+`searchParameters`; the owner endpoint owns their contract. Declare a renderer
+for every authored input. The schema does not create choices or select a
+renderer.
 
 For a parent-dependent field:
 
@@ -118,10 +120,10 @@ fields are omitted, so the schema and server must agree on conditional values.
 If several dependencies can invalidate a child, the reset key must reflect
 each one; a truthy `a || b` expression can hide changes to `b`.
 
-Use `context` for stable screen information. Standard create/update actions
-supply reserved `context.operation` and `context.permission`. Where the source
-requires action scope, use that permission rather than a hard-coded create
-permission. The server validates it; a query parameter grants no authority.
+Pass stable screen information through the form's explicit context. Resource
+operations do not add `context.operation` or `context.permission`. Bind parent
+IDs and workflow data deliberately. A query parameter does not grant authority;
+the server checks each write.
 
 Match multi-selection values to the raw form schema. Multi-choice controls can
 emit selected record objects; accept that input shape or transform it in the

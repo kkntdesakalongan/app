@@ -79,10 +79,17 @@ detail and update bags bind an identity:
 <FormView v-bind="records.update({ id })" />
 ```
 
-Use `createHonoResourceActions(rpc.<module>)` for standard transport. It already
-normalizes responses. Keep custom transport in app actions. For custom resource
-actions, use the [action contract](references/surfaces.md#custom-resource-actions).
-Routes do not call raw RPC endpoints.
+For a standard list, bind its module query schema to the Hono adapter:
+
+```ts
+const api = createHonoResourceActions(rpc['records'], { querySchema: recordsQuerySchema })
+```
+
+The adapter validates and encodes collection queries and normalizes responses.
+Resource tables bind `load: api.list` without another `querySchema`. Keep custom
+transport in app actions. For custom resource actions, use the [action
+contract](references/surfaces.md#custom-resource-actions). Routes do not call
+raw RPC endpoints.
 A file or wrapper earns its place when it owns behavior; simple standard
 resources can call the adapter directly without a separate actions file.
 

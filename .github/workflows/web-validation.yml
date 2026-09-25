@@ -12,13 +12,17 @@ on:
       - 'pnpm-workspace.yaml'
       - 'pnpm-lock.yaml'
       - 'tsconfig.base.json'
-      - '.github/workflows/web-validation.yml'
-      - 'scripts/check-surface-architecture.*'
+      - '**/tsconfig*.json'
+      - '.github/workflows/**'
+      - 'scripts/**'
       - 'AGENTS.md'
       - 'DESIGN.md'
+      - 'README.md'
       - '.agents/skills/**'
       - 'docs/ui/**'
       - 'docs/architecture/**'
+      - 'docs/resource_system_overhaul/ARCHITECTURE.md'
+      - 'docs/resource_system_overhaul/findings/plans/README.md'
       - 'packages/loom/README.md'
       - 'apps/web/README.md'
   push:
@@ -32,13 +36,17 @@ on:
       - 'pnpm-workspace.yaml'
       - 'pnpm-lock.yaml'
       - 'tsconfig.base.json'
-      - '.github/workflows/web-validation.yml'
-      - 'scripts/check-surface-architecture.*'
+      - '**/tsconfig*.json'
+      - '.github/workflows/**'
+      - 'scripts/**'
       - 'AGENTS.md'
       - 'DESIGN.md'
+      - 'README.md'
       - '.agents/skills/**'
       - 'docs/ui/**'
       - 'docs/architecture/**'
+      - 'docs/resource_system_overhaul/ARCHITECTURE.md'
+      - 'docs/resource_system_overhaul/findings/plans/README.md'
       - 'packages/loom/README.md'
       - 'apps/web/README.md'
 
@@ -75,7 +83,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check surface architecture
-        run: pnpm run test:surface-architecture
+        run: pnpm test:surface-architecture
 
       - name: Lint affected packages
         run: pnpm exec turbo run lint --affected --output-logs=errors-only
@@ -83,8 +91,20 @@ jobs:
       - name: Type-check affected packages
         run: pnpm exec turbo run type-check --affected --output-logs=errors-only
 
-      - name: Test affected packages
-        run: pnpm exec turbo run test --affected --filter=@southneuhof/framework-web --output-logs=errors-only
+      - name: Type-check Loom
+        run: pnpm --filter @southneuhof/loom type-check
+
+      - name: Type-check Web
+        run: pnpm --filter @southneuhof/framework-web type-check
+
+      - name: Test Loom
+        run: pnpm --filter @southneuhof/loom test
+
+      - name: Test Web
+        run: pnpm --filter @southneuhof/framework-web test
+
+      - name: Test module tooling
+        run: pnpm test:module-tooling
 
       - name: Install Chromium
         run: pnpm --filter @southneuhof/loom exec playwright install --with-deps chromium

@@ -288,7 +288,7 @@ test('resource row-op sync warns when a declared route or row control misses the
   // Custom pay consumed as a row control, but the row enum omits 'pay'.
   write('pay-row.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
   write('pay-row.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './pay-row.entity'\nexport const r = defineResource({ key: 'pay-row', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, actions: { pay: { run: async () => ({}), permission: 'pay' } } })\n")
-  write('pay-row.vue', "<script>const ok = r.actions.pay.can(id, input, { record })</script><template><div>x</div></template>\n")
+  write('pay-row.vue', "<script>const ok = r.actions.pay.withContext({ record }).can(id, input)</script><template><div>x</div></template>\n")
   // List-only: no detail declaration, so the enum gap passes.
   write('list-only.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['update'])) })\n")
   write('list-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './list-only.entity'\nexport const r = defineResource({ key: 'list-only', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} } })\n")
@@ -300,7 +300,7 @@ test('resource row-op sync warns when a declared route or row control misses the
   write('permission-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nexport const r = defineResource({ key: 'permission-only', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, detail: { permission: 'view', route: { name: 'd' }, detail: () => ({}) } })\n")
   const files = ['detail-missing.resource.ts', 'update-missing.resource.ts', 'pay-row.resource.ts', 'list-only.resource.ts', 'export-collection.resource.ts', 'permission-only.resource.ts']
   const vueContents = [
-    "<script>const ok = r.actions.pay.can(id, input, { record })</script>",
+    "<script>const ok = r.actions.pay.withContext({ record }).can(id, input)</script>",
     "<script>const ok = r.actions.exportAll.can({ format: 'csv' })</script>",
   ]
   const result = checkResourceRowOps(files, { root, vueContents })

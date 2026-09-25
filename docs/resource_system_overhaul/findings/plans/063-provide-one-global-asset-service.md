@@ -2,7 +2,7 @@
 
 ## Status
 
-- Status: TODO
+- Status: DONE
 - Priority: P2
 - Effort: L
 - Fix risk: MEDIUM
@@ -233,14 +233,14 @@ Add `assets/__tests__/provider.spec.ts` and a browser asset-parity fixture regis
 
 ## Done criteria
 
-- [ ] One application-level assets registration serves direct inputs, managed inputs, file/image previews, and registered display renderers.
-- [ ] F17 disabled mutations are blocked at handlers, not only through CSS.
-- [ ] F27 has no nullish callback-result fallback; generic form asset hydration is absent.
-- [ ] Canonical StoredAsset fields, empty values, invalid-state reporting, progress, and pending ownership are preserved.
-- [ ] Preview-only resolution never rewrites form/record data; service installation is app-scoped.
-- [ ] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
-- [ ] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
-- [ ] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.
+- [x] One application-level assets registration serves direct inputs, managed inputs, file/image previews, and registered display renderers.
+- [x] F17 disabled mutations are blocked at handlers, not only through CSS.
+- [x] F27 has no nullish callback-result fallback; generic form asset hydration is absent.
+- [x] Canonical StoredAsset fields, empty values, invalid-state reporting, progress, and pending ownership are preserved.
+- [x] Preview-only resolution never rewrites form/record data; service installation is app-scoped.
+- [x] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
+- [x] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
+- [x] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.
 
 ## STOP conditions
 

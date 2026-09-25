@@ -2,7 +2,7 @@ import { defineDetail, defineResource, defineTable } from '@southneuhof/loom'
 import { appDisplayPresets } from '@/configs/display-presets'
 import { appLabels } from '@/configs/labels'
 import { permissionsActions } from './permissions.actions'
-import { permissionsRecordSchema, permissionsTableQuerySchema } from './permissions.schema'
+import { permissionsRecordSchema } from './permissions.schema'
 
 const permissionLabels = { ...appLabels, permissionCode: 'Code', name: 'Name', description: 'Description' }
 
@@ -34,7 +34,7 @@ export const permissionResource = defineResource({
   list: {
     permission: 'view-permissions',
     route: { name: 'settings-permissions' },
-    table: { ...permissionsTable, querySchema: permissionsTableQuerySchema, load: permissionsActions.list },
+    table: { ...permissionsTable, load: permissionsActions.list },
   },
   detail: {
     permission: 'view-permissions',

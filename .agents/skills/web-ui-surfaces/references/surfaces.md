@@ -119,10 +119,18 @@ visibility.
 
 ## Custom commands and controls
 
-Custom commands declare `run` and `permission` under `actions`. Use
-`resource.actions.name.can(...)` before showing a custom control and
-`resource.actions.name.run(...)` to execute it. Keep API authorization on the
-server. Standard operation bags do not expose a generic `run` method.
+Custom commands declare `run` and `permission` under `actions`. `run` and `can`
+take the command's business arguments. For a row policy, bind the record first:
+
+```ts
+const command = resource.actions.review.withContext({ record })
+if (command.can(payload)) await command.run(payload)
+```
+
+The record is policy context. It does not become another command argument. A
+row-dependent `visible` policy returns false when there is no bound record.
+Keep API authorization on the server. Standard operation bags do not expose a
+generic `run` method.
 
 For a custom collection, keep one loader and use the `ListView #collection`
 slot. It receives ready rows and the page's standard action callbacks. Do not

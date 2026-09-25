@@ -14,7 +14,7 @@ const userId = computed(() => String(route.params.userId))
 const pending = ref(new Set<string>())
 
 function canToggle(row: RoleAssignment) {
-  return roleAssignments.actions.set.can(userId.value, String(row.id), !row.assigned)
+  return roleAssignments.actions.set.withContext({ record: row }).can(userId.value, String(row.id), !row.assigned)
 }
 
 const list = computed(() => ({
@@ -28,11 +28,12 @@ function isPending(roleId: string) {
 
 async function toggle(row: RoleAssignment) {
   const roleId = String(row.id)
-  if (!canToggle(row) || isPending(roleId)) return
+  const command = roleAssignments.actions.set.withContext({ record: row })
+  if (!command.can(userId.value, roleId, !row.assigned) || isPending(roleId)) return
   const assigned = !row.assigned
   pending.value = new Set(pending.value).add(roleId)
   try {
-    await roleAssignments.actions.set.run(userId.value, roleId, assigned)
+    await command.run(userId.value, roleId, assigned)
   } catch (error) {
     toast.error(errorMessage(error, 'Role assignment update failed.'))
   } finally {

@@ -50,7 +50,8 @@ function makeRoles(key: string, userId: string) {
 
 async function fixture() {
   const roles = makeRoles('fixture-roles', 'u1')
-  const backTo = roles.detail({ id: 'r1' }).backTo!
+  const backTo = roles.detail({ id: 'r1' }).backTo
+  if (!backTo) throw new Error('Expected the detail page route.')
   const deniedMount = vi.fn()
   const components: Record<string, ReturnType<typeof defineComponent>> = {
     'authenticated.layout.vue': defineComponent(() => () => h('div', ['shell', h(AppRouterView)])),
@@ -130,8 +131,11 @@ describe('generated nested navigation', () => {
     const router = createRouter({ history: createMemoryHistory(), routes })
 
     await router.push('/users/u1/detail')
-    expect(router.resolve(inherited.detail({ id: 'r1' }).backTo!).fullPath).toBe('/users/u1/detail/roles')
-    expect(router.resolve(overridden.detail({ id: 'r1' }).backTo!).fullPath).toBe('/users/u2/detail/roles')
+    const inheritedBackTo = inherited.detail({ id: 'r1' }).backTo
+    const overriddenBackTo = overridden.detail({ id: 'r1' }).backTo
+    if (!inheritedBackTo || !overriddenBackTo) throw new Error('Expected detail page routes.')
+    expect(router.resolve(inheritedBackTo).fullPath).toBe('/users/u1/detail/roles')
+    expect(router.resolve(overriddenBackTo).fullPath).toBe('/users/u2/detail/roles')
   })
 
   it('uses scoped page Back on fresh direct entry', async () => {

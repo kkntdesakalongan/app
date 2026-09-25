@@ -5,7 +5,6 @@ import { z } from 'zod/v4'
 import { defineForm, Form, FrameworkPlugin, createFrameworkQueryClient } from '@southneuhof/loom'
 import { storedAssetInput, storedAssetSchema } from '@southneuhof/api/schema'
 import { assetAdapter } from './assets'
-import { appInputProps } from '../inputs/registry'
 
 const { uploadFile } = vi.hoisted(() => ({ uploadFile: vi.fn() }))
 vi.mock('./storage', () => ({ uploadFile }))
@@ -86,7 +85,7 @@ async function mountAssetForm(options: { load?: () => Promise<Record<string, unk
   )
   app.use(router)
   app.use(FrameworkPlugin, {
-    inputProps: appInputProps,
+    adapters: { assets: assetAdapter },
     queryClient: createFrameworkQueryClient({ retry: 0, staleTime: 0 }),
   })
   app.mount(host)

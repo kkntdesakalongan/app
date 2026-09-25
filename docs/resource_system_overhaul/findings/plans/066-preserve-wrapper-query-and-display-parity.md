@@ -2,7 +2,7 @@
 
 ## Status
 
-- Status: TODO
+- Status: DONE
 - Priority: P2
 - Effort: L
 - Fix risk: MEDIUM
@@ -245,15 +245,15 @@ Extend DialogForm.spec/managed, SurfaceParity.browser, ListView.browser/views/re
 
 ## Done criteria
 
-- [ ] Form/DialogForm parity includes changing prop presence, native targeting, events, slots, methods, and models.
-- [ ] Stale close decisions cannot close a new or busy session; parent visibility remains authoritative.
-- [ ] FormView preserves nested labels and the actions slot with no aliases.
-- [ ] ListView/Table/Collection preserve a single controlled/uncontrolled query owner and one update event.
-- [ ] TreeTable tree cells use the shared display implementation.
-- [ ] Late lookup hydration never replaces newer staged edits; composite commits retain explicit ownership.
-- [ ] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
-- [ ] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
-- [ ] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.
+- [x] Form/DialogForm parity includes changing prop presence, native targeting, events, slots, methods, and models.
+- [x] Stale close decisions cannot close a new or busy session; parent visibility remains authoritative.
+- [x] FormView preserves nested labels and the actions slot with no aliases.
+- [x] ListView/Table/Collection preserve a single controlled/uncontrolled query owner and one update event.
+- [x] TreeTable tree cells use the shared display implementation.
+- [x] Late lookup hydration never replaces newer staged edits; composite commits retain explicit ownership.
+- [x] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
+- [x] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
+- [x] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.
 
 ## STOP conditions
 

@@ -3,7 +3,7 @@ import { appDisplayPresets } from '@/configs/display-presets'
 import { appInputPresets } from '@/configs/input-presets'
 import { appLabels } from '@/configs/labels'
 import { rolesActions } from './roles.actions'
-import { rolesCreateSchema, rolesRecordSchema, rolesTableQuerySchema, rolesUpdateSchema } from './roles.schema'
+import { rolesCreateSchema, rolesRecordSchema, rolesUpdateSchema } from './roles.schema'
 
 const roleLabels = { ...appLabels, roleCode: 'Role Code', name: 'Role Name', description: 'Description', createdAt: 'Created At' }
 
@@ -58,7 +58,7 @@ export const roles = defineResource({
   list: {
     permission: 'view-roles',
     route: { name: 'settings-roles' },
-    table: { ...rolesTable, querySchema: rolesTableQuerySchema, load: rolesActions.list },
+    table: { ...rolesTable, load: rolesActions.list },
   },
   create: {
     permission: 'create-roles',
@@ -80,7 +80,7 @@ export const roles = defineResource({
         const record = await rolesActions.detail(context)
         return record ? { roleCode: record.roleCode, name: record.name, description: record.description, active: record.active } : undefined
       },
-      submit: (output) => rolesActions.update(id, output),
+      submit: (output: (typeof rolesUpdateSchema)['_output']) => rolesActions.update(id, output),
     }),
   },
   delete: { permission: 'delete-roles', run: rolesActions.delete },

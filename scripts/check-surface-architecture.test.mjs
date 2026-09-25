@@ -41,6 +41,80 @@ providers.list()`
   assert.match(diagnostics[1], /resource\.create\(\)/)
 })
 
+test('rejects field-level form sources through aliases and object spreads', () => {
+  const source = `import { defineForm as makeForm } from '@southneuhof/loom'
+const relationConfig = { source: { load: roles.list.table.load } }
+const relationField = { renderer: 'select', ...relationConfig }
+const inputFields = { roleId: relationField }
+const formDefinition = { fields: inputFields }
+makeForm(formDefinition)`
+  const diagnostics = analyzeSource(source, 'sample.ts')
+
+  assert.equal(diagnostics.length, 1)
+  assert.match(diagnostics[0], /Form field "roleId" cannot declare the removed source member/)
+})
+
+test('rejects field-level sources through assigned defineForm aliases but allows component props', () => {
+  const source = `import { defineForm } from '@southneuhof/loom'
+const makeForm = defineForm
+const sourceConfig = { source: { load: roles.list.table.load } }
+const fields = { roleId: { renderer: 'select', ...sourceConfig, props: { source: 'component-owned' } } }
+makeForm({ fields })`
+
+  assert.equal(analyzeSource(source, 'sample.ts').length, 1)
+  assert.match(analyzeSource(source, 'sample.ts')[0], /Form field "roleId" cannot declare the removed source member/)
+})
+
+test('checks component prop bags through script aliases and object spreads', () => {
+  const source = `<script setup lang="ts">
+import { Form as Editor, FileInput } from '@southneuhof/loom'
+const removedFormProps = { form: savedForm }
+const editorProps = { ...removedFormProps }
+const removedAssetProps = { upload: saveFile }
+const assetProps = { ...removedAssetProps }
+</script>
+<template>
+  <Editor v-bind="editorProps" />
+  <FileInput v-bind="assetProps" />
+</template>`
+  const diagnostics = analyzeSource(source, 'sample.vue')
+
+  assert.equal(diagnostics.length, 2)
+  assert.match(diagnostics[0], /<Form> cannot receive removed prop "form"/)
+  assert.match(diagnostics[1], /<FileInput> cannot receive removed prop "upload"/)
+})
+
+test('checks removed props passed through Vue component factories and aliases', () => {
+  const source = `import { h } from 'vue'
+import { Form as Editor } from '@southneuhof/loom'
+const legacyProps = { form: savedForm }
+const props = { ...legacyProps }
+h(Editor, props)`
+
+  const diagnostics = analyzeSource(source, 'sample.ts')
+
+  assert.equal(diagnostics.length, 1)
+  assert.match(diagnostics[0], /<Form> cannot receive removed prop "form"/)
+})
+
+test('allows removed type names only on expected negative type imports', () => {
+  const file = 'packages/loom/src/__type-tests__/removed-public-api.type-test.ts'
+  const validNegative = `// @ts-expect-error This type was removed.\nimport type { InputPropsRegistry } from '../index'`
+  const missingDirective = `import type { InputPropsRegistry } from '../index'`
+
+  assert.deepEqual(analyzeSource(validNegative, file), [])
+  assert.equal(analyzeSource(missingDirective, file).length, 1)
+})
+
+test('allows unrelated source members and component props inside form fields', () => {
+  const source = `import { defineForm } from '@southneuhof/loom'
+const cache = { source: 'local-cache' }
+defineForm({ fields: { name: { renderer: 'text', props: { source: 'component-owned' } } } })
+cache.source`
+
+  assert.deepEqual(analyzeSource(source, 'sample.ts'), [])
+})
+
 test('rejects removed component props through imported component aliases', () => {
   const source = `<script setup lang="ts">
 import { Form as Editor, DialogForm as Modal, Table as Grid } from '@southneuhof/loom'

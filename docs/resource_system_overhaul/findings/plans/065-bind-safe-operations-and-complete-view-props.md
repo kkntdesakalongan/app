@@ -2,7 +2,7 @@
 
 ## Status
 
-- Status: TODO
+- Status: DONE
 - Priority: P1
 - Effort: L
 - Fix risk: HIGH
@@ -248,15 +248,15 @@ Extend boundResource and route/access tests with immutable scalar/composite bind
 
 ## Done criteria
 
-- [ ] Bound identity is owned by the binder and cannot be redirected by caller mutation.
-- [ ] Null permission still evaluates row policy; denied operations dispatch nothing.
-- [ ] Custom context uses withContext; arity and payload-shape guessing are absent.
-- [ ] Malformed successful mutation results trigger invalidation and a non-retryable post-write error, never automatic redispatch.
-- [ ] Resource declarations cover complete canonical View props and preserve extracted operation policies.
-- [ ] Dead identity declaration and identical runtime aliases are removed.
-- [ ] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
-- [ ] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
-- [ ] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.
+- [x] Bound identity is owned by the binder and cannot be redirected by caller mutation.
+- [x] Null permission still evaluates row policy; denied operations dispatch nothing.
+- [x] Custom context uses withContext; arity and payload-shape guessing are absent.
+- [x] Malformed successful mutation results trigger invalidation and a non-retryable post-write error, never automatic redispatch.
+- [x] Resource declarations cover complete canonical View props and preserve extracted operation policies.
+- [x] Dead identity declaration and identical runtime aliases are removed.
+- [x] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
+- [x] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
+- [x] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.
 
 ## STOP conditions
 

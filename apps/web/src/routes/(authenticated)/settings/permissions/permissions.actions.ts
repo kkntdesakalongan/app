@@ -1,13 +1,7 @@
-import type { CollectionLoadContext } from '@southneuhof/loom'
 import { createHonoResourceActions } from '@/framework/hono'
 import { rpc } from '@/framework/rpc'
-import { permissionsQuerySchema, permissionsTableQuerySchema } from './permissions.schema'
+import { permissionsQuerySchema } from './permissions.schema'
 
-const api = createHonoResourceActions(rpc.permissions)
+const api = createHonoResourceActions(rpc.permissions, { querySchema: permissionsQuerySchema })
 
-async function list(context: CollectionLoadContext) {
-  const { sort_by, sort, ...query } = permissionsTableQuerySchema.parse(context.query)
-  return api.list({ ...context, query: permissionsQuerySchema.parse({ ...query, sort: sort_by, order: sort }) })
-}
-
-export const permissionsActions = { ...api, list }
+export const permissionsActions = api

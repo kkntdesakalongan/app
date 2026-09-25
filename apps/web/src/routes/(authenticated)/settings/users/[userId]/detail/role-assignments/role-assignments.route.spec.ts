@@ -4,7 +4,6 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { FrameworkPlugin, createFrameworkQueryClient, resetResourceRuntimeForTests, resolveFrameworkAdapters } from '@southneuhof/loom'
 import { createRouteQueryAdapter } from '@/framework/adapters/query/routeQuery'
 import { appDisplayRenderers } from '@/framework/display/renderers'
-import { appInputProps } from '@/framework/inputs/registry'
 
 const mocks = vi.hoisted(() => ({
   load: vi.fn(),
@@ -52,7 +51,6 @@ async function mountRoute(path = '/settings/users/u1/detail/role-assignments') {
   app.use(FrameworkPlugin, {
     adapters: resolveFrameworkAdapters({ query: createRouteQueryAdapter(router) }),
     renderers: { display: appDisplayRenderers },
-    inputProps: appInputProps,
     queryClient: createFrameworkQueryClient({ retry: 0, staleTime: 0 }),
   })
   app.directive('tippy', {})

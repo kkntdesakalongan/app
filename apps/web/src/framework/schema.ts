@@ -1,4 +1,4 @@
-import type { HonoCreateOf, HonoQueryOf, HonoRecordOf, HonoResponseRecordOf, HonoUpdateOf } from './hono/contracts'
+import type { HonoCreateOf, HonoRecordOf, HonoResponseRecordOf, HonoUpdateOf } from './hono/contracts'
 
 type RawSchemaSource = { readonly _input: unknown; readonly _output: object }
 type SchemaOutput<TSchema> = TSchema extends { readonly _output: infer TOutput } ? TOutput : never
@@ -15,7 +15,6 @@ type RequiredSchemaKeys<TSchema> =
     : never
 type RecordOutputGuard<TSchema extends RawSchemaSource, TRecord extends object> = SameType<SchemaOutput<TSchema>, TRecord> extends true ? unknown : never
 type ResponseRecordOutputGuard<TSchema extends RawSchemaSource, TRecord> = IsAny<TRecord> extends true ? unknown : TRecord extends object ? RecordOutputGuard<TSchema, TRecord> : never
-type QueryOutputGuard<TSchema extends RawSchemaSource, TQuery extends object> = [SchemaOutput<TSchema>] extends [TQuery] ? unknown : never
 type WriteOutputGuard<TSchema extends RawSchemaSource, TWrite extends object> = [SchemaOutput<TSchema>] extends [TWrite]
   ? Exclude<keyof SchemaOutput<TSchema>, keyof TWrite> extends never
     ? Exclude<RequiredSchemaKeys<TSchema>, keyof TWrite> extends never
@@ -32,10 +31,6 @@ export function checkedHonoResponseRecordSchema<const TEndpoint, const TSchema e
   _endpoint: TEndpoint,
   schema: TSchema & ResponseRecordOutputGuard<TSchema, HonoResponseRecordOf<TEndpoint, 200>>
 ): TSchema {
-  return schema
-}
-
-export function checkedHonoQuerySchema<const TRoute, const TSchema extends RawSchemaSource>(_route: TRoute, schema: TSchema & QueryOutputGuard<TSchema, HonoQueryOf<TRoute>>): TSchema {
   return schema
 }
 

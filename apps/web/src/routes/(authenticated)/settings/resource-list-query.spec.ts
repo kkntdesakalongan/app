@@ -57,4 +57,26 @@ describe('settings list query adapters', () => {
 
     expect(mocks.requests.get('permissions')).toEqual({ search: 'view', sort: 'permissionCode', order: 'desc' })
   })
+
+  it('keeps each module sort set at its loader boundary', async () => {
+    type RuntimeList = (context: { query: Record<string, unknown>; searchParameters: Record<string, unknown> }) => Promise<unknown>
+    const modules = [
+      { name: 'users', list: usersActions.list as unknown as RuntimeList, sortKeys: ['name', 'email'] },
+      { name: 'roles', list: rolesActions.list as unknown as RuntimeList, sortKeys: ['roleCode', 'name'] },
+      { name: 'permissions', list: permissionsActions.list as unknown as RuntimeList, sortKeys: ['permissionCode', 'name'] },
+    ]
+
+    for (const { name, list, sortKeys } of modules) {
+      for (const sort_by of sortKeys) {
+        await list({ query: { sort_by, sort: 'asc' }, searchParameters: {} })
+        expect(mocks.requests.get(name)).toEqual({ sort: sort_by, order: 'asc' })
+        mocks.requests.delete(name)
+      }
+
+      await expect(list({ query: { sort_by: 'outside-this-table' }, searchParameters: {} })).rejects.toMatchObject({
+        issues: expect.any(Array),
+      })
+      expect(mocks.requests.has(name)).toBe(false)
+    }
+  })
 })

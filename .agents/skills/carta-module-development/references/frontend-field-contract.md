@@ -22,7 +22,7 @@ needed; form inputs use their input renderer contract.
 Use one-object `defineResource`. Put standard operations at the resource top
 level. `list` and `create` are static bags. `detail` and `update` factories
 bind identity. Keep their loaders inside the returned bag. An update loader
-must map record values to `Partial<TInput>` explicitly.
+must map record values to `FormDraft<TInput>` explicitly.
 
 ## Value flow
 
@@ -41,12 +41,16 @@ keys explicitly; it does not cast a full record into a draft.
 ## Relations and identifiers
 
 Keep the submitted relation value separate from its display label. Standard
-option inputs use an explicit source `{ load, namespace? }`; lookup also takes
-`loadDetail(context)` and its own table definition. Delegate these loaders to
-the owner's `list.table.load` and `detail({ id }).detail.load(context)`. The
-table/detail accessor reads the returned relation name. Include relation data
-in the record contract; do not fetch one label per row. Static choices use the
-renderer `data` prop.
+option inputs receive `load` and optional `namespace` in their component
+`props`; lookup also takes `loadDetail(context)` and its own table definition.
+Delegate these loaders to the owner's `list.table.load` and
+`detail({ id }).detail.load(context)`. The table/detail accessor reads the
+returned relation name. Include relation data in the record contract; do not
+fetch one label per row. Static choices use the renderer `data` prop.
+
+Editable row arrays use `TableInput` with separate `table` and submit-free
+`form` definitions plus a required `toDraft` mapper. Do not use a shared
+`fields` map or put the TableInput row editor submit function on its form.
 
 Use the owner resource identity for detail, CRUD, and cache operations. A
 lookup's `pick` and `view` keys configure the selection control; they do not
@@ -71,9 +75,10 @@ contract. Use `storedAssetInput` only on the server to extract storage IDs.
 Project stored IDs with the existing
 `apps/api/src/storage/assets.ts` owner before returning records.
 
-Reuse `apps/web/src/framework/adapters/assets.ts` and the input registry for
-load, upload, and preview. Keep asset objects through submission. Shared form
-readiness blocks submit while upload, conversion, or model commit is pending.
+Install `adapters.assets` once through `FrameworkPlugin`. File and image inputs
+and asset previews use this app-scoped service. Keep canonical `AssetValue`
+objects through load and submit. Do not add per-input adapters or an input
+registry. Shared form readiness blocks submit while upload work is pending.
 Do not persist client URLs as authority. The server validates ownership and
 use. Removing a record association does not authorize deletion of the shared
 file.

@@ -58,7 +58,7 @@ const draftForm = defineForm({
   schema: draftSchema,
   fields: {
     kind: { label: 'Jenis', renderer: 'text' },
-    reason: { label: 'Alasan', behavior: { visible: ({ draft }) => draft.kind === 'lain' } },
+    reason: { label: 'Alasan', renderer: 'text', behavior: { visible: ({ draft }) => draft.kind === 'lain' } },
   },
   submit: (draft) => draft,
 })
@@ -82,7 +82,7 @@ const submitted = ref<z.output<typeof draftSchema>>()
     </section>
 
     <section id="fixture-local-query">
-      <Table v-bind="table" :load="localLoad" :query="localQuery" />
+      <Table v-bind="table" :load="localLoad" :query="localQuery" @update:query="localQuery = $event" />
     </section>
 
     <section id="fixture-draft">

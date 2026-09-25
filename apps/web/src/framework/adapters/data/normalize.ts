@@ -48,12 +48,22 @@ function collectIssues(errors: unknown): SchemaIssue[] | undefined {
   return issues.length ? issues : undefined
 }
 
+function submitErrorMetadata(error: unknown): Pick<SubmitError, 'code' | 'operation' | 'retryable' | 'postWrite'> {
+  if (!isRecord(error)) return {}
+  return {
+    ...(typeof error.code === 'string' ? { code: error.code } : {}),
+    ...(typeof error.operation === 'string' ? { operation: error.operation } : {}),
+    ...(typeof error.retryable === 'boolean' ? { retryable: error.retryable } : {}),
+    ...(typeof error.postWrite === 'boolean' ? { postWrite: error.postWrite } : {}),
+  }
+}
+
 export function normalizeError(error: unknown): SubmitError {
-  if (error instanceof Error) return { message: error.message }
+  if (error instanceof Error) return { message: error.message, ...submitErrorMetadata(error) }
   if (isRecord(error)) {
     const message = typeof error.message === 'string' ? error.message : 'Request failed.'
     const issues = collectIssues(error.errors)
-    return issues ? { message, issues } : { message }
+    return { message, ...submitErrorMetadata(error), ...(issues ? { issues } : {}) }
   }
   return { message: 'Request failed.' }
 }

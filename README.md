@@ -269,47 +269,15 @@ Read [packages/sprindle/README.md](packages/sprindle/README.md) for the framewor
 
 Loom provides the shared contracts and components behind common information-system screens such as tables, detail pages, and forms.
 
-A Carta resource starts with the app schema seam. It can use a standard Hono
-route contract or an explicit custom resource contract. Loom receives the
-generic schema value and does not know the route source. See the
-[web application architecture](docs/architecture/web-application-architecture.md)
-for details.
+Applications export raw operation schemas, define form/table/detail surfaces
+with their own maps, then bind them in one `defineResource` declaration. Every
+input names its renderer and receives loaders through that component's props.
+Resource routes pass complete nested bags to Loom's page views. The
+[resource architecture](docs/resource_system_overhaul/ARCHITECTURE.md) and
+[Loom examples](packages/loom/README.md) show the current contracts.
 
-```ts
-import { defineSchema } from '@/framework/schema'
-
-const schema = defineSchema(rpc.roles, {
-  identity: 'id',
-  record: role.schemas.select,
-  create: role.schemas.create,
-  update: role.schemas.update,
-})
-```
-
-Fields describe how values appear and behave on different surfaces. A resource then connects those fields to application actions.
-
-```ts
-const resource = defineResource(schema, {
-  key: 'records',
-  actions: {
-    list: { run: list, fields: [fields.name] },
-    detail: { run: detail, fields: [fields.name] },
-    create: { run: create, fields: [fields.name] },
-    update: { run: update, fields: [fields.name] },
-  },
-})
-```
-
-The same resource can be passed to Loom's standard views:
-
-```vue
-<ListView v-bind="resource.list()" />
-<DetailView v-bind="resource.detail({ id })" />
-<FormView v-bind="resource.create()" />
-<FormView v-bind="resource.update({ id })" />
-```
-
-Routes still own application behavior such as URLs, navigation, dialogs, confirmations, and workflows. Loom owns the reusable UI contracts and components underneath those routes.
+Routes own URLs, navigation, dialogs, confirmations, and workflows. Loom owns
+the reusable UI contracts and components underneath those routes.
 
 The API remains the final authorization boundary. Hiding an action in the browser does not replace server-side permission checks.
 

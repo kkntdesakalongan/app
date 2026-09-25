@@ -121,7 +121,7 @@ function staticVerify(config, { root = repoRoot, manifest = config } = {}) {
         requireText(resource, 'form: ({ id }) => ({', checks, 'identity-bound update bag')
         requireText(resource, 'const record = await api.detail({ ...context, id })', checks, 'update-owned draft load')
       }
-      if (selected.has('update')) requireText(resource, 'submit: output => api.update(id, output)', checks, 'identity-bound update submit')
+      if (selected.has('update')) requireUniquePattern(resource, /submit: \(output: \(typeof \w+UpdateSchema\)\['_output'\]\) => api\.update\(id, output\)/g, checks, 'identity-bound update submit', 'schema-inferred identity-bound submit')
     }
     const schemaPath = resolve(outputRoot, `apps/web/src/routes/(authenticated)/${group}/${config.slug}/${config.slug}.schema.ts`)
     const schema = read(schemaPath, checks, 'raw operation schemas')

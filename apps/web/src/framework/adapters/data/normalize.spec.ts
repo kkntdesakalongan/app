@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeCollection, normalizeRecord } from './normalize'
+import { normalizeCollection, normalizeError, normalizeRecord } from './normalize'
 
 describe('web data adapter', () => {
   it('normalizes the project collection envelope once', () => {
@@ -24,5 +24,22 @@ describe('web data adapter', () => {
   it('unwraps record envelopes using the configured adapter function shape', () => {
     expect(normalizeRecord({ data: { id: '1' } })).toEqual({ id: '1' })
     expect(normalizeRecord({ id: '1' })).toEqual({ id: '1' })
+  })
+
+  it('keeps post-write error details when it normalizes the message', () => {
+    const error = Object.assign(new Error('The write may have completed.'), {
+      code: 'RESOURCE_RESULT_INVALID',
+      operation: 'update',
+      retryable: false,
+      postWrite: true,
+    })
+
+    expect(normalizeError(error)).toEqual({
+      message: 'The write may have completed.',
+      code: 'RESOURCE_RESULT_INVALID',
+      operation: 'update',
+      retryable: false,
+      postWrite: true,
+    })
   })
 })

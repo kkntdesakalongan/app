@@ -15,9 +15,8 @@ const asset = {
 }
 
 describe('application asset adapter', () => {
-  it('accepts the exact API asset object and arrays', () => {
-    expect(assetAdapter.read(asset)).toEqual(asset)
-    expect(assetAdapter.read([asset, { ...asset, id: 'uploads/b.pdf', name: 'b.pdf' }])).toEqual([asset, { ...asset, id: 'uploads/b.pdf', name: 'b.pdf' }])
+  it('accepts the exact API asset object without replacing it', () => {
+    expect(assetAdapter.read(asset)).toBe(asset)
   })
 
   it('rejects raw keys, URLs, aliases, partial objects, and envelopes', () => {
@@ -26,13 +25,11 @@ describe('application asset adapter', () => {
     expect(assetAdapter.read({ key: asset.id, url: asset.url, name: asset.name })).toBeNull()
     expect(assetAdapter.read({ ...asset, url: '/files/a.txt' })).toBeNull()
     expect(assetAdapter.read({ data: asset })).toBeNull()
-    expect(assetAdapter.read([asset, 'uploads/b.pdf'])).toBeNull()
+    expect(assetAdapter.read([asset])).toBeNull()
   })
 
   it('uses the exact URL for previews', () => {
     expect(assetAdapter.preview(asset)).toEqual({ imageURL: asset.url, thumbnailURL: asset.url })
-    expect(assetAdapter.preview([asset])).toEqual({ imageURL: asset.url, thumbnailURL: asset.url })
-    expect(assetAdapter.preview(null)).toEqual({ imageURL: '', thumbnailURL: '' })
   })
 
   it('returns the canonical upload result and forwards upload progress', async () => {
@@ -49,6 +46,6 @@ describe('application asset adapter', () => {
 
   it('rejects malformed upload results', async () => {
     uploadFile.mockResolvedValue({ key: asset.id, url: asset.url, file: new File(['x'], 'a.txt') })
-    await expect(assetAdapter.upload(new File(['x'], 'a.txt'), {})).rejects.toThrow('valid stored asset')
+    await expect(assetAdapter.upload(new File(['x'], 'a.txt'), {})).rejects.toThrow('ASSET_ADAPTER_INVALID_RESULT')
   })
 })

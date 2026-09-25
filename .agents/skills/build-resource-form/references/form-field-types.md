@@ -3,13 +3,14 @@
 Read `docs/ui/forms.md` first. It owns the field implementation decision. Use
 this manifest to identify the registered renderer or composite selected by that
 decision.
-The live renderer keys and app adapters are in:
+The live renderer keys and public component contracts are in:
 
 - `packages/loom/src/renderers/form.ts`
-- `apps/web/src/framework/inputs/registry.ts`
+- `packages/loom/src/renderers/formContracts.ts`
 
-Use an input catalog if the app has one. The source files are authoritative when this manifest and the runtime differ.
-Do not create a second renderer list in application code.
+Use component props directly. Every authored input needs an explicit renderer.
+The schema validates values and requiredness; it does not choose a renderer or
+create choices.
 
 ## Text and numeric values
 
@@ -30,18 +31,19 @@ Use `text` with a native `type` only when the form contract still owns a string.
 
 | Renderer | Use it for | Value and common props |
 | --- | --- | --- |
-| `select` | A compact closed choice set | scalar or array; `source: { load, namespace? }` or static `data`; `pick`, `view`, `multi`, `searchable`, `clearable` |
-| `radio` | A small exclusive set that must stay visible | scalar; `source: { load, namespace? }` or static `data`; `pick`, `view`, `variant`, `direction` |
+| `select` | A compact closed choice set | scalar or array; `load` and optional `namespace`, or static `data`; `pick`, `view`, `multi`, `searchable`, `clearable` |
+| `radio` | A small exclusive set that must stay visible | scalar; `load` and optional `namespace`, or static `data`; `pick`, `view`, `variant`, `direction` |
 | `checkbox` | One boolean agreement or flag | boolean; `required` |
 | `switch` | One on/off value | boolean; `required` |
-| `checkbox-group` | A small visible multi-choice set | selected record array; `source: { load, namespace? }` or static `data`; `pick`, `view`, `searchParameters` |
-| `lookup` | A searchable database-backed relation | scalar identity; `source: { load, namespace?, loadDetail }`; `props.table`, `pick`, `view`, `searchParameters` |
+| `checkbox-group` | A small visible multi-choice set | selected record array; `load` and optional `namespace`, or static `data`; `pick`, `view`, `searchParameters` |
+| `lookup` | A searchable database-backed relation | scalar identity; `load`, optional `namespace`, and `loadDetail`; `table`, `pick`, `view`, `searchParameters` |
 
-Use static `data` props only for a small closed set. For database-backed
-options, pass the owner's loader, for example
-`source: { load: roles.list.table.load, namespace: roles.list.table.namespace }`.
+Use static `data` props only for a small closed set. Put loaders and other
+component props inside the field's `props` object. For database-backed options,
+pass the owner's loader, for example
+`props: { load: roles.list.table.load, namespace: roles.list.table.namespace }`.
 For lookup, add `loadDetail(context)` using the owner's detail loader and pass
-its own table definition in `props.table`. Keep filters in `searchParameters`.
+its own table definition as `props.table`. Keep filters in `searchParameters`.
 The raw form schema defines accepted multi-selection values and any transform
 to operation input; the users form accepts role records and transforms them to
 IDs. A switch inside a form edits the draft; it does not write immediately
@@ -81,12 +83,12 @@ submitted API shape differs from the control shape.
 
 | Renderer | Use it for | Value and required configuration |
 | --- | --- | --- |
-| `table` | An array of form-owned rows | row object array; `fields`, `form`, `table`, optional `rowKey` and reorder props |
+| `table` | An array of form-owned rows | row object array; `table`, `form`, required `toDraft`, optional `rowKey` and reorder props |
 | `separator` | A labelled section break in a form | no submitted value; label and layout props |
 
-Use `TableInput` with separate `defineTable` and `defineForm` row definitions
-before you build manual repeatable rows. Supply `toDraft` when table rows and
-form input differ. A row lookup `view` covers the selection dialog only. Define
+Use `TableInput` with separate `defineTable` and submit-free `defineForm` row
+definitions before you build manual repeatable rows. Always supply `toDraft`
+to map a table row into form input. A row lookup `view` covers the selection dialog only. Define
 the row cell through [display and form pattern](../../web-ui-surfaces/references/fields.md).
 Use a separate child resource when rows need their own permissions, paging, or
 actions.

@@ -61,4 +61,14 @@ describe('web access adapter', () => {
     expect(accessAdapter.allows({ operation: 'update', permission: 'manage-projects', record: { allowedOperations: 'update' } })).toBe(false)
     expect(accessAdapter.allows({ operation: 'update', permission: 'manage-projects', record: {} })).toBe(false)
   })
+
+  it('denies malformed explicit row policy when permission is null', () => {
+    canPermission.mockReturnValue(true)
+
+    expect(accessAdapter.allows({ operation: 'delete', permission: null, record: { allowedOperations: 'delete' } })).toBe(false)
+    expect(accessAdapter.allows({ operation: 'delete', permission: null, record: { allowedOperations: ['delete', 7] } })).toBe(false)
+    expect(accessAdapter.allows({ operation: 'delete', permission: null, record: { allowedOperations: [] } })).toBe(false)
+    expect(accessAdapter.allows({ operation: 'delete', permission: null, record: {} })).toBe(true)
+    expect(accessAdapter.allows({ operation: 'delete', permission: null, record: { allowedOperations: ['delete'] } })).toBe(true)
+  })
 })

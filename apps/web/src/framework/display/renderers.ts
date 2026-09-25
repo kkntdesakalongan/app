@@ -1,8 +1,8 @@
 import { defineComponent, h, type PropType } from 'vue'
-import type { DisplayRendererRegistriesInput } from '@southneuhof/loom'
+import type { AssetValue, DisplayRendererRegistriesInput } from '@southneuhof/loom'
 import Chip from '@southneuhof/loom/components/base/Chip.vue'
-import ImagePreview from '@southneuhof/loom/components/base/ImagePreview.vue'
-import { assetAdapter } from '../adapters/assets'
+import ImagePreviewMulti from '@southneuhof/loom/components/base/ImagePreviewMulti.vue'
+import FileComponent from '@southneuhof/loom/components/utils/FileComponent.vue'
 
 type ChipColor = 'primary' | 'secondary' | 'tertiary' | 'warning' | 'error' | 'info' | 'success' | 'neutral'
 type ChipOption = { color?: ChipColor; label?: string }
@@ -35,26 +35,9 @@ const imageRenderer = defineComponent({
   props: { value: { type: null, default: undefined } },
   setup(props) {
     return () => {
-      const value = assetAdapter.read(props.value)
-      const assets = Array.isArray(value) ? value : value ? [value] : []
-      const images = assets.flatMap((asset) => {
-        const preview = assetAdapter.preview(asset)
-        return preview.imageURL ? [{ ...preview, id: asset.id }] : []
-      })
-
-      if (!images.length) return h('span', '-')
-      return h(
-        'div',
-        { class: 'flex flex-wrap gap-2' },
-        images.map((image) =>
-          h(ImagePreview, {
-            key: image.id,
-            imageURL: image.imageURL,
-            thumbnailURL: image.thumbnailURL,
-            disableControls: true,
-          })
-        )
-      )
+      if (props.value === undefined || props.value === null || (Array.isArray(props.value) && props.value.length === 0)) return h('span', '-')
+      const values = Array.isArray(props.value) ? props.value : [props.value]
+      return h(ImagePreviewMulti, { assets: values as AssetValue[], disableControls: true })
     }
   },
 })
@@ -64,17 +47,12 @@ const fileRenderer = defineComponent({
   props: { value: { type: null, default: undefined } },
   setup(props) {
     return () => {
+      if (props.value === undefined || props.value === null || (Array.isArray(props.value) && props.value.length === 0)) return h('span', '-')
       const files = Array.isArray(props.value) ? props.value : [props.value]
       return h(
         'div',
         { class: 'flex flex-col gap-1' },
-        files.filter(Boolean).map((file) => {
-          const asset = assetAdapter.read(file)
-          if (!asset || Array.isArray(asset)) return null
-          const url = assetAdapter.preview(asset).imageURL
-          if (!url) return null
-          return h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', class: 'text-info underline' }, asset.name)
-        })
+        files.map((file, index) => h(FileComponent, { key: index, asset: file as AssetValue, style: 'link' }))
       )
     }
   },

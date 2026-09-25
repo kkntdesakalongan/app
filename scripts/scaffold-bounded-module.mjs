@@ -13,7 +13,6 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const tablePattern = /^[a-z][a-z0-9_]*$/
 const supportedTypes = new Set(['text', 'boolean', 'number'])
 const supportedActions = ['list', 'detail', 'create', 'update', 'delete']
-const defaultRenderers = { text: 'text', boolean: 'checkbox', number: 'number' }
 const renderersByType = {
   text: new Set(['text', 'textarea']),
   boolean: new Set(['checkbox', 'radio', 'switch']),
@@ -269,6 +268,7 @@ function validateSurfaceMap(value, name, properties, members, { inputs = false }
     if (!property) throw new Error(`${name} contains unsupported property "${key}".`)
     if (!isObject(entry)) throw new Error(`${name}.${key} must be an object.`)
     knownKeys(entry, members, `${name}.${key}`)
+    if (inputs && entry.renderer === undefined) throw new Error(`${name}.${key}.renderer is required for every form input.`)
     const next = { ...entry }
     if (entry.renderer !== undefined) {
       next.renderer = requiredString(entry.renderer, `${name}.${key}.renderer`)
@@ -561,12 +561,20 @@ export async function seed${config.symbol}() {
 function renderSchema(config) {
   const entity = lowerCamel(config.symbol)
   const plural = `${entity}s`
+  const sortKeys = [...new Set(Object.entries(config.surfaces.list?.columns ?? {})
+    .filter(([, column]) => column.sortable)
+    .map(([key, column]) => column.sortKey ?? key))]
+  const sortBy = sortKeys.length ? `\n  sort_by: z.enum([${sortKeys.map(literal).join(', ')}]).optional(),` : ''
   return `import { ${entity} } from '@southneuhof/api/routes/(authenticated)/${config.slug}/${config.slug}.entity'
-import type { z } from 'zod/v4'
+import { z } from 'zod/v4'
+import { collectionQueryFields } from '@/framework/hono/collectionQuery'
 
 export const ${plural}RecordSchema = ${entity}.schemas.select
 export const ${plural}CreateSchema = ${entity}.schemas.create
 export const ${plural}UpdateSchema = ${entity}.schemas.update
+export const ${plural}QuerySchema = z.object({
+  ...collectionQueryFields,${sortBy}
+})
 
 export type ${config.symbol} = z.output<typeof ${plural}RecordSchema>
 export type ${config.symbol}Create = z.input<typeof ${plural}CreateSchema>
@@ -663,7 +671,7 @@ function resourceEntry(config, action) {
           const record = await api.detail({ ...context, id })
           return record ? { ${draft} } : undefined
         },
-        submit: output => api.update(id, output),
+        submit: (output: (typeof ${plural}UpdateSchema)['_output']) => api.update(id, output),
       }),${redirectLine}
     },`
   }
@@ -699,6 +707,7 @@ function renderResource(config) {
     if (!schemas.includes(`${plural}UpdateSchema`)) schemas.push(`${plural}UpdateSchema`)
     definitions.push(`const updateForm = defineForm({ schema: ${plural}UpdateSchema, labels, fields: ${renderDefinitionMap(config.surfaces.update.inputs, { input: true })} })`)
   }
+  schemas.push(`${plural}QuerySchema`)
   const typeImports = `import type { ${config.symbol} } from './${config.slug}.schema'\n`
   const definitionLines = [displayFragments, ...definitions].filter(Boolean).join('\n\n')
 
@@ -708,7 +717,9 @@ import { rpc } from '@/framework/rpc'
 import { ${[...new Set(schemas)].join(', ')} } from './${config.slug}.schema'
 ${typeImports}
 
-const api = createHonoResourceActions(rpc['${config.slug}'])
+const api = createHonoResourceActions(rpc['${config.slug}'], {
+  querySchema: ${plural}QuerySchema,
+})
 
 ${definitionLines}
 
@@ -858,11 +869,11 @@ function browserManualReason(config) {
   if (unsupportedInput) return `custom renderer for ${unsupportedInput[0]}:${unsupportedInput[1].renderer} makes that UI action manual`
   const createTextInput = Object.entries(config.surfaces.create?.inputs ?? {}).find(([key, input]) => {
     const property = config.properties.find((candidate) => candidate.key === key)
-    return property?.type === 'text' && (!input.renderer || ['text', 'textarea'].includes(input.renderer))
+    return property?.type === 'text' && ['text', 'textarea'].includes(input.renderer)
   })
   const updateTextInput = Object.entries(config.surfaces.update?.inputs ?? {}).find(([key, input]) => {
     const property = config.properties.find((candidate) => candidate.key === key)
-    return property?.type === 'text' && (!input.renderer || ['text', 'textarea'].includes(input.renderer))
+    return property?.type === 'text' && ['text', 'textarea'].includes(input.renderer)
   })
   if (!createTextInput || !updateTextInput) return 'slim journey needs text inputs on Create and Update'
   return null

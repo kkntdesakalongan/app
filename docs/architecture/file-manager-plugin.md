@@ -14,8 +14,16 @@ app.use(FileManagerPlugin, fileManagerOptions)
 ```
 
 App supplies opaque `root`, canonical `ManagedAsset` operations, and value
-conversion. Adapter may map backend paths to asset IDs, but framework never
+conversion. This provider owns FileManager product selection. Direct FileInput
+uploads and asset previews use the app-scoped `adapters.assets` service
+installed through `FrameworkPlugin`; input fields do not carry adapters. The
+FileManager adapter may map backend paths to asset IDs, but the framework never
 parses IDs or assumes endpoint vocabulary.
+
+The example uses an ID model for the standalone FileManager product. If a
+FileManager selection feeds a Loom file or image input, use the canonical
+`AssetValue` model and make `toModel` return the complete value accepted by the
+app's `AssetAdapter`; an ID alone is not an asset input model.
 
 ```ts
 const fileManagerOptions: FileManagerPluginOptions<string> = {

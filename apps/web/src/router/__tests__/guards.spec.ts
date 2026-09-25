@@ -37,7 +37,7 @@ function updateResource(key: string, permission: string) {
       form: ({ id }) => ({
         ...updateForm,
         load: async () => ({ name: 'One' }),
-        submit: async (input) => ({ id, name: input.name ?? 'One' }),
+        submit: async (input: (typeof updateForm.schema)['_output']) => ({ id, name: input.name ?? 'One' }),
       }),
     },
   })

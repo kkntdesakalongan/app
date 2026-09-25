@@ -1,10 +1,12 @@
 import { defineResource, defineTable, defineDetail, defineForm } from '@southneuhof/loom'
 import { createHonoResourceActions } from '@/framework/hono'
 import { rpc } from '@/framework/rpc'
-import { usersRecordSchema, usersUpdateSchema } from './users.schema'
+import { usersRecordSchema, usersUpdateSchema, usersQuerySchema } from './users.schema'
 import type { User } from './users.schema'
 
-const api = createHonoResourceActions(rpc['users'])
+const api = createHonoResourceActions(rpc['users'], {
+  querySchema: usersQuerySchema,
+})
 
 const displayFragments = {
   statusCode: { renderer: 'chip', props: { options: { active: { label: 'Active' }, expired: { label: 'Expired' } } } },
@@ -70,7 +72,7 @@ export const users = defineResource({
         const record = await api.detail({ ...context, id })
         return record ? { name: record.name } : undefined
       },
-      submit: (output) => api.update(id, output),
+      submit: (output: (typeof usersUpdateSchema)['_output']) => api.update(id, output),
     }),
   },
 })

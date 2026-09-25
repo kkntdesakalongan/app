@@ -168,7 +168,9 @@ test('creates explicit source files and stable absolute output', () => {
 
   const resource = readFileSync(result.generated.find((path) => path.endsWith('.resource.ts')), 'utf8')
   assert.match(resource, /title: 'Test Catalog'/)
-  assert.match(resource, /createHonoResourceActions\(rpc\['test-catalog'\]\)/)
+  assert.match(resource, /createHonoResourceActions\(rpc\['test-catalog'\], \{\s*querySchema: testCatalogsQuerySchema,\s*\}\)/)
+  assert.match(resource, /table: \{ \.\.\.testCatalogsTable, load: api\.list \}/)
+  assert.doesNotMatch(resource, /table: \{[^}]*querySchema:|sort_by\s*,\s*sort|wireQuery/)
   assert.match(resource, /label: \{\},/)
   assert.doesNotMatch(resource, /\{\s{2,}\}/)
 
@@ -184,9 +186,21 @@ test('creates explicit source files and stable absolute output', () => {
   assert.match(schema, /export const testCatalogsRecordSchema = testCatalog\.schemas\.select/)
   assert.match(schema, /export const testCatalogsCreateSchema = testCatalog\.schemas\.create/)
   assert.match(schema, /export const testCatalogsUpdateSchema = testCatalog\.schemas\.update/)
+  assert.match(schema, /import \{ collectionQueryFields \} from '@\/framework\/hono\/collectionQuery'/)
+  assert.match(schema, /export const testCatalogsQuerySchema = z\.object\(\{[\s\S]*sort_by: z\.enum\(\['label'\]\)/)
   assert.doesNotMatch(schema, /defineSchema|fromZod|WebResourceSchema/)
   assert.doesNotMatch(resource, /defineFields|defineResource\([^\n]+Schema,|actions: \{/)
   assert.doesNotMatch(resource, /as never/)
+})
+
+test('uses an explicit sortable column key in the collection query schema', () => {
+  const input = config()
+  input.surfaces.list.columns.label.sortKey = 'enabled'
+  const setup = workspace(input)
+  const result = JSON.parse(execute(['--config', setup.configPath, '--json'], { root: setup.outputRoot, cwd: setup.directory }))
+  const schema = readFileSync(result.generated.find((path) => path.endsWith('.schema.ts')), 'utf8')
+
+  assert.match(schema, /sort_by: z\.enum\(\['enabled'\]\)/)
 })
 
 test('validates selected actions with derived identity, labels, and technical reads', () => {
@@ -259,6 +273,7 @@ test('rejects invalid selected actions, permission use, navigation, seed, and te
     ['empty actions', (value) => { value.actions = {}; value.permissions = {} }, /actions must have at least one key/],
     ['unknown action', (value) => { value.actions.archive = { permission: 'archive-test-catalog' } }, /actions\.archive is unsupported/],
     ['old action field list', (value) => { value.actions.list.fields = ['missing'] }, /actions\.list contains unsupported keys: fields/],
+    ['form input without renderer', (value) => { delete value.surfaces.create.inputs.label.renderer }, /surfaces\.create\.inputs\.label\.renderer is required for every form input/],
     ['delete with fields', (value) => { value.actions.delete.fields = [] }, /actions\.delete contains unsupported keys/],
     ['missing permission', (value) => { delete value.permissions['list-test-catalog'] }, /used but missing/],
     ['unused permission', (value) => { value.permissions['extra-test-catalog'] = { name: 'Extra', description: 'Extra.' } }, /defined but unused/],

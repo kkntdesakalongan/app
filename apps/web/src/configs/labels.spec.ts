@@ -3,7 +3,6 @@ import { createApp, defineComponent, h, nextTick, ref } from 'vue'
 import { z } from 'zod/v4'
 import { describe, expect, it, vi } from 'vitest'
 import { appDisplayRenderers } from '../framework/display/renderers'
-import { appInputProps } from '../framework/inputs/registry'
 
 describe('app labels', () => {
   it('updates labels without changing the input or displayed value', async () => {
@@ -27,7 +26,6 @@ describe('app labels', () => {
     document.body.appendChild(host)
     const app = createApp(defineComponent(() => () => h('div', [h(Form, { ...form, initialData: { name: 'Ada' } }), h(Detail, { ...detail, data: { name: 'Ada' } })])))
     app.use(FrameworkPlugin, {
-      inputProps: appInputProps,
       renderers: { display: appDisplayRenderers },
       queryClient: createFrameworkQueryClient({ retry: 0, staleTime: 0 }),
     })

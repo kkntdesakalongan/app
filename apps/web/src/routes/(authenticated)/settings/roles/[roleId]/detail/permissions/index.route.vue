@@ -26,7 +26,7 @@ function assigned(row: RolePermission) {
 }
 
 function canToggle(row: RolePermission) {
-  return rolePermissions.actions.set.can(roleId.value, row.id, !row.assigned)
+  return rolePermissions.actions.set.withContext({ record: row }).can(roleId.value, row.id, !row.assigned)
 }
 
 // Switch applies attributes to its wrapper. Label the focusable button locally.
@@ -40,11 +40,12 @@ const vPermissionSwitch = { mounted: switchAttributes, updated: switchAttributes
 
 async function toggle(row: RolePermission) {
   const key = rowKey(row.id)
-  if (!canToggle(row) || pending.value.has(key)) return
+  const command = rolePermissions.actions.set.withContext({ record: row })
+  if (!command.can(roleId.value, row.id, !row.assigned) || pending.value.has(key)) return
   const next = !row.assigned
   pending.value.set(key, next)
   try {
-    await rolePermissions.actions.set.run(roleId.value, row.id, next)
+    await command.run(roleId.value, row.id, next)
   } catch (error) {
     toast.error(errorMessage(error, 'Permission update failed.'))
   } finally {

@@ -15,12 +15,13 @@ Use the form field slot `input:<field-key>` for one-form use. Consume the
 slot's `value`, `setValue`, `disabled`, `error`, and draft context. Keep one
 clear value flow from the slot into the component and back through `setValue`.
 
-For a resource renderer used by several fields, expose the framework controlled
-form contract. A `modelValue` component uses `adaptVModelInput` at the registry
-boundary.
-Use module augmentation to map its key to `typeof Component` in `FormRendererComponents` from
-`@southneuhof/loom/renderers/formContracts`, then register it under the same
-runtime key. The component owns prop types; no separate prop interface is needed.
+For a resource renderer used by several fields, expose the component's public
+props and Vue model directly. Form binds `modelValue` and listens to
+`update:modelValue`; the component also owns its validation events. Use module
+augmentation to map its key to `typeof Component` in `FormRendererComponents`
+from `@southneuhof/loom/renderers/formContracts`, then register that component
+under the same runtime key. Do not add a renderer adapter or a second value
+protocol.
 
 ## Composition
 

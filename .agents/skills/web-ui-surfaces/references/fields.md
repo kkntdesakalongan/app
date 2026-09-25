@@ -75,13 +75,15 @@ shape and use the schema transform for output conversion. Do not add a generic
 field writer. Use `initialData` for a fixed draft value and an input
 `initialValue` factory only for a fresh omitted-key default.
 
-For database-backed relation inputs, pass explicit loaders in `source`:
-standard option inputs use `{ load, namespace? }`; lookup also uses
-`loadDetail(context)` for scalar identity hydration and its own table definition
-in `props.table`. Delegate those loaders to the owning resource's
-`list.table.load` and `detail({ id }).detail.load(context)`. Static choices use
-the renderer's `data` prop. Keep filters in `searchParameters` and relation
-labels in the table/detail display maps.
+Every authored input names its renderer. Its `props` match the selected
+component's public props, including supported native attributes. For
+database-backed relation inputs, pass loaders in `props`: option inputs use
+`load` and optional `namespace`; lookup also uses `loadDetail(context)` for
+scalar identity hydration and its own table definition in `props.table`.
+Delegate those loaders to the owning resource's `list.table.load` and
+`detail({ id }).detail.load(context)`. Static choices use the renderer's `data`
+prop. Keep filters in `searchParameters` and relation labels in the table/detail
+display maps.
 
 The raw form schema defines the selection value and any conversion to operation
 input. Multi-choice controls can emit selected record objects; accept that

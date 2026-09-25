@@ -6,7 +6,6 @@ import { FileManagerPlugin } from '@southneuhof/loom/file-manager'
 import { createFrameworkAdapters } from './framework/adapters/bundle'
 import { fileManagerOptions } from './framework/adapters/fileManager'
 import { appDisplayRenderers } from './framework/display/renderers'
-import { appInputProps } from './framework/inputs/registry'
 import { dictionary } from '@/configs/dictionary'
 import App from './App.vue'
 import router from './router'
@@ -35,7 +34,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   app.use(FrameworkPlugin, {
     adapters: createFrameworkAdapters(router),
     renderers: { display: appDisplayRenderers },
-    inputProps: appInputProps,
     uiDefaults: { backLabel: 'Kembali' },
   })
   app.use(FileManagerPlugin, fileManagerOptions)

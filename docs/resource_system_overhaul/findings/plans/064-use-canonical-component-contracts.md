@@ -2,7 +2,7 @@
 
 ## Status
 
-- Status: TODO
+- Status: DONE
 - Priority: P1
 - Effort: L
 - Fix risk: HIGH
@@ -236,15 +236,15 @@ Extend surface-definition and renderer-contract tests and add a canonical-props 
 
 ## Done criteria
 
-- [ ] Authored renderer props are the component contract minus managed plumbing; no blanket optionalization/extras.
-- [ ] Supported native attributes are typed, flat, and forwarded to a documented native target.
-- [ ] Every authored form field has an explicit renderer; no choice/renderer synthesis survives.
-- [ ] Loader props bind directly; field source and the generic inputProps registry are absent.
-- [ ] Form binds Vue models directly; CoreTextRenderer/model adapters and Form-only Date conversion are absent.
-- [ ] Requiredness has one schema-derived owner and reaches the actual control.
-- [ ] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
-- [ ] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
-- [ ] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.
+- [x] Authored renderer props are the component contract minus managed plumbing; no blanket optionalization/extras.
+- [x] Supported native attributes are typed, flat, and forwarded to a documented native target.
+- [x] Every authored form field has an explicit renderer; no choice/renderer synthesis survives.
+- [x] Loader props bind directly; field source and the generic inputProps registry are absent.
+- [x] Form binds Vue models directly; CoreTextRenderer/model adapters and Form-only Date conversion are absent.
+- [x] Requiredness has one schema-derived owner and reaches the actual control.
+- [x] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
+- [x] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
+- [x] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.
 
 ## STOP conditions
 

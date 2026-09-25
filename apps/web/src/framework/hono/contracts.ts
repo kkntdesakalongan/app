@@ -53,7 +53,7 @@ type DeleteEndpoint<TRoute> = 'delete' extends keyof TRoute
 type DataOf<T> = T extends { data: infer TValue } ? TValue : never
 type ListRecordOf<T> = DataOf<T> extends readonly (infer TValue)[] ? TValue : never
 type JsonOf<TEndpoint> = HonoRequestOf<TEndpoint> extends { json: infer TValue } ? TValue : Record<string, never>
-type QueryOfEndpoint<TEndpoint> = HonoRequestOf<TEndpoint> extends { query: infer TValue } ? TValue : Record<string, never>
+type QueryOfEndpoint<TEndpoint> = HonoRequestOf<TEndpoint> extends { query: infer TValue } ? TValue : never
 type ObjectJsonOf<TEndpoint> = JsonOf<TEndpoint> extends object ? JsonOf<TEndpoint> : Record<string, never>
 type IsExactlyUnknown<TValue> = unknown extends TValue ? ([keyof TValue] extends [never] ? true : false) : false
 type UnknownKeys<TPayload extends object> = {
@@ -71,17 +71,22 @@ type UnionObject<TPayload extends object> =
     : { [TKey in RequiredUnionKeys<TPayload>]: UnionValue<TPayload, TKey> } & { [TKey in Exclude<UnionKeys<TPayload>, RequiredUnionKeys<TPayload>>]?: UnionValue<TPayload, TKey> }
 type AdaptedUnionObject<TPayload> = TPayload extends object ? (TPayload extends readonly unknown[] ? TPayload : AdaptedObject<TPayload>) : never
 type AdapterPayload<TPayload> = [TPayload] extends [object] ? ([TPayload] extends [readonly unknown[]] ? TPayload : UnionObject<AdaptedUnionObject<TPayload>>) : TPayload
-type KnownKeys<T> = { [TKey in keyof T]-?: string extends TKey ? never : TKey }[keyof T]
-type QueryValue<TWire, TKey extends PropertyKey, TFallback> = TKey extends keyof TWire ? TWire[TKey] : TFallback
-type AdapterQuery<TWire extends object> = {
-  page?: QueryValue<TWire, 'page', string> | number
-  limit?: QueryValue<TWire, 'limit', string> | number
-  search?: QueryValue<TWire, 'search', string>
-  sort?: QueryValue<TWire, 'sort', string>
-  order?: QueryValue<TWire, 'order', string>
-} & {
-  [TKey in Exclude<KnownKeys<TWire>, 'page' | 'limit' | 'search' | 'sort' | 'order'>]?: TWire[TKey]
+type SchemaOutput<TSchema> = TSchema extends { readonly _output: infer TOutput extends object } ? TOutput : never
+type WireValue<TValue> = TValue extends null | undefined ? never : TValue extends string ? TValue : TValue extends number | boolean ? `${TValue}` : string
+type EncodedCollectionQuery<TQuery extends object> = {
+  [TKey in keyof TQuery as TKey extends 'sort_by' ? 'sort' : TKey extends 'sort' ? 'order' : TKey]?: WireValue<TQuery[TKey]>
 }
+type HonoWireQueryOf<TRoute> = QueryOfEndpoint<ListEndpoint<TRoute>> extends infer TQuery extends object ? TQuery : never
+type QueryEndpointGuard<TRoute, TSchema> =
+  SchemaOutput<TSchema> extends infer TQuery extends object
+    ? Exclude<keyof EncodedCollectionQuery<TQuery>, keyof HonoWireQueryOf<TRoute>> extends never
+      ? [EncodedCollectionQuery<TQuery>] extends [Partial<HonoWireQueryOf<TRoute>>]
+        ? unknown
+        : never
+      : never
+    : never
+
+export type HonoQuerySchemaGuard<TRoute, TSchema> = QueryEndpointGuard<TRoute, TSchema>
 
 export type HonoRecordOf<TRoute> = [ListEndpoint<TRoute>] extends [never]
   ? DataOf<HonoResponseOf<DetailGetEndpoint<TRoute>, 200>> extends object
@@ -90,16 +95,15 @@ export type HonoRecordOf<TRoute> = [ListEndpoint<TRoute>] extends [never]
   : ListRecordOf<HonoResponseOf<ListEndpoint<TRoute>, 200>> extends object
     ? ListRecordOf<HonoResponseOf<ListEndpoint<TRoute>, 200>>
     : Record<string, unknown>
-export type HonoQueryOf<TRoute> = [ListEndpoint<TRoute>] extends [never] ? Record<string, never> : AdapterQuery<QueryOfEndpoint<ListEndpoint<TRoute>> & object>
 export type HonoCreateOf<TRoute> = AdapterPayload<ObjectJsonOf<CreateEndpoint<TRoute>>>
 export type HonoUpdateOf<TRoute> = AdapterPayload<ObjectJsonOf<UpdateEndpoint<TRoute>>>
 
-type MutationRecordOf<TEndpoint, TStatus extends StatusCode> = DataOf<HonoResponseOf<TEndpoint, TStatus>> extends object ? DataOf<HonoResponseOf<TEndpoint, TStatus>> : Record<string, unknown>
+type MutationRecordOf<TEndpoint, TStatus extends StatusCode> = [DataOf<HonoResponseOf<TEndpoint, TStatus>>] extends [never] ? Record<string, unknown> : DataOf<HonoResponseOf<TEndpoint, TStatus>>
 
-export type HonoResourceActions<TRoute> = ([ListEndpoint<TRoute>] extends [never]
+export type HonoResourceActions<TRoute, TQuery extends object = Record<string, unknown>> = ([ListEndpoint<TRoute>] extends [never]
   ? {}
   : {
-      list: (context: CollectionLoadContext<HonoQueryOf<TRoute>>) => Promise<CollectionResult<HonoRecordOf<TRoute>>>
+      list: (context: CollectionLoadContext<TQuery>) => Promise<CollectionResult<HonoRecordOf<TRoute>>>
     }) &
   ([DetailGetEndpoint<TRoute>] extends [never]
     ? {}

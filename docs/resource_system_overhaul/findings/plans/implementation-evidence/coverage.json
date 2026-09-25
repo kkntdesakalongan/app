@@ -2,7 +2,7 @@
   "target_commit": "223fc622d9a897014fcbad48df838a19cec398db",
   "generated_at": "2026-09-24",
   "source_archive": "carta-resource_system_overhaul(2).zip",
-  "status": "PLANNED_NOT_IMPLEMENTED",
+  "status": "IMPLEMENTATION_ACCEPTED",
   "original_findings_count": 27,
   "plans": [
     {
@@ -88,8 +88,25 @@
       ],
       "required_outcome": "Track private edits; detach read-only drafts and Dates; preserve explicit transient empty values.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/forms/useFormSession.ts",
+          "packages/loom/src/components/core/Form.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/core/__tests__/form.spec.ts \u2014 keeps exposed draft values detached from the session and from their input sources",
+          "packages/loom/src/forms/__tests__/useFormSession.spec.ts \u2014 recomputes derived fields from the current draft before submission",
+          "keeps a reset dependent value clear when a late refresh resolves"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F02",
@@ -100,8 +117,24 @@
       ],
       "required_outcome": "A component-owned invalid-edit event blocks submission independently of candidate key presence.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/core/Form.vue",
+          "packages/loom/src/components/inputs/NumberInput.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/core/__tests__/form.spec.ts \u2014 invalidates submit validation when a control reports local text errors",
+          "blocks optional number text and permits clearing it"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F03",
@@ -112,8 +145,25 @@
       ],
       "required_outcome": "Bind post-await completion, errors and pending flags to the originating form generation.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/forms/useFormSession.ts",
+          "packages/loom/src/components/core/Form.vue",
+          "packages/loom/src/components/composites/DialogForm.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/core/__tests__/form.spec.ts \u2014 keeps a late fulfill/reject mutation result with its original session",
+          "packages/loom/src/components/composites/__tests__/DialogForm.managed.spec.ts \u2014 keeps a late save from changing a reopened dialog session"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F04",
@@ -124,8 +174,22 @@
       ],
       "required_outcome": "A single Save intent supersedes blur validation instead of disappearing.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/core/Form.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts \u2014 lets Save supersede deferred blur validation and dispatches once"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F05",
@@ -136,8 +200,22 @@
       ],
       "required_outcome": "Forward current component props and current model presence, not an initial snapshot.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/composites/DialogForm.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts \u2014 forwards current DialogForm prop presence and native attributes"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F06",
@@ -148,8 +226,25 @@
       ],
       "required_outcome": "Use one controlled-parent/uncontrolled-Collection query owner with exactly one update event.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/views/ListView.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/views/__tests__/ListView.browser.spec.ts \u2014 keeps query ownership across namespace and controlled mode changes",
+          "apps/web/src/framework/acceptance/QueryOwnershipFixture.vue \u2014 preserves query parameters and back-navigation state"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser",
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped.",
+          "46 files; 230 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F07",
@@ -160,8 +255,29 @@
       ],
       "required_outcome": "Delete automatic renderer/enum-choice synthesis; require canonical explicit selector props.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/renderers/form.ts",
+          "packages/loom/src/components/inputs/SelectInput.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__tests__/SelectForm.browser.spec.ts \u2014 uses one numeric choice prop bag in standalone, Form, and DialogForm controls",
+          "packages/loom/src/renderers/__type-tests__/form-contracts.type-test.ts \u2014 numeric selection model compatibility",
+          "packages/loom/src/forms/__tests__/defineForm.spec.ts \u2014 rejects missing renderer for JavaScript definitions"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser",
+          "pnpm --filter @southneuhof/loom type-check",
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped.",
+          "Passed.",
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F08",
@@ -172,8 +288,26 @@
       ],
       "required_outcome": "Derive model/prop compatibility from components; remove the independent renderer-kind matrix.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/renderers/formContracts.ts",
+          "packages/loom/src/components/inputs/SelectInput.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/renderers/__type-tests__/form-contracts.type-test.ts \u2014 numericSelection is accepted and invalidNumericSelection is rejected",
+          "packages/loom/src/components/composites/__tests__/SelectForm.browser.spec.ts \u2014 real numeric selector across standalone, Form, and DialogForm"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom type-check",
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "Passed.",
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F09",
@@ -184,8 +318,24 @@
       ],
       "required_outcome": "Pass schema-derived requiredness to the component after authored props.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/core/Form.vue",
+          "packages/loom/src/renderers/form.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/core/__tests__/Form.browser.spec.ts \u2014 forwards canonical props to native controls and keeps direct and managed models live",
+          "verifies the managed input is required from the schema"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F10",
@@ -196,8 +346,23 @@
       ],
       "required_outcome": "Null permission still goes through the row-policy access seam.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/resources/bindResource.ts",
+          "packages/loom/src/resources/operations.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/resources/__tests__/boundResource.spec.ts \u2014 checks null permissions at the access adapter and retains row policy"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F11",
@@ -208,8 +373,24 @@
       ],
       "required_outcome": "Bind immutable scalar/composite identities and detached policy context.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/resources/bindResource.ts",
+          "packages/loom/src/resources/identity.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/resources/__tests__/boundResource.spec.ts \u2014 keeps scalar and composite bindings on detached identities and record snapshots",
+          "keeps scalar and composite identity checks on the bound operations"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F12",
@@ -220,8 +401,26 @@
       ],
       "required_outcome": "Bind context with withContext; preserve the exact business run/can argument tuple.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/resources/bindResource.ts",
+          "packages/loom/src/resources/operations.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/resources/__tests__/boundResource.spec.ts \u2014 binds custom command context separately from default and record-bearing payloads",
+          "packages/loom/src/resources/__type-tests__/resource-actions.type-test.ts \u2014 withContext argument contract"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+          "pnpm --filter @southneuhof/loom type-check"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped.",
+          "Passed."
+        ]
+      }
     },
     {
       "id": "F13",
@@ -232,8 +431,26 @@
       ],
       "required_outcome": "Derive declarations and forwarding from complete canonical View contracts.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/resources/bindResource.ts",
+          "packages/loom/src/resources/runtime.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/resources/__tests__/boundResource.spec.ts \u2014 forwards canonical list and form View props while binding primitives",
+          "packages/loom/src/resources/__type-tests__/bound-resource.type-test.ts \u2014 canonical resource page bags"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+          "pnpm --filter @southneuhof/loom type-check"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped.",
+          "Passed."
+        ]
+      }
     },
     {
       "id": "F14",
@@ -244,8 +461,22 @@
       ],
       "required_outcome": "Use nested Form labels and the standard actions slot; remove wrapper aliases.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/views/FormView.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts \u2014 inherits FormView labels and forwards the complete actions scope"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F15",
@@ -256,8 +487,23 @@
       ],
       "required_outcome": "Render the tree column through DisplayValue with original-record/accessor semantics.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/core/TreeTable.vue",
+          "packages/loom/src/display/resolveDisplay.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts \u2014 reuses joined-role, status, and date fragments on primitive and extracted surfaces"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F16",
@@ -268,8 +514,23 @@
       ],
       "required_outcome": "Separate committed hydration from edited staging generations.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/composites/form-inputs/LookupInput.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__tests__/LookupInput.browser.spec.ts \u2014 keeps a new staged row when committed detail hydration finishes later",
+          "keeps a parent replacement when older detail and staged work resolve"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F17",
@@ -280,8 +541,25 @@
       ],
       "required_outcome": "Block disabled asset mutation handlers and govern accepted in-flight work by token.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/inputs/FileInput.vue",
+          "packages/loom/src/components/inputs/ImageInput.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/inputs/__tests__/FileInput.spec.ts \u2014 blocks disabled picker and drop handlers",
+          "completes accepted upload after disable",
+          "packages/loom/src/components/inputs/__tests__/ImageInput.spec.ts \u2014 blocks disabled uploads and removal"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F18",
@@ -293,8 +571,26 @@
       ],
       "required_outcome": "Check whole unions/all keys; validate result identity before presentation independently of routes.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/resources/bindResource.ts",
+          "packages/loom/src/resources/defineResource.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/resources/__tests__/boundResource.spec.ts \u2014 validates mutation result identity and reports post-write failures without retrying",
+          "packages/loom/src/resources/__type-tests__/resource-actions.type-test.ts \u2014 invalid mixed result identity union"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+          "pnpm --filter @southneuhof/loom type-check"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped.",
+          "Passed."
+        ]
+      }
     },
     {
       "id": "F19",
@@ -305,8 +601,26 @@
       ],
       "required_outcome": "Use field-keyed typed slots and one read-only draft/ref contract across wrappers.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/renderers/formContracts.ts",
+          "packages/loom/src/components/core/Form.vue",
+          "packages/loom/src/components/composites/DialogForm.vue",
+          "packages/loom/src/components/views/FormView.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__type-tests__/plan067-form-contracts.type-test.vue \u2014 field-keyed value/setter slots on Form, DialogForm and FormView, with invalid keys/values rejected",
+          "packages/loom/src/contracts/__type-tests__/surface-definitions.type-test.ts \u2014 deep-readonly FormDraftSnapshot"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom type-check"
+        ],
+        "result": [
+          "Passed."
+        ]
+      }
     },
     {
       "id": "F20",
@@ -317,8 +631,39 @@
       ],
       "required_outcome": "Use real controls and plausible broken counterexamples; remove tautological/incidental assertions.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/**/__tests__/**",
+          "packages/loom/src/**/__type-tests__/**",
+          "scripts/check-surface-architecture.test.mjs"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__tests__/SelectForm.browser.spec.ts \u2014 real numeric control",
+          "packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts \u2014 real TreeTable renderer",
+          "packages/loom/src/assets/__tests__/AssetParity.browser.spec.ts \u2014 direct/managed inputs, previews, and two-app isolation",
+          "packages/loom/src/__tests__/public-api.spec.ts \u2014 runtime export absence",
+          "packages/loom/src/__type-tests__/removed-public-api.type-test.ts \u2014 expected-negative type imports",
+          "packages/loom/src/forms/__tests__/defineForm.spec.ts \u2014 configuration content without key-order dependence",
+          "packages/loom/src/schemas/__tests__/compileSchema.spec.ts \u2014 installed Zod v3/v4 finite-key discovery and no transform/default execution during metadata inspection",
+          "packages/loom/src/components/composites/__tests__/LocationInput.spec.ts \u2014 stale autocomplete/geolocation results after replacement, selection, and unmount",
+          "packages/loom/src/services/__tests__/export.spec.ts \u2014 page safety limit rejects incomplete export",
+          "packages/loom/src/components/composites/__type-tests__/date-input-model.type-test.ts \u2014 DateInput rejects a Date model"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+          "pnpm --filter @southneuhof/loom test:browser",
+          "pnpm --filter @southneuhof/loom type-check",
+          "pnpm test:surface-architecture"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped.",
+          "14 files; 55 passed; 0 skipped.",
+          "Passed.",
+          "17 tests passed; 0 skipped; surface checks passed."
+        ]
+      }
     },
     {
       "id": "F21",
@@ -329,8 +674,26 @@
       ],
       "required_outcome": "Run Loom unit and tooling suites explicitly; include matching workflow triggers.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          ".github/workflows/web-validation.yml",
+          "scripts/web-validation-workflow.test.mjs"
+        ],
+        "regression_fixture": [
+          "scripts/web-validation-workflow.test.mjs \u2014 checks push/PR paths and explicit framework, tooling, browser, and type-check commands"
+        ],
+        "commands": [
+          "node --test scripts/web-validation-workflow.test.mjs",
+          "pnpm test:module-tooling"
+        ],
+        "result": [
+          "2 tests passed; 0 skipped; push/PR triggers and explicit workflow commands are checked.",
+          "119 Node tests passed; 0 skipped; 3 Python tests passed.",
+          "Hosted CI NOT_RUN; no live GitHub workflow execution was available."
+        ]
+      }
     },
     {
       "id": "F22",
@@ -341,8 +704,26 @@
       ],
       "required_outcome": "Return compact named contracts with useful refinements; hide proof aliases and measure fairly.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/contracts/**",
+          "packages/loom/src/resources/**"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/contracts/__type-tests__/surface-definitions.type-test.ts \u2014 compact form/table/detail contracts and model refinements",
+          "packages/loom/src/resources/__type-tests__/bound-resource.type-test.ts \u2014 operation/action/result/page refinements"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom type-check",
+          "pnpm --filter @southneuhof/framework-web type-check"
+        ],
+        "result": [
+          "Passed.",
+          "Passed; route contract and generated-route checks ran before Vue type checking."
+        ]
+      }
     },
     {
       "id": "F23",
@@ -353,8 +734,24 @@
       ],
       "required_outcome": "Encode the unchanged HTTP query protocol once in the existing Hono adapter.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "apps/web/src/framework/hono/actions.ts",
+          "apps/web/src/framework/hono/collectionQuery.ts"
+        ],
+        "regression_fixture": [
+          "apps/web/src/framework/hono/actions.spec.ts \u2014 validates and encodes one canonical query while preserving the endpoint protocol",
+          "awaits one query parse for direct loader calls"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test"
+        ],
+        "result": [
+          "46 files; 230 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F24",
@@ -365,8 +762,27 @@
       ],
       "required_outcome": "Delete unused identity declaration helpers and identical runtime aliases.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/resources/identity.ts",
+          "packages/loom/src/resources/operations.ts",
+          "packages/loom/src/resources/index.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/__tests__/public-api.spec.ts \u2014 retired runtime exports and legacy paths are absent",
+          "scripts/check-surface-architecture.test.mjs \u2014 rejects removed resource factories but allows unrelated list methods"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+          "pnpm test:surface-architecture"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped.",
+          "17 tests passed; 0 skipped; surface checks passed."
+        ]
+      }
     },
     {
       "id": "F25",
@@ -377,8 +793,35 @@
       ],
       "required_outcome": "Compile actual examples; align root docs, nested skills and generators with real owners.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "README.md",
+          "packages/loom/README.md",
+          ".agents/skills/build-resource-form/references/form-field-types.md",
+          ".agents/skills/carta-module-development/references/frontend-field-contract.md",
+          "scripts/scaffold-bounded-module.mjs",
+          "scripts/module-ui-check.mjs"
+        ],
+        "regression_fixture": [
+          "scripts/scaffold-bounded-module.test.mjs \u2014 checked-in Web type fixture matches generated output",
+          "scripts/verify-module.test.mjs \u2014 captures active contract and UI guidance",
+          "scripts/check-surface-architecture.test.mjs \u2014 checks generator output and current guidance"
+        ],
+        "commands": [
+          "pnpm test:module-tooling",
+          "node --test scripts/scaffold-bounded-module.test.mjs",
+          "pnpm --filter @southneuhof/framework-web type-check",
+          "pnpm test:surface-architecture"
+        ],
+        "result": [
+          "119 Node tests passed; 0 skipped; 3 Python tests passed.",
+          "23 tests passed; 0 skipped; checked-in generated Web type fixture matches current generated output.",
+          "Passed; route contract and generated-route checks ran before Vue type checking.",
+          "17 tests passed; 0 skipped; surface checks passed."
+        ]
+      }
     },
     {
       "id": "F26",
@@ -389,8 +832,22 @@
       ],
       "required_outcome": "Recheck close generation/busy state after awaited guard approval.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/composites/DialogForm.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts \u2014 does not apply a deferred close approval to a reopened or submitting session"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "F27",
@@ -402,8 +859,25 @@
       ],
       "required_outcome": "Delete generic input hydration; preserve global asset reader null without raw-value fallback.",
       "final_gate": "069",
-      "implementation_status": "TODO",
-      "test_results": "NOT_RUN_IN_THIS_PLANNING_PASS"
+      "implementation_status": "IMPLEMENTED_ACCEPTED",
+      "test_results": "PASS; command and outcome are recorded in plan_069_coverage.",
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/assets/provider.ts",
+          "packages/loom/src/components/inputs/FileInput.vue",
+          "packages/loom/src/components/inputs/ImageInput.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/assets/__tests__/provider.spec.ts \u2014 keeps canonical reads unchanged and preserves null",
+          "packages/loom/src/components/inputs/__tests__/FileInput.spec.ts \u2014 keeps the uploaded asset object in the live draft through submission"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     }
   ],
   "decisions": [
@@ -414,7 +888,25 @@
         "064",
         "067",
         "069"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/core/Form.vue",
+          "packages/loom/src/renderers/formContracts.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/core/__tests__/Form.browser.spec.ts \u2014 native declarations, schema requiredness and real managed control",
+          "packages/loom/src/renderers/__type-tests__/form-contracts.type-test.ts \u2014 direct/managed props and invalid props"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser",
+          "pnpm --filter @southneuhof/loom type-check"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped.",
+          "Passed."
+        ]
+      }
     },
     {
       "id": "D02",
@@ -424,7 +916,22 @@
         "064",
         "066",
         "069"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/assets/provider.ts",
+          "packages/loom/src/adapters/plugin.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/assets/__tests__/AssetParity.browser.spec.ts \u2014 direct inputs, managed forms, previews and isolation between two mounted Vue apps"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "D03",
@@ -432,7 +939,25 @@
       "plans": [
         "064",
         "069"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/renderers/form.ts",
+          "packages/loom/src/forms/compileForm.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/composites/__tests__/SelectForm.browser.spec.ts \u2014 explicit numeric selector across controls",
+          "packages/loom/src/renderers/__type-tests__/form-contracts.type-test.ts \u2014 valid and incompatible model cases"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser",
+          "pnpm --filter @southneuhof/loom type-check"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped.",
+          "Passed."
+        ]
+      }
     },
     {
       "id": "D04",
@@ -442,7 +967,26 @@
         "065",
         "068",
         "069"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/forms/compileForm.ts",
+          "packages/loom/src/components/inputs/SelectInput.vue",
+          "packages/loom/src/renderers/registry.ts"
+        ],
+        "regression_fixture": [
+          "scripts/check-surface-architecture.test.mjs \u2014 rejects aliased field sources and follows component prop aliases/spreads",
+          "SelectForm.browser.spec.ts \u2014 canonical component props"
+        ],
+        "commands": [
+          "pnpm test:surface-architecture",
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "17 tests passed; 0 skipped; surface checks passed.",
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "D05",
@@ -452,7 +996,25 @@
         "063",
         "064",
         "067"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/components/core/Form.vue",
+          "packages/loom/src/forms/useFormSession.ts"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/core/__tests__/Form.browser.spec.ts \u2014 invalid numeric text stays local",
+          "SurfaceParity.browser.spec.ts \u2014 DateInput string model reaches schema without conversion"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser",
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped.",
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "D06",
@@ -464,7 +1026,29 @@
         "066",
         "067",
         "069"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/forms/defineForm.ts",
+          "packages/loom/src/components/composites/DialogForm.vue",
+          "packages/loom/src/components/views/FormView.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/forms/__tests__/defineForm.spec.ts \u2014 submit/callback content",
+          "SurfaceParity.browser.spec.ts \u2014 labels and actions",
+          "flat-form-components.type-test.vue \u2014 Form/DialogForm props are flat"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+          "pnpm --filter @southneuhof/loom test:browser",
+          "pnpm --filter @southneuhof/loom type-check"
+        ],
+        "result": [
+          "61 files; 438 passed; 0 skipped.",
+          "14 files; 55 passed; 0 skipped.",
+          "Passed."
+        ]
+      }
     },
     {
       "id": "D07",
@@ -474,7 +1058,25 @@
         "066",
         "067",
         "069"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "packages/loom/src/display/resolveDisplay.ts",
+          "packages/loom/src/components/core/TreeTable.vue"
+        ],
+        "regression_fixture": [
+          "packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts \u2014 joined relation, renderer, status, date and asset parity",
+          "packages/loom/src/services/__tests__/export.spec.ts \u2014 joined relation formatter"
+        ],
+        "commands": [
+          "pnpm --filter @southneuhof/loom test:browser",
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test"
+        ],
+        "result": [
+          "14 files; 55 passed; 0 skipped.",
+          "61 files; 438 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "D08",
@@ -486,7 +1088,29 @@
         "065",
         "068",
         "069"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "apps/web/src/framework/hono/actions.ts",
+          "packages/loom/src/schemas/compileSchema.ts",
+          "packages/loom/src/assets/provider.ts"
+        ],
+        "regression_fixture": [
+          "apps/web/src/framework/hono/actions.spec.ts \u2014 unchanged wire protocol",
+          "packages/loom/src/schemas/__tests__/compileSchema.spec.ts \u2014 transform/default boundary and Zod v3",
+          "AssetParity.browser.spec.ts \u2014 global asset service"
+        ],
+        "commands": [
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test",
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+          "pnpm --filter @southneuhof/loom test:browser"
+        ],
+        "result": [
+          "46 files; 230 passed; 0 skipped.",
+          "61 files; 438 passed; 0 skipped.",
+          "14 files; 55 passed; 0 skipped."
+        ]
+      }
     },
     {
       "id": "D09",
@@ -498,7 +1122,30 @@
         "067",
         "068",
         "069"
-      ]
+      ],
+      "plan_069_coverage": {
+        "production_owner": [
+          "scripts/check-surface-architecture.mjs",
+          "packages/loom/src/index.ts",
+          "README.md",
+          ".agents/skills/**"
+        ],
+        "regression_fixture": [
+          "scripts/check-surface-architecture.test.mjs \u2014 syntax-aware removed-path and generated-output checks",
+          "public-api.spec.ts \u2014 runtime export/path absence",
+          "verify-module.test.mjs \u2014 active guidance evidence"
+        ],
+        "commands": [
+          "pnpm test:surface-architecture",
+          "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+          "pnpm test:module-tooling"
+        ],
+        "result": [
+          "17 tests passed; 0 skipped; surface checks passed.",
+          "61 files; 438 passed; 0 skipped.",
+          "119 Node tests passed; 0 skipped; 3 Python tests passed."
+        ]
+      }
     }
   ],
   "excluded_from_execution": [
@@ -506,5 +1153,162 @@
     "060-close-resource-binding-footguns.md",
     "061-prove-wrapper-and-renderer-parity.md"
   ],
-  "limits": "Plans use source inspection and previously recorded isolated evidence. No implementation, pinned workspace/Vue/browser test run, storage/API integration, or new benchmark was performed in this planning pass."
+  "limits": "Plan 069 accepted evidence is recorded below. Live hosted CI was not run. The root build task was fully cached. Existing resource-runtime multi-app/SSR behavior remains outside scope; asset-service isolation was tested across two mounted Vue apps. Historical Plan 067 measurements remain the only comparable type measurements and do not support a performance claim.",
+  "historical_planning_metadata": {
+    "status": "PLANNED_NOT_IMPLEMENTED",
+    "limits": "Plans use source inspection and previously recorded isolated evidence. No implementation, pinned workspace/Vue/browser test run, storage/API integration, or new benchmark was performed in this planning pass.",
+    "superseded_by": "Plan 069 accepted implementation evidence recorded below."
+  },
+  "updated_at": "2026-09-25",
+  "plan_069_commands": {
+    "loom_unit": [
+      "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test",
+      0,
+      "61 files; 438 passed; 0 skipped."
+    ],
+    "loom_browser": [
+      "pnpm --filter @southneuhof/loom test:browser",
+      0,
+      "14 files; 55 passed; 0 skipped."
+    ],
+    "loom_types": [
+      "pnpm --filter @southneuhof/loom type-check",
+      0,
+      "Passed."
+    ],
+    "web_types": [
+      "pnpm --filter @southneuhof/framework-web type-check",
+      0,
+      "Passed; route contract and generated-route checks ran before Vue type checking."
+    ],
+    "web_behavior": [
+      "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test",
+      0,
+      "46 files; 230 passed; 0 skipped."
+    ],
+    "surface_architecture": [
+      "pnpm test:surface-architecture",
+      0,
+      "17 tests passed; 0 skipped; surface checks passed."
+    ],
+    "module_tooling": [
+      "pnpm test:module-tooling",
+      0,
+      "119 Node tests passed; 0 skipped; 3 Python tests passed."
+    ],
+    "generator_fixture": [
+      "node --test scripts/scaffold-bounded-module.test.mjs",
+      0,
+      "23 tests passed; 0 skipped; checked-in generated Web type fixture matches current generated output."
+    ],
+    "workflow_fixture": [
+      "node --test scripts/web-validation-workflow.test.mjs",
+      0,
+      "2 tests passed; 0 skipped; push/PR triggers and explicit workflow commands are checked."
+    ],
+    "workspace_types": [
+      "pnpm type-check",
+      0,
+      "6 Turbo tasks successful; 4 cached."
+    ],
+    "workspace_tests": [
+      "NODE_OPTIONS=--no-experimental-webstorage pnpm test",
+      0,
+      "Root surface check passed; 12 Turbo tasks successful; 8 cached. Package-level counts are listed separately."
+    ],
+    "workspace_lint": [
+      "pnpm lint",
+      0,
+      "3 Turbo tasks successful; 2 cached."
+    ],
+    "workspace_build": [
+      "pnpm build",
+      0,
+      "6 Turbo tasks successful; all 6 cached (FULL TURBO); no uncached build job ran."
+    ],
+    "module_preflight": [
+      "pnpm module:preflight",
+      0,
+      "API dependencies/configuration and Web configuration passed."
+    ],
+    "web_e2e": [
+      "pnpm --filter @southneuhof/framework-web test:e2e",
+      0,
+      "10 passed; 0 skipped. E2E database and bucket isolation was verified before reset and seed."
+    ],
+    "whitespace": [
+      "git diff --check",
+      0,
+      "Passed."
+    ],
+    "affected_graph": {
+      "command": "pnpm exec turbo run lint type-check --affected --dry=json",
+      "exit_code": 0,
+      "result": "Local dry run selected 12 tasks: lint and type-check for api, framework-web, loom, sdk, sprindle, and utilities. Affected package set: workspace root, framework-web, loom, utilities. Not hosted CI."
+    }
+  },
+  "execution_evidence": {
+    "environment": {
+      "node": "v26.9.0",
+      "pnpm": "12.1.0"
+    },
+    "live_ci": "NOT_RUN; structural workflow tests passed, but no hosted GitHub workflow execution is available from this checkout.",
+    "e2e_isolation": {
+      "database": "CARTA_DATABASE_PURPOSE=e2e; configured carta_e2e differs from development carta. The reset script checks the configured E2E database name and marker.",
+      "storage": "Configured carta-e2e bucket differs from development carta bucket. Both configs use the same endpoint; the separate bucket is the isolation boundary. The clear script checks the configured bucket.",
+      "execution": "Passing E2E run reset, migrated, cleared and seeded only verified E2E targets."
+    },
+    "warnings": [
+      "Browser tests report existing DialogContent description, NumberInput placeholder/prefix, and Vue Router onBeforeRouteLeave warnings.",
+      "Web Vitest reports the existing esbuild/oxc option conflict (oxc wins) and deprecated test.poolOptions.",
+      "Turbo reports its existing missing-output configuration warning for Loom type-check/build tasks."
+    ],
+    "limits": [
+      "Workspace build completed fully cached (FULL TURBO); no uncached build process ran.",
+      "Hosted CI was not run.",
+      "Existing resource-runtime multi-app/SSR behavior remains outside scope; asset adapter isolation was tested between two mounted Vue apps.",
+      "Plan 067 cold type measurements remain historical; changed checker configuration means no source-only performance claim."
+    ],
+    "transient_failures": [
+      {
+        "command": "pnpm --filter @southneuhof/loom test:browser",
+        "exit_code": 1,
+        "observed": "In a parallel run with Loom unit, Web unit and both type checks, 54/55 tests passed. The Save/blur test timed out waiting for the lazy input.",
+        "resolution": "Reran the same browser command by itself; exit 0, 14 files, 55 passed, 0 skipped."
+      },
+      {
+        "fixture_revision": "The initial resetWhen mutation probe survived because the late response was structurally identical to cached data. The fixture now asserts that the deferred refresh is a second loader call and returns a distinct stale value; removing edited.add then fails. The initial geolocation-after-unmount probe could not observe Vue ignoring emits from a disposed component. It now observes coordinate reads directly; removing the generation guard fails."
+      }
+    ]
+  },
+  "counterfactual_checks": [
+    {
+      "removed_behavior": "Export page-cap error; incomplete export temporarily returned rows.",
+      "command": "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom exec vitest run src/services/__tests__/export.spec.ts -t 'reports an incomplete export when paging reaches the safety limit'",
+      "exit_code": 1,
+      "observed": "Expected regression failure: the test did not receive the incomplete-export error.",
+      "restored": true
+    },
+    {
+      "removed_behavior": "edited.add(key) in resetBehaviorValue.",
+      "command": "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom exec vitest run src/forms/__tests__/useFormSession.spec.ts -t 'keeps a reset dependent value clear when a late refresh resolves'",
+      "exit_code": 1,
+      "observed": "Expected regression failure: the late north-approver-late response replaced the reset clear.",
+      "restored": true
+    },
+    {
+      "removed_behavior": "Geolocation generation guard after prediction selection.",
+      "command": "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom exec vitest run src/components/composites/__tests__/LocationInput.spec.ts -t 'ignores a geolocation result after the user selects a prediction'",
+      "exit_code": 1,
+      "observed": "Expected regression failure: stale coordinates replaced the pending prediction.",
+      "restored": true
+    },
+    {
+      "removed_behavior": "Geolocation generation guard after unmount.",
+      "command": "NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom exec vitest run src/components/composites/__tests__/LocationInput.spec.ts -t 'ignores a geolocation result after unmount'",
+      "exit_code": 1,
+      "observed": "Expected regression failure: stale callback read latitude and longitude after disposal.",
+      "restored": true
+    }
+  ]
 }

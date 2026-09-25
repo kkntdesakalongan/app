@@ -1,6 +1,7 @@
 import type { ClientResponse } from 'hono/client'
 import { z } from 'zod/v4'
-import { checkedHonoCreateSchema, checkedHonoQuerySchema, checkedHonoRecordSchema, checkedHonoUpdateSchema } from '../schema'
+import * as honoSchemas from '../schema'
+import { checkedHonoCreateSchema, checkedHonoRecordSchema, checkedHonoUpdateSchema } from '../schema'
 
 type Row = { id: string; name: string; active: boolean }
 type Endpoint<TRequest, TResponse, TStatus extends number> = (args: TRequest) => Promise<ClientResponse<TResponse, TStatus, 'json'>>
@@ -13,14 +14,16 @@ type Route = {
 declare const route: Route
 
 const record = z.object({ id: z.string(), name: z.string(), active: z.boolean() })
-const query = z.object({ search: z.string().optional(), page: z.coerce.number().int().positive().optional() })
 const create = z.object({ name: z.string() })
 const update = z.object({ name: z.string().optional(), active: z.boolean().optional() })
 
 checkedHonoRecordSchema(route, record)
-checkedHonoQuerySchema(route, query)
 checkedHonoCreateSchema(route, create)
 checkedHonoUpdateSchema(route, update)
+
+const querySchemaGuardIsRemoved: 'checkedHonoQuerySchema' extends keyof typeof honoSchemas ? false : true = true
+
+void querySchemaGuardIsRemoved
 
 // @ts-expect-error A record schema must retain every required endpoint field.
 checkedHonoRecordSchema(route, z.object({ id: z.string(), active: z.boolean() }))

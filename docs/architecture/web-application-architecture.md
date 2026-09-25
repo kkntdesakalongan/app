@@ -52,10 +52,17 @@ inferred types. Use those values directly in form, table, detail, and operation
 definitions.
 
 ```ts
+import { z } from 'zod/v4'
+import { collectionQueryFields } from '@/framework/hono/collectionQuery'
+
 export const usersRecordSchema = user.schemas.select
 export const usersCreateSchema = user.schemas.create
 export const usersUpdateSchema = user.schemas.update
-export const usersQuerySchema = z.object({ search: z.string().optional() })
+export const usersQuerySchema = z.object({
+  ...collectionQueryFields,
+  sort_by: z.enum(['name', 'email']).optional(),
+  statusCode: z.string().optional(),
+})
 
 export type User = z.output<typeof usersRecordSchema>
 export type UserCreate = z.input<typeof usersCreateSchema>
@@ -99,6 +106,26 @@ surface checks its own schema. Display fragments do not define form behavior.
 Use a `read` accessor when the displayed value comes from a joined relation.
 The API must return that relation data; do not fetch one label per row.
 
+The module query schema describes the canonical Collection values. Share only
+the page, limit, search, and direction fields; define sortable columns and
+filters in that module's schema. Bind it to the Hono list adapter once:
+
+```ts
+const api = createHonoResourceActions(rpc.users, { querySchema: usersQuerySchema })
+
+export const usersActions = {
+  list: api.list,
+  detail: api.detail,
+  create: api.create,
+  update: api.update,
+}
+```
+
+The adapter validates the query before dispatch and encodes `sort_by` as wire
+`sort` and direction `sort` as wire `order`. A resource table binds the loader
+directly; it does not also receive this query schema. Keep `querySchema` on a
+standalone Table only when that Table owns query validation for its loader.
+
 ## One-object resource declarations
 
 `defineResource` receives one object with `key`, `identity`, and only the
@@ -111,7 +138,7 @@ export const users = defineResource({
   list: {
     permission: 'view-users',
     route: { name: 'settings-users' },
-    table: { ...usersTable, querySchema: usersQuerySchema, load: usersActions.list },
+    table: { ...usersTable, load: usersActions.list },
   },
   create: {
     permission: 'create-users',
@@ -159,6 +186,17 @@ resource.
 Custom commands stay under `actions`. They declare `run` and a permission,
 and return guarded `can` and `run` functions. Standard operation members do
 not live in `actions`.
+
+`run` and `can` receive exactly the declared business arguments. For a
+row-dependent policy, bind the row with `command.withContext({ record })` and
+call `can` or `run` with those same arguments. A policy that needs a row denies
+when the command has no bound record.
+
+Resource list, detail, create, and update declarations use the matching
+complete View prop contracts. The binder removes operation metadata, forwards
+page options such as filters, export, back targets and completion callbacks,
+and supplies the guarded primitive bags. Extracting a primitive keeps its
+access and cache behavior without adding page navigation.
 
 ## Route pages
 

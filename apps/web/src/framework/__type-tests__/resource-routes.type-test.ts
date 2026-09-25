@@ -37,7 +37,7 @@ const resource = defineResource({
     form: ({ id }) => ({
       ...updateForm,
       load: async () => ({ name: 'One' }),
-      submit: async (input) => ({ id, name: input.name ?? 'One' }),
+      submit: async (input: (typeof updateSchema)['_output']) => ({ id, name: input.name ?? 'One' }),
     }),
   },
 })

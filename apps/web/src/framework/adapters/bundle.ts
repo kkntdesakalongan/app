@@ -5,18 +5,22 @@ import { dataAdapter } from './data/normalize'
 import { createRouteQueryAdapter } from './query/routeQuery'
 import { useColorPreference } from '@/stores/colorpreference'
 import { permissions } from '@/stores/permissions'
+import { assetAdapter } from './assets'
 
 /** True when the server-declared record operations include the operation. */
 export function recordAllows(record: unknown, operation: string): boolean {
   const operations = (record as { allowedOperations?: unknown } | undefined)?.allowedOperations
-  return Array.isArray(operations) && operations.includes(operation)
+  return Array.isArray(operations) && operations.every((name: unknown) => typeof name === 'string' && name.length > 0) && operations.includes(operation)
+}
+
+function hasOperationDeclaration(record: unknown): record is Record<string, unknown> {
+  return typeof record === 'object' && record !== null && !Array.isArray(record) && Object.hasOwn(record, 'allowedOperations')
 }
 
 /** Uses server operations for row-scoped records and memory permissions elsewhere. */
 export const accessAdapter: AccessAdapter = {
   allows: ({ operation, permission, record }) => {
-    const declared = (record as { allowedOperations?: unknown } | undefined)?.allowedOperations
-    if (isStandardRowOperation(operation) && Array.isArray(declared)) {
+    if (isStandardRowOperation(operation) && hasOperationDeclaration(record)) {
       return recordAllows(record, operation)
     }
     return allowsPermission(permission)
@@ -41,5 +45,6 @@ export function createFrameworkAdapters(router: Router): FrameworkAdaptersInput 
     query: createRouteQueryAdapter(router),
     queryDefaults: { staleTime: 30_000, retry: 1, refetchOnWindowFocus: false },
     ui: uiAdapter,
+    assets: assetAdapter,
   }
 }

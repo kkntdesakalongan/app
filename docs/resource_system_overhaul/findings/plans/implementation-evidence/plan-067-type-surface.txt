@@ -1,0 +1,22 @@
+Plan 067 type-surface inventory
+
+The package root re-exports `packages/loom/src/resources/index.ts` through `export * from './resources'`.
+
+Removed public type exports:
+
+- `ResourceDefinitionGuard` and `ResourceDefinitionInput`
+- `ResourceListTable`, `ResourceFormBag`, and `ResourceDetailBag`
+- `BoundCustomActions`, `BoundDelete`, `BoundDetail`, `BoundForm`, `BoundSubmit`, `BoundTable`, and `BoundUpdateForm`
+- `ResourceListPage`, `ResourceCreatePage`, `ResourceDetailPage`, and `ResourceUpdatePage`
+- `FormOutputOf`, `FormSubmitResult`, and `ResourcePermissions`
+
+Retained public authoring and result contracts:
+
+- `BoundResource`
+- `ResourceBinding`
+- `ResourceCreateDeclaration`, `ResourceDeleteDeclaration`, `ResourceDetailDeclaration`, `ResourceListDeclaration`, and `ResourceUpdateDeclaration`
+- `ResourceCustomCommand`, `ResourceCustomContext`, `ResourceCustomHandle`, and `ResourceCustomPermission`
+- `ResourceIdentityFunction` and `ResourceIdentityValue`
+- `ResourceRoute`, `ResourceRouteParams`, `ResourceStaticRoute`, and `ResourceVisibility`
+
+Production-reference search found no caller of a removed public type outside `resources/operations.ts`, `resources/defineResource.ts`, and `resources/bindResource.ts`. The type-only consumer fixture imports the removed names from the package root under one expected error and imports retained contracts as a positive control. `public-api.spec.ts` had no runtime absence assertions for type-only exports, so it needed no change for this removal.

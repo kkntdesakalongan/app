@@ -1,8 +1,30 @@
 import { createRendererRegistries } from '@southneuhof/loom'
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
+import { FrameworkPlugin, type AssetAdapter, type AssetValue } from '@southneuhof/loom'
 import { statusCatalog } from '@/configs/statuses'
 import { appDisplayRenderers } from './renderers'
+
+const displayAssets: AssetAdapter = {
+  read(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+    const asset = value as Record<string, unknown>
+    return asset.kind === 'file' && typeof asset.id === 'string' && typeof asset.url === 'string' && typeof asset.name === 'string' ? (value as AssetValue) : null
+  },
+  preview(asset) {
+    return { imageURL: `/display${asset.url}`, thumbnailURL: `/display${asset.url}` }
+  },
+  async upload() {
+    throw new Error('Display tests do not upload assets.')
+  },
+}
+
+function mountAssetRenderer(renderer: typeof appDisplayRenderers.image | typeof appDisplayRenderers.file, value: unknown) {
+  return mount(renderer, {
+    props: { value },
+    global: { plugins: [[FrameworkPlugin, { adapters: { assets: displayAssets } }]] },
+  })
+}
 
 describe('app display renderers', () => {
   it('registers app renderers in the shared display registry', () => {
@@ -34,13 +56,28 @@ describe('app display renderers', () => {
 
   it('renders stored image assets through the image preview', () => {
     const renderer = createRendererRegistries({ display: appDisplayRenderers }).display.require('image')
-    const view = mount(renderer, {
-      props: {
-        value: { kind: 'file', id: 'uploads/cover.png', url: 'https://files.test/cover.png', name: 'cover.png' },
-      },
+    const view = mountAssetRenderer(renderer as typeof appDisplayRenderers.image, {
+      kind: 'file',
+      id: 'uploads/cover.png',
+      url: 'https://files.test/cover.png',
+      name: 'cover.png',
     })
 
-    expect(view.find('img').attributes('src')).toBe('https://files.test/cover.png')
+    expect(view.find('img').attributes('src')).toBe('/displayhttps://files.test/cover.png')
+    view.unmount()
+  })
+
+  it('renders file links through the same asset preview service', () => {
+    const renderer = createRendererRegistries({ display: appDisplayRenderers }).display.require('file')
+    const view = mountAssetRenderer(renderer as typeof appDisplayRenderers.file, {
+      kind: 'file',
+      id: 'uploads/report.pdf',
+      url: 'https://files.test/report.pdf',
+      name: 'report.pdf',
+    })
+
+    expect(view.find('a').attributes('href')).toBe('/displayhttps://files.test/report.pdf')
+    expect(view.text()).toContain('report.pdf')
     view.unmount()
   })
 })

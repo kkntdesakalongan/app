@@ -4,7 +4,7 @@ import { appDisplayPresets } from '@/configs/display-presets'
 import { appInputPresets } from '@/configs/input-presets'
 import { appLabels } from '@/configs/labels'
 import { usersActions } from './users.actions'
-import { createUserFormSchema, userRecordSchema, userUpdateFormSchema, usersTableQuerySchema } from './users.schema'
+import { createUserFormSchema, userRecordSchema, userUpdateFormSchema } from './users.schema'
 
 const userLabels = { ...appLabels, roleIds: 'Roles', password: 'Password', createdAt: 'Created At', updatedAt: 'Updated At' }
 
@@ -40,8 +40,13 @@ const userCreateForm = defineForm({
     password: { renderer: 'text', props: { type: 'password' } },
     roleIds: {
       renderer: 'checkbox-group',
-      source: { load: roles.list.table.load, namespace: roles.list.table.namespace },
-      props: { pick: 'id', view: 'name', searchParameters: { active: true } },
+      props: {
+        load: roles.list.table.load,
+        namespace: roles.list.table.namespace,
+        pick: 'id',
+        view: 'name',
+        searchParameters: { active: true },
+      },
     },
   },
   submit: usersActions.create,
@@ -59,7 +64,7 @@ export const users = defineResource({
   list: {
     permission: 'view-users',
     route: { name: 'settings-users' },
-    table: { ...usersTable, querySchema: usersTableQuerySchema, load: usersActions.list },
+    table: { ...usersTable, load: usersActions.list },
   },
   create: {
     permission: 'create-users',
@@ -81,7 +86,7 @@ export const users = defineResource({
         const record = await usersActions.detail(context)
         return record ? { name: record.name, statusCode: record.statusCode } : undefined
       },
-      submit: (output) => usersActions.update(id, output),
+      submit: (output: (typeof userUpdateFormSchema)['_output']) => usersActions.update(id, output),
     }),
   },
 })

@@ -1,18 +1,23 @@
-/**
- * Compile-time cases for app input adapter defaults against renderer props.
- * Type-checked by web `type-check`; excluded from vitest by filename.
- */
-import { createInputPropsRegistry } from '@southneuhof/loom'
+import { defineForm } from '@southneuhof/loom'
+import type { FormRendererProps } from '@southneuhof/loom/renderers/formContracts'
+import { z } from 'zod/v4'
 
-// Correct file defaults pass.
-const adaptersOk = createInputPropsRegistry({
-  file: { defaults: { accept: ['application/pdf'] } },
-})
-void adaptersOk
+const nameProps = {
+  autocomplete: 'name',
+  inputmode: 'text',
+  maxlength: 120,
+  'data-owner': 7,
+} satisfies FormRendererProps<'text'>
 
-// Incorrect known file defaults fail.
-const adaptersBad = createInputPropsRegistry({
-  // @ts-expect-error adapter defaults use the file renderer contract
-  file: { defaults: { accept: 'application/pdf' } },
+const misspelledProps: FormRendererProps<'text'> = {
+  // @ts-expect-error TextInput does not publish this prop.
+  placehoder: 'Name',
+}
+
+const form = defineForm({
+  schema: z.object({ name: z.string() }),
+  fields: { name: { renderer: 'text', props: nameProps } },
 })
-void adaptersBad
+
+void form
+void misspelledProps

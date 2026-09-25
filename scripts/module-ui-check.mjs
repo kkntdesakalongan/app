@@ -662,18 +662,6 @@ export function checkResourceDisplay(files, { root = process.cwd(), read = absPa
   return { errors, review }
 }
 
-// Row-op sync (plan 049). Static mirror of plans 047 and 048: permission
-// decides role access; the row allowedOperations array decides this-row
-// access when present; omission hides by design; list and create never gate
-// by row. When a resource declares a detail, update, or delete action with a
-// route (delete has no route option, so any delete declaration counts), or a
-// custom action consumed as a row control (a `.can(`/`.run(` call carrying a
-// trailing `{ record }` context in a Vue source), its row enum must be able
-// to carry that op name. A missing enum means permission-only rows, so the
-// check passes. A list-only resource (no detail declaration) and a
-// collection-only custom action (never called with a row) pass. Results are
-// review-only: intentional per-row omission stays legal, the author resolves
-// the warning explicitly.
 const standardRowOps = new Set(['detail', 'update', 'delete'])
 
 function parseResourceActions(entry, index) {
@@ -746,13 +734,10 @@ function rowOpsIn(entry, index, seen) {
 function rowUsedCustomNames(vueContents) {
   const used = new Set()
   for (const content of vueContents) {
-    const pattern = /\.actions\.([A-Za-z_]\w*)\.(can|run)\s*\(/g
+    const pattern = /\.actions\.([A-Za-z_]\w*)\.withContext\s*\(\s*\{\s*record(?:\s*[:,}])/g
     let match
     while ((match = pattern.exec(content)) !== null) {
-      const after = content.slice(match.index, match.index + 600)
-      // A trailing `{ record }` (or `{ record:`) context marks a row call.
-      // Collection calls carry only domain inputs, never a record context.
-      if (/\{\s*record[\s,:}]/m.test(after)) used.add(match[1])
+      used.add(match[1])
     }
   }
   return used
