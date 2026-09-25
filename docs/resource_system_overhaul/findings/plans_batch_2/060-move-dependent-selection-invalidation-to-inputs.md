@@ -3,23 +3,22 @@
 > **Implementation instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the STOP conditions occurs, stop and report; do not
-> improvise. When done, update this plan's status row in `plans/README.md`.
+> improvise. When done, update this plan's status row in this batch's `README.md`.
 >
-> **Drift check**: The planning ZIP contains no `.git` metadata, so there is no
-> trustworthy planned-at commit SHA. Before editing, run `git status --short`
-> and `git rev-parse --short HEAD` when Git is available, then compare the
-> Current state excerpts below with the live files. If the named symbols or
-> responsibilities have materially changed, stop and report the drift before
-> implementing this plan.
+> **Drift check**: This plan was reconciled against live commit `3d5458e`.
+> Before editing, check `git status --short`, the current commit, and the named
+> owners below. If they changed, inspect the difference and keep this target
+> contract. Report an incompatible change; do not silently follow stale excerpts.
 
 ## Status
 
 - **Priority**: P2
-- **Effort**: M
-- **Risk**: MED
+- **Effort**: L
+- **Risk**: HIGH
 - **Depends on**: Plan 059
 - **Category**: architecture, dx, correctness
 - **Planned at**: ZIP snapshot `carta-resource_system_overhaul (1).zip`, SHA-256 `f1592ed94f925cbc5e2bead3e108f76d8f21d900daaf084f9fa1e71448b106b2`, 2026-09-25; Git SHA unavailable in the snapshot
+- **Live reconciliation**: clean worktree at `3d5458e`, 2026-09-25; source, option-loader, and test owners checked in this repo
 
 ## Why this matters
 
@@ -91,6 +90,8 @@ The framework test `packages/loom/src/forms/__tests__/useFormSession.spec.ts:94-
 `CheckboxGroupInput.vue` and `RadioGroupInput.vue` use the same source contract through `useOptionSource`.
 
 `LookupInput.vue` owns its `data`/`load` collection, `loadDetail`, `searchParameters`, staged/committed selections, and stale-load generations.
+
+Live details matter for the migration. `SelectInput.vue` currently calls `onSelect` from `updateModelValue`, which also runs during option reconciliation. `RadioGroupInput.vue` emits `validation:touch` for every model change, including a future automatic clear. `useOptionSource.ts` returns cached loader options whose key does not include `load` identity. `LookupInput.vue` includes internal search in `combinedSearchParameters`, and `hydrate` skips `loadDetail` when a committed record already has a label. The new-context validator must bypass that shortcut.
 
 The existing canonical relation pattern already changes dependent option context through component props:
 
@@ -168,9 +169,11 @@ Use these exact rules.
 For SelectInput, RadioGroupInput, CheckboxGroupInput, and LookupInput in `data` mode:
 
 - treat `data` as the complete valid-value universe;
+- compare against the current `props.data` directly, not cached `useOptionSource().options` from an earlier context or page;
 - when `data` or the identity selector (`pick`, plus `uniqueIDAs` where applicable) changes, keep selected values whose identities still exist;
 - clear a missing single value to that component's canonical empty value;
-- prune missing values from a multi-selection;
+- prune missing values from a multi-selection while retaining the surviving model objects and their order; for CheckboxGroup, honor `uniqueIDAs` and preserve each surviving object's extra fields;
+- for Select, use the same effective identity mapping as its displayed options when `transform` remaps `pick`; a view-only transform change must not clear the model;
 - do not emit `validation:touch` for this automatic reconciliation;
 - do emit the normal `update:modelValue` when the canonical model actually changes.
 
@@ -185,27 +188,34 @@ For SelectInput, RadioGroupInput, and CheckboxGroupInput in `load` mode:
 - pagination/query changes initiated inside the component do not invalidate selection;
 - a context change clears the current value before/while the new source loads, using the component's canonical empty value;
 - the automatic clear is a normal model update and must survive late Form refreshes just like the old reset behavior did.
+- initial mount is not a context change: a preloaded remote selection must survive initial option loading and later page refreshes.
+
+Automatic reconciliation must not call SelectInput's `onSelect` callback. Reserve that callback and `validation:touch` for user selection. RadioGroup must emit touch from user interaction, not from a broad model watcher. Existing default behavior (`defaultToFirst`, `defaultValue`) may initialize an empty model but must not immediately fill a value that this context change just cleared.
 
 #### Authoritative model changes in the same update
 
 Do not clear a new model value that arrives from the parent/Form in the same reactive update as a new option context.
 
-Track a component-local model revision/generation. On an option-context change:
+Co-observe the external context and the authoritative model in one batched watcher or equivalent component-local generation check. Do not let separate watcher order decide which value wins. On an option-context change:
 
 - if the authoritative model also changed for that update, reconcile the new model against complete static data when available, otherwise preserve it;
 - if the model did not change, invalidate the old selection under the rules above.
 
 This protects update-form initialization, reset, refresh, and parent replacement from being mistaken for a stale dependent value.
 
+Compare model values by each component's real model identity, including object and array identities, rather than object reference alone. Do not turn a parent rerender with an equal model into a replacement signal. Avoid a second emit when the model is already at its canonical empty value.
+
 #### LookupInput
 
 Lookup has additional authoritative information:
 
 - `data` mode follows static membership rules.
-- Remote single-value mode with `loadDetail`: when external `searchParameters`, `loadDetail`, `load`, `namespace`, or `pick` changes and the current scalar identity did not change in the same update, call `loadDetail` with the **new** context. Preserve the model if it returns a matching record; clear the model if it returns no record. Existing generation/abort checks must prevent stale results from overwriting newer staging/model changes.
+- Remote single-value mode with `loadDetail`: when external `searchParameters`, `loadDetail`, `load`, `namespace`, or `pick` changes and the current scalar identity did not change in the same update, call `loadDetail` with the **new** context. This context validation must run even if a committed record already has a label. Preserve the model only if the returned record's `pick` identity matches; clear it on no record or a mismatched identity. A rejected detail request proves nothing: preserve the model, expose the error, and retry on a later context change. Existing generation/abort checks must prevent stale results from overwriting newer staging/model changes.
 - Remote single-value mode without `loadDetail`: clear the old scalar identity when external option context changes because the component has no authoritative way to validate it.
 - Remote multi-value mode: clear the existing selection on external option-context change; do not infer validity from the currently loaded page.
+- A `data`/`load` mode or `multi` change changes the model interpretation. Apply the target mode's rules and keep exactly one valid data source; the current mount-only source check is insufficient if those props change during a component lifetime.
 - Internal lookup search/pagination does not invalidate the committed selection.
+- Observe external `props.searchParameters` for invalidation; `combinedSearchParameters` also contains internal dialog search and is only for loading rows. Do not use it as the validity signal.
 
 Disabled inputs still reconcile validity when their external option universe changes. `disabled` blocks user mutation, not consistency updates required by new canonical props.
 
@@ -217,13 +227,15 @@ If changing field A should clear unrelated field B for a domain reason that B's 
 
 | Purpose | Command | Expected on success |
 |---|---|---|
-| Focused behavior/input tests | `pnpm --filter @southneuhof/loom test -- src/forms/__tests__/useFormSession.spec.ts src/components/inputs/__tests__/option-source.spec.ts` | exit 0 |
+| Focused behavior/input tests | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/forms/__tests__/useFormSession.spec.ts src/components/inputs/__tests__/option-source.spec.ts` | exit 0 |
 | Browser selection tests | `pnpm --filter @southneuhof/loom test:browser` | exit 0; Select/Lookup/Form browser cases run |
 | Loom type check | `pnpm --filter @southneuhof/loom type-check` | exit 0 |
 | Web type check | `pnpm --filter @southneuhof/framework-web type-check` | exit 0 |
 | Architecture gate | `pnpm test:surface-architecture` | exit 0 |
 | Module tooling | `pnpm test:module-tooling` | exit 0 if skills/generator checks change |
-| Final workspace gates | `pnpm type-check && pnpm test && pnpm lint && pnpm build` | all exit 0 |
+| Final workspace gates | `pnpm type-check && NODE_OPTIONS=--no-experimental-webstorage pnpm test && pnpm lint && pnpm build` | all exit 0 |
+
+The Node option is needed for the current Node 26 web-test environment. Browser tests use Loom's browser configuration and its registered file list.
 
 ## Scope
 
@@ -249,7 +261,7 @@ If changing field A should clear unrelated field B for a domain reason that B's 
 - `.agents/skills/web-ui-surfaces/references/fields.md` and other active form guidance only where `resetWhen` is taught
 - `scripts/check-surface-architecture.mjs` and `.test.mjs`
 - `packages/loom/vitest.browser.config.ts` only if a new browser file is required; prefer extending registered files
-- `plans/README.md` status update after implementation/review
+- `docs/resource_system_overhaul/findings/plans_batch_2/README.md` status update after implementation/review
 
 **Out of scope**:
 
@@ -286,6 +298,7 @@ In `SelectForm.browser.spec.ts`, add a dependent-selector case using real Select
 - assert the child model becomes `null` (or the exact canonical empty value of SelectInput) without declaring `resetWhen`;
 - resolve a late Form refresh containing the old north approver and assert it does not restore the cleared child;
 - assert exactly one child model update for the invalidation and no `validation:touch` caused by the automatic reset.
+- assert `onSelect` is not called by the automatic clear, but remains called for a user choice.
 
 Also add a same-tick authoritative replacement case: parent replaces both division and approver together with a south approver; the child must keep the new approver rather than clearing it because context changed.
 
@@ -298,6 +311,9 @@ In `option-source.spec.ts` or focused component tests:
 - RadioGroup: replacing `data` keeps or clears by identity.
 - changing only `view` preserves selection.
 - changing external `searchParameters` in remote mode clears the old selection.
+- initial remote option loading keeps an already supplied selection; changing only the returned page or a view label also keeps it.
+- RadioGroup user choice still touches validation; automatic invalidation does not.
+- defaults do not repopulate a value cleared by an external context change.
 - internal query/search/load-page changes do not clear merely because the selected identity is absent from a page.
 
 #### Lookup
@@ -306,10 +322,12 @@ In `LookupInput.browser.spec.ts`:
 
 - new searchParameters + `loadDetail` returning a matching record preserves the scalar model;
 - new searchParameters + `loadDetail` returning undefined clears it;
+- a matching already hydrated record still triggers validation under the new context; a mismatched detail identity clears; a rejected detail request preserves the model and exposes the error;
 - without `loadDetail`, external context change clears a remote scalar model;
 - remote multi selection clears on external context change;
 - static `data` preserves/prunes by identity;
 - a late validation/hydration response cannot overwrite a newer staged or parent-supplied selection.
+- changing only internal search or dialog pagination does not invalidate the committed model.
 
 **Verify**: focused unit/browser tests must fail on the current generic-reset implementation or missing component invalidation for the named reason, not because of fixture setup.
 
@@ -347,13 +365,13 @@ Keep `useOptionSource` private and component-oriented. Extend it only with the m
 - loaded option page changes;
 - external option-universe context changes.
 
-Use the existing `stableValue` utility for deep `searchParameters` identity. The external context identity must include `load`, `namespace`, and stable search parameters. Do not include internal search text or query/pagination in this identity.
+Use the existing `stableValue` utility for deep `searchParameters` identity. The external context identity must include `load`, `namespace`, and stable search parameters. Do not include internal search text or query/pagination in this identity. Loader options can be cached without `load` in their key; a changed `load` still invalidates the old selection, and a static membership check must read `props.data`, not those cached options.
 
 Do not export a new public "source context" type or configuration API. This is implementation state behind the existing component props.
 
 Each owning component combines that source context with its own identity/model-mode props (`pick`, `multi`, `asWhole`, `uniqueIDAs` as applicable).
 
-Track model revision separately so a new authoritative model supplied in the same update as a new context wins over invalidation.
+Co-observe model and context in one batched update, or track their generations so a new authoritative model supplied in the same update wins over invalidation. Do not add a generic composable with many configuration switches for four local controls.
 
 **Verify**: a source page refresh with unchanged external context does not clear the selected value; changing only searchParameters does.
 
@@ -365,8 +383,9 @@ For static `data`:
 
 - compare by the component's own identity rules;
 - single values: clear only when absent;
-- multi values: prune only absent values;
+- multi values: prune only absent values while retaining the existing model value shape and order;
 - preserve a value that still exists;
+- read the current static `props.data` directly; account for Select's `transform` when it changes the effective picked identity and CheckboxGroup's `uniqueIDAs` model objects;
 - do not emit touch for automatic reconciliation.
 
 For remote `load`:
@@ -374,7 +393,8 @@ For remote `load`:
 - never infer invalidity from one result page;
 - clear the old model only when external option context changes and the model itself was not authoritatively replaced in that update;
 - use the component's canonical empty model (`null`, `[]`, or existing declared empty state);
-- preserve current `defaultToFirst`/defaultValue behavior only for genuinely empty models; do not use those defaults to resurrect the old invalid selection.
+- keep current `defaultToFirst`/`defaultValue` initialization on mount, but suppress those defaults after an automatic invalidation until the parent supplies a new model or a user makes a choice;
+- send `validation:touch` and Select's `onSelect` only for user changes, never for an automatic reconciliation.
 
 Keep direct component behavior and Form behavior identical; Form must not know why the component cleared itself.
 
@@ -387,13 +407,14 @@ Retain LookupInput's existing committed/staged generations and abort controllers
 On external option-context changes:
 
 - static data: reconcile membership by `pick`;
-- remote scalar with `loadDetail`: validate the current scalar under the new `searchParameters`; matching result preserves/enriches, missing result clears;
+- remote scalar with `loadDetail`: validate the current scalar under the new `searchParameters`, even when a cached committed label is present; a matching `pick` result preserves/enriches, a missing or mismatched result clears, and a request error preserves the model and exposes the error;
 - remote scalar without `loadDetail`: clear;
 - remote multi: clear;
+- data/load mode or multi change: apply the new mode's validity and model-shape rules, and validate exactly one source;
 - authoritative parent/model replacement in the same update wins;
 - stale detail responses cannot revive the previous model or staged selection.
 
-Do not clear on internal dialog search/pagination. Do not infer validity from the current result page.
+Watch only external `props.searchParameters` for context invalidation. `combinedSearchParameters` includes internal search and must stay a row-loading input. Do not clear on internal dialog search/pagination. Do not infer validity from the current result page. Preserve the existing model shape: scalar single values stay scalar, and multi record arrays keep their record objects until a real invalidation.
 
 An automatic clear emits the normal model update but not a user touch event.
 
@@ -429,7 +450,7 @@ Extend `scripts/check-surface-architecture.mjs` with a syntax-aware Form-definit
 **Verify**:
 
 ```sh
-rg -n 'resetWhen' packages/loom/src apps/web/src .agents/skills docs/ui docs/resource_system_overhaul/ARCHITECTURE.md scripts
+grep -R -n 'resetWhen' packages/loom/src apps/web/src .agents/skills docs/ui docs/resource_system_overhaul/ARCHITECTURE.md scripts
 ```
 
 Expected: only explicit negative-test fixtures or architecture-checker test literals. No production contract/runtime/current guidance match.
@@ -449,6 +470,8 @@ Tests must prove ownership, not merely watcher implementation:
 - Lookup uses loadDetail when it can validate a scalar under new context and clears when it cannot;
 - stale Lookup detail work never overwrites newer staging/model values;
 - automatic invalidation does not mark touch by itself;
+- Select's `onSelect` runs for a user selection and not for automatic invalidation; RadioGroup user interaction still touches validation;
+- a default does not refill a selection just cleared by a context change;
 - `derived` still recomputes and submits;
 - dynamic renderer still works with compatible model contracts;
 - type/runtime authoring rejects `resetWhen`.
@@ -468,7 +491,7 @@ Use real components. Do not replace Select/Lookup with slot stubs for these test
 - [ ] Active guidance teaches only the canonical prop-based dependency pattern.
 - [ ] Loom unit, browser, type, Web type, architecture, tooling, and final workspace gates pass.
 - [ ] No compatibility alias, `resetOn` replacement, generic dependency graph, type suppression, or `any` escape was added.
-- [ ] `plans/README.md` status row is updated after implementation and review.
+- [ ] `docs/resource_system_overhaul/findings/plans_batch_2/README.md` status row is updated after implementation and review.
 
 ## STOP conditions
 

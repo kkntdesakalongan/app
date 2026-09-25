@@ -3,14 +3,12 @@
 > **Implementation instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the STOP conditions occurs, stop and report; do not
-> improvise. When done, update this plan's status row in `plans/README.md`.
+> improvise. When done, update this plan's status row in this batch's `README.md`.
 >
-> **Drift check**: The planning ZIP contains no `.git` metadata, so there is no
-> trustworthy planned-at commit SHA. Before editing, run `git status --short`
-> and `git rev-parse --short HEAD` when Git is available, then compare the
-> Current state excerpts below with the live files. If the named symbols or
-> responsibilities have materially changed, stop and report the drift before
-> implementing this plan.
+> **Drift check**: This plan was reconciled against live commit `3d5458e`.
+> Before editing, check `git status --short`, the current commit, and the named
+> owners below. If they changed, inspect the difference and keep this target
+> contract. Report an incompatible change; do not silently follow stale excerpts.
 
 ## Status
 
@@ -20,6 +18,7 @@
 - **Depends on**: none
 - **Category**: tech-debt, architecture, dx
 - **Planned at**: ZIP snapshot `carta-resource_system_overhaul (1).zip`, SHA-256 `f1592ed94f925cbc5e2bead3e108f76d8f21d900daaf084f9fa1e71448b106b2`, 2026-09-25; Git SHA unavailable in the snapshot
+- **Live reconciliation**: clean worktree at `3d5458e`, 2026-09-25; source excerpts and consumers checked in this repo
 
 ## Why this matters
 
@@ -27,7 +26,7 @@ The public architecture says a `FormDefinition` is the canonical authored form c
 
 The target keeps all real Form-owned field metadata — including `renderer`, `span`, `initialValue`, dynamic `behavior.presentation.renderer`, and `derived` — on the authored field definition. Runtime code may derive ephemeral state, but it must reference the authored field instead of copying its semantic members into another frontend language.
 
-The schema runtime also still carries `kind` and enum `options` metadata left over from renderer/choice inference. Renderer choice is now explicit, so the Form runtime needs only finite input keys, requiredness, parsing, and issue normalization.
+The schema runtime also carries `kind` and enum `options` metadata from renderer/choice inference. Form needs only finite input keys, requiredness, parsing, and issue normalization. Standalone Table still uses the `sort_by` enum values to check sortable columns; keep that behavior through a narrow query-schema inspection.
 
 ## Current state
 
@@ -133,6 +132,8 @@ export interface SchemaFieldMetadata {
 
 The static display checker still imports `SchemaFieldKind` through `packages/loom/src/display/requirements.policy.d.mts`; that checker already derives its own Zod kind information in `scripts/module-ui-check.mjs` and does not need Form's runtime schema metadata.
 
+`packages/loom/src/components/core/TableContent.vue` reads `compileSchema(props.querySchema).fields.sort_by?.options` and passes it to `resolveDisplayFields`. `resolveDisplayFields` rejects a sortable column whose `sortKey` is outside the bound query enum. This is current Table behavior, independent of Form renderer choice. `packages/loom/src/display/__tests__/resolveDisplay.spec.ts` covers the resolver, but a mounted Table case is needed to protect the schema inspection path.
+
 ### Public-ish vocabulary remains exported from the forms barrel
 
 `packages/loom/src/forms/index.ts:1-3`:
@@ -179,15 +180,13 @@ const form = defineForm({
 })
 ```
 
-Internal runtime code may hold only the extra facts Form owns and cannot read directly from the authored field:
+Internal runtime code may hold only the extra facts Form owns and cannot read directly from the authored field. For each selected key, keep:
 
 ```ts
-interface RuntimeFormField {
-  readonly key: string
-  readonly input: FormInput<any, any, any>
-  readonly required: boolean
-}
+{ key, input: definition.fields[key], required: schemaRuntime.requiredKeys.has(key) }
 ```
+
+Give the private runtime field the actual generic field type from `FormDefinition['fields']`; do not use `any` to bypass renderer or behavior checks.
 
 `input` is the actual snapshotted authored field object. Runtime code reads:
 
@@ -211,7 +210,7 @@ interface SchemaRuntime<TOutput extends object> {
 }
 ```
 
-Keep `schemaOutputKeys(schema)` as a separate internal inspection utility for Table/Detail record-key checks. Remove runtime `kind` and enum `options` metadata from the Form schema path.
+Keep `schemaOutputKeys(schema)` as a separate internal inspection utility for Table/Detail record-key checks. Keep one narrow internal query-schema helper that reads the finite string values of `sort_by` for standalone Table, including the installed Zod v3/v4 forms that the current extractor supports. It must not return Form field metadata or decide a renderer. Remove runtime `kind` and enum `options` metadata from the Form schema path.
 
 Dynamic renderer switching and `derived` behavior remain supported. `span` remains Form-owned layout metadata. This plan does not change `FormDraft`, resource/cache props, loaders, submit behavior, or component contracts.
 
@@ -219,15 +218,15 @@ Dynamic renderer switching and `derived` behavior remain supported. `span` remai
 
 | Purpose | Command | Expected on success |
 |---|---|---|
-| Focused form/schema tests | `pnpm --filter @southneuhof/loom test -- src/forms/__tests__/defineForm.spec.ts src/forms/__tests__/useFormSession.spec.ts src/schemas/__tests__/schemaRuntime.spec.ts` | exit 0; all selected tests pass |
+| Focused form/schema/table tests | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/forms/__tests__/defineForm.spec.ts src/forms/__tests__/useFormSession.spec.ts src/schemas/__tests__/schemaRuntime.spec.ts src/components/core/__tests__/table.spec.ts` | exit 0; all selected tests pass |
 | Loom type check | `pnpm --filter @southneuhof/loom type-check` | exit 0, no errors |
 | Loom unit suite | `pnpm --filter @southneuhof/loom test` | exit 0 |
 | Loom browser suite | `pnpm --filter @southneuhof/loom test:browser` | exit 0 |
 | Web type check | `pnpm --filter @southneuhof/framework-web type-check` | exit 0 |
 | Architecture gate | `pnpm test:surface-architecture` | exit 0 |
-| Final workspace gates | `pnpm type-check && pnpm test && pnpm lint && pnpm build` | all commands exit 0 |
+| Final workspace gates | `pnpm type-check && NODE_OPTIONS=--no-experimental-webstorage pnpm test && pnpm lint && pnpm build` | all commands exit 0 |
 
-If the focused Vitest command syntax does not select files in this workspace, run the package unit suite instead. Do not change test configuration just to make the command shorter.
+The Node option is needed for the current Node 26 web-test environment. Do not change test configuration just to make a focused command shorter.
 
 ## Scope
 
@@ -244,13 +243,14 @@ If the focused Vitest command syntax does not select files in this workspace, ru
 - `packages/loom/src/schemas/compileSchema.ts` — replace with `packages/loom/src/schemas/schemaRuntime.ts`
 - `packages/loom/src/schemas/index.ts`
 - `packages/loom/src/schemas/__tests__/compileSchema.spec.ts` — rename to `schemaRuntime.spec.ts`
+- `packages/loom/src/components/core/__tests__/table.spec.ts` — preserve bound query enum sort-key validation
 - `packages/loom/src/contracts/schema.ts`
 - `packages/loom/src/contracts/index.ts`
 - `packages/loom/src/display/requirements.policy.d.mts`
 - `packages/loom/src/components/core/{Form.vue,Table.vue,TableContent.vue,Detail.vue}` — import/runtime-field adaptation only
 - `docs/resource_system_overhaul/ARCHITECTURE.md`
 - `scripts/check-surface-architecture.mjs` and `.test.mjs` only to enforce removal of the compiled-form API if needed
-- `plans/README.md` status update after implementation/review
+- `docs/resource_system_overhaul/findings/plans_batch_2/README.md` status update after implementation/review
 
 **Out of scope**:
 
@@ -291,13 +291,14 @@ Replace runtime/public tests that import `compileForm`, `CompiledForm`, or `Comp
 
 Create `packages/loom/src/schemas/schemaRuntime.ts` and move the legitimate Zod adaptation there.
 
-Keep exactly these responsibilities:
+Keep exactly these responsibilities in this internal adapter module:
 
 - validate that the raw schema exposes a finite discoverable object input;
 - return ordered input keys;
 - identify required keys without executing defaults/refinements/transforms;
 - parse asynchronously and normalize issues;
-- inspect output keys through `schemaOutputKeys` without executing transforms.
+- inspect output keys through `schemaOutputKeys` without executing transforms;
+- inspect finite `sort_by` string choices from a standalone Table query schema, only for Table sort-key validation.
 
 Use a target shape equivalent to:
 
@@ -315,13 +316,13 @@ export function createSchemaRuntime<TSchema extends RawSchema<object, object>>(
 
 Do not expose the raw Zod implementation through the runtime result unless an existing internal caller genuinely needs the exact reference. The Form already has `definition.schema`.
 
-Delete:
+Delete from the general Form schema runtime:
 
-- `stringOptions`;
 - `fieldKind`;
 - `SchemaFieldMetadata`;
-- Form-runtime enum option extraction;
-- Form-runtime schema `kind` metadata.
+- per-field enum options and schema `kind` metadata.
+
+Retain only the small part of `stringOptions` needed to inspect a query schema's `sort_by` field, as a separately named private helper. Reuse the existing non-executing Zod unwrapping rules. If the query has no finite string enum, return `undefined` and retain the current Table rule for an unbounded `sort_by`; do not guess choices from returned rows. `TableContent.vue` must pass the helper's result to `resolveDisplayFields` as `querySortKeys`.
 
 Remove `SchemaFieldKind` from `contracts/schema.ts` and `contracts/index.ts`. In `display/requirements.policy.d.mts`, declare a private/local `DisplaySchemaKind` union matching only the static display policy's accepted values. `scripts/module-ui-check.mjs` already derives its own schema kinds; do not couple it back to Form runtime metadata.
 
@@ -335,10 +336,11 @@ Rename the schema tests and retain these cases:
 - async parse and nested issue paths;
 - pass-through/catch-all/undiscoverable input rejection;
 - output-key inspection without transforms.
+- finite `sort_by` query choices from Zod v3/v4 without executing transforms, and an unbounded sort field yielding no finite choices.
 
-Delete expectations for scalar `kind` and enum `options`.
+Delete expectations for general scalar `kind` and per-field enum `options`. Add a mounted Table test with a query schema whose `sort_by` enum excludes a column's `sortKey`; the Table must reject that column. A matching enum member must remain accepted. The existing resolver-only test does not prove the schema inspection path.
 
-**Verify**: `pnpm --filter @southneuhof/loom test -- src/schemas/__tests__/schemaRuntime.spec.ts` → exit 0.
+**Verify**: `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/schemas/__tests__/schemaRuntime.spec.ts src/components/core/__tests__/table.spec.ts` → exit 0.
 
 ### Step 3: Split validation from runtime field resolution
 
@@ -354,7 +356,7 @@ Create `packages/loom/src/forms/assertFormDefinition.ts` by moving the runtime s
 - `assertFormInput`;
 - `assertFormBehavior`.
 
-`assertFormDefinition` returns `void`. It must not create a second form object or field array.
+`assertFormDefinition` returns `void`. It must not create a second form object or field array. Accept the already created schema runtime as a private argument, so session setup does not inspect the same schema twice. `defineForm` creates the schema runtime once for its validation call; session setup creates it once for validation and runtime use.
 
 `defineForm` calls `assertFormDefinition(definition)`, then snapshots and returns the authored definition exactly as it does now.
 
@@ -366,15 +368,13 @@ The direct plain-object Form path must call the same validator through `useFormS
 
 Delete `CompiledForm` and `CompiledFormField`.
 
-Inside the forms runtime, use one private/internal runtime field shape:
+Inside the forms runtime, use one private/internal runtime field shape that references the authored input:
 
 ```ts
-interface RuntimeFormField {
-  readonly key: string
-  readonly input: FormInput<any, any, any>
-  readonly required: boolean
-}
+{ key, input: definition.fields[key], required: schemaRuntime.requiredKeys.has(key) }
 ```
+
+Use a private generic field type from the definition; do not create a broad `any` escape or add a second public field contract.
 
 Do not export this from Loom's root or forms barrel. Put the internal type in the narrowest owner shared by `useFormSession.ts` and `behavior.ts`; do not create another public contract module.
 
@@ -435,6 +435,7 @@ Update `docs/resource_system_overhaul/ARCHITECTURE.md` to state:
 - authored `FormDefinition` is canonical;
 - runtime fields reference the authored input and add only framework-derived facts;
 - schema runtime owns keys, requiredness, parsing, and issue normalization;
+- standalone Table can still inspect finite `sort_by` query choices to validate sortable columns;
 - `renderer`, `span`, `initialValue`, `behavior`, and canonical component props remain on the field definition;
 - dynamic renderer and `derived` remain supported.
 
@@ -445,7 +446,7 @@ Extend `scripts/check-surface-architecture.mjs` only if necessary to reject new 
 **Verify**:
 
 ```sh
-rg -n 'compileForm|CompiledForm(Field)?|compileSchema|CompiledSchema|SchemaFieldMetadata' packages/loom/src apps/web/src scripts .agents/skills docs/ui docs/resource_system_overhaul/ARCHITECTURE.md
+grep -R -n -E 'compileForm|CompiledForm(Field)?|compileSchema|CompiledSchema|SchemaFieldMetadata' packages/loom/src apps/web/src scripts .agents/skills docs/ui docs/resource_system_overhaul/ARCHITECTURE.md
 ```
 
 Expected: no executable/current-authoring matches. Historical files under `plans/` or `docs/resource_system_overhaul/findings/` are not part of this zero-match requirement.
@@ -458,6 +459,7 @@ Add/adjust tests so a plausible broken implementation fails:
 
 - `defineForm.spec.ts`: transparent snapshot, invalid JS structure, no compiler inspection.
 - `schemaRuntime.spec.ts`: finite keys, requiredness, async parse, normalized issues, no metadata execution, output keys, Zod v3/v4.
+- `table.spec.ts`: a bound `sort_by` enum rejects a sortable column with an excluded sort key and accepts an included key.
 - `useFormSession.spec.ts`: `derived` remains functional; loaders/defaults/late-load behavior are unchanged.
 - browser or existing parity fixture: `behavior.presentation.renderer` actually switches between two compatible registered inputs and keeps the model; dynamic `span` changes layout state without a compiler copy.
 - type/public API fixture: removed compiler vocabulary cannot be imported as a supported API.
@@ -470,18 +472,18 @@ Do not test implementation details such as the exact runtime field object key or
 - [ ] `defineForm` validates without constructing a second form representation.
 - [ ] Form/session runtime fields reference the authored field definition and add only `key` + framework-derived facts such as `required`.
 - [ ] Dynamic renderer, `span`, `initialValue`, `behavior`, and `derived` remain supported.
-- [ ] Schema runtime exposes only finite keys, requiredness, parse/issue behavior, plus separate output-key inspection; it has no Form UI-choice metadata.
+- [ ] Form schema runtime exposes only finite keys, requiredness, and parse/issue behavior; separate output-key and Table query sort-choice inspection preserve display checks without Form UI-choice metadata.
 - [ ] `SchemaFieldKind`/`SchemaFieldMetadata` are not public Form/schema-runtime vocabulary; static display policy has its own private kind type.
 - [ ] Equivalent valid plain form definitions and `defineForm` results behave the same.
 - [ ] Loom unit, browser, type, web type, architecture, and final workspace gates pass.
 - [ ] No compatibility alias, renamed compiler facade, type suppression, or `any` escape was added.
-- [ ] `plans/README.md` status row is updated after implementation and review.
+- [ ] `docs/resource_system_overhaul/findings/plans_batch_2/README.md` status row is updated after implementation and review.
 
 ## STOP conditions
 
 Stop and report instead of improvising if:
 
-- a non-historical production caller genuinely consumes schema `kind` or enum `options` for behavior other than removed renderer/choice inference;
+- a production caller other than the known Table sort-key check needs general schema `kind` or enum `options` metadata, and the behavior cannot be served by a narrow owner-specific inspection;
 - removing the flattened field copy makes dynamic renderer or dynamic span impossible without changing their public contracts;
 - an equivalent plain object cannot use the same validator/runtime path as `defineForm` without introducing a constructor brand;
 - preserving current Zod v3/v4 behavior requires executing defaults/refinements/transforms during inspection;
