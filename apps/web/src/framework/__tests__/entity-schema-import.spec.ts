@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import { builtinModules } from 'node:module'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import * as ts from 'typescript'
 import { role } from '@southneuhof/api/routes/(authenticated)/roles/roles.entity'
 import { user } from '@southneuhof/api/routes/(authenticated)/users/users.entity'
 
@@ -27,6 +29,31 @@ import { user } from '@southneuhof/api/routes/(authenticated)/users/users.entity
 const entityDirectory = join(dirname(fileURLToPath(import.meta.url)), '../../../../api/src/routes')
 
 const allEntities = { role, user }
+const nodeBuiltins = new Set(builtinModules.map((name) => name.replace(/^node:/, '')))
+
+function importsNodeBuiltin(source: string): boolean {
+  const isBuiltin = (specifier: string) => specifier.startsWith('node:') || nodeBuiltins.has(specifier.split('/')[0])
+  const file = ts.createSourceFile('entity.ts', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+  let found = false
+  const visit = (node: ts.Node) => {
+    if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier) && isBuiltin(node.moduleSpecifier.text)) found = true
+    if (
+      ts.isImportEqualsDeclaration(node) &&
+      ts.isExternalModuleReference(node.moduleReference) &&
+      node.moduleReference.expression &&
+      ts.isStringLiteral(node.moduleReference.expression) &&
+      isBuiltin(node.moduleReference.expression.text)
+    )
+      found = true
+    if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword || (ts.isIdentifier(node.expression) && node.expression.text === 'require'))) {
+      const specifier = node.arguments[0]
+      if (specifier && ts.isStringLiteral(specifier) && isBuiltin(specifier.text)) found = true
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+  return found
+}
 
 function collectEntityModules(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
@@ -49,10 +76,6 @@ describe('entity schemas are importable in the browser', () => {
     expect(result.error.issues.map((issue) => issue.path.join('.'))).toContain('roleCode')
   })
 
-  it('treats every update field as optional, matching the server schema', () => {
-    expect(role.schemas.update.safeParse({}).success).toBe(true)
-  })
-
   it('exposes create, update and select schemas on every entity', () => {
     for (const [name, entity] of Object.entries(allEntities)) {
       expect(entity.schemas.create, `${name}.schemas.create`).toBeDefined()
@@ -62,7 +85,7 @@ describe('entity schemas are importable in the browser', () => {
     }
   })
 
-  it('validates through the framework bridge for every entity, not just roles', () => {
+  it('accepts empty update input for every entity', () => {
     for (const [name, entity] of Object.entries(allEntities)) {
       expect(entity.schemas.update.safeParse({}).success, `${name}.schemas.update`).toBe(true)
     }
@@ -72,7 +95,7 @@ describe('entity schemas are importable in the browser', () => {
     const modules = collectEntityModules(entityDirectory)
     expect(modules.length).toBeGreaterThan(0)
 
-    const offenders = modules.filter((path) => /from '(node:|fs|path|crypto|os)'/.test(readFileSync(path, 'utf8')))
+    const offenders = modules.filter((path) => importsNodeBuiltin(readFileSync(path, 'utf8')))
     expect(offenders).toEqual([])
   })
 

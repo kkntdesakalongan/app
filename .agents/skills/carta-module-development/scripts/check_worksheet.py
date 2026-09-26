@@ -48,8 +48,12 @@ def check(folder):
     design = (folder / 'design.md').read_text()
     worksheet = (folder / 'worksheet.md').read_text()
     inventory = table(design, ['Obligation', 'Rule references', 'Acceptance IDs'])
-    journeys = table(design, ['Journey', 'Obligation', 'Acceptance IDs', 'Distinct interaction'])
-    journey_tests = table(worksheet, ['Journey', 'Test case'])
+    for source, columns in [
+        (design, ['Journey', 'Obligation', 'Acceptance IDs', 'Distinct interaction']),
+        (worksheet, ['Journey', 'Test case']),
+    ]:
+        if any(cells(line) == columns for line in source.splitlines()) and table(source, columns):
+            errors.append('browser mappings are outside module delivery; preserve them in separate task history')
     plans = table(worksheet, ['Plan', 'File', 'Depends on', 'Status', 'Review'])
     required = table(worksheet, ['Acceptance', 'Required surfaces'])
     acceptance = table(worksheet, ['Acceptance', 'Plan', 'Surface', 'Test case',
@@ -67,13 +71,6 @@ def check(folder):
     expected = indexed(inventory, 'Obligation')
     plan_map = indexed(plans, 'Plan')
     requirements = indexed(required, 'Acceptance')
-    journey_map = indexed(journeys, 'Journey')
-    mapped_journeys = indexed(journey_tests, 'Journey')
-    if journey_map.keys() != mapped_journeys.keys():
-        errors.append('browser journey mapping differs from design')
-    assigned_tests = [row['Test case'] for row in journey_tests if row['Test case'] != 'PENDING']
-    if len(set(assigned_tests)) != len(assigned_tests):
-        errors.append('each browser journey needs a distinct test case')
     cases = {}
     evidence_keys = set()
     for row in acceptance:
@@ -115,7 +112,7 @@ def check(folder):
         errors.append('design records, inventory links, required evidence and acceptance IDs differ')
     for name, row in requirements.items():
         surfaces = {value.strip() for value in row['Required surfaces'].split(',')}
-        if not surfaces <= {'API', 'UNIT', 'BROWSER', 'VISUAL'}:
+        if not surfaces <= {'API', 'UNIT'}:
             errors.append(f'{name}: invalid required surfaces')
         actual_surfaces = {case['Surface'] for case in cases.get(name, [])}
         if surfaces != actual_surfaces:
@@ -123,20 +120,6 @@ def check(folder):
     for name, rows in cases.items():
         if len({row['Plan'] for row in rows}) != 1:
             errors.append(f'{name}: evidence must have one primary plan')
-
-    for name, journey in journey_map.items():
-        linked = ids(journey['Acceptance IDs'], 'A')
-        obligation = expected.get(journey['Obligation'], {})
-        if not re.fullmatch(r'J-\d+', name) or not journey['Distinct interaction'].strip():
-            errors.append(f'{name}: invalid journey ID or missing distinct interaction')
-        if not linked or not linked <= ids(obligation.get('Acceptance IDs', ''), 'A'):
-            errors.append(f'{name}: journey differs from inventory acceptance')
-        test = mapped_journeys.get(name, {}).get('Test case', '')
-        if test != 'PENDING' and not exact_test(test):
-            errors.append(f'{name}: expected file::exact test title')
-        for case in linked:
-            if not any(row['Surface'] == 'BROWSER' and row['Test case'] == test for row in cases.get(case, [])):
-                errors.append(f'{name}/{case}: missing mapped browser evidence')
 
     def file_link(value, label):
         if not value or not (folder / value).is_file():
@@ -189,15 +172,12 @@ def check(folder):
         name = f'{row["Acceptance"]}/{row["Surface"]}/{row["Test case"]}'
         if row['Plan'] not in plan_map:
             errors.append(f'{name}: missing primary plan')
-        if row['Surface'] not in {'API', 'UNIT', 'BROWSER', 'VISUAL'}:
+        if row['Surface'] not in {'API', 'UNIT'}:
             errors.append(f'{name}: invalid evidence surface')
         pending = (row['Test case'] == 'PENDING' and row['Result'] in {'PENDING', 'BLOCKED'}
                    and plan_map.get(row['Plan'], {}).get('Status') in {'TODO', 'IN_PROGRESS', 'BLOCKED'})
-        if not pending:
-            if row['Surface'] != 'VISUAL' and not exact_test(row['Test case']):
-                errors.append(f'{name}: expected file::exact test title')
-            elif row['Test case'] in {'', 'NONE', 'PENDING'}:
-                errors.append(f'{name}: missing visual check')
+        if not pending and not exact_test(row['Test case']):
+            errors.append(f'{name}: expected file::exact test title')
         if row['Result'] not in {'PENDING', 'PASS', 'FAIL', 'BLOCKED'}:
             errors.append(f'{name}: invalid result')
         if row['Result'] == 'PASS' or plan_map.get(row['Plan'], {}).get('Status') in {'IMPLEMENTED', 'VERIFIED'}:
@@ -205,86 +185,32 @@ def check(folder):
                 errors.append(f'{name}: missing implementation')
             for column in ['Evidence'] + (['Review'] if row['Result'] == 'PASS' else []):
                 file_link(row[column], f'{name} {column}')
-            if row['Surface'] != 'VISUAL':
-                try:
-                    report = json.loads((folder / row['Evidence']).read_text())
-                    before = report.get('before', {})
-                    if (report.get('scope') != 'command' or report.get('status') != 'PASS'
-                            or report.get('result', {}).get('exitCode') != 0
-                            or not before.get('inputs') or not before.get('fingerprint')
-                            or before['fingerprint'] != report.get('after', {}).get('fingerprint')):
-                        errors.append(f'{name}: command evidence is not a stable pass')
-                except (OSError, ValueError, AttributeError) as error:
-                    errors.append(f'{name}: evidence needs recorder JSON: {error}')
+            try:
+                report = json.loads((folder / row['Evidence']).read_text())
+                before = report.get('before', {})
+                if (report.get('scope') != 'command' or report.get('status') != 'PASS'
+                        or report.get('result', {}).get('exitCode') != 0
+                        or not before.get('inputs') or not before.get('fingerprint')
+                        or before['fingerprint'] != report.get('after', {}).get('fingerprint')):
+                    errors.append(f'{name}: command evidence is not a stable pass')
+            except (OSError, ValueError, AttributeError) as error:
+                errors.append(f'{name}: evidence needs recorder JSON: {error}')
     if re.search(r'^- State: `?DONE`?\s*$', worksheet, re.MULTILINE):
         if any(row['Status'] not in {'VERIFIED', 'SUPERSEDED'} for row in plans):
             errors.append('DONE requires all selected plans verified')
         if any(row['Result'] != 'PASS' for row in acceptance):
             errors.append('DONE requires all acceptance passed')
-        if journeys:
-            report = re.search(r'^- Browser report: (.+)$', worksheet, re.MULTILINE)
-            if not report:
-                errors.append('DONE requires a browser report')
-            else:
-                try:
-                    errors.extend(check_browser_report(folder, folder / report[1].strip('`')))
-                except (OSError, ValueError) as error:
-                    errors.append(f'browser report: {error}')
         final = re.search(r'^- Latest review: (.+)$', worksheet, re.MULTILINE)
         file_link(final[1].strip('`') if final else '', 'final review')
-    return errors
-
-
-def check_browser_report(folder, report_path):
-    """Match selected journeys to actual Playwright results, not report prose."""
-    worksheet = (folder / 'worksheet.md').read_text()
-    journeys = table(worksheet, ['Journey', 'Test case'])
-    report = json.loads(report_path.read_text())
-    errors = []
-    if not isinstance(report, dict) or not isinstance(report.get('suites'), list):
-        raise ValueError('expected a Playwright JSON report with suites')
-    if report.get('errors'):
-        errors.append('browser report contains runner errors')
-    specs = []
-
-    def visit(suite):
-        specs.extend(suite.get('specs', []))
-        for child in suite.get('suites', []):
-            visit(child)
-
-    visit(report)
-    for journey in journeys:
-        parts = journey['Test case'].split('::', 1)
-        if not exact_test(journey['Test case']):
-            errors.append(f"{journey['Journey']}: invalid browser test reference")
-            continue
-        file, title = parts
-        file = file.replace('\\', '/')
-        matches = [spec for spec in specs if spec.get('title') == title
-                   and (file == spec.get('file', '').replace('\\', '/')
-                        or file.endswith('/' + spec.get('file', '').replace('\\', '/')))]
-        if len(matches) != 1:
-            errors.append(f"{journey['Journey']}: browser case missing or ambiguous: {journey['Test case']}")
-            continue
-        tests = matches[0].get('tests', [])
-        if not tests or any(test.get('expectedStatus') != 'passed'
-                            or test.get('status') != 'expected'
-                            or not test.get('results')
-                            or any(result.get('status') != 'passed' for result in test['results'])
-                            for test in tests):
-            errors.append(f"{journey['Journey']}: browser case did not pass every attempt/project")
     return errors
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('folder', type=Path)
-    parser.add_argument('--browser-report', type=Path)
     args = parser.parse_args()
     try:
         errors = check(args.folder)
-        if args.browser_report:
-            errors.extend(check_browser_report(args.folder, args.browser_report))
     except (OSError, ValueError) as error:
         errors = [str(error)]
     for error in errors:

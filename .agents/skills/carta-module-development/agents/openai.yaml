@@ -1,4 +1,4 @@
 interface:
   display_name: "Carta Module Development"
-  short_description: "Route a Carta module from its current artifact to delivery"
-  default_prompt: "Use $carta-module-development to resume this module from its strongest usable artifact."
+  short_description: "Build or resume a Carta application module"
+  default_prompt: "Use $carta-module-development to build or resume this module through design, planning, implementation, and review."

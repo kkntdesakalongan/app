@@ -2,7 +2,7 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
-from check_worksheet import check, check_browser_report, table
+from check_worksheet import check, table
 import json
 
 
@@ -13,31 +13,6 @@ class WorksheetCheck(unittest.TestCase):
             {'ID': 'B-01', 'Value': 'One'}, {'ID': 'B-02', 'Value': 'Two'}])
         with self.assertRaises(ValueError):
             table(source.replace('| B-02 | Two |', '| B-02 | Two | Extra |'), ['ID', 'Value'])
-
-    def test_each_selected_path_needs_an_observed_pass(self):
-        with TemporaryDirectory() as directory:
-            folder = Path(directory)
-            (folder / 'worksheet.md').write_text(
-                '| Journey | Test case |\n|---|---|\n'
-                '| J-01 | apps/web/e2e/workflow.spec.ts::safe close |\n'
-                '| J-02 | apps/web/e2e/workflow.spec.ts::unsafe close |\n')
-            def spec(title):
-                return {'file': 'workflow.spec.ts', 'title': title, 'tests': [
-                    {'expectedStatus': 'passed', 'status': 'expected', 'results': [{'status': 'passed'}]}]}
-            report = folder / 'browser.json'
-            data = {'suites': [{'specs': [spec('safe close')]}]}
-            report.write_text(json.dumps(data))
-            self.assertTrue(any('J-02' in error for error in check_browser_report(folder, report)))
-            data['suites'][0]['specs'].append(spec('unsafe close'))
-            report.write_text(json.dumps(data))
-            self.assertEqual(check_browser_report(folder, report), [])
-            data['suites'][0]['specs'][1]['tests'].append(
-                {'expectedStatus': 'passed', 'status': 'unexpected', 'results': [{'status': 'failed'}]})
-            report.write_text(json.dumps(data))
-            self.assertTrue(check_browser_report(folder, report))
-            report.write_text('[]')
-            with self.assertRaises(ValueError):
-                check_browser_report(folder, report)
 
     def test_coverage_and_completion(self):
         with TemporaryDirectory() as directory:
@@ -61,11 +36,11 @@ id: A-01
 
 | Acceptance | Required surfaces |
 |---|---|
-| A-01 | BROWSER |
+| A-01 | UNIT |
 
 | Acceptance | Plan | Surface | Test case | Implementation | Evidence | Review | Result |
 |---|---|---|---|---|---|---|---|
-| A-01 | P-01 | BROWSER | request.spec.ts::saves and reloads | app.ts:save | green.json | report.md | PASS |
+| A-01 | P-01 | UNIT | request.spec.ts::saves and reloads | app.ts:save | green.json | report.md | PASS |
 '''
             worksheet = '| Journey | Test case |\n|---|---|\n\n' + worksheet
             (folder / 'design.md').write_text(design)
@@ -86,6 +61,22 @@ id: A-01
                 self.assertTrue(check(folder))
             (folder / 'green.json').write_text(json.dumps(green))
             self.assertEqual(check(folder), [])
+            for surface in ['BROWSER', 'VISUAL']:
+                (folder / 'worksheet.md').write_text(worksheet.replace('UNIT', surface))
+                self.assertTrue(any('invalid required surfaces' in error for error in check(folder)))
+            (folder / 'worksheet.md').write_text(worksheet)
+            (folder / 'design.md').write_text(design + '| J-01 | W-01.normal | A-01 | Save |\n')
+            self.assertTrue(any('browser mappings' in error for error in check(folder)))
+            (folder / 'design.md').write_text(design)
+            mapped = worksheet.replace('| Journey | Test case |\n|---|---|\n',
+                '| Journey | Test case |\n|---|---|\n| J-01 | request.spec.ts::save |\n')
+            (folder / 'worksheet.md').write_text(mapped)
+            self.assertTrue(any('browser mappings' in error for error in check(folder)))
+            (folder / 'design.md').write_text(design[:design.index('| Journey |')])
+            (folder / 'worksheet.md').write_text(worksheet[worksheet.index('- State:'):])
+            self.assertEqual(check(folder), [])
+            (folder / 'design.md').write_text(design)
+            (folder / 'worksheet.md').write_text(worksheet)
             crud = design.replace('```yaml\nid: B-01\n```',
                 '\n| ID | Action | Access and scope | Inputs | Rules or exceptions | Expected result | Acceptance IDs |\n'
                 '|---|---|---|---|---|---|---|\n| B-01 | Create | Admin | Name | Unique | Saved | A-01 |\n')
@@ -103,15 +94,15 @@ id: A-01
             second = '\n' + action_table.replace('B-01', 'B-02').replace('A-01', 'A-02')
             second += '\n\n' + acceptance_table.replace('B-01', 'B-02').replace('A-01', 'A-02') + '\n'
             (folder / 'design.md').write_text(crud + second)
-            self.assertTrue(check(folder))  # Later tables need inventory and evidence too.
+            self.assertTrue(check(folder))
             multi = (crud + second).replace('| W-01.normal | B-01 | A-01 |',
                 '| W-01.normal | B-01 | A-01 |\n| W-02.normal | B-02 | A-02 |')
             (folder / 'design.md').write_text(multi)
-            (folder / 'worksheet.md').write_text(worksheet.replace('| A-01 | BROWSER |',
-                '| A-01 | BROWSER |\n| A-02 | BROWSER |') +
+            (folder / 'worksheet.md').write_text(worksheet.replace('| A-01 | UNIT |',
+                '| A-01 | UNIT |\n| A-02 | UNIT |') +
                 '\n| Acceptance | Plan | Surface | Test case | Implementation | Evidence | Review | Result |\n'
                 '|---|---|---|---|---|---|---|---|\n'
-                '| A-02 | P-01 | BROWSER | request.spec.ts::second save | app.ts:save | green.json | report.md | PASS |\n')
+                '| A-02 | P-01 | UNIT | request.spec.ts::second save | app.ts:save | green.json | report.md | PASS |\n')
             (folder / '001-result.md').write_text('- Acceptance: A-01, A-02\n')
             self.assertEqual(check(folder), [])
             (folder / 'worksheet.md').write_text(worksheet)
@@ -130,8 +121,8 @@ id: A-01
                 (folder / 'worksheet.md').write_text(changed)
                 self.assertTrue(check(folder))
             dependency_design = design.replace('| W-01.normal | B-01 | A-01 |', '| W-01.normal | B-01 | A-01, A-02 |') + '\nid: A-02\n'
-            dependency_sheet = pending.replace('| P-01 | 001-result.md | NONE | IN_PROGRESS |', '| P-01 | 001-result.md | NONE | IMPLEMENTED |').replace('| A-01 | P-01 | BROWSER | PENDING |', '| A-01 | P-01 | BROWSER | request.spec.ts::saves and reloads |')
-            dependency_sheet = dependency_sheet.replace('| A-01 | BROWSER |', '| A-01 | BROWSER |\n| A-02 | UNIT |').replace('| P-01 | 001-result.md | NONE | IMPLEMENTED | report.md |', '| P-01 | 001-result.md | NONE | IMPLEMENTED | report.md |\n| P-02 | 002-next.md | P-01 | IN_PROGRESS | PENDING |')
+            dependency_sheet = pending.replace('| P-01 | 001-result.md | NONE | IN_PROGRESS |', '| P-01 | 001-result.md | NONE | IMPLEMENTED |').replace('| A-01 | P-01 | UNIT | PENDING |', '| A-01 | P-01 | UNIT | request.spec.ts::saves and reloads |')
+            dependency_sheet = dependency_sheet.replace('| A-01 | UNIT |', '| A-01 | UNIT |\n| A-02 | UNIT |').replace('| P-01 | 001-result.md | NONE | IMPLEMENTED | report.md |', '| P-01 | 001-result.md | NONE | IMPLEMENTED | report.md |\n| P-02 | 002-next.md | P-01 | IN_PROGRESS | PENDING |')
             dependency_sheet += '| A-02 | P-02 | UNIT | PENDING | PENDING | PENDING | PENDING | PENDING |\n'
             (folder / '002-next.md').write_text('- Acceptance: A-02\n')
             (folder / 'design.md').write_text(dependency_design)
@@ -141,51 +132,12 @@ id: A-01
             self.assertTrue(check(folder))
             (folder / 'design.md').write_text(design)
             (folder / 'worksheet.md').write_text(worksheet)
-            journey_design = design + '| J-01 | W-01.normal | A-01 | Save and reload |\n'
-            journey_worksheet = worksheet.replace('|---|---|\n\n', '|---|---|\n| J-01 | request.spec.ts::saves and reloads |\n\n', 1)
-            journey_worksheet += '\n- Browser report: browser.json\n'
-            browser = {'suites': [{'specs': [{'file': 'request.spec.ts', 'title': 'saves and reloads', 'tests': [
-                {'expectedStatus': 'passed', 'status': 'expected', 'results': [{'status': 'passed'}]}
-            ]}]}]}
-            report = folder / 'browser.json'
-            report.write_text(json.dumps(browser))
-            (folder / 'design.md').write_text(journey_design)
-            (folder / 'worksheet.md').write_text(journey_worksheet)
-            self.assertEqual(check(folder), [])
-            unfinished = journey_worksheet.replace('`DONE`', '`EXECUTE`').replace('| VERIFIED |', '| IN_PROGRESS |').replace('request.spec.ts::saves and reloads', 'PENDING').replace('| PASS |', '| PENDING |')
-            (folder / 'worksheet.md').write_text(unfinished)
-            self.assertEqual(check(folder), [])
-            self.assertTrue(check_browser_report(folder, report))
-            (folder / 'worksheet.md').write_text(unfinished.replace('`EXECUTE`', '`DONE`'))
-            self.assertTrue(check(folder))
-            for changed in [
-                journey_worksheet.replace('| J-01 | request.spec.ts::saves and reloads |', ''),
-                journey_worksheet.replace('| J-01 | request.spec.ts::saves and reloads |', '| J-01 | request.spec.ts::other |'),
-            ]:
-                (folder / 'worksheet.md').write_text(changed)
-                self.assertTrue(check(folder))
-            (folder / 'worksheet.md').write_text(journey_worksheet)
-            for status in ['failed', 'skipped', 'timedOut', 'interrupted']:
-                changed = json.loads(json.dumps(browser))
-                changed['suites'][0]['specs'][0]['tests'][0]['results'][0]['status'] = status
-                report.write_text(json.dumps(changed))
-                self.assertTrue(check(folder), status)
-            report.write_text(json.dumps({'suites': []}))
-            self.assertTrue(check_browser_report(folder, report))
-            changed = json.loads(json.dumps(browser))
-            changed['suites'][0]['specs'][0]['tests'][0]['results'].insert(0, {'status': 'failed'})
-            report.write_text(json.dumps(changed))
-            self.assertTrue(check_browser_report(folder, report))
-            report.write_text(json.dumps(browser))
-            self.assertEqual(check_browser_report(folder, report), [])
-            (folder / 'design.md').write_text(design)
-            (folder / 'worksheet.md').write_text(worksheet)
             for broken in [
                 worksheet.replace('| PASS |', '| PENDING |'),
-                worksheet.replace('| P-01 | BROWSER', '| P-02 | BROWSER'),
+                worksheet.replace('| P-01 | UNIT', '| P-02 | UNIT'),
                 worksheet.replace('| NONE | VERIFIED', '| P-01 | VERIFIED'),
-                worksheet.replace('| BROWSER |', '| UNKNOWN |'),
-                worksheet.replace('| A-01 | BROWSER |', '| A-01 | API, BROWSER |'),
+                worksheet.replace('| UNIT |', '| UNKNOWN |'),
+                worksheet.replace('| A-01 | UNIT |', '| A-01 | API, UNIT |'),
                 worksheet.replace('| report.md | PASS', '| missing.md | PASS'),
             ]:
                 (folder / 'worksheet.md').write_text(broken)
@@ -195,12 +147,12 @@ id: A-01
             self.assertTrue(check(folder))
             (folder / '001-result.md').write_text(plan)
             api_row = '| A-01 | P-01 | API | api.spec.ts::stores result | app.ts:save | green.json | report.md | PASS |\n'
-            combined = worksheet.replace('| A-01 | BROWSER |', '| A-01 | API, BROWSER |') + api_row
+            combined = worksheet.replace('| A-01 | UNIT |', '| A-01 | API, UNIT |') + api_row
             (folder / 'worksheet.md').write_text(combined)
             self.assertEqual(check(folder), [])
             for broken in [
-                combined.replace('| BROWSER | request.spec.ts::saves and reloads', '| API | request.spec.ts::saves and reloads'),
-                combined.replace('| API, BROWSER |', '| API |'),
+                combined.replace('| UNIT | request.spec.ts::saves and reloads', '| API | request.spec.ts::saves and reloads'),
+                combined.replace('| API, UNIT |', '| API |'),
                 combined + api_row,
                 combined.replace('| P-01 | API |', '| P-02 | API |'),
                 combined.replace('| report.md | PASS |\n', '| report.md | PENDING |\n', 1),
@@ -208,8 +160,8 @@ id: A-01
                 (folder / 'worksheet.md').write_text(broken)
                 self.assertTrue(check(folder), broken)
             (folder / 'worksheet.md').write_text(combined)
-            extra_browser_row = api_row.replace('| API | api.spec.ts::stores result', '| BROWSER | request.spec.ts::filters records')
-            (folder / 'worksheet.md').write_text(combined + extra_browser_row)
+            extra_unit_row = api_row.replace('| API | api.spec.ts::stores result', '| UNIT | request.spec.ts::filters records')
+            (folder / 'worksheet.md').write_text(combined + extra_unit_row)
             self.assertEqual(check(folder), [])
             (folder / 'worksheet.md').write_text(worksheet)
             (folder / '001-result.md').write_text(plan)

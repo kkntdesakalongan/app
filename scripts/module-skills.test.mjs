@@ -66,6 +66,10 @@ test('API test entrypoints require the explicit test environment and migrations 
     assert.ok(scripts[name].includes('--env-file=.env.test'), name)
     assert.ok(!scripts[name].includes('--env-file-if-exists=.env.test'), name)
   }
-  assert.ok(scripts['db:migrate:test'].indexOf('scripts/test-target.mjs &&') < scripts['db:migrate:test'].indexOf('drizzle-kit/bin.cjs migrate'))
+  const preflight = scripts['db:migrate:test'].indexOf('scripts/test-target.mjs &&')
+  const migration = scripts['db:migrate:test'].indexOf('drizzle-kit/bin.cjs migrate')
+  assert.ok(preflight >= 0, 'test migration must run the database preflight')
+  assert.ok(migration >= 0, 'test migration command must be present')
+  assert.ok(preflight < migration, 'database preflight must run before migrations')
   for (const name of ['test', 'test:focused', 'db:seed:test']) assert.ok(scripts[name].includes('pnpm run db:migrate:test &&'), name)
 })

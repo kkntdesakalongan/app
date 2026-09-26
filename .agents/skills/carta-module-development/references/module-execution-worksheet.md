@@ -1,101 +1,80 @@
 # Module execution worksheet
 
-Use this record only for the full process or to resume an existing worksheet.
-Ordinary CRUD uses the [standard module path](standard-module.md). Its short
-record does not need this checker or conversion into these tables.
-
-Create the worksheet during full execution planning, after design approval. During
-discovery, keep the draft workflow inventory in `design.md`; the worksheet is
-not the research catalog. The feature folder then contains `design.md`, numbered
-plans, `worksheet.md` and `reports/`. The design owns behavior, approval and the
-obligation inventory. Plans own technical decisions. The worksheet owns status
-and test/result links. Reports contain observed results. Acceptance IDs join
-these artifacts.
+Read only for full-process planning, execution, or review. Standard work stays
+in its design record. The full process has `design.md`, numbered plans,
+`worksheet.md`, and `reports/`; acceptance IDs connect them.
 
 ## Ownership and evidence
 
-Use the [template](../assets/worksheet-template.md), or initialize it:
+After design approval, initialize from the [template](../assets/worksheet-template.md):
 
 ```sh
 python3 .agents/skills/carta-module-development/scripts/init_worksheet.py <feature>
 ```
 
-Assign each acceptance ID to one primary plan. List its IDs under `- Acceptance:`
-in that plan. List dependencies by plan ID. Compare coverage with the design
-inventory; keep the inventory there.
+| Record | Owns |
+|---|---|
+| Design | Behavior, approval, rule IDs, acceptance cases, obligation inventory |
+| Plan | Technical steps, dependencies, and owned IDs under `- Acceptance:` |
+| Worksheet | Plan status, required evidence surfaces, exact tests and report links |
+| Reports | Commands, observed results, input fingerprints, and review verdicts |
 
-List each acceptance ID once in Required evidence with its comma-separated
-surfaces: `API`, `UNIT`. Browser and visual test surfaces are outside module
-delivery. Record UI source review in the review report. Use the
-[verification strategy](verification-strategy.md#select-proof-by-behavior-and-impact)
-to select proof for all required outcomes.
+Assign each acceptance ID to one primary plan. Required evidence lists its
+`API` and/or `UNIT` surfaces. Each Acceptance row names one surface and test;
+the tuple of acceptance ID, surface, and test must be unique. Repeat an ID only
+for another required test or surface within its primary plan.
 
-Each Acceptance row names one surface, test, implementation owner, evidence,
-review and result. Repeat an ID for separate tests or surfaces within its primary
-plan. The acceptance ID, surface and test identify a unique row.
+Use `PENDING` for an unselected test only while the result is `PENDING` or
+`BLOCKED` and the plan is `TODO`, `IN_PROGRESS`, or `BLOCKED`. Otherwise use
+`file::exact test title`. Evidence and Review paths are relative to the feature
+folder. Executable evidence is recorder JSON; source review belongs in the
+review report. Apply the [evidence rules](verification-strategy.md#evidence-interface).
 
-Use `PENDING` for a test until the executor selects it. This is valid only while
-its result is `PENDING` or `BLOCKED` and its plan is `TODO`, `IN_PROGRESS` or
-`BLOCKED`. Completed executable checks use `file::exact test title`; visual
-checks use a specific name. Plans need acceptance ownership, not a second test map.
-
-Report paths are relative to the feature folder. `Evidence` links recorder JSON
-for executable checks or a visual report. The checker requires command evidence
-with a zero exit code and unchanged inputs. Run the recorder freshness check too.
-`Review` links the orchestrator verdict; completed acceptance requires this link.
-
-Run before execution, after mapping changes and at final review:
+Run before execution, after mapping changes, and at final review:
 
 ```sh
 python3 .agents/skills/carta-module-development/scripts/check_worksheet.py plans/<feature>
 ```
 
-The checker tests design links, surfaces, ownership, dependencies, file links and
-state. Reviewers check inventory completeness, assertions, report truth and input
-freshness. On resume, preserve approved outcomes and valid evidence. For an older table,
-move Green links to Evidence and retain historical Red reports. Remove duplicate
-Coverage rows and plan test maps; compare the result with the design inventory.
-
-## Browser journeys
-
-Keep legacy journey tables empty in both design and worksheet. State the reason:
-E2E is outside module delivery. Do not create browser mappings or reports or run
-the browser-report checker. On resume, move old browser obligations and their
-history to separately scoped work, without claiming they passed. Preserve
-business requirements and select applicable API/UNIT proof for module delivery.
-Record rendered behavior as unverified in the final review.
+The checker validates coverage links, ownership, dependencies, states, and
+recorded command success. Run recorder freshness checks separately. Reviewers
+must still check assertions, omitted obligations, and report truth.
 
 ## State and completion
 
 Feature: `INTAKE` → `DESIGN` → `PLAN` → `READY` → `EXECUTE` → `VERIFY` → `DONE`.
-`READY` means plans are ready for execution. `BLOCKED` names the affected stage
-and missing prerequisite. Resume from valid artifacts; continue independent work.
+`BLOCKED` names the affected stage and missing prerequisite.
 
-Plan: `TODO`, `IN_PROGRESS`, `IMPLEMENTED`, `VERIFIED`, `BLOCKED`, `SUPERSEDED`.
-`IMPLEMENTED` requires completed work and checks. The executor stops there.
-Dependencies can proceed from `IMPLEMENTED` or `VERIFIED` plans. `VERIFIED`
-requires all owned acceptance rows passed and an orchestrator review report.
+| Plan state | Meaning |
+|---|---|
+| `TODO` | Planned, not started |
+| `IN_PROGRESS` | Work or required checks remain |
+| `IMPLEMENTED` | Work and checks complete; review remains |
+| `VERIFIED` | Owned acceptance passed and review recorded |
+| `BLOCKED` | A named prerequisite prevents progress |
+| `SUPERSEDED` | Replaced plan; acceptance reassigned |
 
-A plan dependency requires the whole predecessor to be implemented. Keep work
-that can start after an early interface check in ordered assignments within the
-same plan. The plan remains `IN_PROGRESS` until all assignments and checks are
-complete. Separate independent plans have no dependency. On resume, reconcile
-plan boundaries and acceptance ownership before dispatch if the old split would
-require a false `IMPLEMENTED` state; preserve design approval and valid evidence.
+A dependent plan can start after its predecessor is `IMPLEMENTED` or `VERIFIED`.
+If it needs only an early interface, keep the related assignments in one plan
+until the complete result is implemented. Do not mark partial work implemented
+just to unlock a dependency.
 
-Acceptance: `PENDING`, `PASS`, `FAIL`, `BLOCKED`. Exclusions require approved
-scope. The executor records evidence; the orchestrator records acceptance and
-state. User-selected direct execution uses the same criteria and labels self-review.
+Acceptance states are `PENDING`, `PASS`, `FAIL`, and `BLOCKED`. The executor
+supplies evidence; the reviewer determines acceptance. Label direct execution
+and self-review when applicable.
 
-`DONE` requires every selected plan verified, all required acceptance passed with
-current non-browser evidence, and review of cross-plan effects. Link
-the final report in `Latest review`.
+`DONE` requires all selected plans verified, all required acceptance passed,
+current evidence, and review of cross-plan effects. Link the final report in
+`Latest review` and apply the [delivery verdict](verification-strategy.md#verdicts).
 
 ## Handoff and resume
 
-Update at handoff, changed decisions and material failures. Record affected IDs,
-evidence paths and the next action. A reviewer receives the approved revision,
-plan, acceptance rows, relevant diff including new files, evidence and boundaries.
-Reuse current evidence. Changed rules or inputs reopen affected rows and plans;
-check dependencies before reopening other work. Preserve failed runs and replaced
-reports. Report missing history as unverified.
+Pass the approved revision, active plan, affected IDs, relevant diff, evidence,
+write boundaries, and next action. Reopen only rows and plans affected by changed
+rules or inputs, then check dependent work. Retain failures and replaced reports.
+
+For old browser mappings, preserve their history outside the active module
+worksheet and retain their business requirements with applicable API/UNIT proof.
+The checker rejects active browser mappings and BROWSER/VISUAL evidence. Empty
+historical journey tables need no conversion. Follow the
+[browser boundary](verification-strategy.md#browser-journeys).

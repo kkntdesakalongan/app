@@ -1,155 +1,96 @@
 # Verification strategy
 
-Verify the requested result with the smallest useful non-browser checks.
-The original request and later decisions govern behavior. Optional refinements
-are not completion gates.
+Select checks for the requested outcome and changed boundary. Reuse current
+passes when source, fixtures, dependencies, and environment remain applicable.
 
 ## Browser journeys
 
-E2E is outside Carta module delivery. This applies to design, planning,
-implementation, review, full-process work and resumed work, for
-standard CRUD and custom workflows alike. Do not generate, write, run or repair
-browser tests. Do not prepare browser test environments, collect browser reports,
-assign journey IDs, or require a manual browser walkthrough as a substitute.
-Do not run aggregate commands that start browser tests.
-
-Browser testing requires a separate, explicitly requested task. Existing
-framework tests remain unchanged. Move old browser obligations to that separate
-scope; preserve their history and do not mark them passed. Missing E2E is not a
-module defect or a completion blocker. Report actual UI behavior as unverified.
+Module delivery, planning, and review use non-browser checks. Do not create,
+run, repair, or assign browser tests, or require a manual walkthrough instead.
+Inspect aggregate commands before use so they do not start browser work.
+Browser testing needs a separate, explicitly requested task. Preserve old
+browser evidence as history; it is not a module gate. Report rendered behavior
+as unverified.
 
 ## Select proof by behavior and impact
 
-Use focused type checking and linting for changed owners. Add or run a small
-schema/API test only for a module-specific risk not covered by current evidence.
-
-| Risk | Useful proof |
+| Changed risk | Suitable proof |
 |---|---|
-| Validation | Accepted and rejected values through the actual schema. |
-| Relation | API identity and returned label; source review of list/detail display and edit loading. |
-| Access | Allowed reads and denied writes, with stored data unchanged on rejection. |
-| Filter | API results for distinguishing records; source review of field/filter wiring. |
-| Workflow | Legal/illegal transitions and coupled stored effects or rollback. |
-| UI composition | Source review of fields, dependencies, relation labels, routes and standard actions. |
-| Migration | SQL review and relevant existing-data checks on an authorized isolated target. |
-| External integration | Current evidence for the actual provider contract, using a limited live check where needed. |
+| Validation or conversion | Accepted and rejected values through the actual schema |
+| Relation | Submitted identity, returned label, edit load, and rejection of an invalid parent reference |
+| Access | Allowed action and denied action with stored data unchanged |
+| Filter | Results from distinguishing records and source review of query wiring |
+| Workflow | Legal and illegal transitions, coupled stored effects, and rollback |
+| UI composition | Source review of inputs, display values, actions, imports, and route targets |
+| Migration | SQL review and relevant existing-data checks on an authorized target |
+| Resource declarations | Current surface architecture check plus affected type checks |
 
-Source review does not prove rendered behavior. Record that limit without
-starting browser work. Prepare the authorized development migration, seed and
-preview URL as soon as viable under [execution](execution.md#prepare-and-build).
-Do not wait for final test completion to make the preview available.
-
-## External integrations
-
-Before building dependent behavior, identify unverified request and response
-contracts. Use current evidence for the specified provider, model or version,
-input format and options, or run a limited live check through the application
-operation. A compatibility claim or a response invented for a mock does not
-verify the external contract.
-
-Resolve live-check authority early from the request and existing permissions.
-If authority is missing, ask for the specific check, data and cost or request
-limit while continuing independent work. Available credentials alone do not
-grant authority. Use authorized test data, bound time and usage, and stop when
-the required evidence is obtained or the agreed limit is reached. Report failures
-and the next useful check before further paid retries.
-
-Record the target, relevant request options and observed result without secrets
-or sensitive payloads. Where useful, preserve a response with sensitive data
-removed as a fixture for a stable regression test. Use local tests for malformed
-responses, timeouts and error handling; distinguish technical failure from a
-valid negative business result. A live connection check proves compatibility,
-not model accuracy. Check accuracy with representative cases when required by
-the requested outcome.
-
-Keep a required integration with missing evidence visibly unverified. It prevents
-completion: use REWORK for missing proof within authority, or BLOCKED when
-authority or the environment prevents the check.
+Use current package scripts for focused tests, type checks, and lint. Broaden
+checks when impact crosses owners. An aggregate count, zero selected tests,
+or skipped cases do not prove a required outcome.
 
 ## Test ownership
 
-Trust established framework contracts for unchanged controls. Do not rediscover
-their coverage for each field or repeat lookup, calendar, reset, readiness,
-overlay and focus tests in modules. Framework gaps are separate work.
-Module tests own schemas, relation sources, field dependencies, authorization,
-business rules and persistence. Use actual module owners, not copied schemas.
+Module tests own business rules, schemas, relation sources, dependencies,
+authorization, persistence, and local coordination. Trust unchanged framework
+controls. For local submit/refresh coordination, test through its real owners;
+include write failure and successful write followed by refresh failure when
+these have different effects.
 
-Application integration is a separate boundary from unchanged framework behavior.
-When local code coordinates submit, component lifetime, refresh or invalidation,
-use a focused non-browser check that exercises that coordination through its
-actual owners. Include write failure and successful write followed by refresh
-failure where those paths differ. Keep source review for layout and configuration;
-avoid tests that only repeat their text.
+Before adding a test, name the plausible wrong result and coverage gap. Extend
+an existing suitable test. Assert public results and stored effects using
+fixtures that distinguish the fault. Avoid tests that repeat configuration or
+copy schema logic. Keep mocks outside the boundary being proved.
 
-## Test justification
+Use guarded isolated test targets. Serialize tests that share mutable data and
+memory-heavy type checks. Clean up owned rows after failure too. A test that
+replaces database schema needs its own isolated target.
 
-Before adding a test, identify the plausible wrong result and the coverage gap.
-Extend an existing suitable test first. No test-count target or new ledger.
-Avoid snapshots, source-text tests, exact copy, field order and copied config
-assertions unless these are explicit product contracts.
+## External integrations
 
-## Tests that earn their cost
+Before dependent work, verify the provider's request and response contract for
+the selected version and options. Use current authoritative evidence or a limited
+live check through the application operation. A mock cannot prove compatibility.
 
-Assert public results and stored effects, not status alone. Use only fixtures
-that distinguish the fault. Give them unique identities and clean up owned rows
-after failure too. Keep related steps in one test when their sequence matters.
-Do not mock the authorization or persistence boundary being claimed.
-For regressions, demonstrate the intended failure when practical.
-
-## Commands and environment
-
-Inspect current scripts and focused selectors once.
-
-Use guarded isolated API test targets, never a development database for test
-reset. Serialize checks that share mutable data and memory-heavy type checks.
-Zero selected tests and skipped cases are not passes. Report exact blockers.
-
-## Test order
-
-Use test-first work for regressions and critical access/data-loss rules when
-practical. Routine routes and forms can precede their focused checks.
-Do not change approved product behavior to satisfy a test.
+Resolve live-check authority, data, cost, and request limits before the call;
+credentials alone do not authorize it. Stop when evidence is sufficient or the
+limit is reached. Record target, options, and results without secrets. Keep
+technical errors distinct from valid negative business results. Compatibility
+does not prove accuracy; use representative cases when accuracy is required.
+Missing required proof remains `REWORK`, or `BLOCKED` when authority or the
+environment prevents the check. Continue independent work.
 
 ## Tight loop
 
-Run a focused check after a meaningful boundary change. Preserve its output,
-exact command and real exit status; a pipe can hide failure. Read saved output
-instead of rerunning only to see another part. Classify failures as source,
-test, fixture, environment, tooling or requirement.
-
-After two failed attempts at the same fault, report the evidence, proposed cause
-and next different check. If that check does not establish the cause, stop that
-repair and request focused diagnosis; continue independent work.
-Reuse current passes when their source, fixtures and environment remain valid.
-A new reviewer or report format does not require another run.
-Shared API tests use migrated schema and clean up only owned rows. A test that
-replaces schema needs its own isolated target.
+Run a focused check after a meaningful boundary change. Keep the command,
+working directory, output, and real exit status. Classify a failure before
+retrying. After two failed fixes to the same fault, report evidence and use a
+different diagnostic check; if the cause stays unclear, seek focused diagnosis.
+Reuse saved output rather than rerunning to read another part of it.
 
 ## Evidence interface
 
-Keep commands, exit status, selected cases, source state and non-secret target
-identity in the existing work record. No recorder JSON is needed for ordinary
-work. Record source-review findings and unverified UI behavior separately.
+In the standard record, link each required outcome to a relevant assertion or
+specific source-review finding. Record commands, exit status, selected cases,
+source state, and non-secret target identity. Separate source review from
+runtime results. Missing required evidence stays open even when executed checks
+pass. A new reviewer alone does not make evidence stale.
 
-Support each required outcome with a relevant assertion or specific source-review
-finding. Read the assertion before claiming coverage. An aggregate test count or
-a type-check pass does not establish behavior outside its checks. Keep missing
-required proof open even when all executed commands pass.
-
-For the full process, select only API/UNIT evidence. Use the existing recorder
-through `node scripts/module-evidence.mjs --help`. Include actual source, tests,
-fixtures, config, lockfile, affected dependencies and approved design as inputs,
-including dirty/untracked files. Keep reports outside the input set. Do not edit
-old reports or remove inputs to make stale evidence pass. Document-only changes
-need requirement review, not automatic runtime reruns, unless consumed at runtime.
+For the full process, use API/UNIT rows in the
+[worksheet](module-execution-worksheet.md). Resolve recorder usage with
+`node scripts/module-evidence.mjs --help`. Include actual source, tests,
+fixtures, configuration, lockfile, affected dependencies, and approved design
+as inputs, including dirty and untracked files. Keep reports outside the input
+set. Check freshness; retain failed and replaced reports. Documentation changes
+need requirement review, not automatic runtime reruns.
 
 ## Verdicts
 
-- `PASS`: in-scope non-browser checks and source review are sufficient; required
-  development setup is complete. State that browser behavior was not verified.
-- `REWORK`: an in-scope defect or missing non-browser proof needs correction.
-- `BLOCKED`: a decision, authority or environment prevents in-scope completion.
+- `PASS`: required non-browser proof and source review are sufficient, and
+  required development setup is complete. State the unverified rendering limit.
+- `REWORK`: an in-scope defect or missing proof needs correction.
+- `BLOCKED`: a decision, authority, or environment prevents completion.
 
-Separate defects and material proof gaps from optional suggestions. Do not waive
-security, data protection or requested behavior to save time. Do not expand
-verification into browser work to close a stated UI verification limit.
+Record the verdict before completion. Keep work under review until repairs
+have been reviewed. Separate material defects and proof gaps from optional
+suggestions.

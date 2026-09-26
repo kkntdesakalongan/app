@@ -76,16 +76,9 @@ permitted prerequisite orders and cross-module effects when they exist.
 | Obligation | Rule references | Acceptance IDs |
 |---|---|---|
 
-For a full-path worksheet, keep this legacy checker table empty:
-
-| Journey | Obligation | Acceptance IDs | Distinct interaction |
-|---|---|---|---|
-
-Reason: E2E is outside module delivery under the
-[verification boundary](../../carta-module-development/references/verification-strategy.md#browser-journeys).
-Describe UI behavior in resource summaries and custom action records, not
-browser test mappings. On resume,
-move old journey obligations to separately scoped work; do not mark them passed.
+Describe UI behavior in resource summaries and custom action records. Use the
+[verification boundary](../../carta-module-development/references/verification-strategy.md#browser-journeys)
+for browser evidence and resumed journey mappings.
 
 Present the inventory during full-path design review. The worksheet checker
 cannot discover business work omitted here. Explicit exclusions belong in scope,

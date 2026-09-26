@@ -2,111 +2,78 @@
 
 ## Assignment
 
-For module delivery, the parent owns questions, scope, progress and review.
-Delegate implementation and repair to one continuing worker when the harness
-supports it. The parent must not repeat the worker's discovery or edit its files
-in parallel. Use direct execution when delegation is unavailable, prohibited or
-cannot preserve ownership; state that reason. Split workers only for genuinely
-independent work with non-conflicting files and test targets.
+Keep connected API and UI work with one executor through implementation and
+repair. When delegation is available and permitted, use one continuing worker;
+the parent owns questions, progress, and review. Otherwise execute directly.
+Split only independent work with separate files and test targets.
 
-An assignment names the requested result, exact owners/patterns, unresolved facts,
-permitted writes, environment and completion check. Pass decisions, not the
-transcript or an instruction to rediscover them. The active assignment contains
-one usable result and its prerequisites; remaining work stays in the work record.
-
-For UI delivery, include API, page, navigation, permissions and development setup
-in the assignment. Include [DESIGN.md](../../../../DESIGN.md) and any approved
-exceptions as required inputs for the executor and reviewer. On resume, check
-whether these inputs changed before reusing earlier UI decisions.
-An early API integration check can precede the UI checkpoint;
-keep the remaining UI work in the same assignment.
-Review the first page's source wiring and
-non-browser assertions before repeating the pattern. Assign no E2E work.
-
-Full-process work uses the [worksheet state rules](module-execution-worksheet.md#state-and-completion).
-Standard work uses the single design record; no worksheet checker is needed. Keep work
-with an early interface dependency in one plan when a split would block useful
-progress or require a false completion state.
+An assignment includes the approved result, source pointers, unresolved facts,
+permitted writes, environment, and completion checks. Include the first page's
+API, navigation, permissions, and development setup. A layer alone is not a
+usable module. For full-process work, apply the
+[plan dependency rules](module-execution-worksheet.md#state-and-completion).
 
 ## Prepare and build
 
-Before implementation, check required configuration presence without exposing
-secrets, database baseline, test commands and setup authority together. Reuse
-current evidence. Finish this check with usable prerequisites or named blockers;
-continue independent work while missing authority is resolved.
-Resolve current package commands and reuse a current preflight. Select only
-needed capabilities with `pnpm module:preflight -- --needs <capabilities>`.
-Establish the intended development target and write authority before setup is
-needed. Test/E2E targets and development preview are separate.
-For a fresh trial, confirm that source, migration history and the selected
-database belong to the same baseline. A clean Git tree does not prove this.
-If existing tables conflict with pending migrations, stop affected writes and
-report the mismatch. Use a confirmed disposable target or an authorized
-reconciliation. Do not drop tables, remove applied migrations or change journal
-entries to make a module check pass.
+1. **Check prerequisites.** Inspect current package commands, required
+   configuration presence, target identity, and database baseline. Use
+   `pnpm module:preflight -- --needs <capabilities>` for required capabilities.
+   Record usable prerequisites or exact blockers without secret values.
+2. **Implement one complete result.** Use the layer skills in the entrypoint.
+   Trace write input through validation and persistence to returned values,
+   display, and edit loading. Check the boundaries below before repeating the
+   pattern. For an uncertain provider, establish the
+   [external contract](verification-strategy.md#external-integrations) first.
+3. **Prepare the development preview.** Review migration SQL and the selected
+   target. Apply pending migrations and required permission/system seed within
+   authority, using the existing commands. Check service readiness and source
+   wiring for routes, navigation, and access. Report the URL, setup result,
+   actor role, data prerequisites, and unfinished work as soon as ready.
+4. **Finish requested behavior.** Complete all remaining actions and restrictions.
+   Use the [tight loop](verification-strategy.md#tight-loop), then review.
 
-When the main function depends on an uncertain external integration, establish
-one working path through the application input, provider call and validated
-result before completing dependent surfaces. Use the existing application
-structure and the [external integration checks](verification-strategy.md#external-integrations).
-Record the result and remaining work. This checkpoint does not complete UI delivery.
+Development and test targets are separate. If existing tables conflict with
+migration history, stop affected writes and report the mismatch. Use an
+explicitly disposable target or authorized reconciliation. Preserve applied
+migrations; subsequent changes use new migrations. A remote target or available
+credentials do not imply reset authority. Demo data and account changes need
+scope beyond the required system seed.
 
-Before migration generation, check the affected entity import structure and
-existing data. Resolve connected-entity/audit references using the supported
-pattern; keep schema declarations and SQL consistent. A module task does not
-authorize a framework redesign or removal of required constraints.
+For entity changes, inspect connected-entity and audit references before
+migration generation. Keep required constraints and SQL consistent. After route
+changes, run the current supported route/type generation before diagnosing
+stale route names as application errors.
 
-As soon as the first viable schema and page are ready:
+## Boundary checks
 
-1. Review migration SQL and identify the target. Apply pending migrations
-   within authority using the existing migration command, not reset/refresh.
-2. Inspect and run the required permission/system seed within authority. Preserve
-   existing data; demo records and account changes are not automatically required.
-3. Check service readiness and review the page's route, navigation and access
-   wiring. Report its URL, migration/seed result and unfinished work before
-   final verification. Leave the browser walkthrough to the user; do not claim
-   rendered behavior was verified.
-
-Ask early if the target or write authority is unclear. Never substitute test/E2E
-reset commands for development setup. A remote target is not disposable merely
-because its configuration is available. Once applied to any target, keep migration
-history intact; use a new migration for subsequent changes.
-
-After route changes, use the current supported route/type-generation command
-before interpreting stale route names as application type errors. Resolve a
-missing command once; do not repeatedly clear caches or rewrite declarations.
-
-## Progress and recovery
-
-Use the [tight loop](verification-strategy.md#tight-loop). Report completed
-results, material failures and blockers with the next action. Preserve full
-output and the real command status so diagnosis does not require a rerun.
-
-On interruption, inspect saved changes/results and resume the same executor.
-Transfer only unfinished work when recovery is not possible. Stop the old
-executor before transferring ownership. Elapsed time alone does not establish
-failure, but an unclear result requires diagnosis before more assignments.
+| Boundary | Required result |
+|---|---|
+| Access | Server rules, resource actions, route guards, navigation, and permission seed agree. The server checks current state and parent membership. |
+| Relations | List, detail, and returned writes include display labels. The write schema accepts the declared identity; a filtered lookup does not grant access. |
+| Values | Raw schema input, draft, parsed output, and stored values agree under the [field contract](frontend-field-contract.md). |
+| Writes | Coupled effects use one transaction. Deletion and recovery match the approved behavior. |
+| Reads and refresh | Each data set has one loading owner; affected consumers refresh under the [cache contract](web-query-cache.md). |
+| Entry points | Routes resolve, visible parents and Back targets are correct, and intended sidebar entries are registered. |
 
 ## Review and finish
 
-Return changed owners, observed results, current evidence and remaining work.
-Use [verification strategy](verification-strategy.md#evidence-interface) for the
-chosen path. Review the feature once unless a separate result needs independent
-acceptance. Prefer an independent `$verify-carta-module` reviewer at completion;
-label self-review when delegation is unavailable or the user requests direct work.
+Use `$verify-carta-module` with the original request, approved decisions,
+relevant diff, and current evidence. Prefer an independent reviewer when
+available and permitted; label self-review otherwise. Apply the shared
+[verdict rules](verification-strategy.md#verdicts).
 
-Review against the original request and later decisions. Fix material in-scope
-defects without requesting new implementation approval. Ask only for changed
-requirements, scope or write authority. Optional suggestions do not block a
-correct result. Report failed checks and missing proof separately from defects.
+Repair material in-scope defects under existing authority. Reopen affected
+review after a repair, including other uses of the same faulty pattern.
+Preserve valid evidence for unaffected behavior. Optional suggestions are
+follow-up work, not completion gates.
 
-Update the existing work record, relevant application-map entries and, only for
-the full process, worksheet states. Report source readiness, development preview
-and verification separately. Record time to usable preview as well as total
-elapsed time; keep user waits and external blockers distinct.
+Record three results in the existing work record:
 
-After a reported defect, inspect other uses of the same faulty pattern and reopen
-the affected review scope. Update the existing record with the repair and current
-evidence before restoring completion. Preserve evidence that the defect and repair
-do not affect. Include the account role and data prerequisites needed to use the
-preview, without exposing credentials.
+- **Source ready:** implementation and migration files are complete.
+- **Preview ready:** required development schema/seed and service setup are
+  complete; include the URL or exact blocker. Source checks do not prove rendering.
+- **Verified:** required evidence and the final review verdict are recorded.
+
+Update relevant application-map entries and, for the full process, worksheet
+states. On interruption, inspect saved changes and results before resuming.
+Stop an old worker before transferring its unfinished work to another owner.

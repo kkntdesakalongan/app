@@ -27,13 +27,6 @@
 | Acceptance | Required surfaces |
 |---|---|
 
-## Browser journeys
-
-| Journey | Test case |
-|---|---|
-
-E2E is outside module delivery. Keep this legacy table empty.
-
 ## Acceptance
 
 | Acceptance | Plan | Surface | Test case | Implementation | Evidence | Review | Result |

@@ -1,81 +1,60 @@
-# Web query cache contract
+# Query and mutation contract
 
-Loom owns the TanStack Query client and the cache namespace for bound resource
-operations. Routes do not create query clients or raw query keys for standard
-resource screens.
+Read for custom reads, submit overrides, or writes that affect other resources.
+Loom owns the query client and resource cache keys.
 
-## Standard resource reads
+## Reads and queries
 
-The list bag is static. `ListView` or `Table` owns its loader:
+Standard Views and extracted primitive bags own loading. Bind `resource.list`
+and `resource.create` directly; bind `resource.detail({ id })` and
+`resource.update({ id })` for record pages. Their loaders remain in the nested
+`table`, `detail`, or `form` bag. An update-only page needs no display operation.
 
-```vue
-<ListView v-bind="users.list" />
-```
+For standard Hono lists, pass the module's raw query schema to
+`createHonoResourceActions(endpoint, { querySchema })`, then bind `api.list`
+directly. The adapter validates and encodes the collection query once. Do not
+also assign that schema to the resource table. Standalone tables may own query
+validation when their loader does not. Use frontend `sort_by` and `sort`;
+the transport owns wire names. Preserve endpoint-specific sort keys, filters,
+search parameters, and cancellation.
 
-The bound operation exposes its loader at `users.list.table.load`. A detail
-bag captures its identity and owns its record loader:
+Use `collectionKey` or `recordKey` with `useLoader` only when no existing surface
+owns the custom data set. Include every result-changing query and parent input
+in both key and request context. Use a distinct namespace for another logical
+collection. Keep changing inputs reactive and use `enabled` until required inputs
+exist. Choose either `data` or `load`.
 
-```ts
-const detail = users.detail({ id })
-detail.detail.load(context)
-```
+Current owners: [Hono actions](../../../../apps/web/src/framework/hono/actions.ts),
+[query contract examples](../../../../apps/web/src/framework/__type-tests__/plan068-query-ownership.type-test.ts),
+and [Loom query API](../../../../packages/loom/src/query/index.ts).
 
-An update form owns its draft loader at `users.update({ id }).form.load`. The
-loader maps the record to form input values. Do not load an update draft from a
-flat page loader or show a fabricated detail operation.
+## Writes and commands
 
-Use the standard `ListView`, `DetailView`, and `FormView` to retain the shared
-loading, cache, error, and refresh behavior. Use `useLoader` for a separate
-custom data set only when no existing surface owns it.
-
-## Standard writes
-
-The form's `submit` function and the resource binder own access checks and
-invalidation for the declared standard write. Do not wrap a standard submit in
-another `run` call or repeat invalidation after the write. A successful
-mutation invalidates the resource collection and the affected record/draft
-cache. A detail or update binding carries its identity.
+Resource-bound form submit owns access and mutation invalidation. Create/update
+results must contain the declared identity; an update result must identify the
+bound target. Use the resource identity shape for routes, writes, and keyed
+invalidation. Use `invalidate()` for the whole resource.
 
 Custom commands live under `resource.actions`. `run` and `can` receive exactly
-the declared business arguments. Use `withContext({ record })` to attach row
-policy data; it does not change those arguments. The command checks its policy
-when it runs and invalidates the owning resource after success. If a command
-also changes another resource, await that resource's
-`invalidate({ id? })` call after the write. Report refresh failure separately
-from the successful write.
+the business arguments. Attach row policy with `withContext({ record })`;
+it does not change that tuple. Explicit `permission: null` still permits row
+policy checks. The server remains responsible for current authorization.
 
-A successful create or update result must contain a valid resource identity.
-An invalid result fails after the write, invalidates the resource, and reports
-`RESOURCE_RESULT_INVALID` as a non-retryable post-write error. Explain that the
-write may have completed. Do not submit again automatically.
+The binder invalidates its own resource after a successful write. Refresh other
+affected resources after success, awaiting their `invalidate({ id })` or
+`invalidate()` as needed. Keep later refresh work separate from the write, using
+`submitted` or the supported page completion hook. Report refresh failure as
+stale data; do not repeat the successful write.
 
-## Custom data sets
+## Submit overrides and failures
 
-Use `collectionKey` or `recordKey` with `useLoader` for a custom data set:
+`<Form v-bind="bound.form" :submit="replacement" />` replaces the guarded
+function. The replacement does not inherit its access checks or invalidation.
+Prefer the bound submit. When an override is required, explicitly preserve the
+required policy and refresh ownership in the replacement operation.
 
-```ts
-const query = { page: 1, limit: 100 }
-const loader = useLoader({
-  key: collectionKey({ resource: users.key, namespace: 'active-users', query, searchParameters: {} }),
-  context: { query, searchParameters: {} },
-  load: context => userActions.list(context),
-})
-```
-
-Include every input that changes the result in the key and request context.
-Use a distinct namespace when the same resource has another logical
-collection. Keep parent identity in both the request and key. Do not add
-manual `onMounted` loads or duplicate refresh state.
-
-`useLoader` accepts `key`, `context`, `load`, optional `enabled` and `data`; it
-returns `data`, `loading`, `error`, and `refresh`. Use `enabled` while required
-inputs are absent. Do not pass both `data` and `load`.
-
-## Review checklist
-
-- Standard views use the static or identity-bound bags from the resource.
-- Standard reads have one loading and cache owner.
-- Update drafts load and map values inside the bound form bag.
-- Standard writes do not repeat the binder's invalidation.
-- Custom data sets include their query and parent inputs in the cache key.
-- Cross-resource writes refresh each affected resource after success.
+`RESOURCE_RESULT_INVALID` means the write may have completed but returned an
+invalid identity. The binder invalidates affected caches and reports a
+non-retryable error. Do not fabricate an identity, claim rollback, or submit
+again automatically. Apply the same write/refresh distinction to post-write
+invalidation failures.
