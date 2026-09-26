@@ -1,10 +1,10 @@
-# Plan 066: Measure agent work on three concrete Loom tasks
+# Plan 066: Measure agent work on concrete Loom authoring and repair tasks
 
 ## Status and intent
 
 - Status: TODO. Priority: P3. Effort: M for case preparation; run cost depends on the available agent harness. Risk: LOW to product source.
 - Category: direction/evaluation spike.
-- Depends on: completed 061–065 and 067–076 for the candidate comparison. Case preparation can start earlier. Use the baseline described below, not an inferred historical environment.
+- Depends on: no repair for baseline preparation/runs. Capture the baseline before implementation where the available harness permits. Each candidate run names the repairs it includes; it need not wait for all sixteen plans. Plan 073 removal and the first 065 guide publication form a useful early candidate. Use the baseline below, not an inferred historical environment.
 - Planned at: `1246387`, 2026-09-26.
 
 Create a small repeatable evaluation of whether Loom's repairs and current guide reduce agent mistakes and repair work. Measure real results from isolated runs. Do not infer improvement from line counts, test counts, shorter answers, or a single successful transcript. The deliverable is an evaluation kit plus an honest pilot report, not a new application module or evaluation platform.
@@ -36,7 +36,7 @@ Current Loom reference owners are `packages/loom/src/components/inputs/useOption
 
 Change only:
 
-- `evals/carta-module-workflow/cases.json`, append three uniquely named cases
+- `evals/carta-module-workflow/cases.json`, append five uniquely named cases
 - `evals/carta-module-workflow/grading.md`, add a separate Loom rubric
 - `evals/carta-module-workflow/README.md`, link the new protocol/results
 - `evals/carta-module-workflow/fixtures/loom/` (new prompts, preparation instructions, and bounded fixture files)
@@ -71,9 +71,20 @@ Rows have `{ id, status, allowedOperations }`. A `verify` command receives one b
 
 The grader checks that `can` and `run` use declared permission/row context, denied calls do not reach transport, an allowed call preserves payload and result, and invalidation follows the bound resource path. The worker changes only application fixture code; it does not modify backend permissions, inspect payload trailers, or add framework wrappers.
 
+## Ownership cases added by the later audit
+
+Retain A–C as comparison cases, but do not claim they measure every ownership repair. Add two separately scored cases using the same protocol:
+
+- **D: Create-only module.** Supply an existing typed local create endpoint and a raw create schema. Ask for a standard resource/form and thin route, with no list or visible detail operation. No framework edits or fake endpoints are permitted. Grade valid construction, request/result, absence of invented list configuration, and source correctness. The baseline's known transport limitation is a framework block, not an agent failure. This case measures whether the candidate removes that block and avoids extra authoring work.
+- **E: Relation source freshness.** Supply two resources, a mounted relation picker, and a local update action that changes an option label. Ask the worker to wire the source through supported APIs so the label refreshes after the write while the selected identity is retained. Grade the real resource invalidation path and absence of private cache keys/manual picker refresh wiring. Keep identical behavior requirements across variants and record a baseline framework block where appropriate.
+
+For each case, record the number of independent owners the worker had to inspect, stale or conflicting guidance encountered, failed repair attempts, invented endpoints/wrappers, and framework internals exposed in app code. Count only observed events with source/transcript pointers; missing telemetry is unknown. Do not treat fewer files or fewer reads as automatically better. Report correctness first, then work required. These observations test the specific meaning of agent overload used by this audit.
+
+The extra cases belong to this small evaluation kit, not a permanent benchmark service. Run and report cases independently. A missing worker harness blocks the pilot only; it does not block documentation or product repairs.
+
 ## Comparison protocol and result schema
 
-Pin baseline `1246387` and a recorded candidate commit/tree containing 061–065 and 067–076. If candidate changes are uncommitted, capture the exact patch and hashes of included files. Record uncommitted skill changes separately; choose the same skill snapshot for both variants. Never copy local secrets, env files, database settings, or the dirty working tree wholesale.
+Pin baseline `1246387` and a recorded candidate commit/tree with an explicit completed-plan list. Never label a partial candidate as containing every repair. If candidate changes are uncommitted, capture the exact patch and hashes of included files. Record uncommitted skill changes separately; choose the same skill snapshot for both variants. Never copy local secrets, env files, database settings, or the dirty working tree wholesale.
 
 Prepare clean isolated copies using a read-only archive of each revision plus the explicitly captured candidate patch. Use the same dependency lockfile and installed package versions; if dependencies differ materially, stop and classify the comparison as confounded. Use the same model, effort, tools, time/token cap, human answers, and starter fixture for each pair. A concrete default is one fresh run per case per variant; repeat any ambiguous pair before drawing a directional conclusion. Record the exact budget selected before starting.
 
@@ -101,21 +112,21 @@ The acceptance test path is new and exists only after preparation in the disposa
 
 ## Steps
 
-1. Record drift and read existing protocol/rubric and named source owners. Define the three case prompts, allowed app files, complete transport types, and acceptance ids. **Verify:** Case inventory exits 0 after appending; every new `inputs` path exists and each acceptance id maps to a stated business requirement.
+1. Record drift and read existing protocol/rubric and named source owners. Define the five case prompts, allowed app files, complete transport types, and acceptance ids. **Verify:** Case inventory exits 0 after appending; every new `inputs` path exists and each acceptance id maps to a stated business requirement.
 2. Prepare starter and private acceptance fixtures in the new fixture directory, with explicit instructions for materializing them in disposable workspaces. Build one reference completion per case only for validating the grader; do not give it to workers. **Verify:** in each applicable revision, reference Fixture compilation and Focused acceptance pass, with baseline limitations separated. Reintroduce each intended defect in a disposable copy and confirm its acceptance check fails for the intended reason.
-3. Write the pinned comparison protocol and JSON ledger skeleton with all six paired runs initially `NOT_RUN`. Include exact source/skill/fixture hashes and the selected budget. **Verify:** JSON syntax and Case inventory pass; one-off validation confirms three unique case ids, one baseline/candidate record per case, and all required fields present.
-4. Run the paired pilot if a fresh-session worker harness is available and authorized for local evaluation. Preserve its actual transcript and command output. If it is unavailable, finish the kit, mark affected runs BLOCKED/NOT_RUN, and state the exact missing capability; do not impersonate six independent agents in one conversation. **Verify:** for every attempted run, execute the private acceptance commands against that worker's artifacts and store the real outcome. Check transcript/artifact hashes against the ledger.
+3. Write the pinned comparison protocol and JSON ledger skeleton with all ten runs (five baseline/candidate pairs) initially `NOT_RUN`. Include exact source/skill/fixture hashes and the selected budget. **Verify:** JSON syntax and Case inventory pass; one-off validation confirms five unique case ids, one baseline/candidate record per case, and all required fields present.
+4. Run the paired pilot if a fresh-session worker harness is available and authorized for local evaluation. Preserve its actual transcript and command output. If it is unavailable, finish the kit, mark affected runs BLOCKED/NOT_RUN, and state the exact missing capability; do not impersonate ten independent worker runs in one conversation. **Verify:** for every attempted run, execute the private acceptance commands against that worker's artifacts and store the real outcome. Check transcript/artifact hashes against the ledger.
 5. Write a report separating correctness, repair work, runtime limitations, and observed cost. With only one pair per case, call findings exploratory. Recommend at most the next bounded repair supported by results; a no-change conclusion is valid. **Verify:** every factual outcome links to a ledger run/artifact, unmeasured values remain null, and all unrun cases are explicit. Run JSON syntax and Whitespace; update plan/index with `KIT READY / PILOT BLOCKED` if appropriate, never DONE for an unrun required pilot.
 
 ## Done, stops, and maintenance
 
-- [ ] Three self-contained prompts, starter fixtures, private grader, and preparation instructions exist.
+- [ ] Five self-contained prompts, starter fixtures, private grader, and preparation instructions exist.
 - [ ] Reference solutions pass; seeded defects fail for the intended reason.
 - [ ] Source/skills/fixture/model/budget differences are recorded and controlled.
 - [ ] Each pilot outcome has real artifacts and acceptance results, or an explicit blocked/not-run status.
 - [ ] The report makes no claim about the original overhaul or statistical reliability that this experiment cannot support.
 
-Stop comparison runs for unequal material dependencies, leaked grader data, missing isolation, a fixture that tests an unsupported API, or a needed real backend write. Stop after two failed fixture-preparation attempts and report the contract mismatch. A missing harness blocks the pilot, not preparation of useful cases. Do not change product source to make an evaluation pass.
+Stop comparison runs for unequal material dependencies, leaked grader data, missing isolation, an unexpected unsupported API beyond the explicitly recorded baseline limitations, or a needed real backend write. Stop after two failed fixture-preparation attempts and report the contract mismatch. A missing harness blocks the pilot, not preparation of useful cases. Do not change product source to make an evaluation pass.
 
 For future reruns, preserve prior immutable records and append new run ids. Change the fixture version when the API or acceptance behavior changes; do not compare different fixture versions as if only the agent architecture changed.
 

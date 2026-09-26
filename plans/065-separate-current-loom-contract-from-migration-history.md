@@ -3,7 +3,7 @@
 ## Status and intent
 
 - Status: TODO. Priority: P3. Effort: M. Risk: LOW. Confidence: HIGH for the mixed document; benefit to agent performance remains unmeasured.
-- Category: documentation direction. Depends on: 061–064 and 067–076 for a final description of their implemented contracts. If those plans are not executed, prepare an inventory only; do not document proposed behavior as shipped.
+- Category: documentation direction. Depends on: 073 for the initial current-guide publication. Do not wait for all repairs. Publish the current owner map and direct-authoring path after removal, then update it alongside each implemented contract. Final reconciliation checks the actual completed subset; proposed behavior is never described as shipped.
 - Planned at: `1246387`, 2026-09-26.
 
 Keep one authoritative description of current Loom behavior. Move execution order, migration inventories, old paths, and historical acceptance records out of the normal authoring path. Preserve the reasons for consequential rules, executable examples, and links. This is an editorial reorganization, not permission to change architecture or add another specification.
@@ -48,9 +48,9 @@ Do not edit skills, AGENTS, DESIGN, historical plan bundles, source code, tests,
 
 ## Target document and preservation rules
 
-The active architecture should start with a current-contract label, a small owner/API table, and the shortest valid form/table/detail/resource examples. Group the remaining current rules by author task: schemas/drafts, input props and behavior, display, operation binding, page/wrapper lifecycle, query/transport, assets, extension points, and verification.
+The active architecture should start with a current-contract label, a small owner/API table, and the shortest valid form/table/detail/resource examples. Put a normal module authoring path first: selected behavior, schema/transport, surface definition, resource binding, thin route, focused checks. Show which steps are conditional and one current compiled example for each. Keep renderer implementation, compiler internals, migration evidence, and rare extension details outside that normal path. Group the remaining current rules by author task: schemas/drafts, input props and behavior, display, operation binding, page/wrapper lifecycle, query/transport, assets, extension points, and verification.
 
-Keep these non-obvious rules explicit:
+Keep these non-obvious rules explicit when implemented. Verify each against source; until its repair ships, document the current limit and link to the pending plan rather than present the target as current:
 
 - Schema input, editable draft, and parsed submit output are different contracts; null/unset behavior stays unchanged.
 - Every input declares its renderer; component props/models are canonical; no inferred choices or generic conversion path returns.
@@ -89,8 +89,8 @@ The audit passed Loom types and unit tests; it did not validate this future docu
 
 ## Steps
 
-1. Confirm the fourteen repair plans' actual status and evidence. Record drift/local work, all inbound links including fragments, and the current headings. Read the architecture and referenced source for every rule being summarized. **Verify:** run Inbound links and baseline Architecture gate; the inventory names all 11 top-level numbered sections and all discovered inbound fragments.
-2. Create the historical snapshot and record provenance. Draft the section/rule mapping before deleting active prose. Preserve current code behavior, including completed 061–064 and 067–076 changes. **Verify:** a one-off Python comparison confirms the snapshot body matches the pre-edit text except the recorded notice/link rebasing; record the comparison and its exit 0 in the inventory.
+1. Confirm Plan 073 and record the actual status of all other repairs; they are not publication blockers. Record drift/local work, all inbound links including fragments, and the current headings. Read the architecture and referenced source for every rule being summarized. **Verify:** run Inbound links and baseline Architecture gate; the inventory names the top-level sections that remain after removal and all discovered inbound fragments. Do not recreate deleted generator sections to reach an old count.
+2. Create the historical snapshot and record provenance. Draft the section/rule mapping before deleting active prose. Preserve current code behavior, including only completed 061–064 and 067–076 changes. **Verify:** a one-off Python comparison confirms the snapshot body matches the pre-edit text except the recorded notice/link rebasing; record the comparison and its exit 0 in the inventory.
 3. Rewrite the active guide according to Target document. Keep public API spelling and examples aligned with the current source. Prefer links to existing compiled examples over another long uncompiled example. Use only the three scoped active documents; keep archive and current labels distinct. **Verify:** Architecture gate and Compiled examples pass. Compare the inventory with the final headings: every old rule group has a destination or an explicit historical classification.
 4. Validate every local Markdown link in the three edited active files and the archive. Use a one-off Python script to resolve relative paths, strip fragments for filesystem existence, and separately compare inbound fragment identifiers with the retained active headings/anchors. Ignore external URL reachability; do not claim it was verified. Fail with the source file and target for any missing path/anchor. **Verify:** record the exact command and zero missing local paths or inbound anchors. The ledger itself must link to existing paths.
 5. Run Architecture gate, CI contract, Compiled examples, App examples, and Whitespace. Review the diff as a semantic preservation check using the inventory, not a word-count goal. Record commands/results and update the index. **Verify:** all gates pass and no task-owned source/skill/test/CI change exists.
@@ -104,7 +104,7 @@ The audit passed Loom types and unit tests; it did not validate this future docu
 - [ ] Examples point to actual compiled/runnable owners; no proposed behavior is described as shipped.
 - [ ] No new prose-matching tests, document interpreter, or parallel specification.
 
-Stop if source and an approved current rule disagree, if a rule's status is unknown, if the split requires out-of-scope pointer changes, or if a gate fails twice after a bounded correction. Record the disagreement instead of silently choosing a new policy. If prior plans are not implemented, mark the rewrite blocked on those contracts and leave the inventory usable.
+Stop if source and an approved current rule disagree, if a rule's status is unknown, if the split requires out-of-scope pointer changes, or if a gate fails twice after a bounded correction. Record the disagreement instead of silently choosing a new policy. If a repair is pending, document current behavior accurately and leave its target out of current examples. Reconcile only affected sections when that repair ships.
 
 Future changes should update the active contract and its executable example. The historical snapshot remains historical. Shorter text alone is not evidence of improved agent performance; Plan 066 measures that separately.
 

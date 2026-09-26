@@ -40,8 +40,8 @@ Search first for additional actual declarations. If there are callers outside th
 
 ## Target contract
 
-1. Require `queryKeys: readonly Extract<keyof TQuery, string>[]` and `toDraft: (query: Readonly<TQuery>) => FormDraft<TInput>` on `ListFilters`. The author supplies a synchronous, pure mapping. Bound resource filters preserve both properties and their types.
-2. On initial hydration and authoritative query replacement, use `{ ...defaults, ...toDraft(query) }`. An explicit `undefined` from the mapper overrides a default. Do not emit a query change during hydration. A mapper receives the authoritative query, not the previous filter draft.
+1. Require `queryKeys: readonly Extract<keyof TQuery, string>[]` and `toDraft: (query: Readonly<QueryValues>) => FormDraft<TInput>` on `ListFilters`. The author supplies a synchronous, pure mapping. Bound resource filters preserve both properties and their types.
+2. On initial hydration and authoritative query replacement, use `{ ...defaults, ...toDraft(query) }`. An explicit `undefined` from the mapper overrides a default. Do not emit a query change during hydration. A mapper receives authoritative query state, not the previous draft. This state can contain URL strings, arrays, absent values, and malformed values; it is not guaranteed to be parsed `TQuery`. Import the existing `QueryValues` contract. The mapper checks and normalizes only its own inputs, returning defaults/unset draft values for unsupported input. Keep transport schema parsing at the loader boundary; do not parse the full query twice or cast URL state to `TQuery`.
 3. On successful validation, reject parsed output keys outside `queryKeys` with a clear Loom configuration error before any query commit. No silent dropping, inferred ownership, or generic field mapping registry. Validate duplicate/reserved ownership consistently: duplicate keys may be normalized; `page` cannot be owned because ListView resets it. Search/sort keys are allowed only if explicitly declared.
 4. For a valid latest result, copy the authoritative base query, delete every declared owned key, merge defined parsed values, and set `page` to 1 once. An empty result must clear all owned keys on the first edit. Keep unowned search, sort, and limit values.
 5. Keep the existing validation generation guard and pending self-echo handling. A parent replacement while validation is pending cancels that work. A self-echo must not erase raw draft text. Reset keeps Form's existing reset behavior; it validates the reset draft and uses the same commit path.
@@ -72,6 +72,7 @@ Run from repository root. Read root AGENTS, the resource architecture, and `test
 - An invalid parse and a late valid result after external replacement do not commit or load stale values.
 - A normal successful edit keeps raw draft text across its own query echo. Reset applies the declared defaults through validation.
 - Output containing an undeclared key reports the configuration error and leaves the query unchanged.
+- URL hydration with a numeric string, absent key, and malformed value is handled by the mapper without a query echo or false parsed-type assumption.
 - An existing same-key filter still works through its explicit identity mapping. A resource-bound filter retains `queryKeys` and `toDraft` without a cast.
 
 ## Done, stops, and maintenance
@@ -81,7 +82,7 @@ Run from repository root. Read root AGENTS, the resource architecture, and `test
 - [ ] No query ownership is inferred from schema input, fields, or a previous parse.
 - [ ] Every active filter example has the explicit mapping and key list.
 
-Stop if query values reaching the mapper are not the declared `TQuery`, if implementing the contract needs another query owner, or if a gate fails twice after a bounded correction. Report drift before adapting an incompatible owner. Future filter schema changes must update both the key list and reverse mapping. This duplication is intentional: a forward transform does not define its inverse or all keys it can clear.
+Stop if implementing the contract needs another query owner, or if a gate fails twice after a bounded correction. Report drift before adapting an incompatible owner. Future filter schema changes must update both the key list and reverse mapping. This duplication is intentional: a forward transform does not define its inverse or all keys it can clear.
 
 The baseline audit passed Loom types and 450 tests in 61 files before these changes. That is not evidence for the proposed repairs. The test skill references OpenClaw-specific tools that are not available here; report them as unavailable, not passed. Apply its independent-contract and no-duplicate-test rules to the actual Carta gates above. App type checks can generate route artifacts; preserve unrelated work.
 

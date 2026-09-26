@@ -32,7 +32,7 @@ export interface FileManagerValueAdapter<TModel = unknown> {
 
 - `packages/loom/src/file-manager/{contracts,provider,plugin,index}.ts` only as needed for the type change.
 - `packages/loom/src/file-manager/__tests__/plugin.spec.ts` and `components/inputs/__tests__/FileInput.file-manager.spec.ts`.
-- New `packages/loom/src/file-manager/__type-tests__/canonical-values.type-test.ts`; bounded negative cases in `packages/loom/scripts/check-resource-diagnostics.mjs` from root Plan 064.
+- New `packages/loom/src/file-manager/__type-tests__/canonical-values.type-test.ts`; bounded negative cases in `packages/loom/scripts/check-contract-diagnostics.mjs` from root Plan 064.
 - `apps/web/src/framework/adapters/fileManager.ts` and its existing test `apps/web/src/framework/adapters/__tests__/fileManager.spec.ts`.
 - `docs/architecture/file-manager-plugin.md` and only the corresponding asset/plugin rule in `docs/resource_system_overhaul/ARCHITECTURE.md` if necessary.
 - This plan and its index row.

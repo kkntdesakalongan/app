@@ -61,11 +61,11 @@ Use one session-owned `postWriteError: SubmitError | undefined`. Expose it read-
 | Ordinary validation, permission, or network rejection without the post-write marker | Preserve the existing retry behavior |
 | Native submit, exposed `submit()`, action slot submit, or wrapper submit after blocking | Do not invoke the submit handler |
 | Edit, blur, validation, reset, controlled draft replacement, initial-data update, refresh, schema/field change, or submit-function replacement | Do not clear the error for the same write target |
-| Resource/namespace/record identity changes to a different target | Clear the error for the new target; do not use search parameters, field keys, schema reference, or callback identity as target identity |
+| Resource/record identity changes to a different target | Clear the error for the new target; do not use search parameters, field keys, schema reference, or callback identity as target identity |
 | Form unmounts and a new Form mounts | New mount starts without the local error; this is not a cross-session duplicate-write guarantee |
 | Old asynchronous submission rejects after target/session replacement | Existing ownership checks prevent it from blocking or notifying the new session |
 
-Use the existing stable record identity encoding to compare the target tuple `(resource, namespace, id)`. Keep this small and private. Do not alter the loader cache signature. If all tuple members are absent, the mounted standalone Form is one target. A create Form with no id stays blocked until it is left/remounted; it cannot safely discover whether a create succeeded from a generic reload.
+Use the existing stable record identity encoding to compare the target tuple `(resource, id)`. Keep this small and private. Do not alter the loader cache signature. Namespace is view/cache scope, not write-target identity; changing it must not unlock the same record. If all tuple members are absent, the mounted standalone Form is one target. A create Form with no id stays blocked until it is left/remounted; it cannot safely discover whether a create succeeded from a generic reload.
 
 Display a persistent `role="alert"` in Form, outside the loading/error/content branch so refresh cannot hide it. State that the save may have completed and the user must check the record before starting another save. Do not expose protocol codes as the main user instruction. Keep existing error emission and toast behavior once per failed attempt. Keep Cancel/close/leave available under existing dirty/pending rules. Never call `submitted`, navigate, or close the dialog as if the uncertain write succeeded.
 
@@ -98,7 +98,7 @@ The audit passed the Loom type command and 450 unit tests. Browser and web check
 
 ## Test matrix and maintenance
 
-The session owner must cover retained blocking after reset/edit/refresh and an initial/model update; query-only changes must not unlock. Use table-driven cases where setup is identical. Cover a new target becoming usable and a late old error not affecting it. A schema/key change on the same target must not clear the block. Test only meaningful public outcomes, not private ref names or watcher counts.
+The session owner must cover retained blocking after reset/edit/refresh and an initial/model update; query-only and namespace-only changes must not unlock. Use table-driven cases where setup is identical. Cover a new target becoming usable and a late old error not affecting it. A schema/key change on the same target must not clear the block. Test only meaningful public outcomes, not private ref names or watcher counts.
 
 Reuse existing binder tests for classification and invalidation. Do not add a second binder error suite. If an integration regression needs a real bound resource, use one case at the Form boundary with mocked transport only; do not mock the session or binder. Future normalizers must preserve `postWrite`; a missing marker cannot be inferred reliably from error text.
 

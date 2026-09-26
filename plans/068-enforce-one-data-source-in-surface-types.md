@@ -30,7 +30,7 @@ An in-memory TypeScript probe accepted four invalid Table/Detail bags: both and 
 - Source composition types in `packages/loom/src/resources/operations.ts` and `packages/loom/src/components/composites/form-inputs/lookupInput.types.ts` and `packages/loom/src/components/composites/form-inputs/tableInput.types.ts`.
 - Existing core source behavior tests under `packages/loom/src/components/core/__tests__/`; existing resource and composite type fixtures.
 - New `packages/loom/src/contracts/__type-tests__/surface-data-source.type-test.ts` and `.vue` fixtures.
-- Extend `packages/loom/scripts/check-resource-diagnostics.mjs` supplied by root Plan 064 with bounded surface-source fixtures. Do not create a second diagnostic runner.
+- Extend `packages/loom/scripts/check-contract-diagnostics.mjs` supplied by root Plan 064 with bounded surface-source fixtures. Do not create a second diagnostic runner.
 - Architecture section 7.1 only if clarification is needed; this plan and its index row.
 
 Do not change loader execution, cache identity, pagination, slot ownership, missing-record UI, or Form load/model behavior. Direct app callers found by the inventory can be migrated only when they violate this existing runtime rule; record their exact paths first. Do not edit routes merely to modernize syntax.

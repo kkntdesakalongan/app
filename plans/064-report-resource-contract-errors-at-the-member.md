@@ -31,7 +31,7 @@ An audit compiler probe used a valid form with `name: string`, a submit result `
 - `packages/loom/src/resources/__type-tests__/bound-resource.type-test.ts`
 - `packages/loom/src/resources/__type-tests__/resource-actions.type-test.ts`
 - `packages/loom/src/resources/__type-tests__/schema-identity.type-test.ts`
-- `packages/loom/scripts/check-resource-diagnostics.mjs` (new development-only command)
+- `packages/loom/scripts/check-contract-diagnostics.mjs` (new development-only command)
 - `packages/loom/package.json`, only add `test:diagnostics`
 - `.github/workflows/web-validation.yml`, only run the new diagnostic command after Loom type checking
 - This plan and its `plans/README.md` row.
@@ -65,9 +65,13 @@ Preserve union safety: validate every branch, including named action maps with a
 
 ## Diagnostic harness
 
+The script is `check-contract-diagnostics.mjs` because later approved plans use it for resource declarations, source ownership, input modes, and asset contracts. Keep it a small development-only compiler check with a fixed case table, not a generator or general test platform. Plan 064 initially implements resource cases only. Later plans add their own cases with their own changes; do not prebuild an extension registry or duplicate a complete type suite. Each case declares valid source, invalid source, and its expected public diagnostic location/meaning.
+
+Loom is the default compilation owner. Plan 075 adds one explicit `--project app` mode using the app's existing compiler/config and an app-local temporary directory. The default Loom command must not compile or depend on the app. Do not run app transport negatives against Loom's tsconfig or leave them as an unrepeatable one-off probe. Each mode uses its owner's installed compiler and valid controls. There are only these two known owners; no project-discovery machinery is needed.
+
 Add one script invoked as `pnpm --filter @southneuhof/loom test:diagnostics`. It compiles the actual fixture calls with the installed `vue-tsc`, `--pretty false`, `--noEmit`, `--incremental false`, and `--noErrorTruncation`. Resolve the executable and repo paths from the script location; use `spawnSync`/`spawn` with argument arrays and no shell interpolation.
 
-Create temporary fixture files and a tsconfig under a uniquely named directory in `packages/loom/node_modules/.cache/loom-resource-diagnostics/`. The temporary tsconfig extends the absolute Loom tsconfig and includes the temporary fixtures; package-local placement retains module resolution. Remove only the invocation-owned directory in `finally`. Do not place intentionally invalid fixtures in normal `src` globs, write to user source, or delete a shared cache directory.
+Create temporary fixture files and a tsconfig under a uniquely named directory in `packages/loom/node_modules/.cache/loom-contract-diagnostics/`. The temporary tsconfig extends the absolute Loom tsconfig and includes the temporary fixtures; package-local placement retains module resolution. Remove only the invocation-owned directory in `finally`. Do not place intentionally invalid fixtures in normal `src` globs, write to user source, or delete a shared cache directory.
 
 Compile the valid fixture first and require exit 0 with no diagnostics. Compile the negative matrix and require a located diagnostic for each intended defect, no diagnostic in its valid controls, and no missing-module/configuration diagnostics. The command itself exits 0 only if the expected rejection and useful location/path checks all pass. A compiler crash, timeout, or unrelated failure is a failed harness run. Store expected case markers/line positions separately from the code being checked; avoid source comments as markers. Do not assert implementation helper names or dump complete compiler output into a snapshot.
 
@@ -81,7 +85,7 @@ All commands run from repo root. Positive gates must exit 0.
 | Local work | `git status --short` and `git diff -- packages/loom/src/resources packages/loom/package.json .github/workflows/web-validation.yml` |
 | Types | `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json` |
 | Diagnostics (after addition) | `pnpm --filter @southneuhof/loom test:diagnostics` |
-| Harness syntax | `node --check packages/loom/scripts/check-resource-diagnostics.mjs` |
+| Harness syntax | `node --check packages/loom/scripts/check-contract-diagnostics.mjs` |
 | Binder regression | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/resources/__tests__/boundResource.spec.ts` |
 | Unit regression | `pnpm --filter @southneuhof/loom test` |
 | App types | `pnpm --filter @southneuhof/framework-web type-check` |

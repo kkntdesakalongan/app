@@ -28,7 +28,7 @@ Use the current compact form projection as the exemplar. Do not return the whole
 - New internal `packages/loom/src/forms/definitionTypes.ts` for the shared compact type projection.
 - `packages/loom/src/resources/operations.ts`.
 - `packages/loom/src/renderers/__type-tests__/form-contracts.type-test.ts` and `resources/__type-tests__/bound-resource.type-test.ts`.
-- Extend the diagnostic cases in `packages/loom/scripts/check-resource-diagnostics.mjs` from root Plan 064 only where needed to protect these public contracts.
+- Extend the diagnostic cases in `packages/loom/scripts/check-contract-diagnostics.mjs` from root Plan 064 only where needed to protect these public contracts.
 - This plan and its index row.
 
 No runtime resource binder, validation engine, schema wrapper, new public builder, universal field definition, barrel-export expansion, or renderer roster change. Runtime tests can be run but should not be changed for a type-only extraction. Avoid a general-purpose type utility package.

@@ -19,38 +19,46 @@ result helps agents. They do not authorize another framework rewrite.
 | [062](062-unify-display-definition-checks.md) | Give context-free display checks one private owner | P2 | S | LOW | None | TODO |
 | [063](063-derive-renderer-types-from-runtime-roster.md) | Derive built-in component contracts from the runtime roster | P2 | M | MED | None | TODO |
 | [064](064-report-resource-contract-errors-at-the-member.md) | Locate invalid resource members and relationships in real compiler diagnostics | P2 | L | MED | None; recommended after 061–063 | TODO |
-| [065](065-separate-current-loom-contract-from-migration-history.md) | Keep one current contract and move migration history to a labelled archive | P3 | M | LOW | 061–064 and 067–076 for final rewrite | TODO |
-| [066](066-evaluate-loom-agent-repair-work.md) | Prepare three agent tasks and run a controlled exploratory comparison | P3 | M + measured run cost | LOW | 061–065 and 067–076 for candidate pilot | TODO |
+| [065](065-separate-current-loom-contract-from-migration-history.md) | Keep one current contract and move migration history to a labelled archive | P3 | M | LOW | 073 for early guide; reconcile later repairs as they land | TODO |
+| [066](066-evaluate-loom-agent-repair-work.md) | Prepare five agent tasks; capture baseline early and compare named candidate checkpoints | P3 | M + measured run cost | LOW | None for baseline; candidate declares completed repairs | TODO |
 | [067](067-make-filter-query-ownership-explicit.md) | Declare owned query keys and reverse draft mapping for filters | P1 | M | MED | None; before 069 | TODO |
 | [068](068-enforce-one-data-source-in-surface-types.md) | Enforce exactly one data source in public TS and Vue contracts | P2 | M | MED | 064; before 069 | TODO |
 | [069](069-give-compact-form-contracts-one-owner.md) | Let form types own compact fields; let resources own binding | P2 | M | MED | 064, 067, 068 | TODO |
-| [070](070-move-input-model-rules-to-component-owners.md) | Give input components ownership of prop-dependent model rules | P2 | L | MED | 063, 064; recommended after 069 | TODO |
+| [070](070-move-input-model-rules-to-component-owners.md) | Give input components ownership of prop-dependent model rules | P2 | M | MED | 063, 064; recommended after 069 | TODO |
 | [071](071-align-file-manager-values-with-canonical-assets.md) | Align the File Manager provider with canonical input asset values | P2 | M | MED | 064 | TODO |
 | [072](072-preserve-resource-ownership-in-option-caches.md) | Refresh resource-owned option caches without private key handling | P1 | M | MED | Recommended after 070 | TODO |
-| [073](073-remove-module-scaffolding-completely.md) | Remove module scaffolding, its verifier/integrator, and all references and ties | P1 | L | MED | None; before 075, 065, 066 | TODO |
+| [073](073-remove-module-scaffolding-completely.md) | Remove module scaffolding, its verifier/integrator, and all references and ties | P1 | L | MED | None; before 075, 065 and candidate evaluation | TODO |
 | [074](074-unify-resource-route-access-evaluation.md) | Preserve route operation and static permissions; make dynamic entry policy explicit | P1 | M | MED | 064 | TODO |
-| [075](075-decouple-transport-from-unselected-operations.md) | Permit non-list transport without a list-query schema | P2 | M | MED | 073; diagnostic support from 064 if used | TODO |
-| [076](076-preserve-post-write-outcomes-in-delete-surfaces.md) | Preserve uncertain delete outcomes and separate write from refresh failure | P1 | M | MED | 061; serial with 067 | TODO |
+| [075](075-decouple-transport-from-unselected-operations.md) | Permit non-list transport without a list-query schema | P2 | M | MED | 073, 064 | TODO |
+| [076](076-preserve-post-write-outcomes-in-delete-surfaces.md) | Preserve uncertain delete outcomes and separate write from refresh failure | P1 | M | MED | 061, 068, 064; serial with 067 | TODO |
 
-Recommended order: **073 → 061 → 067 → 076 → 062 → 063 → 064 → 068 → 069 → 070 → 072 → 074 → 075 → 071 → 065 → 066**.
-Numbers reflect when findings were accepted, not execution order. Use full root
-plan paths because historical nested bundles reuse these numbers.
+Start **066 baseline preparation now**, without making product work wait for the
+worker harness. Run **073 → 065** to remove the unused workflow and publish the
+current direct-authoring guide early. Then use this source-change order:
+**061 → 067 → 062 → 063 → 064 → 068 → 076 → 069 → 070 → 072 → 074 → 075 → 071**.
+Update the current guide with each public contract change. Run candidate
+evaluations at named checkpoints and after the final source repairs. Numbers
+reflect acceptance order; use full root paths because historical bundles reuse
+them. This is a coordination order, not a requirement to run every predecessor
+for an unrelated repair.
 
-The user explicitly replaced the generator-checker repair with complete removal.
-Plan 073 deletes that workflow; it must not become another scaffolding system.
-It preserves independent evidence recording, current app modules, and required
-runtime/file-route tooling. Plans 065 and 066 must use the resulting direct
-module-authoring workflow. Historical generator restoration instructions are
-also removed during 073; Git history retains the deleted material.
+The user replaced the generator-checker repair with complete removal. Plan 073
+must not produce another scaffolding system. It preserves independent evidence
+recording, current app modules, and required file-route tooling. Historical
+restoration instructions are removed too; Git history retains deleted material.
 
-Run source edits serially where they share form/resource type owners. Plan 064
-provides the diagnostic gate used by later public-contract work. Plan 065's
-inventory and Plan 066's fixture design can start earlier, but their final
-rewrite/comparison requires all fourteen repairs. Plan 070 includes actual Vue
-component inference, not only moving private aliases. Plan 076 extends 061 to
-delete surfaces and does not add a generic mutation manager. Plan 066 can
-prepare its kit with a blocked pilot if a suitable worker harness is unavailable;
-that is not evidence of agent improvement or full completion.
+The cross-plan review narrowed 070 to shared component-owned rules without a
+generic SFC rewrite. Plan 064 provides one bounded compiler check; its default
+Loom mode stays independent of the explicit app mode added in 075. Plan 067
+maps raw query state rather than falsely promising parsed values. Plan 061
+excludes namespace from write-target identity. The user selected per-record
+blocking for 076: resource identity is forwarded once, and other records remain
+usable. Run edits to shared owners serially and reconcile earlier evidence
+instead of treating every unrelated change as a reason to restart discovery.
+
+Plan 066 measures observed authoring/repair work in five cases. It may prepare
+its kit with a blocked pilot when the harness is unavailable; that does not
+block the other plans or establish agent improvement.
 
 Each plan contains its own intent, current excerpts, scope, target decisions,
 ordered steps, commands, meaningful test cases, done criteria, and stop rules.
