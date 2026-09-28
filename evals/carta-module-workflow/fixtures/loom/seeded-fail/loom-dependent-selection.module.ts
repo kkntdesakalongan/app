@@ -23,10 +23,6 @@ export const editorForm = defineForm({
     teamId: {
       renderer: 'select',
       props: { load: loadTeams, pick: 'id', view: 'name', searchable: false },
-      behavior: {
-        disabled: ({ draft }) => !draft.departmentId,
-        props: ({ draft }) => ({ searchParameters: { departmentId: draft.departmentId } }),
-      },
     },
   },
   submit: saveRequest,

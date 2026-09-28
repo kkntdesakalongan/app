@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { h, ref } from 'vue'
 import { Form } from '@southneuhof/loom'
-import { amountResource, updateSchema } from '../__eval/plan066/loom-transformed-update.module'
+import { amountResource } from '../__eval/plan066/loom-transformed-update.module'
 import { invalidResource } from '../__eval/plan066/loom-transformed-update-invalid-resource'
 import {
   readAmountLoads,
@@ -16,13 +16,14 @@ afterEach(() => {
 })
 
 describe('B transformed update', () => {
-  it('B-01 accepts only bounded decimal text and maps it to minor units', () => {
-    expect(updateSchema.parse({ displayName: 'Service fee', amountText: '12.34' })).toEqual({ displayName: 'Service fee', amountMinor: 1234 })
-    expect(updateSchema.parse({ displayName: 'Service fee', amountText: '0.1' })).toEqual({ displayName: 'Service fee', amountMinor: 10 })
-    expect(updateSchema.parse({ displayName: 'Service fee', amountText: '999999.99' })).toEqual({ displayName: 'Service fee', amountMinor: 99999999 })
-    expect(updateSchema.parse({ displayName: 'Service fee', amountText: '00012.34' })).toEqual({ displayName: 'Service fee', amountMinor: 1234 })
+  it('B-01 accepts only bounded decimal text and maps it to minor units', async () => {
+    const schema = amountResource.update({ id: 'amount-7' }).form.schema
+    await expect(schema.parseAsync({ displayName: 'Service fee', amountText: '12.34' })).resolves.toEqual({ displayName: 'Service fee', amountMinor: 1234 })
+    await expect(schema.parseAsync({ displayName: 'Service fee', amountText: '0.1' })).resolves.toEqual({ displayName: 'Service fee', amountMinor: 10 })
+    await expect(schema.parseAsync({ displayName: 'Service fee', amountText: '999999.99' })).resolves.toEqual({ displayName: 'Service fee', amountMinor: 99999999 })
+    await expect(schema.parseAsync({ displayName: 'Service fee', amountText: '00012.34' })).resolves.toEqual({ displayName: 'Service fee', amountMinor: 1234 })
     for (const amountText of ['-1', ' 1', '1 ', '', '1e2', '1.', '1.234', '1000000']) {
-      expect(updateSchema.safeParse({ displayName: 'Service fee', amountText }).success).toBe(false)
+      await expect(schema.parseAsync({ displayName: 'Service fee', amountText })).rejects.toThrow()
     }
   })
 

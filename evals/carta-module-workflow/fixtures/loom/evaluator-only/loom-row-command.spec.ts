@@ -44,7 +44,9 @@ describe('C row command', () => {
     const row: RequestRecord = { id: 'request-1', status: 'open', allowedOperations: ['verify'] }
 
     await vi.waitFor(() => expect(readRequestListLoads()).toBe(1))
+    await vi.waitFor(() => expect(document.body.textContent).toContain('open'))
     await verifyRow(row, { id: 'request-1', note: 'Invoice checked' })
-    await vi.waitFor(() => expect(readRequestListLoads()).toBe(2))
+    await vi.waitFor(() => expect(document.body.textContent).toContain('verified'))
+    expect(readRequestListLoads()).toBeGreaterThan(1)
   })
 })

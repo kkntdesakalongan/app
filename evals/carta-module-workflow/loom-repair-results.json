@@ -1,79 +1,24 @@
 {
   "schemaVersion": 1,
   "evaluation": "Plan 066 Loom agent repair work",
-  "status": "KIT_BLOCKED_PILOT_NOT_RUN",
-  "recordedAt": "2026-09-27",
-  "fixtureVersion": 1,
+  "status": "KIT_READY_PILOT_BLOCKED",
+  "recordedAt": "2026-09-29",
+  "fixtureVersion": 2,
   "hashMethod": "SHA-256 over sorted relative paths, a NUL byte, each file SHA-256, and a newline per file.",
   "baseline": {
     "revision": "12463870df8df3d488070ae1f9c1992cf577756d",
     "gitTree": "22d0b6afdf1536120b6fa328af3623c7755d6482",
-    "workerSourceTreeSha256": "66bcdb6da4abcbc00c7b099819ac28fedd04a88dd070b67c8544960421e6e825",
-    "sourceFileCount": 1137,
-    "manifest": {
-      "path": "/tmp/plan066/snapshots/baseline-source-manifest.json",
-      "sha256": "92978ad87d409df153ea2b353530bc22518ed3bd2293e609cabd8b42d1e90b10"
-    }
+    "sourceTreeSha256": "15316e170c63493495c15eaf0a5f5cf6f8673c65824b8257ba1472fd64bb7a59",
+    "fileCount": 1075,
+    "manifestPath": "/tmp/plan066/final-capture/baseline-source-manifest.json",
+    "manifestSha256": "bf23fd123adf7c2675af04481edb8dcc8df5777ba92a375e085a01ff79aa2024",
+    "archivePath": "/tmp/plan066/final-capture/baseline-source.tar",
+    "archiveSha256": "edb6466ba82eff9fce9aba553927f01e6935f18bd09302d2dd511770efa8f915"
   },
   "candidate": {
-    "revision": null,
-    "revisionReason": "The candidate is an uncommitted working-tree snapshot.",
-    "baseRevision": "12463870df8df3d488070ae1f9c1992cf577756d",
-    "workerSourceTreeSha256": "458f2ab6cdd125f4b798d61cbb5a9a8578a165bd5e690e9c52146738a3fc9755",
-    "sourceFileCount": 1134,
-    "manifest": {
-      "path": "/tmp/plan066/snapshots/candidate-source-manifest.json",
-      "sha256": "4ceb1183cd9007e525567658560ffa492734111e7f79fa5e23eda4a8881b113d"
-    },
-    "capture": {
-      "basePlusPatch": "/tmp/plan066/snapshots/candidate.patch",
-      "patchSha256": "ea901df654a2dcd27e8398c463002b4235bf056df5a6ecdb7400416240ee6aeb",
-      "untrackedArchive": "/tmp/plan066/snapshots/untracked.tar",
-      "untrackedArchiveSha256": "bb9a74e6dab8d29c6382a9ed0013818085d710d3ba8cecf6ccd30233cf93e9cf",
-      "untrackedPathList": "/tmp/plan066/snapshots/untracked-paths.txt",
-      "untrackedPathListSha256": "4123a0cedcb74c0fe5905ed9f8287a43ce64fe12e956ac10b90c5b3a465ffb79"
-    },
-    "checkpointStatus": "PRE_FINAL_CANDIDATE_CHECKPOINT",
-    "capturedAt": "2026-09-27T13:04:14+07:00",
-    "capturedAtTimezone": "Asia/Jakarta",
-    "sourceManifestCreatedAt": "2026-09-27T13:15:57+07:00",
-    "finalCandidate": false,
-    "finalCandidateReason": "The capture predates the final Plan 074 nested-navigation fixture correction and later plan index/status updates.",
-    "plan074StateAtCapture": "The earlier Plan 074 work is present, but the final nested-navigation fixture correction was pending. Do not treat Plan 074 as complete in this candidate checkpoint.",
-    "postCaptureChanges": [
-      {
-        "path": "apps/web/src/router/__tests__/nested-navigation.spec.ts",
-        "summary": "Use the same resource owner name across two scoped instances in the nested-navigation fixture.",
-        "capturedSha256": "656f65502898001870002b4cd64f0c0a80ffb8b541984b405284747ea1247406",
-        "currentSha256": "df05d75b4b0ecf12992b1d517dca7efc8f2157f9343404c795fc9bf7ce746e51"
-      },
-      {
-        "paths": [
-          "plans/README.md",
-          "plans/066-evaluate-loom-agent-repair-work.md"
-        ],
-        "summary": "Planning and status documents changed after capture. These paths are excluded from worker workspaces and the worker source hash."
-      }
-    ],
-    "currentFinalCandidateSourceTreeSha256": null,
-    "currentFinalCandidateSourceTreeSha256Reason": "No fresh final candidate capture was made in this docs-only revision.",
+    "revision": "38cb2a991a30b36c5628fbe955b2ba60a5728ded",
+    "gitTree": "3e11ec0222780648b8aa9a919b4a98a68826ae32",
     "completedProductPlans": [
-      61,
-      62,
-      63,
-      64,
-      65,
-      67,
-      68,
-      69,
-      70,
-      71,
-      72,
-      73,
-      75,
-      76
-    ],
-    "productPlanWorkPresentAtCapture": [
       61,
       62,
       63,
@@ -89,166 +34,139 @@
       74,
       75,
       76
-    ]
+    ],
+    "sourceTreeSha256": "1080bc6ae8eb39c47010146f522f9cae4bc0f383acb1cc07f2ef6c4e41caa41c",
+    "fileCount": 1072,
+    "manifestPath": "/tmp/plan066/final-capture/candidate-source-manifest.json",
+    "manifestSha256": "f4d3b4b23d34fd341efdd5d062699835b2e99f410b4a2e4c505c795dc85f035b",
+    "archivePath": "/tmp/plan066/final-capture/candidate-source.tar",
+    "archiveSha256": "ee252b1cdbf2d2930238add7c61b66c5692846bc8e77b78f06c05870b99e964d",
+    "patchPath": "/tmp/plan066/final-capture/candidate-final.patch",
+    "patchSha256": "38991add91d31ae1e672d53d0d304dcf9ce392a7c6bbf6bca2b7b81bd9d4e202",
+    "untrackedArchivePath": "/tmp/plan066/final-capture/candidate-untracked.tar",
+    "untrackedArchiveSha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+    "untrackedPathList": "/tmp/plan066/final-capture/candidate-untracked-paths.txt",
+    "untrackedPathListSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "controls": {
-    "instructionSnapshotSha256": "cd514a2f87f635b1fca5e2e45c44efb888ea365798bab385be2ed9b846b5c19d",
+    "instructionTreeSha256": "866ee53f40672a292366e12fa1ec3751f2494518ebb44bb9ab76314588e68806",
     "instructionFiles": 147,
-    "rootAgentRulesSha256": "9bf0f7171a1756250924e90d010464469af807bdc108abddd16d62847e372963",
-    "skillsTreeSha256": "a7b2e52f329e6bebea06b36cfcd4a44ddb27a55ab8464ff4e65bf6a088eb9b16",
+    "instructionManifestPath": "/tmp/plan066/final-capture/instruction-manifest.json",
+    "instructionManifestSha256": "8c13d680a3240b51620e83122933acc7935a44c7013c008706d555e9f637b197",
+    "skillTreeSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
     "skillFiles": 132,
-    "fixtureTreeSha256": "134e73b525ba8352adb5656ac9b69b6672c9193727a858d5c8abebd4c31ecba7",
+    "skillManifestPath": "/tmp/plan066/final-capture/skill-manifest.json",
+    "skillManifestSha256": "5da6368ae6384333a95f6b3be2771234c198cc3738839f9300ba76a663ac3a59",
+    "rootAgentRulesSha256": "9bf0f7171a1756250924e90d010464469af807bdc108abddd16d62847e372963",
+    "fixtureTreeSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
     "fixtureFiles": 39,
-    "fixtureHashInputs": [
-      "cases.json",
-      "README.md",
-      "grading.md",
-      "fixtures/loom/**"
-    ],
-    "lockfileSha256": "857c955c9546a64203d4ff3130e83ed68f8ff231c79df11313f460a5108d61f6",
-    "installedPnpmLockSha256": "63665adc6efd1262db87325721e6c2425ea646612d03a1c9bb4e9fd10e1499da",
-    "runtime": {
+    "fixtureManifestPath": "/tmp/plan066/final-capture/fixture-manifest.json",
+    "fixtureManifestSha256": "cc679c0db8d7943cbf6f808b3bb972bd9201364ece6ab2092dbaf7ac7cf5f73d",
+    "fixtureArchivePath": "/tmp/plan066/final-capture/fixtures-evaluator-only.tar",
+    "fixtureArchiveSha256": "9681881632c424dbf03a5adea29f4b63f0523b9b40c51bedd73f15c4b4b0d675",
+    "dependencies": {
+      "lockfileSha256": "857c955c9546a64203d4ff3130e83ed68f8ff231c79df11313f460a5108d61f6",
+      "installedPnpmLockSha256ByVariant": {
+        "baseline": "63665adc6efd1262db87325721e6c2425ea646612d03a1c9bb4e9fd10e1499da",
+        "candidate": "63665adc6efd1262db87325721e6c2425ea646612d03a1c9bb4e9fd10e1499da"
+      },
       "node": "v26.9.0",
-      "pnpm": "12.1.0"
+      "pnpm": "12.1.0",
+      "installThisRound": "not run; existing equal installed trees reused"
     },
-    "install": {
-      "command": "pnpm install --offline --frozen-lockfile",
-      "packagesPerWorkspace": 860,
-      "downloads": 0,
-      "dependencyDeclarationsMatch": true,
-      "note": "Baseline and candidate package manifests differ only in scripts; dependency declarations and lockfile match."
+    "budgetSelectedBeforeWorkers": {
+      "model": "gpt-6-luna",
+      "reasoningEffort": "max",
+      "harness": "Codex CLI",
+      "harnessVersion": "codex-cli 0.157.1",
+      "sandbox": "workspace-write",
+      "outputTokenCap": 8000,
+      "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+      "wallTimeCapSeconds": 900,
+      "humanReplies": 0,
+      "workerSessions": 10
     }
   },
   "pilot": {
-    "status": "BLOCKED",
+    "status": "BLOCKED_BEFORE_START",
     "plannedWorkerRuns": 10,
     "startedWorkerRuns": 0,
     "blockedWorkerRuns": 10,
-    "model": null,
-    "modelReason": "No worker session started.",
-    "harness": "Codex CLI was installed and login status was available.",
-    "harnessVersion": null,
-    "harnessVersionReason": "No worker process was started; no run-specific harness version was recorded.",
-    "budget": null,
-    "budgetReason": "No budget was selected because the pilot did not start.",
-    "missingPrerequisite": "The candidate case B reference did not type-check after two fixture-preparation attempts. The plan stop rule blocked further fixture work before any worker session.",
-    "workerTranscripts": null,
-    "workerTranscriptsReason": "No worker session started; no transcript exists.",
+    "model": "gpt-6-luna",
+    "reasoningEffort": "max",
+    "harness": "Codex CLI",
+    "harnessVersion": "0.157.1",
+    "budget": {
+      "model": "gpt-6-luna",
+      "reasoningEffort": "max",
+      "harness": "Codex CLI",
+      "harnessVersion": "codex-cli 0.157.1",
+      "sandbox": "workspace-write",
+      "outputTokenCap": 8000,
+      "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+      "wallTimeCapSeconds": 900,
+      "humanReplies": 0,
+      "workerSessions": 10
+    },
+    "missingPrerequisite": "A tool-enforced workspace-only read boundary. The local workspace-write sandbox permits reads outside CWD, so the private grader remains reachable.",
+    "isolationEvidence": {
+      "officialCodexSandboxTemplate": "https://github.com/openai/codex/blob/main/codex-rs/prompts/templates/permissions/sandbox_mode/workspace_write.md",
+      "localCliVersion": "codex-cli 0.157.1",
+      "sourceCapturePath": "/tmp/plan066/final-capture",
+      "workerWorkspacesPath": "/tmp/plan066/runs/final-20260929-prep2",
+      "graderCopiedIntoWorkerWorkspace": false,
+      "workerReadableWorkspaceExcludes": [
+        "evals/",
+        "plans/",
+        ".git",
+        "reference/",
+        "seeded-fail/",
+        "evaluator-only/"
+      ],
+      "localReadCheck": {
+        "path": "/tmp/plan066/isolation-canary/private-rubric-read-check.json",
+        "sha256": "a43fc20ddd515c99abb81574851bfc568f90460263554d1355c479dcca219fd7",
+        "command": [
+          "codex",
+          "sandbox",
+          "-P",
+          ":workspace",
+          "-C",
+          "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--baseline--final-20260929/workspace",
+          "--",
+          "test",
+          "-r",
+          "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/grading.md"
+        ],
+        "exitCode": 0,
+        "targetContentsRead": false
+      },
+      "outsideRepoFileRead": {
+        "command": [
+          "codex",
+          "sandbox",
+          "-P",
+          ":workspace",
+          "-C",
+          "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--baseline--final-20260929/workspace",
+          "--",
+          "cat",
+          "/Users/gamer/Documents/projects/carta/README.md"
+        ],
+        "exitCode": 0,
+        "sourceSha256": "e086447bcbc95471a4474ff61bb5ca1e1a5c626df12d28fc67a87cf32c3ca8ae",
+        "copiedArtifactPath": "/tmp/plan066/isolation-canary/carta-readme-from-sandbox.txt",
+        "copiedArtifactSha256": "e086447bcbc95471a4474ff61bb5ca1e1a5c626df12d28fc67a87cf32c3ca8ae",
+        "identicalBytes": true,
+        "note": "Only public README content was read. The private rubric read check tested access without reading contents."
+      }
+    },
+    "transcripts": null,
+    "transcriptsReason": "No session started.",
     "measuredCost": null,
-    "measuredCostReason": "No worker session started.",
-    "freshFinalCandidateCaptureRequired": true,
-    "freshFinalCandidateCaptureReason": "The recorded candidate hash identifies a pre-final checkpoint. Before any future pilot, recapture the final worktree and record new source-tree, patch, untracked archive, manifest, and plan-state hashes.",
+    "measuredCostReason": "No session started; no model usage.",
     "workerRunsUsingPreFinalCandidate": 0
   },
-  "referenceValidation": [
-    {
-      "caseId": "loom-dependent-selection",
-      "variant": "baseline",
-      "status": "PASS",
-      "attempts": 1,
-      "commands": [
-        {
-          "command": "pnpm --filter @southneuhof/framework-web type-check",
-          "status": "PASS"
-        },
-        {
-          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
-          "status": "PASS",
-          "passedTests": 3
-        }
-      ],
-      "artifactPath": null,
-      "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
-      "seededFailStatus": "NOT_RUN",
-      "notes": "The initial harness setup issue was corrected; the reference then passed type-check and all three focused assertions."
-    },
-    {
-      "caseId": "loom-dependent-selection",
-      "variant": "candidate",
-      "status": "PASS",
-      "attempts": 1,
-      "commands": [
-        {
-          "command": "pnpm --filter @southneuhof/framework-web type-check",
-          "status": "PASS"
-        },
-        {
-          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
-          "status": "PASS",
-          "passedTests": 3
-        }
-      ],
-      "artifactPath": null,
-      "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
-      "seededFailStatus": "NOT_RUN",
-      "notes": "The reference passed type-check and all three focused assertions. This does not establish an agent comparison result."
-    },
-    {
-      "caseId": "loom-transformed-update",
-      "variant": "baseline",
-      "status": "FAIL",
-      "attempts": 1,
-      "commands": [
-        {
-          "command": "pnpm --filter @southneuhof/framework-web type-check",
-          "status": "FAIL",
-          "diagnostic": "The transformed update declaration did not satisfy Loom's update-output contract; the form submit type resolved to never."
-        }
-      ],
-      "acceptanceStatus": "NOT_RUN",
-      "artifactPath": null,
-      "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
-      "seededFailStatus": "NOT_RUN",
-      "notes": "The baseline does not accept the transformed update reference contract."
-    },
-    {
-      "caseId": "loom-transformed-update",
-      "variant": "candidate",
-      "status": "FAIL",
-      "attempts": 2,
-      "commands": [
-        {
-          "command": "pnpm --filter @southneuhof/framework-web type-check",
-          "status": "FAIL",
-          "diagnostic": "Attempt 1 also found inputMode outside the TextInput contract and update submit typed as never. inputMode was removed before attempt 2."
-        },
-        {
-          "command": "pnpm --filter @southneuhof/framework-web type-check",
-          "status": "FAIL",
-          "diagnostic": "Attempt 2 reported TS2322: submit (output: never) => Promise<AmountRecord> failed UpdateSubmitInputDiagnostic; TypeScript then hid the resource update operation."
-        }
-      ],
-      "acceptanceStatus": "NOT_RUN",
-      "artifactPath": null,
-      "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
-      "seededFailStatus": "NOT_RUN",
-      "notes": "The plan's two failed case B preparation attempts were reached. Further fixture preparation stopped."
-    },
-    {
-      "caseId": "loom-row-command",
-      "variant": "baseline_and_candidate",
-      "status": "NOT_RUN",
-      "attempts": 0,
-      "reason": "Fixture preparation stopped after the case B attempt limit.",
-      "seededFailStatus": "NOT_RUN"
-    },
-    {
-      "caseId": "loom-create-only",
-      "variant": "baseline_and_candidate",
-      "status": "NOT_RUN",
-      "attempts": 0,
-      "reason": "Fixture preparation stopped after the case B attempt limit.",
-      "seededFailStatus": "NOT_RUN"
-    },
-    {
-      "caseId": "loom-relation-source-freshness",
-      "variant": "baseline_and_candidate",
-      "status": "NOT_RUN",
-      "attempts": 0,
-      "reason": "Fixture preparation stopped after the case B attempt limit.",
-      "seededFailStatus": "NOT_RUN"
-    }
-  ],
   "runs": [
     {
       "runId": "loom-dependent-selection:baseline:1",
@@ -689,6 +607,2846 @@
       "tokens": null,
       "tokensReason": "No worker session started.",
       "evaluatorNotes": "This blocked status records the preparation gate. It is not a worker PASS or FAIL."
+    },
+    {
+      "runId": "loom-dependent-selection:baseline:final-20260929",
+      "caseId": "loom-dependent-selection",
+      "variant": "baseline",
+      "sourceRevision": "12463870df8df3d488070ae1f9c1992cf577756d",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "15316e170c63493495c15eaf0a5f5cf6f8673c65824b8257ba1472fd64bb7a59",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--baseline--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "619c98293a31450e66ff63a8dd9e499c1b87fd06491de282c8cf324f05ebaf5b",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--baseline--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "ce46429f1d623672f9b5ce704e2de82f06722fe56d62bb21648054261ce52f68",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--baseline--final-20260929/prompt.txt",
+      "promptSha256": "b274e178e336d822316f2f1ba4905949926706ccb527cf800503f7150cef003a",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-dependent-selection:candidate:final-20260929",
+      "caseId": "loom-dependent-selection",
+      "variant": "candidate",
+      "sourceRevision": "38cb2a991a30b36c5628fbe955b2ba60a5728ded",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "1080bc6ae8eb39c47010146f522f9cae4bc0f383acb1cc07f2ef6c4e41caa41c",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--candidate--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "b3a5a3c526ffda45da862cff0c0fe06e163b5ca9b4e32145cf2ecf0526b6a143",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--candidate--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "2f716c9f5a979e9c6e994df32bb08e7394f3fa97885684a3f49d2e2ff30fd9ca",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--candidate--final-20260929/prompt.txt",
+      "promptSha256": "b274e178e336d822316f2f1ba4905949926706ccb527cf800503f7150cef003a",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-transformed-update:baseline:final-20260929",
+      "caseId": "loom-transformed-update",
+      "variant": "baseline",
+      "sourceRevision": "12463870df8df3d488070ae1f9c1992cf577756d",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "15316e170c63493495c15eaf0a5f5cf6f8673c65824b8257ba1472fd64bb7a59",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-transformed-update--baseline--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "1fc458698e101a14e1852d53a183a385d9fdcb0ccaf8649925b360476192309e",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-transformed-update--baseline--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "b2a529a660f04c985a439d39d3417200ee85cd9d664268f0c51bb9952a88351f",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-transformed-update--baseline--final-20260929/prompt.txt",
+      "promptSha256": "68ac13d8c37f680956f57aa1e1579818f0ea74d88f853da4cb69616bab257493",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-transformed-update:candidate:final-20260929",
+      "caseId": "loom-transformed-update",
+      "variant": "candidate",
+      "sourceRevision": "38cb2a991a30b36c5628fbe955b2ba60a5728ded",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "1080bc6ae8eb39c47010146f522f9cae4bc0f383acb1cc07f2ef6c4e41caa41c",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-transformed-update--candidate--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "8a6ba10d69a9c88cc6ce87ec947974ea5c4df1b86a0128712aac6c9d865dbef7",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-transformed-update--candidate--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "46d62b10f4f268974f1ecd1e2b861298f397b531130e85713480da521da258fa",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-transformed-update--candidate--final-20260929/prompt.txt",
+      "promptSha256": "68ac13d8c37f680956f57aa1e1579818f0ea74d88f853da4cb69616bab257493",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-row-command:baseline:final-20260929",
+      "caseId": "loom-row-command",
+      "variant": "baseline",
+      "sourceRevision": "12463870df8df3d488070ae1f9c1992cf577756d",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "15316e170c63493495c15eaf0a5f5cf6f8673c65824b8257ba1472fd64bb7a59",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-row-command--baseline--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "b27d0f863785c94885f2a57dcd95e50769fdbb6d7f377e55e374753d8e2d83aa",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-row-command--baseline--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "197aac5d1fcf2455ee161981f7e3c4492fbbecffef8ad42ed63efa6389d40c55",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-row-command--baseline--final-20260929/prompt.txt",
+      "promptSha256": "73d956fbf35c8bfed9037534d61c4c9526799e99d3644f17cf9dbf9f0b40bc68",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-row-command:candidate:final-20260929",
+      "caseId": "loom-row-command",
+      "variant": "candidate",
+      "sourceRevision": "38cb2a991a30b36c5628fbe955b2ba60a5728ded",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "1080bc6ae8eb39c47010146f522f9cae4bc0f383acb1cc07f2ef6c4e41caa41c",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-row-command--candidate--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "8c878d19ca688a0b9fd48d8936721fbf88b642d60677a8b7c9ce0a1980637a4f",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-row-command--candidate--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "2d25d60aa4d653010b5f310ce0d56fcb7ee366e7cc5548ca03676b1df9f0a028",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-row-command--candidate--final-20260929/prompt.txt",
+      "promptSha256": "73d956fbf35c8bfed9037534d61c4c9526799e99d3644f17cf9dbf9f0b40bc68",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-create-only:baseline:final-20260929",
+      "caseId": "loom-create-only",
+      "variant": "baseline",
+      "sourceRevision": "12463870df8df3d488070ae1f9c1992cf577756d",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "15316e170c63493495c15eaf0a5f5cf6f8673c65824b8257ba1472fd64bb7a59",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-create-only--baseline--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "71380b3400d9ece9426124df31ccee7830f88159dcbec19f31a4cf8b6518e0fc",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-create-only--baseline--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "53e85a66cdcc38ec6deefba052d7554f11951fd793385ce0e5698c531fb26482",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-create-only--baseline--final-20260929/prompt.txt",
+      "promptSha256": "9c267908b780b2a6325cc19f4b9566d75561d68478bf26ae44a98722b38a40c6",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-create-only:candidate:final-20260929",
+      "caseId": "loom-create-only",
+      "variant": "candidate",
+      "sourceRevision": "38cb2a991a30b36c5628fbe955b2ba60a5728ded",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "1080bc6ae8eb39c47010146f522f9cae4bc0f383acb1cc07f2ef6c4e41caa41c",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-create-only--candidate--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "505d7f58298f6ec601dbbb2390384abd7eefc786ae23071ff6be5f0a8b14147d",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-create-only--candidate--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "ac229870952306a3a0d67eb8bdb03569ed98f4841c65cc5c77c7d852f107be97",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-create-only--candidate--final-20260929/prompt.txt",
+      "promptSha256": "9c267908b780b2a6325cc19f4b9566d75561d68478bf26ae44a98722b38a40c6",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-relation-source-freshness:baseline:final-20260929",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "baseline",
+      "sourceRevision": "12463870df8df3d488070ae1f9c1992cf577756d",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "15316e170c63493495c15eaf0a5f5cf6f8673c65824b8257ba1472fd64bb7a59",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-relation-source-freshness--baseline--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "54880aa7cb10dfa37f1c474cbdd37ed835f051f8a1ccd87e7dbb9e3b758aefe0",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-relation-source-freshness--baseline--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "baf6a1a0aef62929a06c7b1f2a1ea5fb382c6ccb84aab2d9056302a7d71f9152",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-relation-source-freshness--baseline--final-20260929/prompt.txt",
+      "promptSha256": "344e7e99a502faa1027aca77131f7c1353dac49982c5cc375cad2963bc73fbbd",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    },
+    {
+      "runId": "loom-relation-source-freshness:candidate:final-20260929",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "candidate",
+      "sourceRevision": "38cb2a991a30b36c5628fbe955b2ba60a5728ded",
+      "sourceRevisionReason": null,
+      "sourceTreeSha256": "1080bc6ae8eb39c47010146f522f9cae4bc0f383acb1cc07f2ef6c4e41caa41c",
+      "skillSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "fixtureSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureVersion": 2,
+      "model": null,
+      "modelReason": "The preflight selected gpt-6-luna at max effort, but no model session started.",
+      "reasoningEffort": null,
+      "harness": "Codex CLI preflight only; worker session not started",
+      "harnessVersion": "0.157.1",
+      "budget": {
+        "model": "gpt-6-luna",
+        "reasoningEffort": "max",
+        "harness": "Codex CLI",
+        "harnessVersion": "codex-cli 0.157.1",
+        "sandbox": "workspace-write",
+        "outputTokenCap": 8000,
+        "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+        "wallTimeCapSeconds": 900,
+        "humanReplies": 0,
+        "workerSessions": 10
+      },
+      "startedAt": null,
+      "startedAtReason": "Worker session was not started because the local sandbox failed the private-data isolation gate.",
+      "endedAt": null,
+      "status": "BLOCKED",
+      "blockingReason": "Codex CLI workspace-write does not block reads outside CWD. A local sandbox test from this worker CWD returned exit 0 for test -r on the private grading file; its contents were not read. Starting this run would violate the private-grader isolation requirement.",
+      "acceptanceResults": null,
+      "acceptanceResultsReason": "No worker artifact exists to grade.",
+      "failedCommandCount": null,
+      "failedCommandCountReason": "No worker command ran.",
+      "repairAttempts": null,
+      "repairAttemptsReason": "No worker session started.",
+      "typeCastsOrSuppressions": null,
+      "typeCastsOrSuppressionsReason": "No worker artifact exists for source review.",
+      "unnecessaryWrappersOrFrameworkEdits": null,
+      "unnecessaryWrappersOrFrameworkEditsReason": "No worker artifact exists for source review.",
+      "filesRead": null,
+      "filesReadReason": "No worker session started; no file-read transcript exists.",
+      "transcriptPath": null,
+      "transcriptSha256": null,
+      "transcriptReason": "No worker session started; there is no transcript.",
+      "artifactPath": null,
+      "artifactSha256": null,
+      "artifactReason": "No worker artifact exists.",
+      "elapsedSeconds": null,
+      "elapsedSecondsReason": "No worker session started.",
+      "tokens": null,
+      "tokensReason": "No model usage was recorded.",
+      "workerWorkspacePath": "/tmp/plan066/runs/final-20260929-prep2/loom-relation-source-freshness--candidate--final-20260929/workspace",
+      "workerWorkspaceTreeSha256": "842083cc80ba067976db9ca4f1a3d80038434894fa3f61d483f3a4f8d57a1fd3",
+      "workerWorkspaceManifestPath": "/tmp/plan066/runs/final-20260929-prep2/loom-relation-source-freshness--candidate--final-20260929/worker-start-manifest.json",
+      "workerWorkspaceManifestSha256": "944de836e45a581378a688c8d72ad9ea320d6adf96e1bc16e4c4d8b781c9e548",
+      "promptPath": "/tmp/plan066/runs/final-20260929-prep2/loom-relation-source-freshness--candidate--final-20260929/prompt.txt",
+      "promptSha256": "344e7e99a502faa1027aca77131f7c1353dac49982c5cc375cad2963bc73fbbd",
+      "evaluatorNotes": "Harness isolation block; this BLOCKED record is not a worker PASS or FAIL.",
+      "reasoningEffortReason": "The selected effort is recorded in budget; no worker invoked it.",
+      "endedAtReason": "No worker session started."
+    }
+  ],
+  "pilotHistory": [
+    {
+      "status": "BLOCKED",
+      "plannedWorkerRuns": 10,
+      "startedWorkerRuns": 0,
+      "blockedWorkerRuns": 10,
+      "model": null,
+      "modelReason": "No worker session started.",
+      "harness": "Codex CLI was installed and login status was available.",
+      "harnessVersion": null,
+      "harnessVersionReason": "No worker process was started; no run-specific harness version was recorded.",
+      "budget": null,
+      "budgetReason": "No budget was selected because the pilot did not start.",
+      "missingPrerequisite": "The candidate case B reference did not type-check after two fixture-preparation attempts. The plan stop rule blocked further fixture work before any worker session.",
+      "workerTranscripts": null,
+      "workerTranscriptsReason": "No worker session started; no transcript exists.",
+      "measuredCost": null,
+      "measuredCostReason": "No worker session started.",
+      "freshFinalCandidateCaptureRequired": true,
+      "freshFinalCandidateCaptureReason": "The recorded candidate hash identifies a pre-final checkpoint. Before any future pilot, recapture the final worktree and record new source-tree, patch, untracked archive, manifest, and plan-state hashes.",
+      "workerRunsUsingPreFinalCandidate": 0
+    }
+  ],
+  "freshCapture": {
+    "capturedAt": "2026-09-29T00:15:50.821275+07:00",
+    "baseline": {
+      "revision": "12463870df8df3d488070ae1f9c1992cf577756d",
+      "gitTree": "22d0b6afdf1536120b6fa328af3623c7755d6482",
+      "sourceTreeSha256": "15316e170c63493495c15eaf0a5f5cf6f8673c65824b8257ba1472fd64bb7a59",
+      "fileCount": 1075,
+      "manifestPath": "/tmp/plan066/final-capture/baseline-source-manifest.json",
+      "manifestSha256": "bf23fd123adf7c2675af04481edb8dcc8df5777ba92a375e085a01ff79aa2024",
+      "archivePath": "/tmp/plan066/final-capture/baseline-source.tar",
+      "archiveSha256": "edb6466ba82eff9fce9aba553927f01e6935f18bd09302d2dd511770efa8f915"
+    },
+    "candidate": {
+      "revision": "38cb2a991a30b36c5628fbe955b2ba60a5728ded",
+      "gitTree": "3e11ec0222780648b8aa9a919b4a98a68826ae32",
+      "completedProductPlans": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76
+      ],
+      "sourceTreeSha256": "1080bc6ae8eb39c47010146f522f9cae4bc0f383acb1cc07f2ef6c4e41caa41c",
+      "fileCount": 1072,
+      "manifestPath": "/tmp/plan066/final-capture/candidate-source-manifest.json",
+      "manifestSha256": "f4d3b4b23d34fd341efdd5d062699835b2e99f410b4a2e4c505c795dc85f035b",
+      "archivePath": "/tmp/plan066/final-capture/candidate-source.tar",
+      "archiveSha256": "ee252b1cdbf2d2930238add7c61b66c5692846bc8e77b78f06c05870b99e964d",
+      "patchPath": "/tmp/plan066/final-capture/candidate-final.patch",
+      "patchSha256": "38991add91d31ae1e672d53d0d304dcf9ce392a7c6bbf6bca2b7b81bd9d4e202",
+      "untrackedArchivePath": "/tmp/plan066/final-capture/candidate-untracked.tar",
+      "untrackedArchiveSha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+      "untrackedPathList": "/tmp/plan066/final-capture/candidate-untracked-paths.txt",
+      "untrackedPathListSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "sharedControls": {
+      "instructionTreeSha256": "866ee53f40672a292366e12fa1ec3751f2494518ebb44bb9ab76314588e68806",
+      "instructionFiles": 147,
+      "instructionManifestPath": "/tmp/plan066/final-capture/instruction-manifest.json",
+      "instructionManifestSha256": "8c13d680a3240b51620e83122933acc7935a44c7013c008706d555e9f637b197",
+      "skillTreeSha256": "c583f3f920a8838eaaf26f0d1d3b10f7c7667682c8eeceb22ed410a3724a2d79",
+      "skillFiles": 132,
+      "skillManifestPath": "/tmp/plan066/final-capture/skill-manifest.json",
+      "skillManifestSha256": "5da6368ae6384333a95f6b3be2771234c198cc3738839f9300ba76a663ac3a59",
+      "rootAgentRulesSha256": "9bf0f7171a1756250924e90d010464469af807bdc108abddd16d62847e372963",
+      "fixtureTreeSha256": "269bdded5e527f351ef420423beab9257fe301776083887d68cacc28865049f4",
+      "fixtureFiles": 39,
+      "fixtureManifestPath": "/tmp/plan066/final-capture/fixture-manifest.json",
+      "fixtureManifestSha256": "cc679c0db8d7943cbf6f808b3bb972bd9201364ece6ab2092dbaf7ac7cf5f73d",
+      "fixtureArchivePath": "/tmp/plan066/final-capture/fixtures-evaluator-only.tar",
+      "fixtureArchiveSha256": "9681881632c424dbf03a5adea29f4b63f0523b9b40c51bedd73f15c4b4b0d675"
+    },
+    "planState": {
+      "treeSha256": "607718ab23c8dd295ee9f3bfc4e113dd54d70c068525ba375d88854ec3bbea9d",
+      "fileCount": 2,
+      "manifestPath": "/tmp/plan066/final-capture/plan-state-manifest.json",
+      "manifestSha256": "702d506abeeeb113546a985d509950ad45eac807d6736ecd81d8b708cd08d3a1",
+      "archivePath": "/tmp/plan066/final-capture/plan-state.tar",
+      "archiveSha256": "e42559429aaa49e78c536eb61d9c943c0892fe0fe366185c32aaa06859d1d00b"
+    },
+    "dependencies": {
+      "lockfileSha256": "857c955c9546a64203d4ff3130e83ed68f8ff231c79df11313f460a5108d61f6",
+      "installedPnpmLockSha256ByVariant": {
+        "baseline": "63665adc6efd1262db87325721e6c2425ea646612d03a1c9bb4e9fd10e1499da",
+        "candidate": "63665adc6efd1262db87325721e6c2425ea646612d03a1c9bb4e9fd10e1499da"
+      },
+      "node": "v26.9.0",
+      "pnpm": "12.1.0",
+      "installThisRound": "not run; existing equal installed trees reused"
+    },
+    "budgetSelectedBeforeWorkers": {
+      "model": "gpt-6-luna",
+      "reasoningEffort": "max",
+      "harness": "Codex CLI",
+      "harnessVersion": "codex-cli 0.157.1",
+      "sandbox": "workspace-write",
+      "outputTokenCap": 8000,
+      "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+      "wallTimeCapSeconds": 900,
+      "humanReplies": 0,
+      "workerSessions": 10
+    },
+    "patchFileCount": 15801,
+    "workerUntrackedPaths": []
+  },
+  "workerPreflight": {
+    "path": "/tmp/plan066/runs/final-20260929-prep2/preflight.json",
+    "sha256": "22847d57ffc50ff7e2cddd911f5cc50d670261b68cbf19671b1a4af85b7d892a",
+    "preparedRuns": 10,
+    "sessionsStarted": 0,
+    "note": "Public case inputs were prepared and hashed. Private evaluator files were not copied into the workspaces. Local sandbox access outside the workspace prevents the pilot."
+  },
+  "validationRuns": [
+    {
+      "validationId": "loom-dependent-selection:baseline:reference:final-v2",
+      "caseId": "loom-dependent-selection",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "A-01",
+        "A-02",
+        "A-03"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-dependent-selection/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-dependent-selection/reference-focused.txt",
+            "sha256": "a7078a14f700797c17311348c8333e6f2872a21368ab1f789886766d32d4db2a"
+          },
+          "testSummary": "3 passed"
+        }
+      ],
+      "sourceReviewIds": [],
+      "notes": "Candidate reference passes the focused suite."
+    },
+    {
+      "validationId": "loom-dependent-selection:candidate:reference:final-v2",
+      "caseId": "loom-dependent-selection",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "A-01",
+        "A-02",
+        "A-03"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-dependent-selection/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-dependent-selection/reference-focused.txt",
+            "sha256": "cd32221232feac72f5ed41954811a4c23c70f352d77de4cc32f77600c4e68e86"
+          },
+          "testSummary": "3 passed"
+        }
+      ],
+      "sourceReviewIds": [],
+      "notes": "Candidate reference passes the focused suite."
+    },
+    {
+      "validationId": "loom-dependent-selection:baseline:seeded-fail:final-v2",
+      "caseId": "loom-dependent-selection",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "missing dependent selection behavior",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-dependent-selection/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-dependent-selection/seed-focused.txt",
+            "sha256": "861b9171b1f2e2b57952b69734a97540fe96272ae6fafaa29dcb4f2acdd5cca7"
+          },
+          "testSummary": "A-01/A-02/A-03 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-dependent-selection:candidate:seeded-fail:final-v2",
+      "caseId": "loom-dependent-selection",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "missing dependent selection behavior",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-dependent-selection/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-dependent-selection/seed-focused.txt",
+            "sha256": "d4b1e7c6f56b98c98c53a0164ca337064abd0765fe856c6da797fcc9dccc6897"
+          },
+          "testSummary": "A-01/A-02/A-03 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-transformed-update:baseline:reference:final-v2",
+      "caseId": "loom-transformed-update",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "B-01",
+        "B-02",
+        "B-03",
+        "B-04"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-transformed-update/reference-type-check-v2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-transformed-update/reference-focused-v2.txt",
+            "sha256": "1063d9661d067fa23feb04323aac81282eb9f1e72c22e704d66797fe375e7a70"
+          },
+          "testSummary": "4 passed"
+        }
+      ],
+      "sourceReviewIds": [
+        "B-05"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "B-05",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-transformed-update-invalid-resource.ts",
+              "sha256": "7f3c305e60d07d8f617a1e8b7f91c235da28c563586dbd98731d6fb18d3010ac"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-transformed-update.module.ts",
+              "sha256": "c229449c9b97c53f00ab914c183fe22493abac07dd37c833a83d8bd44bff0b00"
+            }
+          ],
+          "note": "Cleaned declaration omits create.typo; source has no assertion used to hide the invalid member."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-transformed-update:candidate:reference:final-v2",
+      "caseId": "loom-transformed-update",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "B-01",
+        "B-02",
+        "B-03",
+        "B-04"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-transformed-update/reference-type-check-v2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-transformed-update/reference-focused-v2.txt",
+            "sha256": "f649c58aa5687cd6e0f6fcaade1c80a3b67e9fe6c1f027df7c5fe97d620bcfb0"
+          },
+          "testSummary": "4 passed"
+        }
+      ],
+      "sourceReviewIds": [
+        "B-05"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "B-05",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-transformed-update-invalid-resource.ts",
+              "sha256": "7f3c305e60d07d8f617a1e8b7f91c235da28c563586dbd98731d6fb18d3010ac"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-transformed-update.module.ts",
+              "sha256": "c229449c9b97c53f00ab914c183fe22493abac07dd37c833a83d8bd44bff0b00"
+            }
+          ],
+          "note": "Cleaned declaration omits create.typo; source has no assertion used to hide the invalid member."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-transformed-update:baseline:seeded-fail:final-v2",
+      "caseId": "loom-transformed-update",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "deliberate create.typo and uncompleted transformed update editor",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "exitCode": 2,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-transformed-update/seed-type-check-v2.txt",
+            "sha256": "05b7986fdef686c90639fe543eefa8ced89dfc7e79d23e23a390b1b28c75b2ea"
+          },
+          "diagnostic": "The declared create.typo and incomplete transformed update submit contract both produce type-check diagnostics; both are requested repairs."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-transformed-update/seed-focused-v2.txt",
+            "sha256": "e6fa2cd0dbe93f67fb1a6c53c8dac52866a160612126f71ffc853c7150b184a8"
+          },
+          "testSummary": "B-01 and combined B-02/B-03 failed as seeded; 2 assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-transformed-update:candidate:seeded-fail:final-v2",
+      "caseId": "loom-transformed-update",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "deliberate create.typo and uncompleted transformed update editor",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "exitCode": 2,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-transformed-update/seed-type-check-v2.txt",
+            "sha256": "9a394385fd44185f02ed8e7c10660c0c7d0068ff5ea704e63dd28e0992dc6bb3"
+          },
+          "diagnostic": "The declared create.typo and incomplete transformed update submit contract both produce type-check diagnostics; both are requested repairs."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-transformed-update/seed-focused-v2.txt",
+            "sha256": "2eb6ac41ebc4c03aded68df8fa2bf37079734c5da4f0c7031c062da70c9d960d"
+          },
+          "testSummary": "B-01 and combined B-02/B-03 failed as seeded; 2 assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-row-command:baseline:reference:final-v2",
+      "caseId": "loom-row-command",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "C-01",
+        "C-02",
+        "C-03"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/reference-focused.txt",
+            "sha256": "f754c3953739163828379dc94d75a1f15c9960b04c3a8de238a03100eb4f5869"
+          },
+          "diagnostic": "Attempt 1 raced the initial in-flight list load; the reference assertion saw no completed reload yet."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/reference-type-check-attempt2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/reference-focused-attempt2.txt",
+            "sha256": "ca229fb595e9eaf0d39f93121ee15a6a62a389b8eadbffaf5bdc2654baa50e15"
+          },
+          "testSummary": "3 passed"
+        }
+      ],
+      "sourceReviewIds": [],
+      "notes": "Candidate reference passes the focused suite."
+    },
+    {
+      "validationId": "loom-row-command:candidate:reference:final-v2",
+      "caseId": "loom-row-command",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "C-01",
+        "C-02",
+        "C-03"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/reference-focused.txt",
+            "sha256": "6cfde4436848f230640b242f200750635f8d0d7156b397fa32551e33421ee959"
+          },
+          "diagnostic": "Attempt 1 raced the initial in-flight list load; the reference assertion saw no completed reload yet."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/reference-type-check-attempt2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/reference-focused-attempt2.txt",
+            "sha256": "abcd1aefeaa47a7bce9eb21e75f929b8d1ccdcecb2c1376edd84128d482648d4"
+          },
+          "testSummary": "3 passed"
+        }
+      ],
+      "sourceReviewIds": [],
+      "notes": "Candidate reference passes the focused suite."
+    },
+    {
+      "validationId": "loom-row-command:baseline:seeded-fail:final-v2",
+      "caseId": "loom-row-command",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "missing record-bound row-policy gate",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/seed-focused.txt",
+            "sha256": "7cc28b895f2565a8034c987788ba0dba221245ef7ae78f29c8ee556baac07f2c"
+          },
+          "testSummary": "C-01 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-row-command:candidate:seeded-fail:final-v2",
+      "caseId": "loom-row-command",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "missing record-bound row-policy gate",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/seed-focused.txt",
+            "sha256": "6e7ccb872cc702c6a9c181b98c44108acdfdeaf574bc3c00af0e9c6d3a84b902"
+          },
+          "testSummary": "C-01 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-create-only:baseline:reference:final-v2",
+      "caseId": "loom-create-only",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "D-01",
+        "D-02"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-create-only/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-create-only/reference-focused.txt",
+            "sha256": "b9c52d18299135f61ca768444bf302157a00b90e5334b120f05689e20e6ea9c2"
+          },
+          "testSummary": "2 passed"
+        }
+      ],
+      "sourceReviewIds": [
+        "D-03",
+        "D-04"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "D-03",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.route.vue",
+              "sha256": "d3328cf1105cf96d611174116ce9e4668bdc3fd2b256029b1d7e8170552ca7b1"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.module.ts",
+              "sha256": "d5a0e028ee035418aec9db55cc1dd66001353a455ba5684659b129130f9e61cd"
+            }
+          ],
+          "note": "Route renders the bound create operation through FormView."
+        },
+        {
+          "acceptanceId": "D-04",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.route.vue",
+              "sha256": "d3328cf1105cf96d611174116ce9e4668bdc3fd2b256029b1d7e8170552ca7b1"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.module.ts",
+              "sha256": "d5a0e028ee035418aec9db55cc1dd66001353a455ba5684659b129130f9e61cd"
+            }
+          ],
+          "note": "Both fixture files pass the workspace type-check."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-create-only:candidate:reference:final-v2",
+      "caseId": "loom-create-only",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "D-01",
+        "D-02"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/reference-focused.txt",
+            "sha256": "bd0497e228cef355804a6e28368372625f20a65f072d7d18fb43049d9bd3db77"
+          },
+          "testSummary": "1 passed; D-01 only was observed on attempt 1"
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/reference-type-check-recheck.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/reference-focused-recheck.txt",
+            "sha256": "0510d9cca193b0e55e7a8a455c5d475c357dd1a4428086d56f2f745d1c36250d"
+          },
+          "testSummary": "2 passed; D-01 and D-02 verified on attempt 2"
+        }
+      ],
+      "sourceReviewIds": [
+        "D-03",
+        "D-04"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "D-03",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.route.vue",
+              "sha256": "d3328cf1105cf96d611174116ce9e4668bdc3fd2b256029b1d7e8170552ca7b1"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.module.ts",
+              "sha256": "d5a0e028ee035418aec9db55cc1dd66001353a455ba5684659b129130f9e61cd"
+            }
+          ],
+          "note": "Route renders the bound create operation through FormView."
+        },
+        {
+          "acceptanceId": "D-04",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.route.vue",
+              "sha256": "d3328cf1105cf96d611174116ce9e4668bdc3fd2b256029b1d7e8170552ca7b1"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.module.ts",
+              "sha256": "d5a0e028ee035418aec9db55cc1dd66001353a455ba5684659b129130f9e61cd"
+            }
+          ],
+          "note": "Both fixture files pass the workspace type-check."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-create-only:baseline:seeded-fail:final-v2",
+      "caseId": "loom-create-only",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "invented list operation",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-create-only/seed-type-check-v2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-create-only/seed-focused-v2.txt",
+            "sha256": "c1a67935283873474cd48ac91ffdfca2178202f7fe6009e7d3a74d36ed41711c"
+          },
+          "testSummary": "D-02 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-create-only:candidate:seeded-fail:final-v2",
+      "caseId": "loom-create-only",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "invented list operation",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/seed-type-check-v2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/seed-focused-v2.txt",
+            "sha256": "7ae7f7e35721553fb72a9b96b9349d5a12a5795e463bd3576a5bed71eda89d85"
+          },
+          "testSummary": "D-02 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-relation-source-freshness:candidate:reference:final-v2",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "E-01",
+        "E-02"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-relation-source-freshness/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-relation-source-freshness/reference-focused.txt",
+            "sha256": "3b18afb95818347c1470c8c0473c47ddd922c200444e93f2c3aa415631c94c24"
+          },
+          "testSummary": "1 passed"
+        }
+      ],
+      "sourceReviewIds": [
+        "E-03"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "E-03",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-relation-source-freshness.module.ts",
+              "sha256": "1d8a8ed010e2443e10990f42ef3c4197f8e297e95f7d56d8dbc453791622029e"
+            }
+          ],
+          "note": "Picker uses categoryResource.key. Source review finds no private cache key or manual refresh coupling."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-relation-source-freshness:baseline:reference:final-v2",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "FRAMEWORK_BLOCKED",
+      "acceptanceIds": [
+        "E-01",
+        "E-02"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "exitCode": 2,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-relation-source-freshness/reference-type-check.txt",
+            "sha256": "442c4f84ea4aa7e74657324a7b32ec33dd2950388f04839ef5d088308bf81ffb"
+          },
+          "diagnostic": "Baseline defineForm contract rejects props.resource for the relation picker."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-relation-source-freshness/reference-focused.txt",
+            "sha256": "a8b24a3cc29099f576383d34cd267d83d99f8e5254a54eb9569f6ecd1096b00e"
+          },
+          "diagnostic": "E-01 observed stale Support label; classify as baseline framework limitation, not worker error."
+        }
+      ],
+      "sourceReviewIds": [
+        "E-03"
+      ],
+      "notes": "Baseline does not support relation resource binding; this is a framework block. E-03 is source-only and is not a behavior result."
+    },
+    {
+      "validationId": "loom-relation-source-freshness:candidate:seeded-fail:final-v2",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "unbound relation source cache",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-relation-source-freshness/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-relation-source-freshness/seed-focused.txt",
+            "sha256": "1e2ee0c4349a7888fc1d6befafa24e3d89cb459373604f673596d867b9f82679"
+          },
+          "testSummary": "E-01 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-relation-source-freshness:baseline:seeded-fail:final-v2",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "NOT_RUN",
+      "reason": "The baseline reference API does not type-check, so seeded-fail scoring would be confounded and is not applicable."
+    }
+  ],
+  "currentPilot": {
+    "status": "BLOCKED_BEFORE_START",
+    "plannedWorkerRuns": 10,
+    "startedWorkerRuns": 0,
+    "blockedWorkerRuns": 10,
+    "model": "gpt-6-luna",
+    "reasoningEffort": "max",
+    "harness": "Codex CLI",
+    "harnessVersion": "0.157.1",
+    "budget": {
+      "model": "gpt-6-luna",
+      "reasoningEffort": "max",
+      "harness": "Codex CLI",
+      "harnessVersion": "codex-cli 0.157.1",
+      "sandbox": "workspace-write",
+      "outputTokenCap": 8000,
+      "outputTokenCapEnforcement": "prompt cap; CLI exposes no hard per-session output-token cap; reported usage will be checked after each run",
+      "wallTimeCapSeconds": 900,
+      "humanReplies": 0,
+      "workerSessions": 10
+    },
+    "missingPrerequisite": "A tool-enforced workspace-only read boundary. The local workspace-write sandbox permits reads outside CWD, so the private grader remains reachable.",
+    "isolationEvidence": {
+      "officialCodexSandboxTemplate": "https://github.com/openai/codex/blob/main/codex-rs/prompts/templates/permissions/sandbox_mode/workspace_write.md",
+      "localCliVersion": "codex-cli 0.157.1",
+      "sourceCapturePath": "/tmp/plan066/final-capture",
+      "workerWorkspacesPath": "/tmp/plan066/runs/final-20260929-prep2",
+      "graderCopiedIntoWorkerWorkspace": false,
+      "workerReadableWorkspaceExcludes": [
+        "evals/",
+        "plans/",
+        ".git",
+        "reference/",
+        "seeded-fail/",
+        "evaluator-only/"
+      ],
+      "localReadCheck": {
+        "path": "/tmp/plan066/isolation-canary/private-rubric-read-check.json",
+        "sha256": "a43fc20ddd515c99abb81574851bfc568f90460263554d1355c479dcca219fd7",
+        "command": [
+          "codex",
+          "sandbox",
+          "-P",
+          ":workspace",
+          "-C",
+          "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--baseline--final-20260929/workspace",
+          "--",
+          "test",
+          "-r",
+          "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/grading.md"
+        ],
+        "exitCode": 0,
+        "targetContentsRead": false
+      },
+      "outsideRepoFileRead": {
+        "command": [
+          "codex",
+          "sandbox",
+          "-P",
+          ":workspace",
+          "-C",
+          "/tmp/plan066/runs/final-20260929-prep2/loom-dependent-selection--baseline--final-20260929/workspace",
+          "--",
+          "cat",
+          "/Users/gamer/Documents/projects/carta/README.md"
+        ],
+        "exitCode": 0,
+        "sourceSha256": "e086447bcbc95471a4474ff61bb5ca1e1a5c626df12d28fc67a87cf32c3ca8ae",
+        "copiedArtifactPath": "/tmp/plan066/isolation-canary/carta-readme-from-sandbox.txt",
+        "copiedArtifactSha256": "e086447bcbc95471a4474ff61bb5ca1e1a5c626df12d28fc67a87cf32c3ca8ae",
+        "identicalBytes": true,
+        "note": "Only public README content was read. The private rubric read check tested access without reading contents."
+      }
+    },
+    "transcripts": null,
+    "transcriptsReason": "No session started.",
+    "measuredCost": null,
+    "measuredCostReason": "No session started; no model usage.",
+    "workerRunsUsingPreFinalCandidate": 0
+  },
+  "candidateFinalCapture": {
+    "revision": "38cb2a991a30b36c5628fbe955b2ba60a5728ded",
+    "gitTree": "3e11ec0222780648b8aa9a919b4a98a68826ae32",
+    "sourceTreeSha256": "1080bc6ae8eb39c47010146f522f9cae4bc0f383acb1cc07f2ef6c4e41caa41c",
+    "fileCount": 1072,
+    "manifestPath": "/tmp/plan066/final-capture/candidate-source-manifest.json",
+    "manifestSha256": "f4d3b4b23d34fd341efdd5d062699835b2e99f410b4a2e4c505c795dc85f035b",
+    "archivePath": "/tmp/plan066/final-capture/candidate-source.tar",
+    "archiveSha256": "ee252b1cdbf2d2930238add7c61b66c5692846bc8e77b78f06c05870b99e964d",
+    "patchPath": "/tmp/plan066/final-capture/candidate-final.patch",
+    "patchSha256": "38991add91d31ae1e672d53d0d304dcf9ce392a7c6bbf6bca2b7b81bd9d4e202",
+    "untrackedArchivePath": "/tmp/plan066/final-capture/candidate-untracked.tar",
+    "untrackedArchiveSha256": "84ff92691f909a05b224e1c56abb4864f01b4f8e3c854e4bb4c7baf1d3f6d652",
+    "planStateSha256": "607718ab23c8dd295ee9f3bfc4e113dd54d70c068525ba375d88854ec3bbea9d",
+    "capturedAt": "2026-09-29T00:15:50.821275+07:00",
+    "completedProductPlans": [
+      61,
+      62,
+      63,
+      64,
+      65,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76
+    ]
+  },
+  "historicalCheckpoint": {
+    "baseline": {
+      "revision": "12463870df8df3d488070ae1f9c1992cf577756d",
+      "gitTree": "22d0b6afdf1536120b6fa328af3623c7755d6482",
+      "workerSourceTreeSha256": "66bcdb6da4abcbc00c7b099819ac28fedd04a88dd070b67c8544960421e6e825",
+      "sourceFileCount": 1137,
+      "manifest": {
+        "path": "/tmp/plan066/snapshots/baseline-source-manifest.json",
+        "sha256": "92978ad87d409df153ea2b353530bc22518ed3bd2293e609cabd8b42d1e90b10"
+      }
+    },
+    "candidate": {
+      "revision": null,
+      "revisionReason": "The candidate is an uncommitted working-tree snapshot.",
+      "baseRevision": "12463870df8df3d488070ae1f9c1992cf577756d",
+      "workerSourceTreeSha256": "458f2ab6cdd125f4b798d61cbb5a9a8578a165bd5e690e9c52146738a3fc9755",
+      "sourceFileCount": 1134,
+      "manifest": {
+        "path": "/tmp/plan066/snapshots/candidate-source-manifest.json",
+        "sha256": "4ceb1183cd9007e525567658560ffa492734111e7f79fa5e23eda4a8881b113d"
+      },
+      "capture": {
+        "basePlusPatch": "/tmp/plan066/snapshots/candidate.patch",
+        "patchSha256": "ea901df654a2dcd27e8398c463002b4235bf056df5a6ecdb7400416240ee6aeb",
+        "untrackedArchive": "/tmp/plan066/snapshots/untracked.tar",
+        "untrackedArchiveSha256": "bb9a74e6dab8d29c6382a9ed0013818085d710d3ba8cecf6ccd30233cf93e9cf",
+        "untrackedPathList": "/tmp/plan066/snapshots/untracked-paths.txt",
+        "untrackedPathListSha256": "4123a0cedcb74c0fe5905ed9f8287a43ce64fe12e956ac10b90c5b3a465ffb79"
+      },
+      "checkpointStatus": "PRE_FINAL_CANDIDATE_CHECKPOINT",
+      "capturedAt": "2026-09-27T13:04:14+07:00",
+      "capturedAtTimezone": "Asia/Jakarta",
+      "sourceManifestCreatedAt": "2026-09-27T13:15:57+07:00",
+      "finalCandidate": false,
+      "finalCandidateReason": "The capture predates the final Plan 074 nested-navigation fixture correction and later plan index/status updates.",
+      "plan074StateAtCapture": "The earlier Plan 074 work is present, but the final nested-navigation fixture correction was pending. Do not treat Plan 074 as complete in this candidate checkpoint.",
+      "postCaptureChanges": [
+        {
+          "path": "apps/web/src/router/__tests__/nested-navigation.spec.ts",
+          "summary": "Use the same resource owner name across two scoped instances in the nested-navigation fixture.",
+          "capturedSha256": "656f65502898001870002b4cd64f0c0a80ffb8b541984b405284747ea1247406",
+          "currentSha256": "df05d75b4b0ecf12992b1d517dca7efc8f2157f9343404c795fc9bf7ce746e51"
+        },
+        {
+          "paths": [
+            "plans/README.md",
+            "plans/066-evaluate-loom-agent-repair-work.md"
+          ],
+          "summary": "Planning and status documents changed after capture. These paths are excluded from worker workspaces and the worker source hash."
+        }
+      ],
+      "currentFinalCandidateSourceTreeSha256": null,
+      "currentFinalCandidateSourceTreeSha256Reason": "No fresh final candidate capture was made in this docs-only revision.",
+      "completedProductPlans": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        75,
+        76
+      ],
+      "productPlanWorkPresentAtCapture": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76
+      ]
+    },
+    "controls": {
+      "instructionSnapshotSha256": "cd514a2f87f635b1fca5e2e45c44efb888ea365798bab385be2ed9b846b5c19d",
+      "instructionFiles": 147,
+      "rootAgentRulesSha256": "9bf0f7171a1756250924e90d010464469af807bdc108abddd16d62847e372963",
+      "skillsTreeSha256": "a7b2e52f329e6bebea06b36cfcd4a44ddb27a55ab8464ff4e65bf6a088eb9b16",
+      "skillFiles": 132,
+      "fixtureTreeSha256": "134e73b525ba8352adb5656ac9b69b6672c9193727a858d5c8abebd4c31ecba7",
+      "fixtureFiles": 39,
+      "fixtureHashInputs": [
+        "cases.json",
+        "README.md",
+        "grading.md",
+        "fixtures/loom/**"
+      ],
+      "lockfileSha256": "857c955c9546a64203d4ff3130e83ed68f8ff231c79df11313f460a5108d61f6",
+      "installedPnpmLockSha256": "63665adc6efd1262db87325721e6c2425ea646612d03a1c9bb4e9fd10e1499da",
+      "runtime": {
+        "node": "v26.9.0",
+        "pnpm": "12.1.0"
+      },
+      "install": {
+        "command": "pnpm install --offline --frozen-lockfile",
+        "packagesPerWorkspace": 860,
+        "downloads": 0,
+        "dependencyDeclarationsMatch": true,
+        "note": "Baseline and candidate package manifests differ only in scripts; dependency declarations and lockfile match."
+      }
+    },
+    "referenceValidation": [
+      {
+        "caseId": "loom-dependent-selection",
+        "variant": "baseline",
+        "status": "PASS",
+        "attempts": 1,
+        "commands": [
+          {
+            "command": "pnpm --filter @southneuhof/framework-web type-check",
+            "status": "PASS"
+          },
+          {
+            "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+            "status": "PASS",
+            "passedTests": 3
+          }
+        ],
+        "artifactPath": null,
+        "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
+        "seededFailStatus": "NOT_RUN",
+        "notes": "The initial harness setup issue was corrected; the reference then passed type-check and all three focused assertions."
+      },
+      {
+        "caseId": "loom-dependent-selection",
+        "variant": "candidate",
+        "status": "PASS",
+        "attempts": 1,
+        "commands": [
+          {
+            "command": "pnpm --filter @southneuhof/framework-web type-check",
+            "status": "PASS"
+          },
+          {
+            "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+            "status": "PASS",
+            "passedTests": 3
+          }
+        ],
+        "artifactPath": null,
+        "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
+        "seededFailStatus": "NOT_RUN",
+        "notes": "The reference passed type-check and all three focused assertions. This does not establish an agent comparison result."
+      },
+      {
+        "caseId": "loom-transformed-update",
+        "variant": "baseline",
+        "status": "FAIL",
+        "attempts": 1,
+        "commands": [
+          {
+            "command": "pnpm --filter @southneuhof/framework-web type-check",
+            "status": "FAIL",
+            "diagnostic": "The transformed update declaration did not satisfy Loom's update-output contract; the form submit type resolved to never."
+          }
+        ],
+        "acceptanceStatus": "NOT_RUN",
+        "artifactPath": null,
+        "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
+        "seededFailStatus": "NOT_RUN",
+        "notes": "The baseline does not accept the transformed update reference contract."
+      },
+      {
+        "caseId": "loom-transformed-update",
+        "variant": "candidate",
+        "status": "FAIL",
+        "attempts": 2,
+        "commands": [
+          {
+            "command": "pnpm --filter @southneuhof/framework-web type-check",
+            "status": "FAIL",
+            "diagnostic": "Attempt 1 also found inputMode outside the TextInput contract and update submit typed as never. inputMode was removed before attempt 2."
+          },
+          {
+            "command": "pnpm --filter @southneuhof/framework-web type-check",
+            "status": "FAIL",
+            "diagnostic": "Attempt 2 reported TS2322: submit (output: never) => Promise<AmountRecord> failed UpdateSubmitInputDiagnostic; TypeScript then hid the resource update operation."
+          }
+        ],
+        "acceptanceStatus": "NOT_RUN",
+        "artifactPath": null,
+        "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
+        "seededFailStatus": "NOT_RUN",
+        "notes": "The plan's two failed case B preparation attempts were reached. Further fixture preparation stopped."
+      },
+      {
+        "caseId": "loom-row-command",
+        "variant": "baseline_and_candidate",
+        "status": "NOT_RUN",
+        "attempts": 0,
+        "reason": "Fixture preparation stopped after the case B attempt limit.",
+        "seededFailStatus": "NOT_RUN"
+      },
+      {
+        "caseId": "loom-create-only",
+        "variant": "baseline_and_candidate",
+        "status": "NOT_RUN",
+        "attempts": 0,
+        "reason": "Fixture preparation stopped after the case B attempt limit.",
+        "seededFailStatus": "NOT_RUN"
+      },
+      {
+        "caseId": "loom-relation-source-freshness",
+        "variant": "baseline_and_candidate",
+        "status": "NOT_RUN",
+        "attempts": 0,
+        "reason": "Fixture preparation stopped after the case B attempt limit.",
+        "seededFailStatus": "NOT_RUN"
+      }
+    ]
+  },
+  "historicalReferenceValidation": [
+    {
+      "caseId": "loom-dependent-selection",
+      "variant": "baseline",
+      "status": "PASS",
+      "attempts": 1,
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS"
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "passedTests": 3
+        }
+      ],
+      "artifactPath": null,
+      "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
+      "seededFailStatus": "NOT_RUN",
+      "notes": "The initial harness setup issue was corrected; the reference then passed type-check and all three focused assertions."
+    },
+    {
+      "caseId": "loom-dependent-selection",
+      "variant": "candidate",
+      "status": "PASS",
+      "attempts": 1,
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS"
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "passedTests": 3
+        }
+      ],
+      "artifactPath": null,
+      "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
+      "seededFailStatus": "NOT_RUN",
+      "notes": "The reference passed type-check and all three focused assertions. This does not establish an agent comparison result."
+    },
+    {
+      "caseId": "loom-transformed-update",
+      "variant": "baseline",
+      "status": "FAIL",
+      "attempts": 1,
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "diagnostic": "The transformed update declaration did not satisfy Loom's update-output contract; the form submit type resolved to never."
+        }
+      ],
+      "acceptanceStatus": "NOT_RUN",
+      "artifactPath": null,
+      "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
+      "seededFailStatus": "NOT_RUN",
+      "notes": "The baseline does not accept the transformed update reference contract."
+    },
+    {
+      "caseId": "loom-transformed-update",
+      "variant": "candidate",
+      "status": "FAIL",
+      "attempts": 2,
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "diagnostic": "Attempt 1 also found inputMode outside the TextInput contract and update submit typed as never. inputMode was removed before attempt 2."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "diagnostic": "Attempt 2 reported TS2322: submit (output: never) => Promise<AmountRecord> failed UpdateSubmitInputDiagnostic; TypeScript then hid the resource update operation."
+        }
+      ],
+      "acceptanceStatus": "NOT_RUN",
+      "artifactPath": null,
+      "artifactPathReason": "Command output was observed in the preparation session but was not saved as a separate file.",
+      "seededFailStatus": "NOT_RUN",
+      "notes": "The plan's two failed case B preparation attempts were reached. Further fixture preparation stopped."
+    },
+    {
+      "caseId": "loom-row-command",
+      "variant": "baseline_and_candidate",
+      "status": "NOT_RUN",
+      "attempts": 0,
+      "reason": "Fixture preparation stopped after the case B attempt limit.",
+      "seededFailStatus": "NOT_RUN"
+    },
+    {
+      "caseId": "loom-create-only",
+      "variant": "baseline_and_candidate",
+      "status": "NOT_RUN",
+      "attempts": 0,
+      "reason": "Fixture preparation stopped after the case B attempt limit.",
+      "seededFailStatus": "NOT_RUN"
+    },
+    {
+      "caseId": "loom-relation-source-freshness",
+      "variant": "baseline_and_candidate",
+      "status": "NOT_RUN",
+      "attempts": 0,
+      "reason": "Fixture preparation stopped after the case B attempt limit.",
+      "seededFailStatus": "NOT_RUN"
+    }
+  ],
+  "referenceValidation": [
+    {
+      "validationId": "loom-dependent-selection:baseline:reference:final-v2",
+      "caseId": "loom-dependent-selection",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "A-01",
+        "A-02",
+        "A-03"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-dependent-selection/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-dependent-selection/reference-focused.txt",
+            "sha256": "a7078a14f700797c17311348c8333e6f2872a21368ab1f789886766d32d4db2a"
+          },
+          "testSummary": "3 passed"
+        }
+      ],
+      "sourceReviewIds": [],
+      "notes": "Candidate reference passes the focused suite."
+    },
+    {
+      "validationId": "loom-dependent-selection:candidate:reference:final-v2",
+      "caseId": "loom-dependent-selection",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "A-01",
+        "A-02",
+        "A-03"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-dependent-selection/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-dependent-selection/reference-focused.txt",
+            "sha256": "cd32221232feac72f5ed41954811a4c23c70f352d77de4cc32f77600c4e68e86"
+          },
+          "testSummary": "3 passed"
+        }
+      ],
+      "sourceReviewIds": [],
+      "notes": "Candidate reference passes the focused suite."
+    },
+    {
+      "validationId": "loom-transformed-update:baseline:reference:final-v2",
+      "caseId": "loom-transformed-update",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "B-01",
+        "B-02",
+        "B-03",
+        "B-04"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-transformed-update/reference-type-check-v2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-transformed-update/reference-focused-v2.txt",
+            "sha256": "1063d9661d067fa23feb04323aac81282eb9f1e72c22e704d66797fe375e7a70"
+          },
+          "testSummary": "4 passed"
+        }
+      ],
+      "sourceReviewIds": [
+        "B-05"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "B-05",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-transformed-update-invalid-resource.ts",
+              "sha256": "7f3c305e60d07d8f617a1e8b7f91c235da28c563586dbd98731d6fb18d3010ac"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-transformed-update.module.ts",
+              "sha256": "c229449c9b97c53f00ab914c183fe22493abac07dd37c833a83d8bd44bff0b00"
+            }
+          ],
+          "note": "Cleaned declaration omits create.typo; source has no assertion used to hide the invalid member."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-transformed-update:candidate:reference:final-v2",
+      "caseId": "loom-transformed-update",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "B-01",
+        "B-02",
+        "B-03",
+        "B-04"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-transformed-update/reference-type-check-v2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-transformed-update/reference-focused-v2.txt",
+            "sha256": "f649c58aa5687cd6e0f6fcaade1c80a3b67e9fe6c1f027df7c5fe97d620bcfb0"
+          },
+          "testSummary": "4 passed"
+        }
+      ],
+      "sourceReviewIds": [
+        "B-05"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "B-05",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-transformed-update-invalid-resource.ts",
+              "sha256": "7f3c305e60d07d8f617a1e8b7f91c235da28c563586dbd98731d6fb18d3010ac"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-transformed-update.module.ts",
+              "sha256": "c229449c9b97c53f00ab914c183fe22493abac07dd37c833a83d8bd44bff0b00"
+            }
+          ],
+          "note": "Cleaned declaration omits create.typo; source has no assertion used to hide the invalid member."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-row-command:baseline:reference:final-v2",
+      "caseId": "loom-row-command",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "C-01",
+        "C-02",
+        "C-03"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/reference-focused.txt",
+            "sha256": "f754c3953739163828379dc94d75a1f15c9960b04c3a8de238a03100eb4f5869"
+          },
+          "diagnostic": "Attempt 1 raced the initial in-flight list load; the reference assertion saw no completed reload yet."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/reference-type-check-attempt2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/reference-focused-attempt2.txt",
+            "sha256": "ca229fb595e9eaf0d39f93121ee15a6a62a389b8eadbffaf5bdc2654baa50e15"
+          },
+          "testSummary": "3 passed"
+        }
+      ],
+      "sourceReviewIds": [],
+      "notes": "Candidate reference passes the focused suite."
+    },
+    {
+      "validationId": "loom-row-command:candidate:reference:final-v2",
+      "caseId": "loom-row-command",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "C-01",
+        "C-02",
+        "C-03"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/reference-focused.txt",
+            "sha256": "6cfde4436848f230640b242f200750635f8d0d7156b397fa32551e33421ee959"
+          },
+          "diagnostic": "Attempt 1 raced the initial in-flight list load; the reference assertion saw no completed reload yet."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/reference-type-check-attempt2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/reference-focused-attempt2.txt",
+            "sha256": "abcd1aefeaa47a7bce9eb21e75f929b8d1ccdcecb2c1376edd84128d482648d4"
+          },
+          "testSummary": "3 passed"
+        }
+      ],
+      "sourceReviewIds": [],
+      "notes": "Candidate reference passes the focused suite."
+    },
+    {
+      "validationId": "loom-create-only:baseline:reference:final-v2",
+      "caseId": "loom-create-only",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "D-01",
+        "D-02"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-create-only/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-create-only/reference-focused.txt",
+            "sha256": "b9c52d18299135f61ca768444bf302157a00b90e5334b120f05689e20e6ea9c2"
+          },
+          "testSummary": "2 passed"
+        }
+      ],
+      "sourceReviewIds": [
+        "D-03",
+        "D-04"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "D-03",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.route.vue",
+              "sha256": "d3328cf1105cf96d611174116ce9e4668bdc3fd2b256029b1d7e8170552ca7b1"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.module.ts",
+              "sha256": "d5a0e028ee035418aec9db55cc1dd66001353a455ba5684659b129130f9e61cd"
+            }
+          ],
+          "note": "Route renders the bound create operation through FormView."
+        },
+        {
+          "acceptanceId": "D-04",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.route.vue",
+              "sha256": "d3328cf1105cf96d611174116ce9e4668bdc3fd2b256029b1d7e8170552ca7b1"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.module.ts",
+              "sha256": "d5a0e028ee035418aec9db55cc1dd66001353a455ba5684659b129130f9e61cd"
+            }
+          ],
+          "note": "Both fixture files pass the workspace type-check."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-create-only:candidate:reference:final-v2",
+      "caseId": "loom-create-only",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "D-01",
+        "D-02"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/reference-focused.txt",
+            "sha256": "bd0497e228cef355804a6e28368372625f20a65f072d7d18fb43049d9bd3db77"
+          },
+          "testSummary": "1 passed; D-01 only was observed on attempt 1"
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/reference-type-check-recheck.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/reference-focused-recheck.txt",
+            "sha256": "0510d9cca193b0e55e7a8a455c5d475c357dd1a4428086d56f2f745d1c36250d"
+          },
+          "testSummary": "2 passed; D-01 and D-02 verified on attempt 2"
+        }
+      ],
+      "sourceReviewIds": [
+        "D-03",
+        "D-04"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "D-03",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.route.vue",
+              "sha256": "d3328cf1105cf96d611174116ce9e4668bdc3fd2b256029b1d7e8170552ca7b1"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.module.ts",
+              "sha256": "d5a0e028ee035418aec9db55cc1dd66001353a455ba5684659b129130f9e61cd"
+            }
+          ],
+          "note": "Route renders the bound create operation through FormView."
+        },
+        {
+          "acceptanceId": "D-04",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.route.vue",
+              "sha256": "d3328cf1105cf96d611174116ce9e4668bdc3fd2b256029b1d7e8170552ca7b1"
+            },
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-create-only.module.ts",
+              "sha256": "d5a0e028ee035418aec9db55cc1dd66001353a455ba5684659b129130f9e61cd"
+            }
+          ],
+          "note": "Both fixture files pass the workspace type-check."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-relation-source-freshness:candidate:reference:final-v2",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "candidate",
+      "kind": "reference",
+      "verificationStatus": "PASS",
+      "acceptanceIds": [
+        "E-01",
+        "E-02"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-relation-source-freshness/reference-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-relation-source-freshness/reference-focused.txt",
+            "sha256": "3b18afb95818347c1470c8c0473c47ddd922c200444e93f2c3aa415631c94c24"
+          },
+          "testSummary": "1 passed"
+        }
+      ],
+      "sourceReviewIds": [
+        "E-03"
+      ],
+      "notes": "Candidate reference passes the focused suite.",
+      "sourceReview": [
+        {
+          "acceptanceId": "E-03",
+          "status": "PASS",
+          "evidence": [
+            {
+              "path": "/Users/gamer/Documents/projects/carta/evals/carta-module-workflow/fixtures/loom/reference/loom-relation-source-freshness.module.ts",
+              "sha256": "1d8a8ed010e2443e10990f42ef3c4197f8e297e95f7d56d8dbc453791622029e"
+            }
+          ],
+          "note": "Picker uses categoryResource.key. Source review finds no private cache key or manual refresh coupling."
+        }
+      ]
+    },
+    {
+      "validationId": "loom-relation-source-freshness:baseline:reference:final-v2",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "baseline",
+      "kind": "reference",
+      "verificationStatus": "FRAMEWORK_BLOCKED",
+      "acceptanceIds": [
+        "E-01",
+        "E-02"
+      ],
+      "attempts": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "exitCode": 2,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-relation-source-freshness/reference-type-check.txt",
+            "sha256": "442c4f84ea4aa7e74657324a7b32ec33dd2950388f04839ef5d088308bf81ffb"
+          },
+          "diagnostic": "Baseline defineForm contract rejects props.resource for the relation picker."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-relation-source-freshness/reference-focused.txt",
+            "sha256": "a8b24a3cc29099f576383d34cd267d83d99f8e5254a54eb9569f6ecd1096b00e"
+          },
+          "diagnostic": "E-01 observed stale Support label; classify as baseline framework limitation, not worker error."
+        }
+      ],
+      "sourceReviewIds": [
+        "E-03"
+      ],
+      "notes": "Baseline does not support relation resource binding; this is a framework block. E-03 is source-only and is not a behavior result."
+    }
+  ],
+  "seededValidation": [
+    {
+      "validationId": "loom-dependent-selection:baseline:seeded-fail:final-v2",
+      "caseId": "loom-dependent-selection",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "missing dependent selection behavior",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-dependent-selection/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-dependent-selection/seed-focused.txt",
+            "sha256": "861b9171b1f2e2b57952b69734a97540fe96272ae6fafaa29dcb4f2acdd5cca7"
+          },
+          "testSummary": "A-01/A-02/A-03 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-dependent-selection:candidate:seeded-fail:final-v2",
+      "caseId": "loom-dependent-selection",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "missing dependent selection behavior",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-dependent-selection/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-dependent-selection/seed-focused.txt",
+            "sha256": "d4b1e7c6f56b98c98c53a0164ca337064abd0765fe856c6da797fcc9dccc6897"
+          },
+          "testSummary": "A-01/A-02/A-03 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-transformed-update:baseline:seeded-fail:final-v2",
+      "caseId": "loom-transformed-update",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "deliberate create.typo and uncompleted transformed update editor",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "exitCode": 2,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-transformed-update/seed-type-check-v2.txt",
+            "sha256": "05b7986fdef686c90639fe543eefa8ced89dfc7e79d23e23a390b1b28c75b2ea"
+          },
+          "diagnostic": "The declared create.typo and incomplete transformed update submit contract both produce type-check diagnostics; both are requested repairs."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-transformed-update/seed-focused-v2.txt",
+            "sha256": "e6fa2cd0dbe93f67fb1a6c53c8dac52866a160612126f71ffc853c7150b184a8"
+          },
+          "testSummary": "B-01 and combined B-02/B-03 failed as seeded; 2 assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-transformed-update:candidate:seeded-fail:final-v2",
+      "caseId": "loom-transformed-update",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "deliberate create.typo and uncompleted transformed update editor",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "FAIL",
+          "exitCode": 2,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-transformed-update/seed-type-check-v2.txt",
+            "sha256": "9a394385fd44185f02ed8e7c10660c0c7d0068ff5ea704e63dd28e0992dc6bb3"
+          },
+          "diagnostic": "The declared create.typo and incomplete transformed update submit contract both produce type-check diagnostics; both are requested repairs."
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-transformed-update/seed-focused-v2.txt",
+            "sha256": "2eb6ac41ebc4c03aded68df8fa2bf37079734c5da4f0c7031c062da70c9d960d"
+          },
+          "testSummary": "B-01 and combined B-02/B-03 failed as seeded; 2 assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-row-command:baseline:seeded-fail:final-v2",
+      "caseId": "loom-row-command",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "missing record-bound row-policy gate",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-row-command/seed-focused.txt",
+            "sha256": "7cc28b895f2565a8034c987788ba0dba221245ef7ae78f29c8ee556baac07f2c"
+          },
+          "testSummary": "C-01 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-row-command:candidate:seeded-fail:final-v2",
+      "caseId": "loom-row-command",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "missing record-bound row-policy gate",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-row-command/seed-focused.txt",
+            "sha256": "6e7ccb872cc702c6a9c181b98c44108acdfdeaf574bc3c00af0e9c6d3a84b902"
+          },
+          "testSummary": "C-01 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-create-only:baseline:seeded-fail:final-v2",
+      "caseId": "loom-create-only",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "invented list operation",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-create-only/seed-type-check-v2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/baseline/loom-create-only/seed-focused-v2.txt",
+            "sha256": "c1a67935283873474cd48ac91ffdfca2178202f7fe6009e7d3a74d36ed41711c"
+          },
+          "testSummary": "D-02 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-create-only:candidate:seeded-fail:final-v2",
+      "caseId": "loom-create-only",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "invented list operation",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/seed-type-check-v2.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-create-only/seed-focused-v2.txt",
+            "sha256": "7ae7f7e35721553fb72a9b96b9349d5a12a5795e463bd3576a5bed71eda89d85"
+          },
+          "testSummary": "D-02 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-relation-source-freshness:candidate:seeded-fail:final-v2",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "candidate",
+      "kind": "seeded-fail",
+      "verificationStatus": "PASS",
+      "expectedDefect": "unbound relation source cache",
+      "commands": [
+        {
+          "command": "pnpm --filter @southneuhof/framework-web type-check",
+          "status": "PASS",
+          "exitCode": 0,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-relation-source-freshness/seed-type-check.txt",
+            "sha256": "a79a6c31138221f8dbd5c23f0348f2eff9ff780b52853ac7ec7d8e8ccc62d389"
+          }
+        },
+        {
+          "command": "pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/loom-agent-eval.spec.ts",
+          "status": "FAIL",
+          "exitCode": 1,
+          "artifact": {
+            "path": "/tmp/plan066/final-validation/candidate/loom-relation-source-freshness/seed-focused.txt",
+            "sha256": "1e2ee0c4349a7888fc1d6befafa24e3d89cb459373604f673596d867b9f82679"
+          },
+          "testSummary": "E-01 failed as seeded; remaining assertions passed"
+        }
+      ],
+      "notes": "The seeded behavior failure is the intended evaluator check, not a worker result."
+    },
+    {
+      "validationId": "loom-relation-source-freshness:baseline:seeded-fail:final-v2",
+      "caseId": "loom-relation-source-freshness",
+      "variant": "baseline",
+      "kind": "seeded-fail",
+      "verificationStatus": "NOT_RUN",
+      "reason": "The baseline reference API does not type-check, so seeded-fail scoring would be confounded and is not applicable."
     }
   ]
 }

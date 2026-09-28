@@ -20,7 +20,7 @@ result helps agents. They do not authorize another framework rewrite.
 | [063](063-derive-renderer-types-from-runtime-roster.md) | Derive built-in component contracts from the runtime roster | P2 | M | MED | None | DONE — inferred roster and mutation probe pass; fixed incremental cross-package key recursion; Loom 468, browser 13, app types/bundle, architecture and whitespace gates pass; OpenClaw checks unavailable |
 | [064](064-report-resource-contract-errors-at-the-member.md) | Locate invalid resource members and relationships in real compiler diagnostics | P2 | L | MED | None; recommended after 061–063 | DONE — 11 Vue-aware cases pass, including one union-valued action; harness binds diagnostics to the invalid fixture; Types, Binder, unit, app, architecture, and CI gates pass; see plan evidence |
 | [065](065-separate-current-loom-contract-from-migration-history.md) | Keep one current contract and move migration history to a labelled archive | P3 | M | LOW | 073 | DONE — current guide and labelled archive published; open limits and compiled owners recorded in the inventory |
-| [066](066-evaluate-loom-agent-repair-work.md) | Prepare five agent tasks; capture baseline early and compare named candidate checkpoints | P3 | M + measured run cost | LOW | None for baseline; candidate declares completed repairs | KIT PARTLY VERIFIED / PILOT NOT RUN — case B type error corrected; acceptance checks and cases C–E remain unverified |
+| [066](066-evaluate-loom-agent-repair-work.md) | Prepare five agent tasks; capture baseline early and compare named candidate checkpoints | P3 | M + measured run cost | LOW | None for baseline; candidate declares completed repairs | KIT READY / PILOT BLOCKED — Codex CLI workspace-write does not isolate outside reads; no worker sessions started |
 | [067](067-make-filter-query-ownership-explicit.md) | Declare owned query keys and reverse draft mapping for filters | P1 | M | MED | None; before 069 | DONE — explicit contract, resource binding, 56 mounted view tests, architecture and app gates pass; see Plan 067 for evidence |
 | [068](068-enforce-one-data-source-in-surface-types.md) | Enforce exactly one data source in public TS and Vue contracts | P2 | M | MED | 064; before 069 | DONE — types, 11 resource + 8 TS + 8 Vue diagnostics, 57 core tests including mounted source updates for all four owners, app, architecture, and whitespace gates pass; see plan evidence |
 | [069](069-give-compact-form-contracts-one-owner.md) | Let form types own compact fields; let resources own binding | P2 | M | MED | 064, 067, 068 | DONE — one compact form projection supplies constructor, bound form, and filter types; cold Loom/app types, diagnostics, 478 Loom tests, app, architecture, and whitespace gates pass; OpenClaw/autoreview tools unavailable |
@@ -34,10 +34,13 @@ result helps agents. They do not authorize another framework rewrite.
 
 The source plans ran in this order: **073 → 065**, then
 **061 → 067 → 062 → 063 → 064 → 068 → 076 → 069 → 070 → 072 → 074 → 075 → 071**.
-Plan 066 began after the source work. Its case B reference now passes the
-candidate type-check, but reference preparation remains incomplete and no
-candidate evaluation ran. Numbers reflect the execution order; use full root
-paths because historical bundles reuse them.
+Plan 066 began after the source work. Its 2026-09-27 candidate capture was
+pre-final and its first pilot did not start. On 2026-09-29, the fixtures passed
+all applicable reference and seeded-defect checks and a fresh final-candidate
+capture including product work from Plans 061–065 and 067–076 was recorded. The local Codex CLI can read outside its worker directory,
+so the private grader is not isolated. Ten current run records are blocked before
+start; no agent-quality result exists. Numbers reflect the execution order; use
+full root paths because historical bundles reuse them.
 
 The user replaced the old source-tool repair with complete removal. Plan 073
 must not produce another source-writing system. It preserves independent evidence
@@ -53,11 +56,10 @@ blocking for 076: resource identity is forwarded once, and other records remain
 usable. Run edits to shared owners serially and reconcile earlier evidence
 instead of treating every unrelated change as a reason to restart discovery.
 
-Plan 066 measures observed authoring/repair work in five cases. The case B
-reference type mismatch was corrected after the plan's two-attempt stop. Other
-required case checks remain unverified. No worker ran and no agent improvement
-is established. This does not
-block the other plans.
+Plan 066 is ready for measurement, but its local pilot is blocked by read
+isolation. Its ledger separates both historical blocked records and the current
+harness block. No agent-quality comparison has run. This does not block the
+other plans.
 
 Each plan contains its own intent, current excerpts, scope, target decisions,
 ordered steps, commands, meaningful test cases, done criteria, and stop rules.

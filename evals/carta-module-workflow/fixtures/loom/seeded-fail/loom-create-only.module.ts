@@ -12,13 +12,14 @@ const createForm = defineForm({
 
 const requestRecordSchema = z.object({ id: z.string(), name: z.string() })
 const requestTable = defineTable({ schema: requestRecordSchema, columns: { id: {}, name: {} } })
+const noRequests: CreatedServiceRequest[] = []
 
 export const serviceRequestResource = defineResource({
   key: 'loom-eval-create-only',
-  identity: (record: Pick<CreatedServiceRequest, 'id'>) => record.id,
+  identity: (record: CreatedServiceRequest) => record.id,
   list: {
     permission: null,
-    table: { ...requestTable, load: async () => ({ data: [] }) },
+    table: { ...requestTable, load: async () => ({ data: noRequests }) },
   },
   create: {
     permission: null,
