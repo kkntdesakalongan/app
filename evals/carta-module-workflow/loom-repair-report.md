@@ -1,6 +1,6 @@
 # Plan 066 report
 
-Status: `KIT BLOCKED / PILOT NOT RUN`.
+Status: `KIT PARTLY VERIFIED / PILOT NOT RUN`.
 
 The kit defines five self-contained Loom authoring tasks, public starter and
 service fixtures, private reference and seeded-fail modules, focused evaluator
@@ -32,6 +32,12 @@ preparation attempts. The last diagnostic says the update form's `submit`
 parameter became `never` and failed Loom's update-output diagnostic. The plan's
 stop rule was reached. Cases C–E and all seeded-fail modules remain unverified.
 
+On 2026-09-28, the reference `submit` parameter was given the schema output
+type. The corrected reference passed the web type-check in the disposable
+candidate snapshot. That snapshot was restored after the check. The earlier
+failed attempts remain in the ledger. No case B acceptance or seeded-fail check
+was run, so the kit is still incomplete.
+
 ## Worker repair work and runtime limits
 
 No worker ran. There are no transcripts, worker artifacts, acceptance results,
@@ -50,9 +56,7 @@ was not saved as a separate artifact.
 
 ## Next bounded action
 
-Review the case B reference against the current `ResourceUpdateDeclaration`
-input/output types. Use one isolated candidate workspace and keep the two
-attempt limit. Run its type-check, focused acceptance test, and seeded declaration
-failure before starting any worker sessions. Then capture and hash the final
-candidate worktree before selecting a budget or starting workers. Do not change
-product source to make this evaluation fixture pass.
+Run the case B focused acceptance test and seeded declaration failure in an
+isolated workspace. Then validate cases C–E and capture the final candidate
+worktree and current fixture hashes before selecting a budget or starting
+workers. Do not change product source to make an evaluation fixture pass.

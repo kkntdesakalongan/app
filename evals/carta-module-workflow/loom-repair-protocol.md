@@ -1,6 +1,6 @@
 # Plan 066 comparison protocol
 
-Status: `KIT BLOCKED / PILOT NOT RUN`.
+Status: `KIT PARTLY VERIFIED / PILOT NOT RUN`.
 
 ## Source and instruction controls
 
@@ -57,6 +57,10 @@ fixture hash is
 files: `cases.json`, this evaluation's README and rubric, and `fixtures/loom/`.
 Hashes use SHA-256 over sorted relative paths, a NUL byte, each file-content
 SHA-256, and a newline.
+
+The case B reference fixture changed on 2026-09-28 to type its `submit` input.
+The fixture hash above identifies the earlier attempt. Capture a new fixture
+hash before any worker run.
 
 Both workspaces use the same lockfile, SHA-256
 `857c955c9546a64203d4ff3130e83ed68f8ff231c79df11313f460a5108d61f6`. Their

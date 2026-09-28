@@ -55,7 +55,7 @@ export const amountResource = defineResource({
         const record = await loadAmount({ id, searchParameters: {} })
         return record ? { displayName: record.displayName, amountText: displayAmount(record.amountMinor) } : undefined
       },
-      submit: (output) => saveAmount(id, output),
+      submit: (output: (typeof updateSchema)['_output']) => saveAmount(id, output),
     }),
   },
 })
