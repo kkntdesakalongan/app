@@ -6,8 +6,9 @@ description: Build or resume a Carta application module across data, API, resour
 # Carta module development
 
 Deliver the requested module through design, approval, planning, implementation,
-and review. Application owners are `apps/api` and `apps/web`. Framework edits
-and production, external, or destructive writes need explicit authorization.
+and review. Application owners are `apps/api` and `apps/web`. Author modules
+directly from current contracts and compiled examples. Framework edits and
+production, external, or destructive writes need explicit authorization.
 
 ## Workflow
 
@@ -48,7 +49,7 @@ choose routine technical details within approved scope.
 | Form or user input, including custom actions and uploads | `$build-resource-form` before control selection |
 | Resource declaration or surface types | [Current resource architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md) |
 | Draft, relation, date, or asset value shape | [Field contract](references/frontend-field-contract.md) |
-| Custom reads, submit overrides, or writes affecting other resources | [Query and mutation contract](references/web-query-cache.md) |
+| Transport, custom reads, or mutation completion | [Query and mutation contract](references/web-query-cache.md) |
 
 Module verification uses non-browser checks. Browser testing is a separate,
 explicitly requested task; follow the [verification boundary](references/verification-strategy.md#browser-journeys).

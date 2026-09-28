@@ -1,153 +1,97 @@
 ---
 name: build-resource-form
-description: Build or review Carta form values, validation, relation sources, dependent inputs, custom action inputs, custom fields, inline uploads, and child writes.
+description: Build or review Carta forms, including value conversion, relation sources, dependent inputs, custom controls, uploads, and child writes.
 ---
 
 # Build resource forms
 
-Read [DESIGN.md](../../../DESIGN.md) before selecting form layout or controls,
-including when this skill is used directly for a custom action.
-
+Read [DESIGN.md](../../../DESIGN.md) before selecting layout or controls.
 Apply [discovery reuse](../carta-module-development/SKILL.md#discovery-reuse).
-Trace the changed value through its API schema, resource and route; reuse
-current pattern decisions from the plan. Read the field contract in
-`packages/loom/README.md` when its shape is unresolved, and the built-in roster
-in `packages/loom/src/renderers/form.ts` when renderer registration is unclear.
-Use [web-ui-surfaces](../web-ui-surfaces/SKILL.md) for changed
-page composition and `docs/ui/forms.md` for an unresolved app form default.
+Trace each changed value from its control through schema parsing and the API,
+then back through display and edit loading.
 
-## Define the value contract
+## Define values
 
-Use raw schemas for record, query, create, and update operations. Export the
-schemas and inferred types from the module schema file. Do not add a resource
-schema wrapper. A form definition selects its own input keys with
-`defineForm({ schema, fields, ... })`. Keep custom action schemas separate
-from standard operation schemas.
+Use raw operation schemas and `defineForm` with selected input keys. Keep
+record, input draft, and parsed output distinct. Use a separate schema for a
+distinct custom action. Read the
+[field contract](../carta-module-development/references/frontend-field-contract.md)
+for draft mapping, defaults, relations, dates, or assets.
 
-For file/image fields in standard or custom actions, read the
-[asset-object contract](../carta-module-development/references/frontend-field-contract.md#asset-fields)
-before selecting the write schema. Use that contract to resolve an input mismatch.
+Account for each required write value: editable input, fixed context supplied
+through `initialData` or the operation closure, or server-owned data excluded
+from client schemas. Match conditional requiredness to the server rule,
+including retained values. Supply record and parent context explicitly;
+resource binding does not inject operation or permission context.
 
-Define form inputs, table columns, and detail fields independently with
-`defineForm`, `defineTable`, and `defineDetail`. Each map uses keys from its own
-schema. Reuse plain display fragments with object spread in the table and
-detail maps. A display fragment does not define an input. Use schema transforms
-for input-to-output conversion and display definitions for read-only values.
-
-For state-dependent inputs, supply the current record through form context.
-Match required state and submit validation to the server predicate, including
-previously retained values. Help text alone does not enforce a required input.
-
-Account for every required write value: user input, fixed parent context, or
-server-owned data. Show editable required fields. Supply fixed values through
-`initialData`; keep server-owned values out of client write schemas. Do not add
-hidden controls merely to satisfy a schema.
-
-Use an input `initialValue` factory only for a fresh omitted-key default. Use
-`initialData` for a fixed draft. Loaded values and explicit `false`, `null`, or
-empty values must win. The draft stores control values; the schema parses the
-draft before submit. A failed submit must preserve the draft.
+Use pure synchronous field behavior. `visible` controls presence and submission,
+`disabled` controls editing, and `derived` calculates a non-editable value.
+The schema must accept the intended result when hidden fields are omitted.
+Pass dependent query values through component `searchParameters`; let the
+control own selection validity.
 
 ## Select controls
 
-Custom business operations use the same framework forms and controls as CRUD.
-Give the operation its own schema and action; let the form own input, validation
-and pending state. Use local UI code only for a named requirement that registered
-renderers and existing composites cannot meet. Record that gap in the existing
-work record before implementing the exception.
+Use framework forms for CRUD and custom actions. Read
+[field choices](references/form-field-types.md) before selecting a new control.
+Components own props and emitted values; schemas own domain conversion. Declare
+a renderer for every input. For a separate prop object, use
+`satisfies FormRendererProps<'renderer-key'>` from
+`@southneuhof/loom/renderers/formContracts`. Keep supported native attributes
+flat in that prop bag.
 
-Read [field choices](references/form-field-types.md) when selecting a new control
-or resolving a value mismatch.
-Use the registered renderer, then an existing composite. Use `table`/`TableInput`
-for form-owned row arrays. If those cannot express one domain value, use the
-[custom field contract](references/custom-field-contract.md).
-
-The outer form owns label, required state, error, help, and grid span.
-
-Use `defineForm` to infer its selected input keys and renderer props. For a
-separate prop object, use `satisfies FormRendererProps<'renderer-key'>` from
-`@southneuhof/loom/renderers/formContracts`. The prop bag follows the selected
-component's public API. Component-required props stay required, unsupported
-props and misspellings fail type checking, and supported native attributes stay
-flat in the same bag. Form supplies schema-derived requiredness to the control.
-Runtime data still needs normal validation.
-
-Apply the [framework-first composition rule](../web-ui-surfaces/SKILL.md#framework-first-composition)
-once per form pattern. Select the form surface from
-[DESIGN.md](../../../DESIGN.md#actions-and-forms).
-Pass the standard action bag directly. Use a `DialogForm` trigger slot without
-`v-model:open` for ordinary contextual forms, and render one keyed form per
-record action. Let the form own draft, validation, pending state, visibility,
-and completion. Use controlled visibility only when another page control must
-coordinate it. Read [the dialog form contract](../../../docs/ui/forms.md#dialog-forms)
-for that advanced path.
-
-For a custom submit, trace write success, form completion and data refresh in
-order. Start later refresh work from `submitted`; keep it separate from the
-write so refresh rejection reports stale data and does not retry the write.
-Use the supported loading and invalidation path from
-the [query-cache contract](../carta-module-development/references/web-query-cache.md).
-Report a failed write separately from a failed refresh after a successful write.
+Use `table`/`TableInput` for form-owned row arrays. Use the
+[custom field contract](references/custom-field-contract.md) only when registered
+controls and existing composites cannot express the required value. The outer
+form owns label, required state, error, help, and grid span.
 
 ## Configure relation sources
 
-For each new or changed relation, use the
-[display and form pattern](../web-ui-surfaces/references/fields.md).
-Complete its API display data and list/detail projection with the form, rather
-than leaving display work for a later assignment.
+Complete the relation's [display data](../web-ui-surfaces/references/fields.md)
+with its input. Read [backend form contract](references/backend-form-contract.md)
+when source or write behavior changes.
 
-Pass each loader in the selected component's `props`. SelectInput,
-RadioGroupInput, and CheckboxGroupInput use the owner's `resource` beside its
-`load` and `namespace`. For example, pass `roles.list.table.resource`,
-`roles.list.table.load`, and `roles.list.table.namespace`. The resource owns
-option invalidation; the namespace identifies the query instance. A standalone
-loader can omit `resource`. Lookup also uses
-`loadDetail(context)` and its own table definition. Use component `data` props
-for static choices. Pass filters through `searchParameters`; the owner endpoint
-owns their contract. Declare a renderer for every authored input. The schema
-does not create choices or select a renderer.
-
-For parent-dependent options, pass the parent value through the option
-component's canonical props. The component owns selection validity:
+Pass loaders in component `props`. For resource-backed SelectInput,
+RadioGroupInput, and CheckboxGroupInput, pass the owner together with the loader:
 
 ```ts
-behavior: {
-  disabled: ({ draft }) => !draft.divisionId,
-  props: ({ draft }) => ({ searchParameters: { divisionId: draft.divisionId } }),
-},
+props: {
+  resource: roles.list.table.resource,
+  load: roles.list.table.load,
+  namespace: roles.list.table.namespace,
+}
 ```
 
-Use pure synchronous behavior. `visible` controls field presence and submission;
-`disabled` controls editing; `derived` calculates a non-editable value. Hidden
-fields are omitted, so the schema and server must agree on conditional values.
+`resource` owns invalidation; `namespace` identifies the query instance. A
+standalone loader can omit `resource`; static choices use `data`. Lookup uses
+its own table and `loadDetail(context)` for selected-record hydration. Match
+the loader to the picked key, which may differ from the resource identity.
 
-Pass stable screen information through the form's explicit context. Resource
-operations do not add `context.operation` or `context.permission`. Bind parent
-IDs and workflow data deliberately. A query parameter does not grant authority;
-the server checks each write.
+Accept the selected control's model in the raw schema. Multi-choice inputs can
+emit record objects; transform them only when the operation needs identities.
+A filtered source does not authorize a write; the server checks membership,
+state, and actor access.
 
-Match multi-selection values to the raw form schema. Multi-choice controls can
-emit selected record objects; accept that input shape or transform it in the
-raw schema when the operation takes identities. The `users` form shows this
-contract for role selections.
+## Connect the operation
 
-## Connect writes
+Apply [framework-first composition](../web-ui-surfaces/SKILL.md#framework-first-composition).
+Pass the operation bag to `FormView`; pass its `.form` to `Form` or
+`DialogForm`. For ordinary contextual forms, use a `DialogForm` trigger slot
+and one keyed form per record action. Let the form
+own draft, validation, pending state, and completion. Use controlled visibility
+only when another control must coordinate it; read
+[dialog forms](../../../docs/ui/forms.md#dialog-forms) for that path.
 
-Read [backend form contract](references/backend-form-contract.md) when a source
-or write contract changes. Use a custom action for a distinct domain operation,
-not another options endpoint. Give it only its actual input fields. Keep state
-checks and atomic parent/child writes on the server. A child with independent
-screens or permissions needs its own resource; a row owned by one form does not.
-
-Continue authorized implementation choices. Ask only for a missing decision
-that changes business behavior, access, or transaction semantics. A framework
-package change needs explicit scope; a supported local custom field does not.
+For custom submission or completion, read the
+[query and mutation contract](../carta-module-development/references/web-query-cache.md#submit-overrides-and-failures).
+Preserve the operation guard, invalidation, and post-write outcome. Keep coupled
+parent/child writes atomic on the server. Give a child its own resource only
+when it has independent screens or permissions.
 
 ## Verify
 
-Use [UI verification](../web-ui-surfaces/references/verification.md). Select a
-check that can fail on the changed value or interaction: dependency reset,
-selected-record hydration, conditional submit, row edit, or failed-save recovery.
-Check server rejection of a forged relation when the write boundary changes.
-Do not add tests that merely copy field order, labels, renderer names, or action
-objects. Reuse existing evidence for unchanged framework behavior.
+Use [UI verification](../web-ui-surfaces/references/verification.md). Test the
+changed application rule or coordination through its real schema and owners.
+Reuse framework proof for unchanged controls; configuration copies do not
+prove behavior. Check server rejection of forged relations when that boundary
+changes.

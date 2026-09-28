@@ -6,12 +6,8 @@ this reference covers the web/API connection.
 
 ## Standard transport
 
-For a standard list, bind its raw Collection query schema to the existing
-adapter: `createHonoResourceActions(rpc.<owner>, { querySchema })`. The adapter
-owns query validation and encoding, identity, cancellation, and response
-normalization. Bind its list loader directly to the resource table. Check the
-typed route shape in `apps/web/src/framework/hono` before changing an endpoint.
-Do not add another data adapter argument or hand-written CRUD transport.
+Use the [transport contract](../../carta-module-development/references/web-query-cache.md#reads-and-queries)
+for selected operations and query ownership. Keep endpoint calls in app actions.
 
 Expose only the actions the app needs. A read schema includes the labels and
 relations required by the screen. Write schemas exclude server-owned values.
@@ -47,9 +43,9 @@ a direct call to a mocked action cannot prove this boundary.
 
 Keep a multi-row operation atomic when partial success would violate the task.
 Use a distinct custom action schema when input, permission, or state transition
-differs from CRUD. After success, the route refreshes affected data through the
-resource cache contract. Preserve the distinction between a failed write and a
-successful write whose refresh failed.
+differs from CRUD. Use the
+[mutation contract](../../carta-module-development/references/web-query-cache.md#writes-and-invalidation)
+for completion and refresh.
 
 Choose backend checks from the shared
 [verification strategy](../../carta-module-development/references/verification-strategy.md).

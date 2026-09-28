@@ -1,128 +1,83 @@
 ---
 name: carta-module-plan
-description: Turn an approved Carta module design into implementation plans, or reconcile existing plans with a revised design and repository.
+description: Turn an approved Carta module design into implementation plans, or reconcile plans with a revised design and repository.
 ---
 
 # Carta module plan
 
-Translate an approved module contract into repository-grounded implementation
-plans. Record intent, affected owners, scope, steps, checks and completion.
-This skill plans the selected behavior; it does not run a general audit, choose
-new product scope, or implement source changes.
+Translate approved behavior into owners, work order, setup, and checks. This
+skill produces plans; it does not implement source changes or expand scope.
 
-## Confirm authority and current context
+## Confirm the starting point
 
-Start with the [standard module base](../carta-module-development/references/standard-module.md),
-including custom workflows added to it.
-Add exact owners, work order, setup and suitable checks to the existing work
-record. Confirm that the standard design approval gate records the user's
-approval of this exact revision. If it does not, return to `$carta-module-design`,
-present the design and stop for approval before planning. On the standard
-execution path, keep the plan in the design record without creating numbered
-plans or a worksheet. A plan-only request stops there.
-Use the remaining procedure only for the full execution path or an existing full
-plan. A custom action alone does not require it. Include workflow restrictions
-on standard actions in the first result; keep later workflow work explicit.
+Read the request, decisions, design, and approval source. Apply the
+[standard module base](../carta-module-development/references/standard-module.md)
+for process selection and the design approval gate. If approval is missing,
+return to `$carta-module-design`. Keep existing records that meet the
+[module contract](../carta-module-design/references/module-contract.md).
 
-Read the design and its approval source. Use the shared
-[module contract](../carta-module-design/references/module-contract.md) to assess
-readiness without requiring a rewrite into a particular layout. Keep an
-existing plan that already meets the same bar.
+On the standard path, put the plan in the existing design record. On the full
+path, use [plan-template.md](references/plan-template.md) and the
+[worksheet](../carta-module-development/references/module-execution-worksheet.md).
+Preserve numbering on resume. A custom action alone does not require full process.
+
+## Resolve implementation ownership
 
 Apply [discovery reuse](../carta-module-development/SKILL.md#discovery-reuse).
-Inspect the required owners and consumers, relevant layer contracts,
-and current package scripts/configuration. Record an existing exemplar for
-non-obvious patterns. Separate observed repository facts from proposed technical
-changes. Module delivery uses non-browser Vitest, type checking and linting; select
-appropriate checks rather than asking the user to choose a testing stack.
-Resolve exact commands from this checkout and distinguish script inspection
-from a successful execution.
+For each requested action, name its owner, supported path or framework gap,
+and suitable check. Record one exact source example for each non-obvious
+pattern. Use current contracts and compiled app examples; implementation plans
+and migration history do not define the shipped API.
 
-Technical discovery ends when each requested action has an exact owner, a
-supported implementation path or named gap, and a suitable check. Record each
-pattern decision with an exact source pointer once in the owners table.
+- For API work, use `$api-conventions`. Name method exports, URL parameters,
+  inherited scope, transaction boundaries, and affected SDK consumers.
+- For web work, use `$web-ui-surfaces` and `$build-resource-form` for inputs.
+  Read [DESIGN.md](../../../DESIGN.md) and the
+  [resource architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md)
+  before selecting composition. Map each action to its entry point, inputs,
+  access/state conditions, and visible result.
+- Select operations independently. Name the data needed by each surface without
+  inventing a visible detail page, list endpoint, or query schema for another
+  operation. Assign one owner to loading, query validation, and mutation completion.
+- For route changes, follow the
+  [file-routing contract](../web-ui-surfaces/references/file-routing.md). Name
+  the rendered parent chain, entry policy, and Back targets. Preserve existing
+  URLs and names unless the approved change includes them.
 
-For backend routes, read the
-[file-routing contract](../api-conventions/references/file-routing.md). Name the
-method exports, URL parameters, inherited scopes, and affected SDK consumers.
-Keep database domains separate from HTTP routing.
+Reference design predicates instead of copying them. Choose routine storage,
+API symbols, and file placement within approved behavior. Return only missing
+business policy, scope conflicts, or new write authority to the decision owner;
+state which observable outcome depends on the answer.
 
-For web work, apply `$web-ui-surfaces` and, for forms, `$build-resource-form`.
-Read [DESIGN.md](../../../DESIGN.md) before selecting the UI structure and the
-[resource architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md)
-before planning resource changes. Link applicable sections in the existing
-plan; record only required exceptions.
-Select supported interaction patterns before choosing custom routes or controls.
-Map each required UI action to its entry point, inputs, access/state conditions
-and visible result in the plan's existing owner rows. Reference the design's
-predicates rather than copying them. Reuse pattern choices across actions; record
-only actual framework gaps as exceptions.
+## Order delivery and proof
 
-For web route changes, read the
-[file-routing convention](../web-ui-surfaces/references/file-routing.md). Map
-the required visible parent chain to route files and page Back targets. Preserve
-existing URLs and names unless the approved change includes them. Treat file
-placement within settled behavior as a technical decision.
+Use the [execution rules](../carta-module-development/references/execution.md)
+for prerequisites, the first complete result, and development preview setup.
+Include workflow restrictions on standard actions in that first result. Test
+setup does not replace development migrations, required seed, or preview.
+Record selected capabilities and preflight results, or exact blockers.
 
-If planning exposes a missing business rule or a conflict with approved intent,
-return that specific issue to `$carta-module-design`. Preserve unaffected work.
-Make ordinary technical decisions within the design's delegated scope. A missing
-implementation owner is work to plan, not itself a product blocker. Choose local
-storage, symbols, permission-code spelling and transaction mechanics when behavior
-is settled. Ask the decision owner only for missing business policy or authority;
-name the observable outcome that the answer changes. Storage representation is
-technical; who may create/read records or receive a grant is business policy.
-An absent source of project assignments cannot be replaced by test fixtures and
-called a complete application workflow.
-
-## Organize the work
-
-Put environment preparation first. Record selected capabilities and the
-`module:preflight` result in the plan's environment row. Use existing setup within
-task authority. Name any blocked check and its missing prerequisite.
-Include development migration, required seed and preview under the
-[execution setup rule](../carta-module-development/references/execution.md#prepare-and-build);
-test setup does not replace them.
-
-Select the first result under the
-[assignment rule](../carta-module-development/references/execution.md#assignment).
-Use the worksheet's plan dependency rule to separate plans from assignments.
-
-Use [plan-template.md](references/plan-template.md) for numbered plans at
-`plans/<feature>/001-<result>.md`. Preserve existing numbering on resume. The
-complete handoff is the design, worksheet, selected plans and referenced source,
-not a transcript or repeated copy of the design in each file.
-
-Use the [worksheet contract](../carta-module-development/references/module-execution-worksheet.md)
-for the dependency/status index and acceptance ownership. Map every acceptance
-ID to a primary plan and its required evidence surfaces there. Keep acceptance
-test mappings only in the worksheet. Exclude E2E work and browser
-journey mappings, including on resume. Exact tests can remain `PENDING`
-until the executor returns them for the parent to merge. Use
+Resolve commands and working directories from the checkout. Distinguish an
+inspected command from a successful run. Use the
 [verification strategy](../carta-module-development/references/verification-strategy.md)
-to select the smallest sufficient tests and broader checks justified by impact.
+for non-browser checks and required outcomes. Leave test names, fixtures, and
+routine implementation details to the executor.
 
-State affected owners, intended changes, required interfaces, transaction
-boundaries and test strategy. Resolve commands and working directories from the
-checkout; let the executor add selectors for new tests. Name one exemplar file
-per layer with its path and symbol in the owners table. Specify critical expected
-outcomes; let the executor choose test names, fixtures and routine code details.
-Include code excerpts only to explain a fragile interface.
+For full-process work, the worksheet owns acceptance-to-plan and test mappings;
+plans own technical steps. Apply its dependency rules when defining assignments.
+Keep exact new tests `PENDING` until implementation supplies them. Record UI
+composition under the web skill's UI contract rule.
 
 ## Review and hand off
 
-Check complete acceptance coverage, dependency order, actual paths and commands,
-write boundaries, and design revision. Check the plan as a fresh implementer:
-it must resolve what to change and how to prove it without another product
-decision. Commands with unknown setup requirements stay visibly blocked.
+The plan is ready when every requested outcome has an owner, dependency order,
+and sufficient check, with no unresolved product decision. Verify actual paths,
+interfaces, commands, setup, and write boundaries. Link unchanged design rules.
 
-Record source drift with commit and relevant input fingerprints, including dirty
-and untracked work. On resume, reconcile actual changes; routine approved
-implementation is not itself a new design conflict. Refresh technical details
-when behavior is unchanged. Escalate only material scope, interface or authority
-changes.
+Record the source revision and relevant dirty/untracked inputs. On resume,
+reconcile changed owners and refresh affected technical decisions; preserve
+valid approval and evidence. Return the work-record paths, approved revision,
+execution order, coverage, and blockers.
 
-Return the plan/index paths, approved design revision, execution order, coverage
-and blockers. A planning-only request ends here. For a module whose exact design
-revision passed the approval gate, return to `$carta-module-development`.
-New material decisions and additional write authority require user approval.
+A plan-only request ends here. For authorized delivery, return to
+`$carta-module-development`.

@@ -1,100 +1,57 @@
 ---
 name: web-ui-surfaces
-description: Build or review Carta web pages, nested file routes, app navigation, collections, record details, and workflow controls.
+description: Build or review Carta web pages, resources, file routes, navigation, and workflow controls.
 ---
 
 # Web UI surfaces
 
 Read [DESIGN.md](../../../DESIGN.md) before selecting page structure or controls.
-It owns app layout and display conventions, including custom action pages.
+Read the [resource architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md)
+before changing resource declarations. Author modules directly against the current
+contract; use the architecture's compiled examples for unresolved API details.
 
-## Find the current boundary
+## Find the owner
 
 Apply [discovery reuse](../carta-module-development/SKILL.md#discovery-reuse).
-Start with the changed route/resource or generated source and the applicable
-reference below. Reuse the plan's verified adapter and component choices.
-Inspect an export or one nearby example only for an unresolved contract.
-Before writing each new interaction pattern, identify its View or form, input
-renderers, display renderers, value contract, action owner, and visible parent.
-For custom reads or writes, read the
-[query-cache contract](../carta-module-development/references/web-query-cache.md).
-Identify the loading owner and every data consumer affected by a write.
-Read [Fields](references/fields.md) for every resource display and
-[File routing](references/file-routing.md) for every child section.
-Discovery is complete when each visible field names its table value and its detail value,
-and each interaction has supported configuration, route placement, loading and
-refresh ownership, or a named framework gap. Keep these
-decisions in the existing work record and reuse them for matching interactions.
+For each changed interaction, identify its surface, value shape, operation,
+loading owner, affected data, and visible parent. Record only decisions and
+unsupported requirements in the existing work record.
 
-Read `docs/architecture/web-application-architecture.md` when ownership or app
-integration is unclear. Read
-`docs/resource_system_overhaul/ARCHITECTURE.md` before changing resource
-declarations or their type boundaries. Use `docs/ui/README.md` for technical UI
-references.
-Inspect `apps/web/src/main.ts`, app defaults or the authenticated layout only
-when changing their setup or resolving a registration/default problem. Read
-the navigation manifest when adding an entry. Keep framework changes within scope.
+| Work | Read |
+|---|---|
+| App shell or navigation entry | [App conventions](references/app-conventions.md) |
+| Routes, tabs, parent pages, or Back | [File routing](references/file-routing.md) |
+| Resource operations, collections, filters, or actions | [Surfaces](references/surfaces.md) |
+| Workflow detail or related records | [Detail layout](references/detail-layout.md) |
+| Display values or relation labels | [Fields](references/fields.md) |
+| User input, including custom actions and uploads | [$build-resource-form](../build-resource-form/SKILL.md), before control selection |
+| Transport, custom loading, submit overrides, or refresh | [Query and mutation contract](../carta-module-development/references/web-query-cache.md) |
+
+Read `docs/architecture/web-application-architecture.md` for unresolved app
+ownership and `docs/ui/README.md` for component guidance. Inspect app setup only
+when changing registration, defaults, or layout.
 
 ## Framework-first composition
 
-Use established framework patterns directly. Select the highest-level component
-that supports the required interaction, including its states and feedback.
-Before adding custom UI behavior, check the relevant component contract and
-extension points. Use supported slots, fields, actions and framework controls;
-keep custom code limited to the unmet requirement.
+Select the highest-level component that supports the required interaction and
+its states: standard View/action, supported slot or adjacent section, then a
+lower-level framework component. Add local code only for a named unmet requirement.
+Apply [action placement](../../../DESIGN.md#actions-and-forms) before copying an example.
+Import template components or verify their runtime registration.
 
-Select in order: standard View/action, supported slot or adjacent section,
-lower-level framework component, then local code for a named unmet requirement.
-Apply [action placement](../../../DESIGN.md#actions-and-forms). Check existing
-examples against the design rules before reusing their composition.
-Import template components or identify their runtime registration; a test stub
-or type declaration does not register a component.
+Bind complete resource bags to standard Views. Extract a nested primitive bag
+when only that primitive is needed. Keep page navigation and completion with
+the route or View; keep transport in app actions. A wrapper or separate actions
+file is useful only when it owns behavior.
 
-Check composition once per interaction pattern. Standard work records only a
-real deviation in its work document; it needs no UI JSON. Use the
-[UI contract](references/ui-contract.md) for full-process work, an existing
-contract or custom composition that needs static checking. Review deviations
-against the required result, not merely whether a slot supports them.
-
-## Choose and build
-
-| Work | Read |
-| --- | --- |
-| New page, app shell, navigation, visual hierarchy, responsive layout | [App conventions](references/app-conventions.md) |
-| File routes, navigation entries, nested parents, tabs, Back, route lifecycle | [File routing](references/file-routing.md) |
-| Lists, cards, filters, actions, dialogs | [Surfaces](references/surfaces.md) |
-| Workflow detail, history, related records | [Detail layout](references/detail-layout.md) |
-| Value contract for any new or changed relation, display field, or label | [Fields](references/fields.md) |
-| Any user input, including custom actions and inline uploads; read before selecting controls | [Build resource forms](../build-resource-form/SKILL.md) |
-
-Routes own URLs, query state, navigation, dialogs, and workflow feedback.
-Schemas own data validation. A resource binds independent form, table, and
-detail definitions to standard operations. Its list and create bags are static;
-detail and update bags bind an identity:
-
-```vue
-<ListView v-bind="records.list" />
-<DetailView v-bind="records.detail({ id })" />
-<FormView v-bind="records.create" />
-<FormView v-bind="records.update({ id })" />
-```
-
-For a standard list, bind its module query schema to the Hono adapter:
-
-```ts
-const api = createHonoResourceActions(rpc['records'], { querySchema: recordsQuerySchema })
-```
-
-The adapter validates and encodes collection queries and normalizes responses.
-Resource tables bind `load: api.list` without another `querySchema`. Keep custom
-transport in app actions. For custom resource actions, use the [action
-contract](references/surfaces.md#custom-resource-actions). Routes do not call
-raw RPC endpoints.
-A file or wrapper earns its place when it owns behavior; simple standard
-resources can call the adapter directly without a separate actions file.
+Use the [UI contract](references/ui-contract.md) for full-process work, an
+existing contract, or custom composition that needs static checking. Standard
+work needs no new UI JSON. Review exceptions against the required behavior.
 
 ## Check the result
 
-Use [verification](references/verification.md). Report visible behavior checked,
-failed checks, and any unverified result. Reuse the parent module's evidence;
-do not start a second verification process.
+Resolve declaration errors at the named member or input/output relationship.
+Preserve inference instead of casting away a contract mismatch.
+
+Use [verification](references/verification.md). Reuse the module's evidence and
+report failed checks and unverified behavior.

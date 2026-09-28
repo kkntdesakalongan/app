@@ -83,6 +83,19 @@ File ancestry does not grant access or prove API scope. Keep route guards,
 resource access, and API checks. Router code in `apps/web` is project-owned;
 a change in Carta upstream does not migrate another application.
 
+## Route access
+
+Resource routes use the registered resource key, actual operation, and all
+static entry permissions. Declare a permission string or `null` on standard
+operations. `null` removes the permission-code requirement, not other access
+rules. Use `meta.permission` for routes without a resource registration.
+
+A routed custom command with a permission callback needs a separate static
+`routePermission` string, nonempty list, or `null`. Choose it from the product's
+entry policy. Route entry has no business arguments or loaded row; execution
+still checks the callback and bound row policy. Static commands use their
+`permission` directly. Keep API authorization independent of both checks.
+
 ## Verify changed behavior
 
 Review generated URLs, names, parameters, parent outlets, tab targets and scoped

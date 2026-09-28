@@ -93,8 +93,7 @@ for 201. Use a `Response` for a real HTTP requirement such as redirect or stream
 Use Sprindle errors and their field issues; keep internal error details private.
 
 Use `after` only to change the complete HTTP response. Record decoration belongs
-before the envelope. Add a comment only when a custom contract's reason is not
-clear from its implementation.
+before the envelope.
 
 ## Delete and migration
 

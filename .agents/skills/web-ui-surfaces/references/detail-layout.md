@@ -9,17 +9,9 @@ child routes, tabs, or Back behavior.
 
 ## Loading and updates
 
-Start from `resource.detail({ id })`. For a custom loader, pass the returned
-namespace, identity, search parameters, and run function to `recordKey` and
-`useLoader`. Preserve inferred record types. Keep identity and cache context
-reactive if the router reuses the component for another record.
-
-Standard writes invalidate their resource. After a custom write, await the
-resource invalidation described in the shared
-[cache contract](../../carta-module-development/references/web-query-cache.md).
-Check whether the active custom loader needs an explicit refresh. Do not add
-both broad and record invalidation without checking what each already covers.
-Refresh related resources only when their displayed data changed.
+Start from `resource.detail({ id })`. For custom loading or refresh, use the
+[query and mutation contract](../../carta-module-development/references/web-query-cache.md).
+Keep identity and query context reactive when the page can remain mounted.
 
 ## Actions
 
