@@ -17,7 +17,7 @@
 
 ## Intent
 
-Users, roles, permissions, and generated modules should not each implement the same collection-to-HTTP spelling conversion. The frontend component query remains canonical inside Loom. The existing Hono adapter owns validation and encoding into the unchanged endpoint protocol. This is an explicit transport boundary, not a form prop converter.
+Users, roles, permissions, and current app modules should not each implement the same collection-to-HTTP spelling conversion. The frontend component query remains canonical inside Loom. The existing Hono adapter owns validation and encoding into the unchanged endpoint protocol. This is an explicit transport boundary, not a form prop converter.
 
 ## Current state and evidence
 
@@ -106,8 +106,8 @@ Modify these owners, their callers reached through the named contract, and their
 - `apps/web/src/routes/(authenticated)/settings/{users,roles,permissions}/*.{actions,schema,resource}.ts and tests`
 - `apps/web/src/routes/(authenticated)/settings/resource-list-query.spec.ts`
 - `Other actual createHonoResourceActions callers and their query schema bindings`
-- `scripts/scaffold-bounded-module.mjs, scripts/test-support/bounded-fixture.mjs, generator tests and generated type fixtures`
-- `docs/architecture/web-application-architecture.md and active Hono/resource generator guidance`
+- Current application resource and type fixtures; direct authoring keeps query schemas with their app owners.
+- `docs/architecture/web-application-architecture.md and active Hono/resource module guidance`
 
 Out of scope: Backend/API/SDK protocol changes, unrelated Hono endpoint wrappers, introducing a second resource constructor, component query aliases, generic frontend schema converters, and weakening filter/sort types.
 
@@ -130,7 +130,7 @@ Use installed package-local tools pinned by `package.json` and the lockfile. Rec
 | Web types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 without boundary suppressions. |
 | Web behavior | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test` | Exit 0 on this Node 26 checkout. |
 | Architecture | `pnpm test:surface-architecture` | Exit 0; no acceptance allowlist for removed executable paths. |
-| Tooling | `pnpm test:module-tooling` | Exit 0 when callers, generators, docs fixtures, or checkers change. |
+| Tooling | `pnpm test:module-tooling` | Exit 0 when callers, active examples, or checks change. |
 | Final workspace | `pnpm type-check && NODE_OPTIONS=--no-experimental-webstorage pnpm test && pnpm lint && pnpm build` | Exit 0 on this Node 26 checkout after the coordinated implementation. |
 
 ## Steps
@@ -139,7 +139,7 @@ Use installed package-local tools pinned by `package.json` and the lockfile. Rec
 
 Capture the requests produced by the three current action adapters. Cover ascending/descending/no sort, page/limit, search, empty values, false/zero filters, arrays, nested filter objects, contextual searchParameters, and cancellation. Record accepted endpoint-specific sort keys. Use the real serializer and response envelope normalization; stub only the HTTP endpoint.
 
-**Verify:** Web behavior and Web types; current request controls pass. Add a generated-module check demonstrating the duplicated wrapper before replacing it.
+**Verify:** Web behavior and Web types; current request controls pass. The existing app-resource tests show the duplicated wrapper before this change.
 
 ### 2. Make the existing Hono factory own collection query validation and encoding
 
@@ -172,19 +172,25 @@ Move common pagination/search/direction field schemas into `framework/hono/colle
 
 Remove the redundant wire-query schema and action wrapper from users/roles/permissions. Move the relevant compile-time endpoint check into createHonoResourceActions. Remove the obsolete checkedHonoQuerySchema export after migrating all real callers; leave checked record/create/update schema helpers outside this plan unless the boundary work proves them redundant separately.
 
-Resource list bags bind `load: usersActions.list` without also supplying that same querySchema to Table. The adapter already validates it, including when extracted directly; installing the same parser twice would repeat declared transformations. Table's querySchema capability remains for standalone loaders whose query validity Table explicitly owns. The standard Hono-generated path has exactly one parser in the adapter and does not add runtime markers or inspect loaders to discover their implementation.
+Resource list bags bind `load: usersActions.list` without also supplying that same querySchema to Table. The adapter already validates it, including when extracted directly; installing the same parser twice would repeat declared transformations. Table's querySchema capability remains for standalone loaders whose query validity Table explicitly owns. The standard Hono adapter path has exactly one parser and does not add runtime markers or inspect loaders to discover their implementation.
 
 **Verify:** Web behavior/types, Unit, Architecture and Tooling; query transformation counters equal one per call. Existing Table standalone query validation tests remain valid; resource extraction does not bypass the Hono query schema.
 
-### 4. Migrate generators and remove module-local conversion
+### 4. Keep query conversion with app-owned resources
 
-Emit the single raw UI query schema, canonical Hono factory call and direct list binding in generated modules. Keep update-only endpoint adapters explicit; do not fabricate visible detail operations. Update schema-import/query contract fixtures and the active resource example from actual generated output.
+Current app modules bind one raw UI query schema to the canonical Hono adapter
+and list loader. Keep update-only endpoint adapters explicit; do not fabricate
+visible detail operations. Keep the active resource example grounded in the
+application source.
 
-**Verify:** Tooling, Architecture, both type gates and final workspace gates. Fresh generated modules compile; users/roles/permissions contain no handwritten `{ sort_by, sort, ...query }` conversion or alternate wire-query schema. HTTP request assertions still match the original endpoint protocol.
+**Verify:** Tooling, Architecture, both type gates and final workspace gates.
+Users/roles/permissions contain no handwritten `{ sort_by, sort, ...query }`
+conversion or alternate wire-query schema. HTTP request assertions still match
+the original endpoint protocol.
 
 ## Test plan
 
-Extend Hono actions.spec.ts with exact request objects, signal identity, runtime parsing, invalid-sort rejection, direct source-loader calls, and one-transform counters. Test shared query fragments with module-specific filters and sort restrictions. Use existing scaffold fixtures to compile the actual new generated schema/action/resource trio rather than an unrelated hand-authored example.
+Extend Hono actions.spec.ts with exact request objects, signal identity, runtime parsing, invalid-sort rejection, direct source-loader calls, and one-transform counters. Test shared query fragments with module-specific filters and sort restrictions. Use existing app resource fixtures with their real schema/action/resource owners.
 
 ## Done criteria
 
@@ -192,7 +198,7 @@ Extend Hono actions.spec.ts with exact request objects, signal identity, runtime
 - [ ] Each module authors one frontend query schema; query parsing occurs once on the standard Hono path.
 - [ ] Direct resource loaders satisfy component-native contexts and retain cancellation/access behavior.
 - [ ] Endpoint-specific sort/filter checks remain; backend requests and envelopes are unchanged.
-- [ ] Generators no longer reproduce a query codec in each module.
+- [ ] Current app modules no longer reproduce a query codec.
 - [ ] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
 - [ ] Only scoped owners, dependent callers, tests, current documentation, and plan status changed; review `git diff --check` and `git diff --stat`.
 - [ ] No compatibility alias, fallback to a removed contract, public `any` facade, or type-suppression escape was added.

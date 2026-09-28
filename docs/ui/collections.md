@@ -47,6 +47,32 @@ ListView synchronizes filter inputs from the current query. Search and
 successful filter changes reset the page once. Clearing a filter removes its
 query keys. A stale or invalid filter result does not load records.
 
+Each filter declares all query keys it can set or clear in `queryKeys`, and a
+`toDraft` mapper from raw query values to form values. The mapper must check
+values from the URL; it cannot assume that the query has passed through the
+table schema. ListView preserves unowned values and rejects parsed output keys
+that are missing from `queryKeys`. Do not include `page`; ListView resets it.
+
+For a filter whose draft uses `selection` and whose query uses `status`, write
+both directions:
+
+~~~ts
+import { z } from 'zod'
+import type { ListFilters, QueryValues } from '@southneuhof/loom'
+
+type RoleQuery = { status?: string; page?: number }
+
+const roleFilters: ListFilters<RoleQuery, { selection: string }> = {
+  schema: z.object({ selection: z.string() }).transform(({ selection }) => selection === '' ? {} : { status: selection }),
+  fields: { selection: { label: 'Status', renderer: 'text' } },
+  defaults: { selection: '' },
+  queryKeys: ['status'],
+  toDraft: (query: Readonly<QueryValues>) => ({
+    selection: typeof query.status === 'string' ? query.status : undefined,
+  }),
+}
+~~~
+
 Resource list declarations use the complete `ListView` prop contract. Keep
 filters and export options beside the table, then pass the resulting bag to
 `ListView`:

@@ -200,8 +200,11 @@ input and display renderer registries separate.
 ## Relations and dependencies
 
 Keep the submitted relation value separate from its display label. Put a
-component's loader in its field `props`. Option inputs use `load`, optional
-`namespace`, and explicit `pick` and `view` props. Use `data` for static
+component's loader in its field `props`. SelectInput, RadioGroupInput, and
+CheckboxGroupInput use `load`, optional `resource` and `namespace`, and
+explicit `pick` and `view` props. Set `resource` to the owner's resource key so
+resource invalidation refreshes the options. The namespace identifies the query
+instance. A standalone loader can omit `resource`; use `data` for static
 choices. For example:
 
 ```ts
@@ -209,6 +212,7 @@ const roleInput = {
   renderer: 'select',
   props: {
     load: roles.list.table.load,
+    resource: roles.list.table.resource,
     namespace: roles.list.table.namespace,
     pick: 'id',
     view: 'name',
@@ -250,6 +254,5 @@ that repeat input order, labels, renderer names, or standard framework behavior.
 
 Use the [Loom contract fixtures](../../packages/loom/README.md#executable-examples)
 for real standalone and managed controls, date models, shared assets, and row
-editing. The generated user fixture under
-[`plan057_generated_users`](../../apps/web/src/framework/__type-tests__/plan057_generated_users)
-is compared with fresh scaffolder output and compiles in the Web type check.
+editing. The current [users resource](../../apps/web/src/routes/%28authenticated%29/settings/users/users.resource.ts)
+and its list, detail, and edit routes compile in the Web type check.

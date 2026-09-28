@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P1. Effort: L. Risk: MED. Confidence: HIGH.
+- Status: DONE. Priority: P1. Effort: L. Risk: MED. Confidence: HIGH.
 - Category: deletion / developer workflow. Depends on: none. Complete before final documentation Plan 065 and evaluation Plan 066.
 - Planned at: `1246387`, 2026-09-26.
 
@@ -61,14 +61,21 @@ Run the drift command first. Compare changed owners with the excerpts below and 
 
 ## Done and stop conditions
 
-- [ ] No generator, integration CLI, syntax-template verifier, their commands, compatibility entry points, or dedicated fixtures remain.
-- [ ] No active or historical checked-in instruction links to or asks agents to use them; only retirement evidence names the removed owners.
-- [ ] Every surviving tool runs independently, and every surviving eval input/link resolves.
-- [ ] Existing product modules and independent code generation remain intact.
-- [ ] Required gates pass; no replacement scaffolding layer was added.
+- [x] No generator, integration CLI, syntax-template verifier, their commands, compatibility entry points, or dedicated fixtures remain.
+- [x] No active or historical checked-in instruction links to or asks agents to use them; only retirement evidence names the removed owners.
+- [x] Every surviving tool runs independently, and every surviving eval input/link resolves.
+- [x] Existing product modules and independent code generation remain intact.
+- [x] Required gates pass; no replacement scaffolding layer was added.
 
 Stop if a supposedly dedicated helper owns necessary runtime behavior; identify that behavior and move only that responsibility to its existing owner. Do not stop merely because references are numerous. Complete their removal within this declared scope. Report any baseline/unavailable check separately rather than deleting it to obtain a pass.
 
 ## Evidence
 
-Planning only. The import graph and active/historical references above were inspected. Removal and its verification have not run.
+Implementation and verification are complete. Tooling passed with 68 Node and 2
+Python tests; Architecture passed with 18 tests and the real-source check; Loom
+and web type checks passed; the navigation test passed with 4 tests. Eval inputs
+and edited Markdown links resolved, both searches found only the retirement
+plan and ledger, and `git diff --check` passed. The web type check generated no
+tracked route artifacts. The ledger records the exact commands, test audit,
+removed owners, unavailable checks, and self-review in
+[plans/073-removal-ledger.md](073-removal-ledger.md).

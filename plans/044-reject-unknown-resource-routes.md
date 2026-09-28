@@ -6,7 +6,7 @@
 > report — do not improvise. When done, update the status row for this plan
 > in `plans/README.md` after the implementation and review pass.
 >
-> **Drift check (run first)**: `git diff --stat 2d6b378..HEAD -- apps/web/src/framework/hono/actions.ts apps/web/src/framework/hono/actions.spec.ts packages/sdk/src/__tests__/client.spec.ts scripts/scaffold-bounded-module.mjs scripts/scaffold-bounded-module.test.mjs`
+> **Drift check (run first)**: `git diff --stat 2d6b378..HEAD -- apps/web/src/framework/hono/actions.ts apps/web/src/framework/hono/actions.spec.ts packages/sdk/src/__tests__/client.spec.ts`
 > If any in-scope file changed since this plan was written, compare the
 > "Current state" excerpts against the live code before proceeding; on a
 > mismatch, treat it as a STOP condition.
@@ -53,11 +53,6 @@ probe); the missing piece is the readable guard and the committed tests.
 - SDK type-test exemplar `packages/sdk/src/__tests__/client.spec.ts:6-15`
   asserts the exact client shape (`client.users.list.$get`,
   `client.api.auth['sign-out'].$post`, ...). New hyphen assertions go here.
-- Scaffold already emits the correct shape in all three places
-  (`scripts/scaffold-bounded-module.mjs:533,615,656`): always
-  `rpc['${config.slug}']` with the kebab-case slug. The generator test at
-  `scaffold-bounded-module.test.mjs:144` asserts the schema form. No
-  scaffold change is needed; plan scope covers tests only plus the guard.
 - Live web call sites: no `rpc.camelCase` dot access exists today
   (grep `rpc\.[A-Za-z_$][\w$]*[A-Z]` returns zero matches); single-word
   routes use `rpc.roles`, `rpc.users`, `rpc.permissions`, hyphenated routes
@@ -71,7 +66,6 @@ probe); the missing piece is the readable guard and the committed tests.
 | Web unit tests | `pnpm --filter @southneuhof/framework-web exec vitest run src/framework/hono/actions.spec.ts` | all pass |
 | Web type-check | `pnpm --filter @southneuhof/framework-web type-check` | exit 0 |
 | SDK tests | `pnpm --filter @southneuhof/sdk exec vitest run src/__tests__/client.spec.ts` | all pass |
-| Scaffold tests | `node --test scripts/scaffold-bounded-module.test.mjs` (from root) | all pass |
 | Diff hygiene | `git diff --check` | exit 0, no output |
 
 Run from the repository root unless noted. No database needed.
@@ -83,8 +77,6 @@ Run from the repository root unless noted. No database needed.
 - `apps/web/src/framework/hono/actions.ts` (add the guard only)
 - `apps/web/src/framework/hono/actions.spec.ts` (two new tests)
 - `packages/sdk/src/__tests__/client.spec.ts` (hyphenated-path assertions)
-- `scripts/scaffold-bounded-module.test.mjs` (assert `resource.ts` + edit-route
-  templates emit `rpc['<slug>']` bracket form)
 
 **Out of scope** (do NOT touch, even though they look related):
 
@@ -178,21 +170,10 @@ STOP and report rather than inventing a route name.
 
 **Verify**: `pnpm --filter @southneuhof/sdk exec vitest run src/__tests__/client.spec.ts` → all pass.
 
-### Step 4: Assert the scaffold bracket form
+### Step 4: Use the app type contract
 
-In `scripts/scaffold-bounded-module.test.mjs`, beside the existing line-144
-schema assertion, add two assertions using the same `assert.match` style and
-the existing `test-catalog` config (`slug: 'test-catalog'`):
-
-- the rendered resource file contains
-  `createHonoResourceActions(rpc['test-catalog'])`;
-- the rendered technical-detail edit route contains the same bracket form.
-
-Use the file's existing `applyBoundedModule`/`workspace` helpers; do not add
-new fixtures.
-
-**Verify**: `node --test scripts/scaffold-bounded-module.test.mjs` (from
-repo root) → all pass.
+Application resources use explicit route keys. The web type-check covers those
+real resource declarations. No emitted-source assertion remains.
 
 ### Step 5: Run the surrounding gates
 
@@ -206,8 +187,6 @@ repo root) → all pass.
   accept). Pattern: the file's own in-memory Hono tests.
 - `client.spec.ts`: hyphen positive assertions + one camelCase
   `@ts-expect-error` negative. Proves the compiler rejects the exact mistake.
-- `scaffold-bounded-module.test.mjs`: 2 new `assert.match` checks that the
-  generator only emits bracket form.
 - No new E2E, browser, or database tests.
 
 ## Done criteria
@@ -216,7 +195,7 @@ Machine-checkable. ALL must hold:
 
 - [ ] `actions.spec.ts` passes with 2 new tests; unknown shapes throw the hinted error
 - [ ] `client.spec.ts` passes with hyphen assertions and the camelCase negative
-- [ ] Scaffold tests pass with bracket-form assertions on resource + edit route
+- [ ] Action and client tests pass with bracket-form assertions on resource + edit route
 - [ ] Web `type-check` exits 0; `git diff --check` exits 0; status shows only in-scope files
 - [ ] `plans/README.md` status row updated
 

@@ -2,8 +2,8 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P3. Effort: M. Risk: LOW. Confidence: HIGH for the mixed document; benefit to agent performance remains unmeasured.
-- Category: documentation direction. Depends on: 073 for the initial current-guide publication. Do not wait for all repairs. Publish the current owner map and direct-authoring path after removal, then update it alongside each implemented contract. Final reconciliation checks the actual completed subset; proposed behavior is never described as shipped.
+- Status: DONE. Priority: P3. Effort: M. Risk: LOW. Confidence: HIGH for the mixed document; benefit to agent performance remains unmeasured.
+- Category: documentation direction. Depends on: 073, DONE. The direct-authoring guide is published before the remaining repairs. Update it as each contract ships; pending behavior remains marked as a current limit.
 - Planned at: `1246387`, 2026-09-26.
 
 Keep one authoritative description of current Loom behavior. Move execution order, migration inventories, old paths, and historical acceptance records out of the normal authoring path. Preserve the reasons for consequential rules, executable examples, and links. This is an editorial reorganization, not permission to change architecture or add another specification.
@@ -24,7 +24,7 @@ Read root `AGENTS.md`, `writing-for-agents`, and the entire current architecture
 Current opening excerpt:
 
 ```text
-Implementation specification for Loom, Carta web integration, application consumers, generators, tests, and agent instructions.
+Implementation specification for Loom, Carta web integration, application consumers, source checks, tests, and agent instructions.
 ```
 
 Current ownership excerpt:
@@ -89,7 +89,7 @@ The audit passed Loom types and unit tests; it did not validate this future docu
 
 ## Steps
 
-1. Confirm Plan 073 and record the actual status of all other repairs; they are not publication blockers. Record drift/local work, all inbound links including fragments, and the current headings. Read the architecture and referenced source for every rule being summarized. **Verify:** run Inbound links and baseline Architecture gate; the inventory names the top-level sections that remain after removal and all discovered inbound fragments. Do not recreate deleted generator sections to reach an old count.
+1. Confirm Plan 073 and record the actual status of all other repairs; they are not publication blockers. Record drift/local work, all inbound links including fragments, and the current headings. Read the architecture and referenced source for every rule being summarized. **Verify:** run Inbound links and baseline Architecture gate; the inventory names the top-level sections that remain after removal and all discovered inbound fragments. Do not recreate retired sections to reach an old count.
 2. Create the historical snapshot and record provenance. Draft the section/rule mapping before deleting active prose. Preserve current code behavior, including only completed 061–064 and 067–076 changes. **Verify:** a one-off Python comparison confirms the snapshot body matches the pre-edit text except the recorded notice/link rebasing; record the comparison and its exit 0 in the inventory.
 3. Rewrite the active guide according to Target document. Keep public API spelling and examples aligned with the current source. Prefer links to existing compiled examples over another long uncompiled example. Use only the three scoped active documents; keep archive and current labels distinct. **Verify:** Architecture gate and Compiled examples pass. Compare the inventory with the final headings: every old rule group has a destination or an explicit historical classification.
 4. Validate every local Markdown link in the three edited active files and the archive. Use a one-off Python script to resolve relative paths, strip fragments for filesystem existence, and separately compare inbound fragment identifiers with the retained active headings/anchors. Ignore external URL reachability; do not claim it was verified. Fail with the source file and target for any missing path/anchor. **Verify:** record the exact command and zero missing local paths or inbound anchors. The ledger itself must link to existing paths.
@@ -97,12 +97,12 @@ The audit passed Loom types and unit tests; it did not validate this future docu
 
 ## Done, stops, and maintenance
 
-- [ ] One current entry point remains at the same architecture path.
-- [ ] Current rules, exceptions, and ownership are preserved and traceable in the inventory.
-- [ ] Migration instructions are clearly historical and linked out of the normal author path.
-- [ ] Local links and existing inbound fragments resolve.
-- [ ] Examples point to actual compiled/runnable owners; no proposed behavior is described as shipped.
-- [ ] No new prose-matching tests, document interpreter, or parallel specification.
+- [x] One current entry point remains at the same architecture path.
+- [x] Current rules, exceptions, and ownership are preserved and traceable in the inventory.
+- [x] Migration instructions are clearly historical and linked out of the normal author path.
+- [x] Local links and existing inbound fragments resolve.
+- [x] Examples point to actual compiled/runnable owners; no proposed behavior is described as shipped.
+- [x] No new prose-matching tests, document interpreter, or parallel specification.
 
 Stop if source and an approved current rule disagree, if a rule's status is unknown, if the split requires out-of-scope pointer changes, or if a gate fails twice after a bounded correction. Record the disagreement instead of silently choosing a new policy. If a repair is pending, document current behavior accurately and leave its target out of current examples. Reconcile only affected sections when that repair ships.
 
@@ -110,4 +110,34 @@ Future changes should update the active contract and its executable example. The
 
 ## Execution evidence
 
-Not executed. Mixed historical/current content is confirmed. No link-preservation or rewrite proof has run.
+STATUS: COMPLETE
+
+STEPS:
+
+1. Done. Plan 073 was complete. The committed drift check returned no diff. I reviewed and preserved the uncommitted Plan 073 changes. The baseline architecture gate passed with 18 tests and the real-source check. The inbound scan found 14 Markdown links and 4 fragments, all valid.
+2. Done. The archive body matches the pre-edit architecture SHA-256 recorded in [the contract inventory](065-loom-contract-inventory.md). No source-relative Markdown links needed rebasing.
+3. Done. The current owner map, direct author path, compiled examples, and pending repair limits are active at the existing architecture path.
+4. Done. The one-off link check found no missing local path or anchor across the active documents, archive, and inventory. External URL reachability was not checked.
+5. Done. The gates below passed. The inventory maps each old section and rule group to its current or historical destination.
+
+VERIFICATION:
+
+- `pnpm test:surface-architecture`: exit 0; 18 tests and the real-source check passed.
+- `node --test scripts/web-validation-workflow.test.mjs`: exit 0; 2 tests passed.
+- `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json`: exit 0.
+- `pnpm --filter @southneuhof/framework-web type-check`: exit 0; route contract, route generation, and Vue types passed. No new tracked route artifacts were created.
+- `node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/settings/users'`: exit 0; selected template checks passed. This check did not review design, runtime, or acceptance.
+- `git diff --check`: exit 0.
+- Snapshot comparison: exit 0; the full body matches the pre-edit SHA-256.
+- Markdown check: exit 0; 106 local links resolved across 5 Markdown files, with no missing paths or anchors.
+
+FILES CHANGED FOR PLAN 065:
+
+- `docs/resource_system_overhaul/ARCHITECTURE.md`
+- `docs/resource_system_overhaul/history/architecture-before-current-guide.md`
+- `packages/loom/README.md`
+- `docs/architecture/web-application-architecture.md`
+- `plans/065-loom-contract-inventory.md`
+- This plan and `plans/README.md`
+
+NOTES: No source code, tests, skills, or CI files changed for Plan 065. Plans 061–064, 066–072, and 074–076 remain TODO. No performance claim is made. No commit or push was made.

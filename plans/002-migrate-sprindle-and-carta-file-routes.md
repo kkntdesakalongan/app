@@ -52,9 +52,8 @@ ship a compatibility wrapper or a second public registration system.
   `model/route-schema.ts:36` builds Hono schemas from route and entity types.
 - `packages/sdk/src/client.ts:5` imports `modules` and derives separate model
   and bare-route clients. It must consume the new route contract.
-- `scripts/integrate-bounded-module.mjs:32` inserts route index text.
-  `scripts/verify-module.mjs:61` requires that text. The scaffold emits models.
-  These must change or the next generated app module will restore old routing.
+- The old application-authoring commands used route index text that conflicts
+  with this file-route contract. This plan migrated the framework and callers.
 
 Use current `users/users.model.ts` and `roles/roles.ts` for behavior evidence,
 not as final layout templates. User updates invalidate sessions inside a
@@ -73,8 +72,6 @@ In scope:
   No UI redesign or URL change.
 - Root task config and backend/TypeScript CI paths, `.gitignore`, and project
   editor configuration needed to activate the completed language support.
-- `scripts/scaffold-bounded-module.mjs`, `integrate-bounded-module.mjs`,
-  `verify-module.mjs`, their tests, and `scripts/test-support/` fixtures.
 - API runbooks, architecture docs, and `.agents/skills/api-conventions/` plus
   direct module-tooling skill references that still require manual registration.
   Use the writing-for-agents skill when changing these instruction files.
@@ -264,7 +261,7 @@ activation gate or compensate with a manual generation command.
 
 Treat the file model as the only source of route locations. Resource behavior
 and generic helper types must change together. Test tooling after compiler
-upgrades, and test module scaffolding after route conventions change.
+upgrades, and test route-type generation after route conventions change.
 
 ## Parent approval, 2026-09-09
 

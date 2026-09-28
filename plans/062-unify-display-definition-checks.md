@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P2. Effort: S. Risk: LOW. Confidence: HIGH.
+- Status: DONE. Priority: P2. Effort: S. Risk: LOW. Confidence: HIGH.
 - Category: architecture. Dependencies: none.
 - Planned at: `1246387`, 2026-09-26.
 
@@ -78,14 +78,20 @@ Loom Types and 450 unit tests passed during audit. Other gates must be run durin
 
 Constructor tests own early JavaScript configuration rejection. Runtime tests independently own valid plain-object consumption and context-dependent checks. Existing display browser tests own rendering parity. Do not repeat the full reserved-name matrix in all three suites: table-drive the two constructors in one existing test owner if that is clearer, with one runtime integration case for the bypass path.
 
-- [ ] The pre-fix regression fails for the intended reason and passes after extraction.
-- [ ] One internal owner contains common entry/member rules; all three entry points use it.
-- [ ] Custom formatter construction, map order, snapshots, and function references still work.
-- [ ] Runtime formatter/query/record checks and plain-object consumption remain enforced.
-- [ ] All commands pass; no new public abstraction or out-of-scope task changes.
+- [x] The pre-fix regression fails for the intended reason and passes after extraction.
+- [x] One internal owner contains common entry/member rules; all three entry points use it.
+- [x] Custom formatter construction, map order, snapshots, and function references still work.
+- [x] Runtime formatter/query/record checks and plain-object consumption remain enforced.
+- [x] All commands pass; no new public abstraction or out-of-scope task changes.
 
 Stop for a conflicting live contract, a required application registry at construction, an out-of-scope repair, or two failed attempts at a verification gate. Report unverified browser work as blocked, not passed. Future display-member changes should update this private owner and the corresponding public type; they must not recreate separate reserved-member lists.
 
 ## Execution evidence
 
-Not executed. Source drift between the constructor and runtime checks is confirmed; the proposed regression is not yet written or run.
+Implemented against `05ebfa3`. The drift check found no in-scope source changes since `1246387`, and the scoped working tree was clean before implementation.
+
+The pre-fix focused run failed in the new constructor regression because `defineTable` accepted the reserved `model-value` prop; the test expected an error and received none. After extraction, the Table and Detail constructor cases reject all runtime-reserved props and symbol-keyed entry members. A valid ordinary prop and accessor pass. Plain-object runtime coverage still rejects a reserved update event.
+
+The focused unit run passed 3 files and 13 tests. The Loom type check passed. The Loom regression suite passed 61 files and 468 tests. The display browser test passed. The surface architecture gate passed 18 checks. `git diff --check` passed.
+
+The session does not provide `$openclaw-testing`, `$crabbox`, or `$autoreview` tools. Those checks were not run.

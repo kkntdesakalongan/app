@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { analyzeSource, checkGeneratedModule } from './check-surface-architecture.mjs'
+import { analyzeSource } from './check-surface-architecture.mjs'
 
 test('rejects aliased legacy imports and the removed resource signature', () => {
   const source = `import { defineResource as makeResource, FieldDefinition as OldField } from '@southneuhof/loom'
@@ -260,8 +260,4 @@ import { DetailView, FormView, ListView } from '@southneuhof/loom'
   assert.match(diagnostics.join('\n'), /<FormView>.*"submit"/)
   assert.match(diagnostics.join('\n'), /<ListView>.*"columns"/)
   assert.match(diagnostics.join('\n'), /<DetailView>.*"data"/)
-})
-
-test('checks the bounded-module generator output', () => {
-  assert.deepEqual(checkGeneratedModule(), [])
 })

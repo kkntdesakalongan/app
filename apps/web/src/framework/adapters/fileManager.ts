@@ -20,7 +20,7 @@ export function canonicalAsset(input: StoredAsset | StoredFolder, parentId: stri
   }
 }
 
-export const fileManagerOptions: FileManagerPluginOptions<StoredAsset> = {
+export const fileManagerOptions: FileManagerPluginOptions = {
   root: 'uploads/',
   operations: {
     async list({ parentId, sort, signal }) {

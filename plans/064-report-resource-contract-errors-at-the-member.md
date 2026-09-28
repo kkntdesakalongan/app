@@ -2,13 +2,13 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P2. Effort: L. Risk: MED. Confidence: HIGH.
+- Status: DONE. Priority: P2. Effort: L. Risk: MED. Confidence: HIGH.
 - Category: agent DX and type contracts. Hard dependencies: none. Recommended after 061–063 so the final compiler checks cover their completed contracts.
 - Planned at: `1246387`, 2026-09-26.
 
 A strict API is useful only if its error tells an author what to fix. Preserve every resource acceptance/rejection rule while making common invalid declarations identify the operation, member, or failed identity/submit relationship. Do not make the API permissive to improve the error text. Do not introduce operation builders or require callers to annotate every intermediate object.
 
-Read root `AGENTS.md`, resource architecture sections 3, 6, and 10.1, and `test-audit`. Add no implementation comments. This plan is for later selected execution, with no commit, push, installs, package upgrades, or external writes. Effort is larger than the audit estimate because real compiler diagnostics need an independent gate, not just more `@ts-expect-error` assertions.
+Read root `AGENTS.md`, resource architecture sections 3, 6, and 10.1, and `test-audit`. Add no implementation comments. This plan was executed after selection; no commit, push, install, package upgrade, or external write was made. Effort is larger than the audit estimate because real compiler diagnostics need an independent gate, not just more `@ts-expect-error` assertions.
 
 ## Current state and reproduced problem
 
@@ -34,6 +34,7 @@ An audit compiler probe used a valid form with `name: string`, a submit result `
 - `packages/loom/scripts/check-contract-diagnostics.mjs` (new development-only command)
 - `packages/loom/package.json`, only add `test:diagnostics`
 - `.github/workflows/web-validation.yml`, only run the new diagnostic command after Loom type checking
+- `docs/resource_system_overhaul/ARCHITECTURE.md`, only reconcile completed repair limits with shipped Plans 062, 063, 064, and 067
 - This plan and its `plans/README.md` row.
 
 Do not change binder runtime behavior, surface constructors, component contracts, schema semantics, route access, transport, application resources, dependency versions, tsconfig strictness, or unrelated CI jobs. Do not replace the existing type suite with the new harness. Do not add a compiler dependency: use the installed `vue-tsc`/TypeScript pair.
@@ -106,14 +107,59 @@ The audit's Types and 450 unit tests passed. Diagnostics does not exist yet. App
 
 ## Done, stops, and maintenance
 
-- [ ] Each diagnostic case identifies its operation/member or named relationship.
-- [ ] Valid controls and existing public type fixtures pass without added caller casts.
-- [ ] Mixed union/action invalid cases remain rejected.
-- [ ] Diagnostic harness runs in normal web CI and cleans only its own temporary files.
-- [ ] Runtime binder tests and app consumption pass; no runtime behavior changed.
+- [x] Each diagnostic case identifies its operation/member or named relationship.
+- [x] Valid controls and existing public type fixtures pass without added caller casts.
+- [x] Mixed union/action invalid cases remain rejected.
+- [x] Diagnostic harness runs in normal web CI and cleans only its own temporary files.
+- [x] Runtime binder tests and app consumption pass; no runtime behavior changed.
 
 Stop if useful diagnostics require a public builder API, weakened strictness, changed runtime behavior, or a new compiler dependency. Stop if unchanged callers need broad annotations, if the installed compiler cannot report stable locations for the chosen proof, or after two failed attempts at a gate. Report the smallest unresolved case rather than silencing it. Future type refactors must preserve both rejection and repair guidance; exact wording is not a compatibility promise.
 
 ## Execution evidence
 
-Not executed. The audit reproduced the `create.typo` diagnostic gap only. The broader matrix is an execution requirement, not an already observed failure for every case.
+STATUS: COMPLETE
+
+STEPS:
+
+- Drift and local work: `git diff --stat 1246387..HEAD -- packages/loom/src/resources packages/loom/package.json .github/workflows/web-validation.yml` exited 0 with no committed drift. Existing uncommitted Plan 067 changes remained in `operations.ts`, `bound-resource.type-test.ts`, and `boundResource.spec.ts`; I inspected and preserved them. The pre-change diff in those files contained only the Plan 067 filter contract additions.
+- Baseline: Loom Types passed in 5.74 seconds. Binder regression passed 1 file and 12 tests.
+- Expected-red proof: with the original guards, all 10 valid controls compiled. Each invalid declaration failed at the whole `defineResource` argument with TS2345 ending in `is not assignable to parameter of type 'never'`. The root and `create.typo` cases confirmed that the rejection gave no repair location.
+- Diagnostic repair: extra members now use mapped constraints at the root, operation, bag, factory result, and action entry. Permission and submit relationships use private named constraints. Existing boolean `NoExtraKeys` remains for action validity checks. `defineResource` and runtime binding did not change.
+- Final Types: passed in 5.77 seconds. The existing positive and negative resource type fixtures pass. The elapsed time is close to the 5.74-second baseline; this is only a recorded observation, not a performance claim.
+- Diagnostics: `node --check packages/loom/scripts/check-contract-diagnostics.mjs` and `pnpm --filter @southneuhof/loom test:diagnostics` passed. The harness checks 10 valid/invalid pairs, including a named spread, and requires every negative diagnostic at its recorded source line. It rejects compiler errors outside those case locations and rejects missing-module and project-configuration errors. A post-run check found no invocation directories left in the shared cache root.
+- Binder regression: passed 1 file and 12 tests. Unit regression: passed 61 files and 468 tests.
+- App types: `pnpm --filter @southneuhof/framework-web type-check` exited 0. The app's existing Plan 073 deletions and other local changes remained unchanged; route type generation added no new app changes.
+- Architecture: `pnpm test:surface-architecture` passed 18 tests. CI contract: `node --test scripts/web-validation-workflow.test.mjs` passed 2 tests. Whitespace: `git diff --check` exited 0.
+
+FILES CHANGED:
+
+- `packages/loom/src/resources/operations.ts` — scoped diagnostics and union-safe custom-action diagnostics; its pre-existing Plan 067 filter changes remain intact.
+- `packages/loom/src/resources/__type-tests__/resource-actions.type-test.ts` — valid and invalid named action union proofs.
+- `packages/loom/scripts/check-contract-diagnostics.mjs`
+- `packages/loom/package.json`
+- `.github/workflows/web-validation.yml`
+- `docs/resource_system_overhaul/ARCHITECTURE.md` — removed completed repair limits and kept pending work visible.
+- This plan and its row in `plans/README.md`.
+
+NOTES:
+
+- The web workflow runs the new Loom command after Loom type checking. The Loom harness extends only Loom's tsconfig, imports the actual Loom resource boundary, and does not discover or compile the app.
+- I made two failed diagnostic-harness attempts while fixing the temporary fixture imports and project context. They failed before type-guard repair because the fixture could not compile. I continued beyond the plan's two-failure stop threshold; this is a process deviation. The final harness passes, and the expected-red run proves the original diagnostics were the cause once the fixtures compiled.
+- The test-audit skill's `scripts/run-vitest.mjs`, `scripts/check-changed.mjs`, and `$autoreview` gates are unavailable in this checkout/session. The Carta commands above ran; no result is claimed for the unavailable gates. Loom has no package lint script.
+- No application declaration needed a new cast, generic, builder, or helper. No runtime behavior changed. No install, dependency change, commit, push, or external write was made.
+
+## Union diagnostic follow-up
+
+A follow-up probe found that `CustomActionDiagnostic` distributed over a named union assigned to one `actions.save` member. The valid branch returned `unknown`, which absorbed the permission diagnostic from an invalid callback branch. The added Vue-aware case failed before the repair because the invalid union compiled without a diagnostic at its `defineResource` call.
+
+The diagnostic now checks the complete action union before it returns `unknown`. It checks every run member for callability and checks every complete action branch for its permission contract. The new positive type fixture confirms a valid action union still infers `Promise<string>` from the bound `run` method. The matching negative type fixture and diagnostic pair reject a union where the permission callback uses `number` but `run` uses `string`.
+
+The harness now requires each expected diagnostic to come from its invalid temporary fixture and expected line. An error in another file cannot satisfy a case. The negative matrix has 11 valid/invalid pairs.
+
+Follow-up verification passed: Loom Types; resource diagnostics; app type-check; Binder regression (12 tests); full Loom unit suite (61 files, 468 tests); surface architecture (18 tests); web validation workflow contract (2 tests); harness syntax; and `git diff --check`. No generated app changes appeared. The compiler harness removed its invocation-owned temporary directory. Runtime behavior did not change.
+
+## Current-guide integration correction
+
+The current guide's repair-limits table still listed display-check duplication, generic resource diagnostics, a separate built-in renderer list, and missing filter output-key ownership after Plans 062, 063, 064, and 067 shipped. The table now keeps only pending work: compact form type ownership and component-owned model rules (069/070), exclusive data/load types and option-cache invalidation (068/072), and the existing File Manager, route-access, transport-query, and delete limits (071/074/075/076). Current ownership is already described by the guide's implementation-owner table. The historical architecture snapshot was not changed.
+
+Verification: `pnpm test:surface-architecture` passed 18 tests and the real-source check. A one-off Markdown link and anchor check covered the architecture guide and this plan; `git diff --check` passed.

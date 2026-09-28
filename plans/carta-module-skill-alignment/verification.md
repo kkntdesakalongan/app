@@ -23,10 +23,10 @@ Semantic coverage and current input freshness still require their separate check
 | Final command evidence freshness | Passed. |
 | Original SWA UI against standard View choices | Failed as expected: unresolved Buttons, Create override, absent DetailView. |
 
-[Final command evidence](reports/tooling-final.json) includes fingerprints and raw
-logs. [Original UI failures](reports/baseline-ui.txt) are preserved. The earlier
-`tooling.json` run predates the final changes. An existing test failed on an obsolete
-worksheet heading; that text-only assertion was removed. Preservation and path
+The command fingerprint reports were retired under Plan 073 because they
+included source tools removed from the supported workflow. [Original UI
+failures](reports/baseline-ui.txt) remain preserved. An existing text-only
+assertion for an obsolete worksheet heading was removed. Preservation and path
 validation tests remain.
 
 Two fresh GPT-5.6 Sol workers, with low reasoning effort, used isolated copies of

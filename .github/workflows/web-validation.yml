@@ -94,6 +94,12 @@ jobs:
       - name: Type-check Loom
         run: pnpm --filter @southneuhof/loom type-check
 
+      - name: Check Loom contract diagnostics
+        run: pnpm --filter @southneuhof/loom test:diagnostics
+
+      - name: Check Web transport contract diagnostics
+        run: node packages/loom/scripts/check-contract-diagnostics.mjs --project app
+
       - name: Type-check Web
         run: pnpm --filter @southneuhof/framework-web type-check
 

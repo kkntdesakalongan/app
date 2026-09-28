@@ -1,9 +1,10 @@
 # Carta module workflow evaluations
 
 These are behavioral evaluation inputs, not a claim that the skills work reliably.
-The six Plan 019 execute-stage cases have one independent candidate run. Other
-cases remain `NOT_RUN`. Node tooling tests and metadata/link validation are
-reported separately.
+The former execute-stage cases were retired under Plan 073.
+The nine existing cases remain `NOT_RUN`. No paired result is recorded for them.
+Plan 066 adds five Loom repair cases. Their kit status and worker-run status are
+recorded separately in [the Plan 066 report](loom-repair-report.md).
 
 ## Run a comparison
 
@@ -52,8 +53,21 @@ obligations covered/missed, invented business rules, source-grounded and irrelev
 questions, reference requests, unnecessary reapprovals, actual commands/retries,
 seeded defects found/missed, and final verdict. Record elapsed time/token cost only
 when measured. Use PASS / FAIL / BLOCKED / NOT_RUN with an explanatory finding.
-For module-workflow cases, also record the preflight command/result, generator
-command/result, unsafe writes attempted, and the reviewer decision.
+For module-workflow cases, record applicable capability checks, unsafe writes
+attempted, and the reviewer decision.
+
+## Loom repair cases
+
+Plan 066 adds five module-authoring cases. They test dependent selection,
+transformed update forms, row commands, create-only resources, and relation
+source freshness. Their preparation, private grader, hash controls, ledger, and
+report are separate from the nine workflow cases above.
+
+Read [the comparison protocol](loom-repair-protocol.md) before you prepare any
+worker checkout. The rubric is evaluator-only. The case fixture instructions
+are in [fixtures/loom/README.md](fixtures/loom/README.md). Results are in
+[loom-repair-results.json](loom-repair-results.json) and
+[loom-repair-report.md](loom-repair-report.md).
 
 Blind the reviewer to variant labels when practical. Read every graded artifact;
 keyword counts and template headings cannot establish semantic completeness.

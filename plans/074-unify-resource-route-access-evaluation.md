@@ -2,15 +2,15 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P1. Effort: M. Risk: MED. Confidence: HIGH.
+- Status: DONE — implementation and repository gates pass; root review accepted. Priority: P1. Effort: M. Risk: MED. Confidence: HIGH.
 - Category: correctness / policy ownership. Depends on root Plan 064 for public diagnostic cases if new declaration constraints need them.
 - Planned at: `1246387`, 2026-09-26.
 
 A route guard must preserve the access policy registered by its resource. Keep backend authorization final and operation execution independently guarded. Route entry has no business payload or loaded row; do not pretend that it can run argument-dependent command policy.
 
-## Current evidence
+## Baseline evidence
 
-`packages/loom/src/resources/bindResource.ts:444` registers static permission arrays as `permissions` with singular `permission: null`. `apps/web/src/router/guards.ts:16` reads only the singular value and sends `operation: 'detail'` for every resource action. The actual guard admitted an array-protected route with no permissions in an in-memory probe. `resources/routeAccess.ts` stores two overlapping permission fields and its duplicate check does not compare resource keys.
+At plan preparation, `packages/loom/src/resources/bindResource.ts:444` registered static permission arrays as `permissions` with singular `permission: null`. `apps/web/src/router/guards.ts:16` read only the singular value and sent `operation: 'detail'` for every resource action. The actual guard admitted an array-protected route with no permissions in an in-memory probe. `resources/routeAccess.ts` stored two overlapping permission fields and its duplicate check did not compare resource keys.
 
 ## Scope and target decisions
 
@@ -24,7 +24,7 @@ Change `packages/loom/src/resources/routeAccess.ts`, `bindResource.ts`, `operati
 
 ## Execution rules
 
-This is an approved plan, not completed implementation. Read root AGENTS, the current resource architecture, and `test-audit` before source/test edits. Use the applicable web skill for app changes. Read this entire plan. Preserve existing local work; record `git status --short` before editing. Add no implementation comments, compatibility aliases, broad type suppressions, unrelated formatting, installs, commits, pushes, migrations, or seeds.
+This plan is approved and implemented. Keep its scope and evidence rules for review. Read root AGENTS, the current resource architecture, and `test-audit` before source/test edits. Use the applicable web skill for app changes. Read this entire plan. Preserve existing local work; record `git status --short` before editing. Add no implementation comments, compatibility aliases, broad type suppressions, unrelated formatting, installs, commits, pushes, migrations, or seeds.
 
 Run the drift command first. Compare changed owners with the excerpts below and reconcile approved predecessor changes. Stop on incompatible drift, an out-of-scope requirement, or two failed bounded correction attempts. Do not weaken a contract to make a check pass. Record command, exit status, and actual selected tests in this plan; update the index after review. The local test skill references unavailable OpenClaw tools: report those as unavailable rather than successful checks. App type checks can generate route artifacts; preserve unrelated work.
 
@@ -33,7 +33,7 @@ Run the drift command first. Compare changed owners with the excerpts below and 
 | Gate | Command | Expected |
 |---|---|---|
 | Drift | `git diff --stat 1246387..HEAD -- packages/loom/src/resources apps/web/src/router docs/resource_system_overhaul/ARCHITECTURE.md` | Reconcile changes |
-| Callers | `rg -n 'registerResourceAction|resourceActionForRoute|RegisteredResourceAction|registeredResourceActionNames' packages/loom/src apps/web/src` | Inventory direct consumers |
+| Callers | `rg -n 'registerResourceAction|resourceActionForRoute|RegisteredResourceAction' packages/loom/src apps/web/src` | Inventory direct consumers |
 | Types | `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json` | Exit 0 |
 | Resource | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/resources/__tests__/boundResource.spec.ts` | All pass |
 | Guard | `pnpm --filter @southneuhof/framework-web test:focused -- router/__tests__/guards.spec.ts` | All pass |
@@ -48,14 +48,39 @@ Run the drift command first. Compare changed owners with the excerpts below and 
 
 ## Done and stops
 
-- [ ] Route entry checks all declared static permissions and the actual operation.
-- [ ] Dynamic execution policy is never guessed at the route boundary.
-- [ ] Execution guards and backend authority are unchanged.
-- [ ] Conflicting resource ownership cannot overwrite a registration.
-- [ ] All checks pass and no consumer reconstructs the former singular/array rule.
+- [x] Route entry checks all declared static permissions and the actual operation.
+- [x] Dynamic execution policy is never guessed at the route boundary.
+- [x] Execution guards and backend authority are unchanged.
+- [x] Conflicting resource ownership cannot overwrite a registration.
+- [x] All plan gates pass and no consumer reconstructs the former singular/array rule.
 
 Stop if the change requires loading a record before ordinary route entry or guessing permission from route names. Those are different product decisions. Future route consumers must use the canonical evaluator, not reinterpret its stored fields.
 
 ## Evidence
 
-Planning only. The permission-array omission was reproduced in the actual guard with a controlled adapter. This was not a backend authorization test.
+The permission-array omission was reproduced in the actual guard with a controlled adapter. This was not a backend authorization test.
+
+Implementation completed on 2026-09-27. The registry now stores one immutable route requirement with a resource key, operation, and normalized permission set. The app guard uses its evaluator. Static commands derive entry policy from `permission`; routed commands with argument-dependent permission callbacks declare `routePermission`. The execution callback still receives only the declared command arguments. Current app resources have no routed dynamic command: the role-permission command uses a callback without a route, and the role-assignment command uses a static array without a route. No product entry policy needed to be inferred.
+
+| Gate | Command | Result |
+|---|---|---|
+| Drift | `git diff --stat 1246387..HEAD -- packages/loom/src/resources apps/web/src/router docs/resource_system_overhaul/ARCHITECTURE.md` | Exit 0; no committed drift between the preparation base and `HEAD`. The recorded working tree had local changes in these owners, which were preserved. |
+| Callers | `rg -n 'registerResourceAction|resourceActionForRoute|RegisteredResourceAction' packages/loom/src apps/web/src` | Exit 1; no obsolete registration API remains. Resource binding is the only route registration owner. |
+| Loom types | `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json` | Exit 0. |
+| Resource | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/resources/__tests__/boundResource.spec.ts` | Exit 0; 1 file, 18 tests passed. |
+| Guard | `pnpm --filter @southneuhof/framework-web test:focused -- router/__tests__/guards.spec.ts` | Exit 0; 1 file, 17 tests passed. |
+| Diagnostics | `pnpm --filter @southneuhof/loom test:diagnostics` | Exit 0; 27 resource/form cases, 9 TypeScript surface cases, and 8 Vue surface cases passed. |
+| App types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0. Route type generation did not change tracked route files. |
+| Architecture | `pnpm test:surface-architecture` | Exit 0; 18 tests passed and surface checks passed. |
+| Whitespace | `git diff --check` | Exit 0. |
+| Formatting | `pnpm --filter @southneuhof/framework-web exec oxfmt --check src/router/guards.ts src/router/__tests__/guards.spec.ts`<br>`pnpm --filter @southneuhof/framework-web exec oxfmt --check /Users/gamer/Documents/projects/carta/packages/loom/src/resources/routeAccess.ts /Users/gamer/Documents/projects/carta/packages/loom/src/resources/index.ts` | Exit 0 for both commands. |
+
+The first resource test run failed on three existing invalidation assertions. Current Plan 072 behavior also invalidates the resource option namespace. The assertions now include that namespace and the final resource run passes; no cache behavior changed for Plan 074.
+
+A broader optional `oxfmt --check` also reported formatting differences in files already changed by predecessor plans: the resource binder, operations types, resource tests, diagnostics harness, and type fixture. Applying its output would reformat unrelated local changes, so those files remain unchanged by formatting.
+
+Post-review cleanup on 2026-09-27 removed the unused `registeredResourceActionNames()` function and export. The updated caller search returned exit 1 with no obsolete API matches. The Loom type check, focused resource test (18 tests), app guard test (17 tests), and `git diff --check` passed again.
+
+The integrated Web suite exposed a nested-navigation fixture that registered the same routes under two resource keys. Both scoped instances now use one resource key while keeping distinct `userId` parameters, so the navigation test still checks parent scoping and the registry keeps its ownership check. A search of router tests found no other fixture registering these route names. Focused nested-navigation (4 tests), guard (17 tests), Web type check, and whitespace checks pass. The integrated Web run also reported three unrelated startup failures because `localStorage` is undefined under Node 26; those failures are outside this route-policy change.
+
+The local test-audit references to `node scripts/run-vitest.mjs`, OpenClaw, crabbox, and autoreview tools were unavailable in this checkout and tool set. The plan commands above ran directly; these unavailable workflows are not marked as passed.

@@ -129,7 +129,7 @@ Modify these owners, their callers reached through the named contract, and their
 - `apps/web/src/framework/adapters/bundle.ts and access/row-policy tests`
 - `apps/web/src/router/{guards,routeAccess}* and router/__tests__/**: resource registration consumers`
 - `apps/web/src/routes/(authenticated)/settings/**: custom-command, delete, and resource declaration callers`
-- `scripts/{scaffold-bounded-module,module-ui-check,check-surface-architecture}.mjs and their tests`
+- `scripts/{module-ui-check,check-surface-architecture}.mjs and their tests`
 - `docs/resource_system_overhaul/ARCHITECTURE.md, docs/ui/{forms,collections}.md, active command/resource authoring skills`
 
 Out of scope: Backend authorization and endpoint identity formats, unrelated router functionality, editing state, component-specific props, and a general command/workflow framework. The existing delete handle remains; fix its capture rather than inventing another delete API.
@@ -153,7 +153,7 @@ Use installed package-local tools pinned by `package.json` and the lockfile. Rec
 | Web types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 without boundary suppressions. |
 | Web behavior | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test` | Exit 0 on this Node 26 checkout. |
 | Architecture | `pnpm test:surface-architecture` | Exit 0; no acceptance allowlist for removed executable paths. |
-| Tooling | `pnpm test:module-tooling` | Exit 0 when callers, generators, docs fixtures, or checkers change. |
+| Tooling | `pnpm test:module-tooling` | Exit 0 when callers, active examples, or checks change. |
 | Final workspace | `pnpm type-check && NODE_OPTIONS=--no-experimental-webstorage pnpm test && pnpm lint && pnpm build` | Exit 0 on this Node 26 checkout after the coordinated implementation. |
 
 ## Steps
@@ -190,7 +190,7 @@ if (rowCommand.can(payload)) {
 
 `run` and `can` accept exactly the business-argument tuple declared by the command. `withContext` is a pure context binder returning the same run/can/route capabilities; it starts no work. A later `withContext` replaces context rather than layering it. Apply identity consistency and record snapshot rules at this binding seam. A record-dependent visible policy explicitly returns false when record is absent; both can and run enforce it. Root commands otherwise retain context-free behavior. Do not infer a row requirement from payload contents, and do not add a second context argument to run.
 
-Remove `splitCustomContext`, arity checks, trailer detection, and all overloads that append context to business arguments. Permission callbacks and the business function receive the unchanged argument tuple. Default parameters, rest parameters, optional arguments, and payload properties named `record` remain ordinary business input. Migrate every current custom-command caller and generator example.
+Remove `splitCustomContext`, arity checks, trailer detection, and all overloads that append context to business arguments. Permission callbacks and the business function receive the unchanged argument tuple. Default parameters, rest parameters, optional arguments, and payload properties named `record` remain ordinary business input. Migrate every current custom-command caller and app example.
 
 **Verify:** Unit, Web behavior, both type gates and Tooling. Exact argument spies show no insertion/removal; denied contextual commands dispatch zero writes; reserved command names remain rejected.
 

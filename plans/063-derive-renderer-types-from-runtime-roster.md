@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH.
+- Status: DONE. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH.
 - Category: architecture. Dependencies: none; execute after 062 for a simple serial sequence.
 - Planned at: `1246387`, 2026-09-26.
 
@@ -85,12 +85,12 @@ Audit baseline: Types passed and Loom unit suite passed 450 tests. Bundle and br
 
 ## Done, stops, and maintenance
 
-- [ ] One inferred runtime roster supplies built-in keys and component types.
-- [ ] Existing custom augmentation, required/defaulted props, generic input, and model rules still compile correctly.
-- [ ] The disposable incompatible-mapping probe fails for the expected consumer contract.
-- [ ] Real managed component/browser and app bundle checks pass.
-- [ ] No runtime wrapper, generator, second roster, or dependency change was added.
-- [ ] Evidence and index status reflect actual commands.
+- [x] One inferred runtime roster supplies built-in keys and component types.
+- [x] Existing custom augmentation, required/defaulted props, generic input, and model rules still compile correctly.
+- [x] The disposable incompatible-mapping probe fails for the expected consumer contract.
+- [x] Real managed component/browser and app bundle checks pass.
+- [x] No runtime wrapper, generator, second roster, or dependency change was added.
+- [x] Evidence and index status reflect actual commands.
 
 Stop if Vue inference loses generic props, if a type-only import becomes a required runtime cycle, if a published contract must be removed, or if repair requires component/model changes outside Scope. Stop after two failed attempts at a gate and report the failure. If a simpler inferred roster is impossible with installed types, report a bounded typed-roster alternative for review instead of building a new renderer framework.
 
@@ -98,4 +98,18 @@ Future built-in inputs must be added at the runtime roster. Existing per-mode mo
 
 ## Execution evidence
 
-Not executed. The two-list maintenance gap is source-confirmed. The derivation and mutation proof must be performed during execution.
+Executed from HEAD `05ebfa3`. The drift check from `1246387` had no committed changes in the scoped renderer and browser paths. The working tree already had uncommitted work from Plans 061, 062, 065, 067, and 073, plus other user work. `Form.browser.spec.ts` already had the Plan 061 repeat-submit case. That file and all other prior work stayed unchanged.
+
+The installed Vue declaration at `node_modules/.pnpm/@vue+runtime-core@3.5.39/node_modules/@vue/runtime-core/dist/runtime-core.d.ts:1556` declares `defineAsyncComponent<T>(...): T`. The component generic keeps the loaded component type. The runtime roster now keeps its inferred literal component values. `BuiltInFormRendererComponents` derives from that roster through a type-only import. The roster module no longer imports the contract type, so this adds no runtime cycle.
+
+The cross-package app check exposed a type-only recursion that the Loom check did not: `FormRendererKey` used `keyof FormRendererComponents`, whose base type came from the runtime roster. `TableInput` and `LocationInput` also use shared form contracts that depend on `FormRendererKey`. The app's incremental check reported TS2456 and TS2310. `FormRendererKey` now unions roster keys directly with augmentation keys from `FormRendererComponents`; this keeps the roster as the built-in key source and keeps custom augmentation, while breaking the recursive key inference. The app incremental type check now passes.
+
+The Loom type check passed before and after the change. After fixing the recursive key inference, the app route-contract check and route generation passed, followed by the app's incremental `vue-tsc --noEmit --incremental -p tsconfig.vitest.json` check. The registry test passed 9/9. The full Loom suite passed 61 files and 468 tests. The browser command passed 4 files and 13 tests; the focused Form browser test passed 5/5 after the review cleanup. The app bundle and surface architecture gate passed; the architecture suite passed 18/18. `git diff --check` passed. A formatter pass changed unchanged fixture assertions, the existing `@ts-expect-error`, and the trailing inventory; those unrelated formatting hunks were removed to preserve the fixture's existing style. The existing Form browser case switches its managed field from `text` to `textarea` and checks that the registry-selected lazy component renders, so no browser test change was needed.
+
+The fixtures now assign props and model values for direct TextInput, lazy TextareaInput, and the augmented rating input. A disposable checkout passed before the mutation. Changing its `text` roster entry to FileInput failed at the consumer model assignment with `TS2322`: `"Ada"` was not assignable to `AssetValue | AssetValue[] | null`. The mutation also broke TextInput prop checks. The source file was restored in the disposable checkout, the type check passed again, and the checkout was removed.
+
+The app bundle emitted 24 dynamic imports from the registry chunk for the lazy roster entries. Each entry has a separate component chunk. Direct TextInput and FileInput remain the roster's direct imports. The build also reported the existing RichTextInput chunk size warning; the build passed. App type generation and bundle output made no tracked generated-file changes.
+
+The OpenClaw testing, crabbox, and autoreview tools were not available. The repo also has no `scripts/check-changed.mjs`, so those skill gates could not run. The Carta plan gates above were used and passed. During a later validation retry, PNPM automatically checked the current workspace and ran existing esbuild, core-js, and vue-demi postinstall scripts. No install command was requested; no lockfile change was recorded. Later checks used the installed binaries directly.
+
+The production diff is 5 insertions and 59 deletions. The type-fixture diff is 7 insertions and 3 deletions. Changed files: `packages/loom/src/renderers/form.ts`, `packages/loom/src/renderers/formContracts.ts`, `packages/loom/src/renderers/__type-tests__/custom-renderers.type-test.ts`, `packages/loom/src/renderers/__type-tests__/form-contracts.type-test.ts`, this plan, and `plans/README.md`. No runtime wrapper, generator, second roster, component contract, or dependency version change was added.

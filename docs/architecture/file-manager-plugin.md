@@ -13,20 +13,23 @@ app.use(FrameworkPlugin)
 app.use(FileManagerPlugin, fileManagerOptions)
 ```
 
-App supplies opaque `root`, canonical `ManagedAsset` operations, and value
-conversion. This provider owns FileManager product selection. Direct FileInput
-uploads and asset previews use the app-scoped `adapters.assets` service
-installed through `FrameworkPlugin`; input fields do not carry adapters. The
-FileManager adapter may map backend paths to asset IDs, but the framework never
-parses IDs or assumes endpoint vocabulary.
+App supplies opaque `root`, `ManagedAsset` operations, and value conversion.
+The provider owns File Manager selection. A listing entry can be a file or a
+folder. The provider value adapter accepts and returns canonical `AssetValue`
+values for FileManagerInput, FileInput, and ImageInput. It maps those values to
+and from managed listing entries. A folder cannot become a persisted asset.
 
-The example uses an ID model for the standalone FileManager product. If a
-FileManager selection feeds a Loom file or image input, use the canonical
-`AssetValue` model and make `toModel` return the complete value accepted by the
-app's `AssetAdapter`; an ID alone is not an asset input model.
+The standalone `AssetPicker` emits a `ManagedAsset`. The standalone FileManager
+footer slot exposes its selected `ManagedAsset`. These surfaces do not call the
+provider value adapter. Direct FileInput uploads and asset previews use the
+app-scoped `adapters.assets` service installed through `FrameworkPlugin`; input
+fields do not carry adapters. The app owns backend path and URL mapping.
 
 ```ts
-const fileManagerOptions: FileManagerPluginOptions<string> = {
+import type { AssetValue } from '@southneuhof/loom/assets'
+import type { FileManagerPluginOptions, ManagedAsset } from '@southneuhof/loom/file-manager'
+
+const fileManagerOptions: FileManagerPluginOptions = {
   root: 'root-id',
   operations: {
     list: ({ parentId, signal }) => api.assets.list({ parentId, signal }),
@@ -34,11 +37,32 @@ const fileManagerOptions: FileManagerPluginOptions<string> = {
       api.assets.upload(file, { parentId, signal, onProgress }),
   },
   values: {
-    fromModel: (id) => api.assets.resolve(id),
-    toModel: (asset) => asset.id,
+    fromModel: (value: AssetValue) => api.assets.resolve(value.id),
+    toModel: (asset: ManagedAsset): AssetValue => {
+      if (asset.kind !== 'file') throw new Error('Folders cannot be persisted as input assets.')
+      const url = asset.previewUrl
+      if (!url) throw new Error('A file URL is required for an input asset.')
+      return {
+        kind: 'file',
+        id: asset.id,
+        url,
+        name: asset.name,
+        ...(asset.mimeType === undefined ? {} : { mimeType: asset.mimeType }),
+        ...(asset.size === undefined ? {} : { size: asset.size }),
+        ...(asset.updatedAt === undefined ? {} : { updatedAt: asset.updatedAt }),
+        ...(asset.metadata === undefined ? {} : { metadata: asset.metadata }),
+      }
+    },
   },
 }
 ```
+
+Import `AssetValue` from `@southneuhof/loom/assets` and `ManagedAsset` from
+`@southneuhof/loom/file-manager`. This example uses `previewUrl` as the
+canonical asset URL. An app that stores a different URL must map its stored
+asset value explicitly. The Loom types define this boundary; the app still
+validates backend values with its schema and validates untyped input with
+`AssetAdapter.read`.
 
 Optional operations control UI capability. Missing upload, create-folder, or
 remove operations hide corresponding actions. File and Image inputs show picker

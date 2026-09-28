@@ -121,8 +121,8 @@ async function fixture() {
 
 describe('generated nested navigation', () => {
   it('keeps nested return routes scoped to their declared parent identity', async () => {
-    const inherited = makeRoles('inherited-child-route', 'u1')
-    const overridden = makeRoles('overridden-child-route', 'u2')
+    const inherited = makeRoles('child-route', 'u1')
+    const overridden = makeRoles('child-route', 'u2')
     const routes: RouteRecordRaw[] = [
       { path: '/users/:userId/detail', name: 'settings-users-detail', component: { template: '<div />' } },
       { path: '/users/:userId/detail/roles', name: 'settings-users-detail-role-assignments', component: { template: '<div />' } },

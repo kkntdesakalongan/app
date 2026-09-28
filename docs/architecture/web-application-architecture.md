@@ -1,9 +1,8 @@
 # Web application architecture
 
-This file summarizes the current `apps/web` integration. The approved Loom
-contracts live in
-[resource system architecture](../resource_system_overhaul/ARCHITECTURE.md).
-Read [file routing](file-routing.md) for route placement and parent ownership.
+Use the [current Loom authoring path](../resource_system_overhaul/ARCHITECTURE.md#direct-module-authoring)
+when you add a module. This file summarizes the app owners and route rules. Read
+[file routing](file-routing.md) for route placement and parent ownership.
 
 ## Owners
 
@@ -48,8 +47,11 @@ several child sections. Route files and Back targets must follow
 ## Raw schemas and surface definitions
 
 Keep operation schemas local to the module and export their raw Zod values and
-inferred types. Use those values directly in form, table, detail, and operation
-definitions.
+inferred types. The compiled app examples are
+[users.schema.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.schema.ts),
+[users.actions.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.actions.ts),
+and [users.resource.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.resource.ts).
+Use the schemas directly in form, table, detail, and operation definitions.
 
 ```ts
 import { z } from 'zod/v4'
@@ -125,6 +127,8 @@ The adapter validates the query before dispatch and encodes `sort_by` as wire
 `sort` and direction `sort` as wire `order`. A resource table binds the loader
 directly; it does not also receive this query schema. Keep `querySchema` on a
 standalone Table only when that Table owns query validation for its loader.
+Pass `querySchema` only when the typed Hono route includes list. A route that
+only creates, reads one record, updates, or deletes does not need query options.
 
 ## One-object resource declarations
 
@@ -192,6 +196,11 @@ row-dependent policy, bind the row with `command.withContext({ record })` and
 call `can` or `run` with those same arguments. A policy that needs a row denies
 when the command has no bound record.
 
+A routed command with static permission uses that value for route entry. A
+routed command with an argument-dependent permission callback needs a static
+`routePermission` value for entry. Do not call the callback without command
+arguments. `can` and `run` still apply the callback with their actual arguments.
+
 Resource list, detail, create, and update declarations use the matching
 complete View prop contracts. The binder removes operation metadata, forwards
 page options such as filters, export, back targets and completion callbacks,
@@ -211,8 +220,9 @@ Routes pass the static or identity-bound bags directly to views:
 
 The route owns the route param and converts it to the resource identity value.
 Vue Router route names and params are type-checked against the generated route
-map. Keep route permissions on the nested file route metadata so direct child
-entry follows the same access contract as navigation.
+map. Resource routes use the registered operation and its static entry
+permissions. Use `meta.permission` for extraordinary routes without a resource
+registration.
 
 ## Data, access, and cache
 

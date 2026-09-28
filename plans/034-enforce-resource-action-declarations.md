@@ -170,8 +170,8 @@ Use them as regression inputs. Do not move or rename their custom declarations.
 Move the two direct callers from permission-store checks to their custom
 action's `can(...)`. If another direct caller relies on an invalid standard
 option or an extra custom action property, record it in this plan before changing
-that caller. The current module generator creates standard actions only. Do not
-change it unless this search finds a generated custom action.
+that caller. Current app resources declare their selected actions directly. Do
+not add a custom action until this search finds a caller that needs it.
 
 Out of scope: a separate `customActions` declaration map, API or server
 authorization changes, new permission codes, database work, UI layout, standard

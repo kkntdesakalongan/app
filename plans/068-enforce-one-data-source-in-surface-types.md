@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH.
+- Status: DONE. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH.
 - Category: contract / unfinished migration. Depends on root Plan 064 for the Vue-aware negative diagnostic gate. Execute before root Plan 069.
 - Planned at: `1246387`, 2026-09-26.
 
@@ -28,7 +28,7 @@ An in-memory TypeScript probe accepted four invalid Table/Detail bags: both and 
 - `packages/loom/src/contracts/components.ts`.
 - Direct source forwarding in `packages/loom/src/components/core/{Collection,Table,TreeTable,Detail,TableContent}.vue`.
 - Source composition types in `packages/loom/src/resources/operations.ts` and `packages/loom/src/components/composites/form-inputs/lookupInput.types.ts` and `packages/loom/src/components/composites/form-inputs/tableInput.types.ts`.
-- Existing core source behavior tests under `packages/loom/src/components/core/__tests__/`; existing resource and composite type fixtures.
+- Existing core source behavior tests under `packages/loom/src/components/core/__tests__/`, including `surface-data-source.spec.ts`; existing resource and composite type fixtures.
 - New `packages/loom/src/contracts/__type-tests__/surface-data-source.type-test.ts` and `.vue` fixtures.
 - Extend `packages/loom/scripts/check-contract-diagnostics.mjs` supplied by root Plan 064 with bounded surface-source fixtures. Do not create a second diagnostic runner.
 - Architecture section 7.1 only if clarification is needed; this plan and its index row.
@@ -55,7 +55,7 @@ Read root AGENTS, resource architecture, and `test-audit`. Preserve initial dirt
 | Inventory | `rg -n 'CollectionProps|TableProps|TreeTableProps|TableContentProps|DetailProps' packages/loom/src apps/web/src` | Record construction and omission sites |
 | Types | `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json` | Exit 0 |
 | Diagnostics | `pnpm --filter @southneuhof/loom test:diagnostics` | Exit 0; invalid cases rejected for source ownership |
-| Runtime | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/components/core/__tests__/collection.spec.ts src/components/core/__tests__/table-collection.spec.ts src/components/core/__tests__/detail.spec.ts src/components/core/__tests__/TreeTable.spec.ts` | All pass |
+| Runtime | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/components/core/__tests__/collection.spec.ts src/components/core/__tests__/table-collection.spec.ts src/components/core/__tests__/detail.spec.ts src/components/core/__tests__/TreeTable.spec.ts src/components/core/__tests__/table.spec.ts src/components/core/__tests__/surface-data-source.spec.ts` | All pass, including dynamic source changes |
 | App | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 |
 | Architecture | `pnpm test:surface-architecture` | Exit 0 |
 
@@ -66,11 +66,11 @@ Read root AGENTS, resource architecture, and `test-audit`. Preserve initial dirt
 
 ## Done, stops, and maintenance
 
-- [ ] Required sources survive named bags, spreads, resource extraction, and real Vue component calls.
-- [ ] Diagnostic cases reject both/neither for the intended reason; positive controls compile.
-- [ ] Existing runtime presence checks and data shape checks remain active.
-- [ ] TableContent has no source requirement; resource-bound loaders remain required.
-- [ ] All commands pass and no suppression or permissive fallback bypasses the union.
+- [x] Required sources survive named bags, spreads, resource extraction, and real Vue component calls.
+- [x] Diagnostic cases reject both/neither for the intended reason; positive controls compile.
+- [x] Runtime presence and data-shape checks remain active during setup and after prop updates.
+- [x] TableContent has no source requirement; resource-bound loaders remain required.
+- [x] All commands pass and no suppression or permissive fallback bypasses the union.
 
 Stop if Vue macros erase or reject the public source union, if generic inference loses row/query types, or if enforcing the union requires a new component wrapper. Report the smallest failing fixture; do not ship a TS-only claim when templates remain permissive. Stop after two failed bounded corrections. Future source-related props must be added to their actual owner, not to every bag through a broad common interface.
 
@@ -78,4 +78,23 @@ The baseline audit passed Loom types and 450 tests in 61 files before these chan
 
 ## Execution evidence
 
-Not implemented. Public TypeScript permissiveness is reproduced. Vue-negative and new regression gates are not run.
+STATUS: COMPLETE
+
+The contracts now combine source-free options with one required source branch for Collection, Table, TreeTable, and Detail. TableContent uses source-free options and remains a loaded-row presentation. Resource list and detail bags remove both primitive source keys before adding a required bound loader and `data?: never`. LookupInput and TableInput keep their existing source-free table definition ownership; no change was needed there.
+
+Table and TreeTable now build complete source branches when they forward props. Each source-owning component also repeats the runtime source check before updates. A mounted regression changes each component from a valid data source to competing data and load props and verifies that the owning component rejects the update. Before the update checks, all four mounted cases captured no errors and failed at the assertion for the rejected update. The diagnostic harness from Plan 064 includes eight TypeScript negatives and eight real Vue template negatives for both/neither sources. Each source case has a valid typed counterpart. New positive fixtures cover empty and loaded collections, controlled and loaded Detail, both TreeTable branches, resource extraction, object spreads, query inference, real Vue calls, and source-free TableContent.
+
+`load?: never` and `data?: never` can accept an explicit undefined with the current optional-property settings. The runtime own-property check remains authoritative. Table's existing runtime test now also checks the neither-source case, alongside both-source calls and an explicit undefined property.
+
+| Gate | Result |
+|---|---|
+| Drift | `05ebfa3`; no committed in-scope drift from `1246387`. Existing working-tree changes from completed Plans 064 and 065 were preserved. |
+| Inventory | Reviewed source unions, resource bag `Omit` sites, Table and TreeTable forwarding, ListView bags, and LookupInput/TableInput table ownership. App consumers remain resource-bound. |
+| Types | Pass: `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json`. |
+| Diagnostics | Pass: 11 resource, 8 TypeScript surface, and 8 Vue surface cases. |
+| Runtime | Pass: 6 core files, 57 tests, including the four planned files, `table.spec.ts`, and four mounted valid-to-invalid source transitions. |
+| App | Pass: `pnpm --filter @southneuhof/framework-web type-check`; route contract and generation completed. |
+| Architecture | Pass: 18 checker tests and `pnpm test:surface-architecture`. |
+| Whitespace | Pass: `git diff --check`. |
+
+The OpenClaw test runner, crabbox, and autoreview tools were unavailable in this environment. They were not counted as passed. No install, commit, push, or external write was performed.

@@ -42,6 +42,7 @@ test('web validation runs both framework suites, tooling, browser, and type chec
     'pnpm --filter @southneuhof/framework-web test',
     'pnpm test:module-tooling',
     'pnpm --filter @southneuhof/loom test:browser',
+    'node packages/loom/scripts/check-contract-diagnostics.mjs --project app',
   ]) {
     assert.ok(workflow.includes(`run: ${command}`), `workflow must run ${command}`)
   }

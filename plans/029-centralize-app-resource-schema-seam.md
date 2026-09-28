@@ -7,7 +7,7 @@
 > `plans/README.md`.
 >
 > **Drift check (run first)**:
-> `git diff --stat 59ba2d1..HEAD -- apps/web/src/framework apps/web/src/router apps/web/src/routes scripts/scaffold-bounded-module.mjs scripts/scaffold-bounded-module.test.mjs .agents/skills/build-resource-form .agents/skills/migrate-web-resource docs/architecture/web-application-architecture.md`
+> `git diff --stat 59ba2d1..HEAD -- apps/web/src/framework apps/web/src/router apps/web/src/routes .agents/skills/build-resource-form .agents/skills/migrate-web-resource docs/architecture/web-application-architecture.md`
 > Then run `git status --short`. At the planned revision, the only source work
 > is the untracked proof file
 > `apps/web/src/framework/hono/__type-tests__/define-schema.proof.spec.ts`.
@@ -179,12 +179,6 @@ The app seam owns `fromZod`.
   - `apps/web/src/framework/adapters/assets.form.spec.ts`
   - `apps/web/src/router/__tests__/guards.spec.ts`
   - `apps/web/src/router/__tests__/nested-navigation.spec.ts`
-- `scripts/scaffold-bounded-module.mjs:531-546` has two schema templates. The
-  non-`id` branch uses Loom `defineSchema`; the `id` branch uses
-  `defineEntitySchema`. Current configuration always derives `id`, but dead
-  output must not keep an obsolete schema pattern.
-- `scripts/scaffold-bounded-module.test.mjs:142-144` requires the old generated
-  `defineEntitySchema` call.
 - `docs/architecture/web-application-architecture.md:48-91` says there is one
   builder but shows the Loom builder and `fromZod` at app call sites. Replace
   this with the decided app/Loom boundary.
@@ -204,7 +198,6 @@ The app seam owns `fromZod`.
 | Web type-check | `pnpm --filter @southneuhof/framework-web type-check` | exit 0, including all `@ts-expect-error` cases |
 | Schema tests | `pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/schema.spec.ts framework/__tests__/route-resource-boundary.spec.ts framework/__tests__/entity-schema-import.spec.ts` | all selected tests pass |
 | Migrated app tests | `pnpm --filter @southneuhof/framework-web test:focused -- framework/acceptance/QueryOwnershipFixture.spec.ts framework/adapters/assets.form.spec.ts router/__tests__/guards.spec.ts router/__tests__/nested-navigation.spec.ts 'routes/(authenticated)/settings/permissions' 'routes/(authenticated)/settings/roles' 'routes/(authenticated)/settings/users'` | all selected tests pass |
-| Generator test | `node --test scripts/scaffold-bounded-module.test.mjs` | all tests pass |
 | Module tooling | `pnpm test:module-tooling` | all Node and Python checks pass |
 | Focused lint | `pnpm --filter @southneuhof/framework-web lint:focused -- <changed web files>` | exit 0; formatting is correct |
 | Final patch check | `git diff --check` | no output |
@@ -243,8 +236,6 @@ occurs after collection.
 - `apps/web/src/routes/(authenticated)/settings/roles/[roleId]/detail/permissions/role-permissions.schema.ts`
 - `apps/web/src/routes/(authenticated)/settings/users/users.schema.ts`
 - `apps/web/src/routes/(authenticated)/settings/users/[userId]/detail/role-assignments/role-assignments.schema.ts`
-- `scripts/scaffold-bounded-module.mjs`
-- `scripts/scaffold-bounded-module.test.mjs`
 - `.agents/skills/build-resource-form/SKILL.md`
 - `.agents/skills/migrate-web-resource/SKILL.md`
 - `docs/architecture/web-application-architecture.md`
@@ -479,38 +470,11 @@ Do not change test behavior or expected values.
 **Verify**: run the migrated app-test command from "Commands you will need".
 All selected tests pass.
 
-### Step 6: Make the scaffold generate only the new pattern
+### Step 6: Retired source-template work
 
-In `scripts/scaffold-bounded-module.mjs`, replace both branches in
-`renderSchema(config)` with one template:
-
-```ts
-import { defineSchema } from '@/framework/schema'
-
-export const ${plural}Schema = defineSchema(rpc['${config.slug}'], {
-  identity: ${literal(config.identity.key)},
-  record: ${entity}.schemas.select,
-  create: ${entity}.schemas.create,
-  update: ${entity}.schemas.update,
-})
-```
-
-The current generator derives `id`, but keep `config.identity.key` in the
-template because the normalized configuration owns that value. Remove the dead
-non-`id` Loom/fromZod branch. Keep existing exported type aliases unless a
-separate current generator rule removes them; this plan does not redesign the
-generated module contract.
-
-In `scripts/scaffold-bounded-module.test.mjs`, replace the two old assertions
-with exact assertions for:
-
-- the `@/framework/schema` import;
-- the one direct call;
-- `identity`, `record`, `create`, and `update` members;
-- no `defineEntitySchema`, `fromZod`, or Loom `defineSchema` text.
-
-**Verify**: the generator test passes. Then run `pnpm test:module-tooling`; all
-checks pass.
+Plan 073 removed the source-writing workflow. The app schema owners now use the
+current direct contract. No separate template change or template test remains.
+The app type-check and schema tests own this contract.
 
 ### Step 7: Update agent and architecture instructions
 
@@ -560,7 +524,7 @@ Run, in order:
 
 1. Web type-check.
 2. Both focused web-test commands.
-3. Generator test and module tooling.
+3. Module tooling.
 4. Focused lint for every changed web TypeScript/Vue file.
 5. `git diff --check`.
 6. The final inventories below.
@@ -569,14 +533,14 @@ Run, in order:
 rg -n "defineEntitySchema" apps/web/src scripts .agents/skills docs/architecture
 rg -n "import .*defineSchema.*@southneuhof/loom|import \{[^}]*defineSchema[^}]*\} from '@southneuhof/loom'" apps/web/src
 rg -n "\.passthrough\(\)" apps/web/src/routes/'(authenticated)'/settings/users/users.schema.ts
-rg -n "defineSchema" apps/web/src scripts/scaffold-bounded-module.mjs .agents/skills/build-resource-form .agents/skills/migrate-web-resource docs/architecture/web-application-architecture.md
+rg -n "defineSchema" apps/web/src .agents/skills/build-resource-form .agents/skills/migrate-web-resource docs/architecture/web-application-architecture.md
 ```
 
 Expected:
 
 - first three commands return no match;
 - the final command lists only the app `defineSchema` implementation, imports,
-  calls, tests, generator output, and current instructions;
+  calls, tests, and current instructions;
 - no app source imports Loom `defineSchema`;
 - no proof-only file remains.
 
@@ -587,10 +551,10 @@ Expected:
 - Add one runtime app-schema spec based on the validated prototype.
 - Extend the existing route-resource boundary scan so future app code cannot
   import the raw Loom builder.
-- Keep each existing module and fixture test. They prove that migration does
-  not change behavior.
-- Keep generator tests as source-output tests because generated imports and
-  call shapes are the behavior under test.
+- Keep each existing app-module and fixture test. They prove that migration
+  does not change behavior.
+- Keep application source and contract tests because their direct runtime and
+  type behavior are the supported contract.
 - No E2E test is needed. This migration changes compile-time ownership and
   schema construction, not a user flow.
 
@@ -612,8 +576,8 @@ All items must hold:
   architecture docs.
 - [ ] No app source imports `defineSchema` from Loom.
 - [ ] All current web schema callers use `@/framework/schema`.
-- [ ] The scaffold emits only the new app schema call.
-- [ ] Web type-check, selected web tests, generator tests, module tooling, and
+- [ ] Current app schemas use only the new app schema call.
+- [ ] Web type-check, selected web tests, module tooling, and
   focused lint pass.
 - [ ] `git diff --check` has no output.
 - [ ] Only files in this plan's scope changed, apart from plan status.

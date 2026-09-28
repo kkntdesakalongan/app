@@ -68,6 +68,66 @@ function requestQuery(index = 0) {
 afterEach(() => fetchMock.mockClear())
 
 describe('createHonoResourceActions', () => {
+  it('adapts a list-only route without a detail or mutation endpoint', async () => {
+    const listApp = new Hono().get(
+      '/records/list',
+      validator('query', (value) => value as { page?: string; limit?: string; search?: string; sort?: string; order?: string }),
+      (context) => context.json({ data: [{ id: '1', name: 'One' }], page: 1, limit: 10, total: 1 })
+    )
+    const listFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => listApp.fetch(new Request(String(input), init)))
+    const rpc = hc<typeof listApp>('https://api.test', { fetch: listFetch })
+    const listQuerySchema = z.object({
+      ...collectionQueryFields,
+      sort_by: z.enum(['name']).optional(),
+    })
+    const actions = createHonoResourceActions(rpc.records, { querySchema: listQuerySchema })
+
+    expect(listFetch).not.toHaveBeenCalled()
+    await expect(actions.list({ query: { page: 2, sort_by: 'name' }, searchParameters: {} })).resolves.toEqual({
+      data: [{ id: '1', name: 'One' }],
+      meta: { page: 1, pageSize: 10, total: 1, totalPage: 1 },
+    })
+    expect(new URL(String(listFetch.mock.calls[0]?.[0])).searchParams.get('sort')).toBe('name')
+    expect(new URL(String(listFetch.mock.calls[0]?.[0])).searchParams.get('page')).toBe('2')
+  })
+
+  it('adapts a create-only route without list configuration', async () => {
+    const createApp = new Hono().post(
+      '/entries/create',
+      validator('json', (value) => value as { name: string }),
+      (context) => context.json({ data: { id: '1', name: context.req.valid('json').name } }, 201)
+    )
+    const createFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => createApp.fetch(new Request(String(input), init)))
+    const rpc = hc<typeof createApp>('https://api.test', { fetch: createFetch })
+    const actions = createHonoResourceActions(rpc.entries)
+
+    expect(createFetch).not.toHaveBeenCalled()
+    await expect(Reflect.get(actions, 'list')({ query: {}, searchParameters: {} })).rejects.toThrow(/list.*querySchema.*parseAsync/)
+    expect(createFetch).not.toHaveBeenCalled()
+    await expect(actions.create({ name: 'Created' })).resolves.toEqual({ id: '1', name: 'Created' })
+    expect(createFetch).toHaveBeenCalledTimes(1)
+    expect(createFetch.mock.calls[0]?.[1]?.body).toBe(JSON.stringify({ name: 'Created' }))
+  })
+
+  it('adapts update and detail routes without list configuration', async () => {
+    const updateApp = new Hono()
+      .get('/records/detail/:id', (context) => context.json({ data: { id: context.req.param('id'), name: 'Before' } }))
+      .patch(
+        '/records/update/:id',
+        validator('json', (value) => value as { name: string }),
+        (context) => context.json({ data: { id: context.req.param('id'), name: context.req.valid('json').name } })
+      )
+    const updateFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => updateApp.fetch(new Request(String(input), init)))
+    const rpc = hc<typeof updateApp>('https://api.test', { fetch: updateFetch })
+    const actions = createHonoResourceActions(rpc.records)
+
+    expect(updateFetch).not.toHaveBeenCalled()
+    await expect(actions.detail({ id: '1', searchParameters: {} })).resolves.toEqual({ id: '1', name: 'Before' })
+    await expect(actions.update('1', { name: 'After' })).resolves.toEqual({ id: '1', name: 'After' })
+    expect(updateFetch).toHaveBeenCalledTimes(2)
+    expect(updateFetch.mock.calls[1]?.[1]?.body).toBe(JSON.stringify({ name: 'After' }))
+  })
+
   it('validates and encodes one canonical query while preserving the endpoint protocol', async () => {
     const rpc = hc<typeof app>('https://api.test', { fetch: fetchMock })
     const actions = createHonoResourceActions(rpc.rows, { querySchema })
@@ -193,11 +253,10 @@ describe('createHonoResourceActions', () => {
     await expect(actions.list({ query: {}, searchParameters: {} })).rejects.toEqual({ error: 'bad' })
   })
 
-  it('rejects an unknown resource route with a kebab-case hint', () => {
-    const rpc = hc<typeof app>('https://api.test', { fetch: fetchMock })
-    expect(() => createHonoResourceActions<typeof rpc.rows, typeof querySchema>(undefined as never, { querySchema })).toThrow(/kebab-case|rpc\[/)
-    expect(() => createHonoResourceActions<typeof rpc.rows, typeof querySchema>({} as never, { querySchema })).toThrow(/kebab-case|rpc\[/)
-    expect(() => createHonoResourceActions<typeof rpc.rows, typeof querySchema>({ list: rpc.rows.list } as never, { querySchema })).toThrow(/kebab-case|rpc\[/)
+  it('rejects a non-object route and names a malformed operation when it is invoked', async () => {
+    expect(() => createHonoResourceActions(undefined as never)).toThrow(/kebab-case|rpc\[/)
+    const actions = createHonoResourceActions({} as never)
+    await expect(Reflect.get(actions, 'create')({ name: 'One' })).rejects.toThrow(/create operation could not be invoked/)
   })
 
   it('accepts hyphenated first segments', async () => {

@@ -2,17 +2,17 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P1. Effort: M. Risk: MED. Confidence: HIGH.
+- Status: DONE. Priority: P1. Effort: M. Risk: MED. Confidence: HIGH.
 - Category: correctness / ownership. Depends on: none. Run serially with input contract Plan 070; recommended after it.
 - Planned at: `1246387`, 2026-09-26.
 
 A relation picker that uses a resource loader must refresh when that resource changes. Authors should declare the source owner once, not know a private cache key or arrange manual picker refreshes. Keep query execution in Loom, selection behavior in each control, and resource invalidation in the resource layer.
 
-## Current evidence
+## Baseline evidence
 
-`packages/loom/src/components/inputs/useOptionSource.ts:20` constructs `['option-source', namespace, stableValue(searchParameters)]`. `packages/loom/src/query/client.ts:44` invalidates resource-prefixed entries only. The users create form at `apps/web/src/routes/(authenticated)/settings/users/users.resource.ts:41` passes `roles.list.table.load` and its namespace into a checkbox group, but resource ownership cannot be supplied. An in-memory probe using the actual invalidator marked the roles list invalid and left the roles option entry valid.
+Before this change, `packages/loom/src/components/inputs/useOptionSource.ts:20` constructed `['option-source', namespace, stableValue(searchParameters)]`. `packages/loom/src/query/client.ts:44` invalidated resource-prefixed entries only. The users create form at `apps/web/src/routes/(authenticated)/settings/users/users.resource.ts:41` passed `roles.list.table.load` and its namespace into a checkbox group, but resource ownership could not be supplied. An in-memory probe using the actual invalidator marked the roles list invalid and left the roles option entry valid.
 
-Existing `components/inputs/__tests__/option-source.spec.ts` manually invalidates an option key. That proves selection behavior during refresh, not resource-to-option invalidation. Extend this test owner with the missing integration boundary.
+The baseline `components/inputs/__tests__/option-source.spec.ts` manually invalidated a private option key. That proved selection behavior during refresh, not resource-to-option invalidation. The final regression uses mounted inputs and resource invalidation.
 
 ## Scope and target contract
 
@@ -26,7 +26,7 @@ Change `packages/loom/src/components/inputs/useOptionSource.ts`, `SelectInput.vu
 
 ## Execution rules
 
-This is an approved plan, not completed implementation. Read root AGENTS, the current resource architecture, and `test-audit` before source/test edits. Use the applicable web skill for app changes. Read this entire plan. Preserve existing local work; record `git status --short` before editing. Add no implementation comments, compatibility aliases, broad type suppressions, unrelated formatting, installs, commits, pushes, migrations, or seeds.
+This approved plan is implemented. The procedure below records its execution requirements. Read root AGENTS, the current resource architecture, and `test-audit` before source/test edits. Use the applicable web skill for app changes. Read this entire plan. Preserve existing local work; record `git status --short` before editing. Add no implementation comments, compatibility aliases, broad type suppressions, unrelated formatting, installs, commits, pushes, migrations, or seeds.
 
 Run the drift command first. Compare changed owners with the excerpts below and reconcile approved predecessor changes. Stop on incompatible drift, an out-of-scope requirement, or two failed bounded correction attempts. Do not weaken a contract to make a check pass. Record command, exit status, and actual selected tests in this plan; update the index after review. The local test skill references unavailable OpenClaw tools: report those as unavailable rather than successful checks. App type checks can generate route artifacts; preserve unrelated work.
 
@@ -50,13 +50,30 @@ Run the drift command first. Compare changed owners with the excerpts below and 
 
 ## Done and stop conditions
 
-- [ ] A bound resource write/invalidation refreshes active owned pickers; inactive entries become stale for their next use.
-- [ ] Other resources and controlled inputs are unaffected; selection policy is unchanged.
-- [ ] Resource ownership is represented in source context comparisons and actual component props.
-- [ ] All gates pass and no app code authors private option keys.
+- [x] A resource invalidation refreshes active owned pickers; inactive entries refresh on their next use.
+- [x] Other resources and controlled inputs are unaffected; selection policy is unchanged.
+- [x] Resource ownership is represented in source context comparisons and actual component props.
+- [x] All available gates pass and no app code authors private option keys.
 
 Stop if a direct loader's resource owner cannot be established, if the fix needs model-shape conversion, or if shared result shapes would collide. Future option data sources must declare their owner when they participate in resource invalidation.
 
 ## Evidence
 
-Planning only. The cache-prefix mismatch was reproduced with the actual invalidator. Mounted repair tests and app checks remain unrun.
+Before edits, Loom types exited 0 and the selected behavior command passed 42 tests in 4 files. The baseline drift command `git diff --stat 1246387..HEAD -- packages/loom/src/components/inputs packages/loom/src/query apps/web/src/routes` exited 0 with no committed changes in the scoped owners. Those owners also had no pre-existing worktree edits. The inventory command `rg -n 'useOptionSource|load: .*list.table.load|namespace: .*list.table.namespace' packages/loom/src apps/web/src` exited 0 and found one direct resource-backed option declaration in the users form; it now passes `roles.list.table.resource`. No other app declarations needed migration.
+
+The two new mounted regressions failed before the implementation: resource invalidation did not reload owned options, and an owner change did not clear the three controls' remote selections. The final gates passed:
+
+| Gate | Command | Result |
+|---|---|---|
+| Pre-fix regression | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/components/inputs/__tests__/option-source.spec.ts` | Exit 1 as expected; both new cases failed because resource invalidation did not reload options and owner changes did not change selection context |
+| Loom types | `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json` | Exit 0 |
+| Behavior | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/components/inputs/__tests__/option-source.spec.ts src/query/__tests__` | Exit 0; 45 tests in 4 files after the namespace-removal regression |
+| Web types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 |
+| Architecture | `pnpm test:surface-architecture` | Exit 0; 18 checks passed |
+| Whitespace | `git diff --check` | Exit 0 |
+
+The mounted test uses the real query client and resource invalidator. It covers whole-resource and keyed invalidation, inactive option entries, a separate resource, a standalone loader, controlled data, same-owner selection retention, and owner changes in SelectInput, RadioGroupInput, and CheckboxGroupInput. The active form guidance and current architecture now describe the resource owner and namespace roles. The pending repair row for this plan is removed.
+
+The test-audit skill refers to `$openclaw-testing`, `$crabbox`, `$autoreview`, `scripts/run-vitest.mjs`, and `scripts/check-changed.mjs`. These tools and scripts are unavailable in this checkout. Prettier is also unavailable, so its formatter check did not run. No autoreview ran. The plan's listed pnpm gates ran directly, and `git diff --check` passed.
+
+The mounted namespace-removal regression exposed a fallback identity bug: after removing an authored namespace, the source reused that old shared namespace and did not load under its per-instance key. `useOptionSource` now always creates the instance fallback and selects the current authored namespace only when it builds the query key. The focused test failed before the fix and passed after it. The full behavior suite then passed 45 tests in 4 files; Loom types and web types passed again.

@@ -353,7 +353,7 @@ The main Carta skills include:
 
 Designs and implementation plans normally live under `plans/<feature>/`. This gives later agent sessions a persistent record of what was agreed and what remains to be done.
 
-Generate an approved bounded module with the node CLI: `pnpm scaffold:bounded-module -- --manifest plans/<feature>/module.json --check`, then `--apply`. Read `.agents/skills/carta-module-development/references/bounded.md` for the manifest contract.
+After the design and plan are approved, use `$carta-module-development` to author the API and web modules directly under their current contracts.
 
 Repository-wide instructions are in [AGENTS.md](AGENTS.md).
 

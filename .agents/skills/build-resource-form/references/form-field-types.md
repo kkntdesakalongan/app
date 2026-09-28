@@ -31,17 +31,26 @@ Use `text` with a native `type` only when the form contract still owns a string.
 
 | Renderer | Use it for | Value and common props |
 | --- | --- | --- |
-| `select` | A compact closed choice set | scalar or array; `load` and optional `namespace`, or static `data`; `pick`, `view`, `multi`, `searchable`, `clearable` |
-| `radio` | A small exclusive set that must stay visible | scalar; `load` and optional `namespace`, or static `data`; `pick`, `view`, `variant`, `direction` |
+| `select` | A compact closed choice set | scalar or array; `load`, optional `resource` and `namespace`, or static `data`; `pick`, `view`, `multi`, `searchable`, `clearable` |
+| `radio` | A small exclusive set that must stay visible | scalar; `load`, optional `resource` and `namespace`, or static `data`; `pick`, `view`, `variant`, `direction` |
 | `checkbox` | One boolean agreement or flag | boolean; `required` |
 | `switch` | One on/off value | boolean; `required` |
-| `checkbox-group` | A small visible multi-choice set | selected record array; `load` and optional `namespace`, or static `data`; `pick`, `view`, `searchParameters` |
+| `checkbox-group` | A small visible multi-choice set | selected record array; `load`, optional `resource` and `namespace`, or static `data`; `pick`, `view`, `searchParameters` |
 | `lookup` | A searchable database-backed relation | scalar identity; `load`, optional `namespace`, and `loadDetail`; `table`, `pick`, `view`, `searchParameters` |
 
 Use static `data` props only for a small closed set. Put loaders and other
 component props inside the field's `props` object. For database-backed options,
-pass the owner's loader, for example
-`props: { load: roles.list.table.load, namespace: roles.list.table.namespace }`.
+pass the owner's loader and resource key:
+
+```ts
+props: {
+  load: roles.list.table.load,
+  resource: roles.list.table.resource,
+  namespace: roles.list.table.namespace,
+}
+```
+
+The resource owns option invalidation. A standalone loader can omit `resource`.
 For lookup, add `loadDetail(context)` using the owner's detail loader and pass
 its own table definition as `props.table`. Keep filters in `searchParameters`.
 The raw form schema defines accepted multi-selection values and any transform

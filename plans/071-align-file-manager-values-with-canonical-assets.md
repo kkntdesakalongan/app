@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH for the mismatch.
+- Status: DONE. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH for the mismatch.
 - Category: public contract / migration completion.
 - Depends on root Plan 064 for the negative diagnostic gate. Recommended after 070; implementation is otherwise independent.
 - Planned at: `1246387`, 2026-09-26.
@@ -72,11 +72,11 @@ Read root AGENTS, the architecture asset rules, `test-audit`, and the existing a
 
 ## Done, stops, and maintenance
 
-- [ ] `rg -n 'FileManagerPluginOptions<|FileManagerValueAdapter<' packages/loom/src apps/web/src docs/architecture/file-manager-plugin.md` has no matches, excluding deliberately invalid diagnostic fixture strings.
-- [ ] Canonical sync/async adapters compile; ID-only adapters fail for the intended public contract reason.
-- [ ] Existing folder rejection, selection, conversion, and invalid-value behavior tests pass.
-- [ ] Active documentation describes the shipped input contract; managed entries remain distinct from persisted assets.
-- [ ] All gates pass, with no framework-to-backend type dependency.
+- [x] `rg -n 'FileManagerPluginOptions<|FileManagerValueAdapter<' packages/loom/src apps/web/src docs/architecture/file-manager-plugin.md` has no matches, excluding deliberately invalid diagnostic fixture strings.
+- [x] Canonical sync/async adapters compile; ID-only adapters fail for the intended public contract reason.
+- [x] Existing folder rejection, selection, conversion, and invalid-value behavior tests pass.
+- [x] Active documentation describes the shipped input contract; managed entries remain distinct from persisted assets.
+- [x] All gates pass, with no framework-to-backend type dependency.
 
 Stop if an actual separate supported consumer requires arbitrary provider model values. Report its path and behavior; do not remove it or add a second provider without a revised plan. Stop if `StoredAsset` is not structurally compatible with `AssetValue`, if schema changes are required, or after two failed bounded corrections. Future backend asset changes belong in the application conversion, not in the plugin's canonical input contract.
 
@@ -84,4 +84,20 @@ The baseline audit passed Loom types and 450 tests in 61 files before these chan
 
 ## Execution evidence
 
-Not implemented. The generic provider, canonical shipped consumers, and conflicting standalone guide example were inspected. New diagnostic and runtime gates remain unrun.
+The consumer search found one installed provider in `apps/web/src/main.ts`, configured by `apps/web/src/framework/adapters/fileManager.ts`. `FileManagerInput`, `FileInput`, and `ImageInput` use the provider conversion. The standalone `AssetPicker` emits `ManagedAsset`, and the standalone FileManager footer slot exposes its selected `ManagedAsset`; neither uses provider conversion. The only ID-only provider example was the active standalone guide. The broader source search found no other supported arbitrary-value provider.
+
+The committed drift command (`git diff --stat 1246387..HEAD -- packages/loom/src/file-manager packages/loom/src/components/inputs/__tests__/FileInput.file-manager.spec.ts apps/web/src/framework/adapters/fileManager.ts apps/web/src/framework/adapters/__tests__/fileManager.spec.ts docs/architecture/file-manager-plugin.md`) reported no committed changes in the plan's selected files. The shared worktree was already dirty across Plans 061–075 and 076. Those changes were preserved. The app type check regenerated route type output without adding a worktree change.
+
+| Gate | Baseline | Final |
+|---|---|---|
+| Loom types: `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json` | Exit 0 | Exit 0 |
+| Loom diagnostics: `pnpm --filter @southneuhof/loom test:diagnostics` | Exit 0; 27 Loom contract, 9 TypeScript surface, and 8 Vue surface cases | Exit 0; 29 Loom contract, 9 TypeScript surface, and 8 Vue surface cases, including string-output and string-input negatives with valid canonical controls |
+| Plugin and input: `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/file-manager/__tests__/plugin.spec.ts src/components/inputs/__tests__/FileInput.file-manager.spec.ts` | 2 files, 10 tests passed | 2 files, 10 tests passed |
+| App adapter: `pnpm --filter @southneuhof/framework-web test:focused -- framework/adapters/__tests__/fileManager.spec.ts` | 1 file, 4 tests passed | 1 file, 4 tests passed |
+| App types: `pnpm --filter @southneuhof/framework-web type-check` | Not run | Exit 0 |
+| Architecture: `pnpm test:surface-architecture` | Not run | Exit 0; 18 tests and surface checks passed |
+| Whitespace: `git diff --check` | Not run | Exit 0 |
+
+The public type fixture proves sync and async conversions with `AssetValue` and `ManagedAsset` through `@southneuhof/loom/assets` and `@southneuhof/loom/file-manager`. Both paired diagnostic cases use those same package entry points. Self-package alias resolution passed under the Loom TypeScript configuration. No runtime test was added because the app adapter test already covers canonical round-trip and folder rejection, and the input tests cover mounted selection and canonical models. The architecture guide now states the non-generic contract. The Loom type check confirms that the app's `StoredAsset` conversion remains structurally compatible without a framework-to-backend dependency. OpenClaw-specific test-audit tools are unavailable in this environment; they were not reported as passed.
+
+Formatting check: root `pnpm exec oxfmt --check` could not find the formatter. The app-local formatter found existing formatting differences in the two modified test files. Applying it would reformat unrelated setup and assertions across those files, so those changes were restored. The new type fixture and the other changed TypeScript files pass the app-local formatting check. No formatting result is claimed for the two existing test files.

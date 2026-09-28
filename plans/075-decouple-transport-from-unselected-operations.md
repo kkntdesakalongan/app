@@ -2,8 +2,8 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH.
-- Category: type/runtime contract / separation of concerns. Depends on root Plan 073; do not repair or retain the retired module generator. Depends also on 064's bounded compiler runner for permanent negative cases.
+- Status: DONE. Implementation and required gates pass; root review accepted. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH.
+- Category: type/runtime contract / separation of concerns. Depends on root Plan 073 for the direct-authoring workflow and on Plan 064's bounded compiler runner for permanent negative cases.
 - Planned at: `1246387`, 2026-09-26.
 
 An application can select create, update, detail, list, and delete independently. A create-only or update-only endpoint must not require a list schema or a fake endpoint. Keep Hono wire validation at the transport owner without making it an obligation for operations that never use it.
@@ -16,7 +16,7 @@ Hono clients use dynamic proxies. Runtime property probing does not prove that a
 
 ## Scope and target contract
 
-Change `apps/web/src/framework/hono/{actions,contracts}.ts`, `actions.spec.ts`, existing Hono public type fixtures under `apps/web/src/framework/__type-tests__/`, and relevant Hono/query guidance. Extend `packages/loom/scripts/check-contract-diagnostics.mjs` with the explicit app-owner mode described in 064, add its transport cases, and add that command to the existing web-validation workflow. Keep app compiler configuration and temporary fixtures app-local. Update the existing workflow test for that one command; do not make Loom's default check depend on the app. No generator files, backend endpoint additions, response envelope changes, identity encoding redesign, or module-local wrappers.
+Change `apps/web/src/framework/hono/{actions,contracts}.ts`, `actions.spec.ts`, existing Hono public type fixtures under `apps/web/src/framework/__type-tests__/`, and relevant Hono/query guidance. Extend `packages/loom/scripts/check-contract-diagnostics.mjs` with the explicit app-owner mode described in 064, add its transport cases, and add that command to the existing web-validation workflow. Keep app compiler configuration and temporary fixtures app-local. Update the existing workflow test for that one command; do not make Loom's default check depend on the app. No unrelated tooling files, backend endpoint additions, response envelope changes, identity encoding redesign, or module-local wrappers.
 
 1. Keep one `createHonoResourceActions` entry point. When the typed route has list, require and infer its raw query schema exactly as today. Without list, permit omission of options and forbid a meaningless query schema. Detail/create/update/delete types must not depend on a list output generic.
 2. Keep the return type limited to actual typed endpoint operations. Preserve input, output, identity, signal, and query inference. A create-only adapter has no callable public list member; update-only plus a technical detail read does not create a visible detail page.
@@ -49,13 +49,28 @@ Run the drift command first. Compare changed owners with the excerpts below and 
 
 ## Done and stops
 
-- [ ] Partial-operation adapters compile and execute through real local Hono clients.
-- [ ] No list configuration is required without list; list validation is unchanged.
-- [ ] No fake endpoint, cast at application call sites, runtime capability manifest, or extra wrapper was added.
-- [ ] All checks pass; generator removal remains complete.
+- [x] Partial-operation adapters compile and execute through real local Hono clients.
+- [x] No list configuration is required without list; list validation is unchanged.
+- [x] No fake endpoint, cast at application call sites, runtime capability manifest, or extra wrapper was added.
+- [x] All checks pass; app modules remain directly authored.
 
 Stop if the type solution requires sacrificing endpoint inference, or if the current endpoint layout differs from this plan. Keep a minimal compiler fixture and report the unsupported shape instead of adding automatic protocol detection.
 
 ## Evidence
 
-Planning only. The create-only `never` failure and list-bearing valid control were reproduced without writing files. Proposed runtime and public-contract tests have not run.
+Implementation evidence — 2026-09-27:
+
+The initial `git status --short` showed the existing changes from Plans 061–074 and other local work. Those changes were preserved. The initial drift command, `git diff --stat 1246387..HEAD -- apps/web/src/framework/hono apps/web/src/framework/__type-tests__`, exited 0 with no committed owner diff. No new endpoint or module wrapper was needed.
+
+| Gate | Result |
+|---|---|
+| `pnpm --filter @southneuhof/framework-web test:focused -- framework/hono/actions.spec.ts` | Exit 0; 1 file and 9 tests passed. The suite includes real local Hono clients for list-only, create-only, update plus detail, and the existing full route. |
+| `pnpm --filter @southneuhof/framework-web type-check` | Exit 0. |
+| `node packages/loom/scripts/check-contract-diagnostics.mjs --project app` | Exit 0; 4 app transport cases passed with valid controls and located negatives. |
+| `node packages/loom/scripts/check-contract-diagnostics.mjs` | Exit 0; 27 resource/form, 9 TypeScript surface, and 8 Vue surface cases passed. |
+| `node --test scripts/web-validation-workflow.test.mjs` | Exit 0; 2 tests passed. |
+| `pnpm test:surface-architecture` | Exit 0; 18 tests and the real-source check passed. |
+| `node --check packages/loom/scripts/check-contract-diagnostics.mjs` and `git diff --check` | Both exited 0. |
+| Targeted Oxfmt check for changed Hono files and the diagnostics script | Exit 0. |
+
+An initial app type fixture used the repository's `Equal` helper on normalized mutation payloads. That helper returned false for the mapped payload shape. The public fixture now checks assignability in both directions, plus exact operation keys and result types; app types and app diagnostics pass. The local test-audit skill references OpenClaw testing, Crabbox, and autoreview tools that are unavailable in this session. No result is claimed for those steps; parent review is pending.

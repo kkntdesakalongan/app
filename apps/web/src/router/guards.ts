@@ -1,7 +1,7 @@
 import { loadIdentity } from '@/framework/identity'
 import { savePostLoginRedirect } from '@/utils/post-login-redirect'
 import { getDefaultAuthenticatedRouteLocation } from './navigation'
-import { resourceActionForRoute, useResourceRuntime, type AccessAdapter } from '@southneuhof/loom'
+import { evaluateResourceRouteAccess, useResourceRuntime, type AccessAdapter } from '@southneuhof/loom'
 import type { NavigationGuard } from 'vue-router'
 
 function allowsExtraordinaryRoute(meta: { permission?: string }, access: AccessAdapter): boolean {
@@ -12,8 +12,8 @@ function allowsExtraordinaryRoute(meta: { permission?: string }, access: AccessA
 export function createPermissionGuard(access?: AccessAdapter): NavigationGuard {
   return (to) => {
     const adapter = access ?? useResourceRuntime().adapters.access
-    const action = typeof to.name === 'string' ? resourceActionForRoute(to.name) : undefined
-    const allowed = action ? adapter.allows({ operation: 'detail', permission: action.permission ?? undefined }) : allowsExtraordinaryRoute(to.meta, adapter)
+    const routeAccess = typeof to.name === 'string' ? evaluateResourceRouteAccess(to.name, adapter) : undefined
+    const allowed = routeAccess ?? allowsExtraordinaryRoute(to.meta, adapter)
     return allowed ? true : ((getDefaultAuthenticatedRouteLocation() ?? { path: '/' }) as never)
   }
 }

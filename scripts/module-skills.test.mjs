@@ -45,19 +45,10 @@ test('retired discovery skills and calls are absent from the active module workf
   assert.deepEqual(failures, [])
 })
 
-test('root module command aliases resolve to actual local helper scripts', () => {
+test('the root evidence command resolves to its helper', () => {
   const scripts = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).scripts
-  for (const name of ['scaffold:bounded-module', 'verify:module', 'module:evidence']) {
-    assert.match(scripts[name], /^node scripts\/[\w-]+\.mjs$/)
-    assert.ok(existsSync(join(root, scripts[name].slice(5))), name)
-  }
-  assert.ok(!Object.hasOwn(scripts, 'integrate:bounded-module'), 'integrate:bounded-module alias is removed')
-  assert.deepEqual(Object.keys(scripts).filter(name => scripts[name].includes('scaffold-bounded-module.mjs')), ['scaffold:bounded-module'])
-})
-
-test('active module guidance has no source-generator path', () => {
-  const text = active.flatMap(name => markdownFiles(join(skillsRoot, name))).map(file => readFileSync(file, 'utf8')).join('\n')
-  assert.doesNotMatch(text, /scaffold[:_-]bounded|bounded\.md|module\.json|source generator|route-only operation/i)
+  assert.equal(scripts['module:evidence'], 'node scripts/module-evidence.mjs')
+  assert.ok(existsSync(join(root, 'scripts/module-evidence.mjs')))
 })
 
 test('API test entrypoints require the explicit test environment and migrations run the preflight first', () => {

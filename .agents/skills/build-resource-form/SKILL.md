@@ -96,13 +96,16 @@ For each new or changed relation, use the
 Complete its API display data and list/detail projection with the form, rather
 than leaving display work for a later assignment.
 
-Pass each loader in the selected component's `props`: option inputs use
-`load` and optional `namespace`, such as `roles.list.table.load` and its
-namespace. Lookup also uses `loadDetail(context)` and its own table definition.
-Use component `data` props for static choices. Pass filters through
-`searchParameters`; the owner endpoint owns their contract. Declare a renderer
-for every authored input. The schema does not create choices or select a
-renderer.
+Pass each loader in the selected component's `props`. SelectInput,
+RadioGroupInput, and CheckboxGroupInput use the owner's `resource` beside its
+`load` and `namespace`. For example, pass `roles.list.table.resource`,
+`roles.list.table.load`, and `roles.list.table.namespace`. The resource owns
+option invalidation; the namespace identifies the query instance. A standalone
+loader can omit `resource`. Lookup also uses
+`loadDetail(context)` and its own table definition. Use component `data` props
+for static choices. Pass filters through `searchParameters`; the owner endpoint
+owns their contract. Declare a renderer for every authored input. The schema
+does not create choices or select a renderer.
 
 For parent-dependent options, pass the parent value through the option
 component's canonical props. The component owns selection validity:

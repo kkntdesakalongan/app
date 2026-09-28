@@ -6,7 +6,7 @@ Earlier per-plan verification notes below are historical. The Plan 069 results a
 
 Execute 062–069 in order. Each Markdown plan contains its intent, current-source excerpts, target, scope, ordered work, tests, commands, completion criteria, and stop conditions. All 27 original findings and the approved architecture changes are assigned below.
 
-This bundle is already in the live checkout. Keep its execution status and evidence in this directory; preserve the historical root `plans/README.md`. The original index is retained in `implementation-evidence/repository-plan-index.txt`. Plans 059–061 do not exist in this checkout; no implementation depends on them. Repository plans 051–058 are historical execution records, not acceptance of this repair.
+This bundle is already in the live checkout. Keep its execution status and evidence in this directory; preserve the historical root `plans/README.md`. Plans 059–061 do not exist in this checkout; no implementation depends on them. Repository plans 051–058 are historical execution records, not acceptance of this repair.
 
 At planning time, production source was unchanged since `223fc622d9a897014fcbad48df838a19cec398db`; the later commit added this plan bundle, and the user updated `ARCHITECTURE.md` during live review. All cited production source locations still existed. Node was `v26.9.0` and pnpm was `12.1.0`. Baseline checks passed: Loom unit (371 tests), Loom browser (34), web unit (230), surface architecture (11), module tooling (110 Node and 3 Python), and cold Loom/web `vue-tsc --noEmit --incremental false`. Web unit tests need `NODE_OPTIONS=--no-experimental-webstorage` on this Node 26 checkout. CI uses Node 20.19.0, so its commands do not need that local flag. These passes establish the original baseline; they do not verify the proposed repairs.
 
@@ -25,7 +25,7 @@ The updated [architecture](../../ARCHITECTURE.md) is the contract for these plan
 | [066](066-preserve-wrapper-query-and-display-parity.md) | Make wrappers preserve live props, queries, selection, and rendering | P2 | L | 062, 064, 065 | DONE |
 | [067](067-narrow-types-and-close-union-escapes.md) | Enforce whole-contract type checks and export compact definitions | P2 | L | 064, 065, 066 | DONE |
 | [068](068-centralize-frontend-transport-query-encoding.md) | Put collection wire encoding in the existing Hono adapter | P3 | M | 064, 065, 066, 067 | DONE |
-| [069](069-prove-contracts-and-remove-stale-guidance.md) | Make tests, CI, generators, and agent guidance prove the same architecture | P2 | L | 062–068 | DONE |
+| [069](069-prove-contracts-and-remove-stale-guidance.md) | Make tests, CI, and agent guidance prove the same architecture | P2 | L | 062–068 | DONE |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED (with reason), REJECTED (with source-backed reason). Update status only after implementation and review; a failed or unavailable verification is not a pass. Do not parallelize these plans across their shared owners.
 
@@ -109,7 +109,7 @@ Priority below is the original audit classification. New architectural constrain
 | F22 · P3 | [067](067-narrow-types-and-close-union-escapes.md) | Return compact named contracts with useful refinements; hide proof aliases and measure fairly. |
 | F23 · P3 | [068](068-centralize-frontend-transport-query-encoding.md) | Encode the unchanged HTTP query protocol once in the existing Hono adapter. |
 | F24 · P3 | [065](065-bind-safe-operations-and-complete-view-props.md) | Delete unused identity declaration helpers and identical runtime aliases. |
-| F25 · P2 | [069](069-prove-contracts-and-remove-stale-guidance.md) | Compile actual examples; align root docs, nested skills and generators with real owners. |
+| F25 · P2 | [069](069-prove-contracts-and-remove-stale-guidance.md) | Compile actual examples; align root docs, nested skills, and source checks with real owners. |
 | F26 · P2 | [066](066-preserve-wrapper-query-and-display-parity.md) | Recheck close generation/busy state after awaited guard approval. |
 | F27 · P2 | [063](063-provide-one-global-asset-service.md), [064](064-use-canonical-component-contracts.md) | Delete generic input hydration; preserve global asset reader null without raw-value fallback. |
 
@@ -131,7 +131,7 @@ Plan 069 proves integration for every row. No original finding is silently dropp
 
 ## Scope
 
-The coordinated change includes Loom contracts/constructors/session/renderers, real inputs and native forwarding, assets and previews, Form/DialogForm/page wrappers, Table/TreeTable/Detail/export, collection/query ownership, composite inputs, resource access/identity/commands, frontend Hono integration, all affected app resources/routes, plugin bootstrap, tests/type fixtures, generators/checkers, CI, current docs and agent skills. Each plan lists its concrete owners and caller closure.
+The coordinated change includes Loom contracts/constructors/session/renderers, real inputs and native forwarding, assets and previews, Form/DialogForm/page wrappers, Table/TreeTable/Detail/export, collection/query ownership, composite inputs, resource access/identity/commands, frontend Hono integration, all affected app resources/routes, plugin bootstrap, tests/type fixtures, source checkers, CI, current docs and agent skills. Each plan lists its concrete owners and caller closure.
 
 Backend schemas, server authorization, storage implementations, SDK protocol, vendored UI internals, dependency upgrades and unrelated product features are not redesigned. Their existing integration contracts remain regression constraints. Previously unexecuted schema/location/export/multi-app boundaries are listed as validation obligations, not newly claimed findings.
 
@@ -139,7 +139,6 @@ Backend schemas, server authorization, storage implementations, SDK protocol, ve
 
 Plan preparation used the supplied archive and prior audit evidence; it changed only files under `plans/`. No framework fix, package installation, pinned Vue/unit/browser/E2E run, build, or new performance benchmark was performed. Earlier isolated probes used explicit doubles and a global compiler; they are not integration certification. All implementation statuses start TODO.
 
-- `implementation-evidence/coverage.json`: machine-readable ownership and fixed outcomes for every finding/decision.
 - `implementation-evidence/baseline-observations.json`: source locations and original observations, without obsolete repair instructions.
 - `implementation-evidence/baseline-runtime-probes.json` and `baseline-verification.json`: prior execution records, not new passes.
 - `implementation-evidence/source-inventory.json`: exact source hashes and archive identity used for planning.
@@ -336,7 +335,7 @@ The app adapter and Loom custom-command policy both reject an explicit `allowedO
 
 The first Web behavior run exited 1. Its isolated resource-route compiler had no app display renderer registry augmentation, so `DisplayRendererKey` was `never`: the resolver's normalized `props` field then conflicted with `DisplayField.props`, and spreading `entry.props` failed. `resolveDisplayFields` owns the runtime-validated normalized prop map, so `ResolvedDisplayField` now omits only the renderer-specific `props` type and reads the runtime member as `unknown` before copying an object. The route test remains active and still proves that deleting a generated route makes the real resource declaration fail type checking. Its focused rerun passed.
 
-The generator annotates identity-bound update output with the schema output type. After formatting the checked-in fixture, the first tooling rerun exited 1 because generated syntax did not match that fixture. The generator now emits the formatter's parenthesized `typeof` syntax, and the static verifier checks the same shape. A further run exposed the verifier's earlier pattern; the final tooling rerun passed.
+The retired source-template fixture and its syntax checks are removed under Plan 073. Current app modules own their authored identity-bound update types.
 
 | Check | Command | Result |
 |---|---|---|
@@ -466,14 +465,13 @@ Plan 067 remains TODO for parent review.
 
 ### Plan 068 implementation evidence
 
-The Hono adapter now parses the authored Collection query once per list call and encodes `sort_by` as wire `sort` and direction `sort` as wire `order`. Users, roles, permissions, and generated modules bind one query schema to the adapter. Resource tables use the adapter list loader directly. Their schemas keep their own sort keys and filters. Custom nested loaders keep their existing Table-owned query schemas.
+The Hono adapter now parses the authored Collection query once per list call and encodes `sort_by` as wire `sort` and direction `sort` as wire `order`. Existing app modules bind one query schema to the adapter. Resource tables use the adapter list loader directly. Their schemas keep their own sort keys and filters. Custom nested loaders keep their existing Table-owned query schemas.
 
-The focused regressions were red before the adapter and generator changes:
+The focused adapter regression was red before its source change:
 
 | Check | Exact command | Result |
 |---|---|---|
 | Hono request regression | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web exec vitest run --environment jsdom --root src/ framework/hono/actions.spec.ts` | Exit 1 as expected; 3 of 6 tests failed because the adapter sent `sort_by` unchanged, did not run the schema transform, and dispatched a rejected sort key. |
-| Generated contract regression | `node --test scripts/scaffold-bounded-module.test.mjs` | Exit 1 as expected; 21 of 22 tests passed. Generated resources did not bind their query schema to the Hono adapter. The old scaffold omitted this binding; it did not generate the settings modules' wrapper. |
 
 Environment: Node `v26.9.0`, pnpm `12.1.0`. Before E2E, a local identity check confirmed that the configured `e2e` database and bucket differ from the development database and bucket. The E2E command reset and seeded only those configured E2E targets.
 
@@ -489,7 +487,6 @@ These results document the cold type boundary check. They do not support a perfo
 | Gate | Exact command | Result |
 |---|---|---|
 | Focused adapter and settings tests | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web exec vitest run --environment jsdom --root src/ framework/hono/actions.spec.ts 'routes/(authenticated)/settings/resource-list-query.spec.ts'` | Exit 0; 2 files, 10 tests passed, 0 skipped. |
-| Generator | `node --test scripts/scaffold-bounded-module.test.mjs` | Exit 0; 23 tests passed, 0 skipped. The generated schema/action/resource fixture matches generator output and compiles in the Web type check. |
 | Loom unit | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/loom test` | Exit 0; 61 files, 431 tests passed, 0 skipped. |
 | Loom browser | `pnpm --filter @southneuhof/loom test:browser` | Exit 0; 14 files, 54 tests passed, 0 skipped. Existing DialogContent, NumberInput, and Vue Router warnings remain. |
 | Loom types | `pnpm --filter @southneuhof/loom type-check` | Exit 0. |
@@ -522,7 +519,7 @@ Plan 068 remains TODO for parent review.
 
 ### Plan 069 implementation candidate evidence
 
-Environment: Node `v26.9.0`, pnpm `12.1.0`. Plans 062–069 are accepted. The machine-readable coverage ledger records each finding and decision, its current production owner, an executed regression fixture, the exact command, and its result in `implementation-evidence/coverage.json`.
+Environment: Node `v26.9.0`, pnpm `12.1.0`. Plans 062–069 were accepted. Plan 073 retires copied coverage indexes that named removed source tools; the original records remain in Git history.
 
 #### Finding coverage
 
@@ -554,7 +551,7 @@ Each fixture below ran in the named gate. Commands and full counts are listed in
 | F22 | Loom contract and resource type definitions | `surface-definitions.type-test.ts` and `bound-resource.type-test.ts` — compact declarations preserve model, operation, action, result and page refinements | LT and WT: exit 0; both passed |
 | F23 | Web Hono `actions.ts`, `collectionQuery.ts` | `actions.spec.ts` — validates and encodes one canonical query while preserving the endpoint protocol; parses direct loader query once | W: exit 0; 46 files, 230 passed, 0 skipped |
 | F24 | `identity.ts`, `operations.ts`, resource exports | `public-api.spec.ts` — legacy runtime exports and paths are absent; `check-surface-architecture.test.mjs` rejects removed resource factories and allows unrelated list methods | U and A: exit 0; U 61/438, A 17 tests; no skips |
-| F25 | Root/package docs, module skills, scaffold and UI checker | `scaffold-bounded-module.test.mjs` — checked-in Web type fixture matches generator output; `verify-module.test.mjs` checks active guidance evidence; architecture test checks generated output and current docs | T, G, WT and A: exit 0; T 119 Node + 3 Python, G 23, A 17; no skips; WT passed |
+| F25 | Root/package docs, module skills, and UI checker | Application source and type checks, module UI checks, and architecture checks prove the current authoring contract. The source-tool portion of this historical result was retired under Plan 073. |
 | F26 | `DialogForm.vue` | `SurfaceParity.browser.spec.ts` — deferred close approval does not close a reopened or submitting session | B: exit 0; 14 files, 55 passed, 0 skipped |
 | F27 | `assets/provider.ts`, `FileInput.vue`, `ImageInput.vue` | `provider.spec.ts` — canonical reads preserve adapter `null`; `FileInput.spec.ts` — submitted asset remains canonical | U: exit 0; 61 files, 438 passed, 0 skipped |
 
@@ -570,7 +567,7 @@ Each fixture below ran in the named gate. Commands and full counts are listed in
 | D06 — Submit behavior and wrapper prop shapes | `defineForm.spec.ts`, `SurfaceParity.browser.spec.ts`, and `flat-form-components.type-test.vue` cover configuration, labels/actions, and flat Form/DialogForm props. U, B and LT pass. |
 | D07 — Shared display fragments | `DisplayParity.browser.spec.ts` checks joined roles, status, date and asset rendering; `export.spec.ts` checks the joined relation formatter. B and U pass. |
 | D08 — Existing schema, asset, and transport boundaries | `compileSchema.spec.ts`, `AssetParity.browser.spec.ts`, and Hono `actions.spec.ts` check transform/default discovery, app assets, and wire encoding. U, B and W pass. No backend contract changed. |
-| D09 — No executable legacy path or stale active example | `check-surface-architecture.test.mjs`, `public-api.spec.ts`, and `verify-module.test.mjs` cover syntax-aware source/generator checks, removed exports, and current authoring guidance. A, U and T pass. |
+| D09 — No executable legacy path or stale active example | `check-surface-architecture.test.mjs`, `public-api.spec.ts`, and active skill-link checks cover current source rules, removed exports, and authoring guidance. A, U and T passed before Plan 073 retired source-tool checks. |
 
 #### Residual boundary regressions
 
@@ -606,9 +603,8 @@ The final candidate versions of the reset and both LocationInput focused tests p
 | Loom types | `pnpm --filter @southneuhof/loom type-check` | Exit 0. |
 | Web types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0; route contract and generated route checks passed before Vue type checking. |
 | Web behavior | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test` | Exit 0; 46 files, 230 passed, 0 skipped. |
-| Surface architecture | `pnpm test:surface-architecture` | Exit 0; 17 tests passed, 0 skipped; surface checks passed. This scans active root and package docs and syntax-checks executable legacy surfaces and generator output. |
+| Surface architecture | `pnpm test:surface-architecture` | Exit 0; 17 tests passed, 0 skipped; surface checks passed. This scans active root and package docs and current application source. |
 | Module tooling | `pnpm test:module-tooling` | Exit 0; 119 Node tests passed, 0 skipped; 3 Python tests passed. |
-| Generator fixture | `node --test scripts/scaffold-bounded-module.test.mjs` | Exit 0; 23 tests passed, 0 skipped; generated output matches the checked-in Web type fixture, which passes WT. |
 | Workflow fixture | `node --test scripts/web-validation-workflow.test.mjs` | Exit 0; 2 tests passed, 0 skipped. Hosted CI was not run. |
 | Workspace types | `pnpm type-check` | Exit 0; 6 Turbo tasks successful, 4 cached. |
 | Affected task graph | `pnpm exec turbo run lint type-check --affected --dry=json` | Exit 0; 12 selected tasks: lint and type-check for API, Web, Loom, SDK, Sprindle, and utilities. Turbo's affected package set was workspace root, Web, Loom, and utilities; the other package tasks were in the dependency graph. This was a local dry run, not hosted CI. |

@@ -53,6 +53,14 @@ test('recording preserves failed output and refuses to overwrite evidence', asyn
   assert.throws(() => recordCommand(process.execPath, ['-e', ''], { root, inputs: ['src'], output, environment: 'local-fixture' }), /exist|overwrite/i)
 })
 
+test('command evidence retains full output and its working directory', async () => {
+  const { runCommand } = await import('./module-evidence.mjs')
+  const root = fixture()
+  const result = runCommand(process.execPath, ['-e', 'process.stdout.write("x".repeat(5000))'], { cwd: root })
+  assert.equal(result.output.length, 5000)
+  assert.equal(result.cwd, root)
+})
+
 test('a passing command that changes its inputs is invalidated', async () => {
   const { recordCommand, checkFreshness } = await import('./module-evidence.mjs')
   const root = fixture()

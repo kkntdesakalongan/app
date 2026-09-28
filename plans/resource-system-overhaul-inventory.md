@@ -19,8 +19,8 @@ Captured for Plan 051 on 2026-09-23, before its source changes.
 | Settings modules | Users, roles, permissions, `roles/[roleId]/detail/permissions/role-permissions`, and `users/[userId]/detail/role-assignments` resource/schema/action/route files; each settings module owns its screen configuration. | 056. | Route files under `apps/web/src/routes/(authenticated)/settings/` and their `.resource.ts`, `.schema.ts`, `.actions.ts`, and `.route.vue` siblings. |
 | App regression fixtures | `apps/web/src/framework/acceptance/QueryOwnershipFixture.*`, asset-form fixtures, route/resource/schema-import/identity tests, router guards and nested-navigation tests, browser/E2E routes, and generated route contracts; app acceptance and routing tests own these regressions. | 052–056; final removal checks in 058. | `framework/acceptance/`, `framework/__tests__/`, `router/__tests__/`, browser tests, and `scripts/generate-route-types.mjs`. |
 | Adjacent integrations | File/image inputs, FileManager/AssetPicker, their adapters and tests; Loom input and file-manager modules own upload and preview behavior. | 055–056; final checks in 058. | `components/inputs/`, `components/utils/FileManager/`, `file-manager/`, and their tests. Provider `operations.list()` APIs remain outside the resource-surface migration. |
-| Generators/checkers | `scripts/scaffold-bounded-module.mjs`, `scripts/module-ui-check.mjs`, tests, `test-support/bounded-fixture.mjs`, verification/evidence scripts, module-tooling/module-skills tests, and Python module-skill checks; repository scripts and skill tooling own generated modules and static checks. | 057; final removal check in 058. | Named scripts and the `scripts/__tests__/`, `test-support/`, and skill test locations. |
-| Agent/documentation entrypoints | Root `AGENTS.md`, `DESIGN.md`, Loom README/public docs, `docs/ui/{forms,collections}.md`, web architecture docs, custom-field and file-manager references; repo and package docs own active guidance. | 057; removal verification in 058. | The named docs and `rg` searches for active references to the old field model. |
+| Checks and evidence | `scripts/module-ui-check.mjs`, `scripts/module-evidence.mjs`, their tests, module-tooling/module-skills tests, and Python skill checks; current app modules own their source and package checks own static contracts. | 073 retires source generation and syntax-template verification. | Current app resources, UI checks, evidence recording, and skill tests. |
+| Agent/documentation entrypoints | Root `AGENTS.md`, `DESIGN.md`, Loom README/public docs, `docs/ui/{forms,collections}.md`, web architecture docs, custom-field and file-manager references; repo and package docs own active guidance. | 073 removes obsolete authoring-tool guidance. | The named docs and searches for removed workflow paths. |
 | Skills | `build-resource-form`, `web-ui-surfaces`, `migrate-web-resource`, `implement-schema-first-zod`, `carta-module-{design,plan,development}`, `verify-carta-module`, their references/scripts/tests, including `frontend-field-contract.md` and `web-query-cache.md`; skill directories own agent workflows. | 057. | Skill directories under `.agents/skills/` and their referenced files. |
 | Tooling configuration | Loom/web effective Vue type-check configs, explicit browser-test include lists, package validation scripts, and CI entrypoints; package and CI configuration owns check discovery. | 051 changes Loom unknown-prop checking; 057 updates normal validation; 058 runs final gates. | `packages/loom/tsconfig.json`, `packages/loom/vitest.browser.config.ts`, `apps/web/tsconfig.vitest.json`, package scripts, and CI files. |
 
@@ -147,7 +147,7 @@ Vitest reports three unhandled `[loom][FORM_SCHEMA_REQUIRED]` setup rejections: 
 | Scope gate | Exit | Result |
 |---|---:|---|
 | `git diff --stat 40afee2..HEAD -- packages/loom/src/index.ts packages/loom/src/contracts packages/loom/src/validation packages/loom/src/renderers packages/loom/src/forms packages/loom/src/tables packages/loom/src/details packages/loom/src/labels packages/loom/src/schemas packages/loom/tsconfig.json` | 0 | No branch-source drift from the plan's `Planned at` revision. |
-| `rg -n '^\| (Public|Field|Primitive|Wrappers|Nested|Resource|Plugin|Export|App|Settings|Adjacent|Generators|Agent|Skills|Tooling)' plans/resource-system-overhaul-inventory.md` | 0 | Lists all 17 architecture §9.1 inventory groups. |
+| `rg -n '^\| (Public|Field|Primitive|Wrappers|Nested|Resource|Plugin|Export|App|Settings|Adjacent|Checks|Agent|Skills|Tooling)' plans/resource-system-overhaul-inventory.md` | 0 | Lists all 17 architecture §9.1 inventory groups. |
 | No-old-import search | 1 | No old field, `fromZod`, or `actionResource` imports found in new Plan 051 source files. |
 | `git diff --check` | 0 | No whitespace errors. |
 
@@ -230,7 +230,7 @@ Captured on 2026-09-24 on `resource_system_overhaul`. This section records the c
 | Settings modules | Users, roles, permissions, role permissions, and role assignments use local schemas, surface definitions, actions, and resource bindings. Route tests pass in the web suite. |
 | App regression fixtures | Query ownership, route typing, schema identity, and acceptance fixtures use current bags. The web unit suite passes. |
 | Adjacent integrations | File, image, location, lookup, and file-manager paths pass Loom unit and browser suites. |
-| Generators/checkers | The new checker parses TypeScript, Vue templates, active Markdown examples, and fresh bounded-module output. Module tooling passes. |
+| Checks | Source checks parse TypeScript, Vue templates, and active Markdown examples. Current app resources are the source of truth. |
 | Agent/documentation entrypoints | Root instructions, DESIGN, READMEs, UI docs, and web architecture text describe the current definitions and raw schemas. Active examples pass the checker. |
 | Skills | Active form and web-surface guidance names the separate input/display definitions. The retired schema guide is user-invoked and redirects to current module guidance. |
 | Tooling configuration | Loom and web configs enable `strictTemplates` and `checkUnknownProps`. Browser parity files are in the explicit include list. Root tests and web-validation CI run the architecture gate. |
@@ -241,7 +241,7 @@ The checker tests reject aliased removed imports, old resource signatures and fa
 
 | Command | Exit | Result |
 |---|---:|---|
-| `pnpm run test:surface-architecture` | 0 | Eleven tests passed; workspace source, active examples, generated bounded-module output, removed paths, and Vue type-check settings passed. |
+| `pnpm run test:surface-architecture` | 0 | Eleven tests passed; workspace source, active examples, removed paths, and Vue type-check settings passed. |
 | `pnpm --filter @southneuhof/loom type-check` | 0 | Passed with no Vue template diagnostics. Included resource and component type fixtures reject create results without identity and removed `form` props on Form/DialogForm. |
 | `pnpm --filter @southneuhof/loom test` | 0 | 60 files and 371 tests passed. |
 | `pnpm --filter @southneuhof/loom test:browser` | 0 | 10 files and 34 tests passed. Form parity covers Form, DialogForm, FormView, and extracted resource forms for constructor and plain object definitions. Create results include the resource identity. Display parity covers direct and extracted Table/Detail bags with one list load, one detail load, no fetch calls, and no record mutation. |

@@ -20,6 +20,13 @@ type Route = {
 type OptionalUpdateRoute = {
   update: { ':id': { $patch: Endpoint<{ param: { id: string }; json: { name?: string } }, { data: Row | undefined }, 200> } }
 }
+type CreateOnlyRoute = {
+  create: { $post: Endpoint<{ json: { name: string; active?: boolean } }, { data: Row }, 201> }
+}
+type DetailAndUpdateRoute = {
+  detail: { ':id': { $get: Endpoint<{ param: { id: string } }, { data: Row }, 200> } }
+  update: { ':id': { $patch: Endpoint<{ param: { id: string }; json: { name?: string } }, { data: Row }, 200> } }
+}
 
 type Equal<TLeft, TRight> =
   (<T>() => T extends TLeft ? 1 : 2) extends <T>() => T extends TRight ? 1 : 2 ? ((<T>() => T extends TRight ? 1 : 2) extends <T>() => T extends TLeft ? 1 : 2 ? true : false) : false
@@ -27,6 +34,13 @@ type Assert<TValue extends true> = TValue
 
 type RouteRecordIsExact = Assert<Equal<HonoRecordOf<Route>, Row>>
 type OptionalUpdateResultIsPreserved = Assert<Equal<ReturnType<HonoResourceActions<OptionalUpdateRoute>['update']>, Promise<Row | undefined>>>
+type CreateOnlyOperationsAreExact = Assert<Equal<keyof HonoResourceActions<CreateOnlyRoute>, 'create'>>
+type CreateOnlyInputAcceptsEndpoint = Assert<{ name: string; active?: boolean } extends Parameters<HonoResourceActions<CreateOnlyRoute>['create']>[0] ? true : false>
+type CreateOnlyInputMatchesEndpoint = Assert<Parameters<HonoResourceActions<CreateOnlyRoute>['create']>[0] extends { name: string; active?: boolean } ? true : false>
+type CreateOnlyResultIsExact = Assert<Equal<ReturnType<HonoResourceActions<CreateOnlyRoute>['create']>, Promise<Row>>>
+type DetailAndUpdateOperationsAreExact = Assert<Equal<keyof HonoResourceActions<DetailAndUpdateRoute>, 'detail' | 'update'>>
+type DetailAndUpdatePayloadAcceptsEndpoint = Assert<{ name?: string } extends Parameters<HonoResourceActions<DetailAndUpdateRoute>['update']>[1] ? true : false>
+type DetailAndUpdatePayloadMatchesEndpoint = Assert<Parameters<HonoResourceActions<DetailAndUpdateRoute>['update']>[1] extends { name?: string } ? true : false>
 const createPayload: HonoCreateOf<Route> = { name: 'One', active: true }
 const updatePayload: HonoUpdateOf<Route> = { name: 'Updated' }
 const querySchema = z.object({
@@ -40,13 +54,21 @@ type ActualUsersQueryUsesStringValues = Assert<Equal<Exclude<ActualUsersQuery[ke
 const actualUsersActions = createHonoResourceActions(rpc.users, { querySchema })
 declare const route: Route
 const typedActions = createHonoResourceActions(route, { querySchema })
+declare const createOnlyRoute: CreateOnlyRoute
+declare const detailAndUpdateRoute: DetailAndUpdateRoute
+const createOnlyActions = createHonoResourceActions(createOnlyRoute)
+const detailAndUpdateActions = createHonoResourceActions(detailAndUpdateRoute)
 const queryContext: CollectionLoadContext<z.output<typeof querySchema>> = {
   query: { sort_by: 'email', sort: 'desc', active: true },
   searchParameters: {},
 }
 const listResult: Promise<CollectionResult<Row>> = typedActions.list(queryContext)
 const optionLoad: OptionLoad<Row> = typedActions.list
+const createOnlyResult: Promise<Row> = createOnlyActions.create({ name: 'Only create' })
+const detailAndUpdateResult: Promise<Row> = detailAndUpdateActions.update('1', { name: 'Updated' })
 type ListQueryMatchesSchema = Assert<Equal<Parameters<typeof typedActions.list>[0]['query'], z.output<typeof querySchema>>>
+type CreateOnlyActionsOmitList = Assert<Equal<'list' extends keyof typeof createOnlyActions ? true : false, false>>
+type DetailAndUpdateActionsOmitList = Assert<Equal<'list' extends keyof typeof detailAndUpdateActions ? true : false, false>>
 
 // @ts-expect-error The component loader accepts only the declared sort values.
 typedActions.list({ query: { sort_by: 'active' }, searchParameters: {} })
@@ -83,12 +105,21 @@ const actions = {
   delete: async () => ({ data: { id: '1', name: 'One', active: true } }),
 } satisfies HonoResourceActions<Route>
 
-const routeTypeProof: [RouteRecordIsExact, OptionalUpdateResultIsPreserved, ListQueryMatchesSchema, ActualUsersQueryUsesOpenFilterMap, ActualUsersQueryUsesStringValues] = [
-  true,
-  true,
-  true,
-  true,
-  true,
-]
+const routeTypeProof: [
+  RouteRecordIsExact,
+  OptionalUpdateResultIsPreserved,
+  CreateOnlyOperationsAreExact,
+  CreateOnlyInputAcceptsEndpoint,
+  CreateOnlyInputMatchesEndpoint,
+  CreateOnlyResultIsExact,
+  DetailAndUpdateOperationsAreExact,
+  DetailAndUpdatePayloadAcceptsEndpoint,
+  DetailAndUpdatePayloadMatchesEndpoint,
+  ListQueryMatchesSchema,
+  CreateOnlyActionsOmitList,
+  DetailAndUpdateActionsOmitList,
+  ActualUsersQueryUsesOpenFilterMap,
+  ActualUsersQueryUsesStringValues,
+] = [true, true, true, true, true, true, true, true, true, true, true, true, true, true]
 
-void [actions, actualUsersActions, createPayload, updatePayload, queryContext, listResult, optionLoad, routeTypeProof]
+void [actions, actualUsersActions, createOnlyResult, detailAndUpdateResult, createPayload, updatePayload, queryContext, listResult, optionLoad, routeTypeProof]

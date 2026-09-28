@@ -196,6 +196,68 @@ describe('permission guard', () => {
     expect(createPermissionGuard(denyAll)({ name: 'settings-roles-create', meta: {} } as any, {} as any, next)).toEqual({ name: 'dashboard' })
   })
 
+  it('requires every static command permission with the registered operation', () => {
+    const granted = new Set<string>()
+    const requests: Array<{ operation: string; permission: string | null }> = []
+    const access = {
+      allows: ({ operation, permission }: { operation: string; permission: string | null }) => {
+        requests.push({ operation, permission })
+        return permission !== null && granted.has(permission)
+      },
+    }
+    const expectBothPermissions = () => {
+      expect(requests).toHaveLength(2)
+      expect(requests).toEqual(
+        expect.arrayContaining([
+          { operation: 'inspect', permission: 'records.audit' },
+          { operation: 'inspect', permission: 'records.read' },
+        ])
+      )
+    }
+    defineResource({
+      key: 'multi-permission-route',
+      identity: (record: { id: string }) => record.id,
+      actions: {
+        inspect: {
+          permission: ['records.read', 'records.audit'],
+          route: { name: 'settings-users' },
+          run: async () => undefined,
+        },
+      },
+    })
+    const guard = createPermissionGuard(access)
+    const to = { name: 'settings-users', meta: {} } as any
+
+    expect(guard(to, {} as any, next)).toEqual({ name: 'dashboard' })
+    expectBothPermissions()
+    granted.add('records.audit')
+    requests.length = 0
+    expect(guard(to, {} as any, next)).toEqual({ name: 'dashboard' })
+    expectBothPermissions()
+    granted.add('records.read')
+    requests.length = 0
+    expect(guard(to, {} as any, next)).toBe(true)
+    expectBothPermissions()
+  })
+
+  it('checks an explicit public route with null and its registered operation', () => {
+    const requests: Array<{ operation: string; permission: string | null }> = []
+    defineResource({
+      key: 'null-permission-route',
+      identity: (record: { id: string }) => record.id,
+      create: { permission: null, route: { name: 'settings-users-create' }, form: createForm },
+    })
+    const result = createPermissionGuard({
+      allows: (request) => {
+        requests.push({ operation: request.operation, permission: request.permission ?? null })
+        return request.operation === 'create' && request.permission === null
+      },
+    })({ name: 'settings-users-create', meta: {} } as any, {} as any, next)
+
+    expect(result).toBe(true)
+    expect(requests).toEqual([{ operation: 'create', permission: null }])
+  })
+
   it('discovers lazy route action before resolving direct entry', async () => {
     const router = createRouter({
       history: createMemoryHistory(),

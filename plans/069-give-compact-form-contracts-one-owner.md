@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH for duplication; no runtime defect is claimed.
+- Status: DONE. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH for duplication; no runtime defect is claimed.
 - Category: separation of concerns / maintenance.
 - Depends on root Plans 064, 067, and 068 because they change diagnostics, filter properties, and resource bag composition. Execute serially with other edits to `resources/operations.ts`.
 - Planned at: `1246387`, 2026-09-26.
@@ -72,11 +72,11 @@ Read root AGENTS, architecture sections for forms and binding, and `test-audit`.
 
 ## Done, stops, and maintenance
 
-- [ ] One form-owned projection supplies constructor and bound form/filter field contracts.
-- [ ] `rg -n 'type FormFieldRenderers|type ResourceFormFields' packages/loom/src/resources/operations.ts` returns no matches.
-- [ ] The new form type owner has no resource dependency or runtime imports.
-- [ ] All public distinctions above have passing existing or added contract coverage.
-- [ ] All gates pass; no `any`, broad cast, or raw declaration return replaces the compact contract.
+- [x] One form-owned projection supplies constructor and bound form/filter field contracts.
+- [x] `rg -n 'type FormFieldRenderers|type ResourceFormFields' packages/loom/src/resources/operations.ts` returns no matches.
+- [x] The new form type owner has no resource dependency or runtime imports.
+- [x] All public distinctions above have passing existing or added contract coverage.
+- [x] All gates pass; no `any`, broad cast, or raw declaration return replaces the compact contract.
 
 Stop if a predecessor is incomplete, inference becomes recursive or substantially slower, source-free options cannot be separated without changing runtime, or the plan needs another generic projection framework. Report the failing public fixture rather than adding escape hatches. Stop after two failed bounded corrections. Future form properties should be added at the form owner; the resource layer should change only if its binding policy changes.
 
@@ -84,4 +84,16 @@ The baseline audit passed Loom types and 450 tests in 61 files before these chan
 
 ## Execution evidence
 
-Not implemented. Duplicate type ownership is confirmed from source. No new failure or performance claim is made.
+Implemented from HEAD `05ebfa3`. The scoped drift command had no committed changes after `1246387`; completed predecessor changes were present in the working tree and were preserved. The shared internal form type owner now supplies the compact schema, selected fields, labels, and validators to `defineForm`, bound create/update forms, and list filters. Resources retain their guarded submit, loader, identity, cache namespace, and filter ownership types. The public type fixtures cover named and spread declarations, renderer-specific props, transformed input/output/result contracts, submit-free standalone forms and filters, and mapped filter queries. The existing Plan 064 diagnostic cases already cover invalid resource members and submit relationships, so the harness needed no new case.
+
+Verification passed:
+
+- Cold Loom `vue-tsc`: 7.09 seconds.
+- Cold app `vue-tsc`: 9.33 seconds.
+- Plan app `type-check`, including route contract and route generation.
+- Loom contract diagnostics: 11 resource, 9 TypeScript surface, and 8 Vue surface cases.
+- Loom runtime suite: 478 tests in 62 files.
+- Surface architecture: 18 checks and the architecture scan.
+- `git diff --check`.
+
+The test-audit skill's OpenClaw testing, changed-file classification, crabbox, and autoreview tools are unavailable in this environment; they were not reported as passing. The plan's listed commands and the independent type contracts passed. No runtime code was added, no comments or compatibility aliases were added, and no install, commit, or push was performed. No runtime defect or type-check speedup is claimed.

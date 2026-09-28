@@ -1,10 +1,7 @@
-import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { createRequire } from 'node:module'
-import { tmpdir } from 'node:os'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { boundedConfig } from './test-support/bounded-fixture.mjs'
-import { scaffold } from './scaffold-bounded-module.mjs'
 
 const requireFromLoom = createRequire(resolve(dirname(fileURLToPath(import.meta.url)), '../packages/loom/package.json'))
 const ts = requireFromLoom('typescript')
@@ -699,30 +696,8 @@ function checkVueSettings(root) {
   return diagnostics
 }
 
-function checkGeneratedModule() {
-  const fixtures = [
-    boundedConfig(),
-    JSON.parse(readFileSync(resolve(workspaceRoot, 'apps/web/src/framework/__type-tests__/plan057_generated_users/manifest.json'), 'utf8')),
-  ]
-  const diagnostics = []
-  for (const config of fixtures) {
-    const root = mkdtempSync(join(tmpdir(), 'carta-surface-architecture-'))
-    try {
-      const generated = scaffold(config, { root })
-      diagnostics.push(...generated.generated.flatMap((path) => {
-        const file = relative(root, path)
-        if (extname(file) !== '.vue' && !extensions.has(extname(file))) return []
-        return analyzeSource(readFileSync(path, 'utf8'), file)
-      }))
-    } finally {
-      rmSync(root, { recursive: true, force: true })
-    }
-  }
-  return diagnostics
-}
-
 function checkWorkspace(root = workspaceRoot) {
-  const diagnostics = [...checkRemovedPaths(root), ...checkVueSettings(root), ...checkGeneratedModule()]
+  const diagnostics = [...checkRemovedPaths(root), ...checkVueSettings(root)]
   for (const sourceRoot of sourceRoots) {
     for (const file of filesUnder(root, sourceRoot)) {
       if (!extensions.has(extname(file)) && extname(file) !== '.vue') continue
@@ -742,7 +717,7 @@ function checkWorkspace(root = workspaceRoot) {
   return diagnostics.sort((left, right) => left.localeCompare(right))
 }
 
-export { analyzeSource, checkGeneratedModule, checkWorkspace }
+export { analyzeSource, checkWorkspace }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const diagnostics = checkWorkspace()

@@ -15,35 +15,31 @@ result helps agents. They do not authorize another framework rewrite.
 
 | Plan | Result | Priority | Effort | Risk | Depends on | Status |
 |---|---|---|---|---|---|---|
-| [061](061-block-repeat-submit-after-post-write-failure.md) | Keep post-write failure state and block repeat submission for the same mounted target | P1 | M | MED | None | TODO |
-| [062](062-unify-display-definition-checks.md) | Give context-free display checks one private owner | P2 | S | LOW | None | TODO |
-| [063](063-derive-renderer-types-from-runtime-roster.md) | Derive built-in component contracts from the runtime roster | P2 | M | MED | None | TODO |
-| [064](064-report-resource-contract-errors-at-the-member.md) | Locate invalid resource members and relationships in real compiler diagnostics | P2 | L | MED | None; recommended after 061–063 | TODO |
-| [065](065-separate-current-loom-contract-from-migration-history.md) | Keep one current contract and move migration history to a labelled archive | P3 | M | LOW | 073 for early guide; reconcile later repairs as they land | TODO |
-| [066](066-evaluate-loom-agent-repair-work.md) | Prepare five agent tasks; capture baseline early and compare named candidate checkpoints | P3 | M + measured run cost | LOW | None for baseline; candidate declares completed repairs | TODO |
-| [067](067-make-filter-query-ownership-explicit.md) | Declare owned query keys and reverse draft mapping for filters | P1 | M | MED | None; before 069 | TODO |
-| [068](068-enforce-one-data-source-in-surface-types.md) | Enforce exactly one data source in public TS and Vue contracts | P2 | M | MED | 064; before 069 | TODO |
-| [069](069-give-compact-form-contracts-one-owner.md) | Let form types own compact fields; let resources own binding | P2 | M | MED | 064, 067, 068 | TODO |
-| [070](070-move-input-model-rules-to-component-owners.md) | Give input components ownership of prop-dependent model rules | P2 | M | MED | 063, 064; recommended after 069 | TODO |
-| [071](071-align-file-manager-values-with-canonical-assets.md) | Align the File Manager provider with canonical input asset values | P2 | M | MED | 064 | TODO |
-| [072](072-preserve-resource-ownership-in-option-caches.md) | Refresh resource-owned option caches without private key handling | P1 | M | MED | Recommended after 070 | TODO |
-| [073](073-remove-module-scaffolding-completely.md) | Remove module scaffolding, its verifier/integrator, and all references and ties | P1 | L | MED | None; before 075, 065 and candidate evaluation | TODO |
-| [074](074-unify-resource-route-access-evaluation.md) | Preserve route operation and static permissions; make dynamic entry policy explicit | P1 | M | MED | 064 | TODO |
-| [075](075-decouple-transport-from-unselected-operations.md) | Permit non-list transport without a list-query schema | P2 | M | MED | 073, 064 | TODO |
-| [076](076-preserve-post-write-outcomes-in-delete-surfaces.md) | Preserve uncertain delete outcomes and separate write from refresh failure | P1 | M | MED | 061, 068, 064; serial with 067 | TODO |
+| [061](061-block-repeat-submit-after-post-write-failure.md) | Keep post-write failure state and block repeat submission for the same mounted target | P1 | M | MED | None | DONE — required gates pass; three focused test-setup failures were corrected beyond the plan retry limit; see Plan 061 for evidence and unavailable test-audit tools |
+| [062](062-unify-display-definition-checks.md) | Give context-free display checks one private owner | P2 | S | LOW | None | DONE — one private validator owns shared checks; focused 13, Loom 468, browser, architecture, and Types pass; OpenClaw/autoreview tools unavailable |
+| [063](063-derive-renderer-types-from-runtime-roster.md) | Derive built-in component contracts from the runtime roster | P2 | M | MED | None | DONE — inferred roster and mutation probe pass; fixed incremental cross-package key recursion; Loom 468, browser 13, app types/bundle, architecture and whitespace gates pass; OpenClaw checks unavailable |
+| [064](064-report-resource-contract-errors-at-the-member.md) | Locate invalid resource members and relationships in real compiler diagnostics | P2 | L | MED | None; recommended after 061–063 | DONE — 11 Vue-aware cases pass, including one union-valued action; harness binds diagnostics to the invalid fixture; Types, Binder, unit, app, architecture, and CI gates pass; see plan evidence |
+| [065](065-separate-current-loom-contract-from-migration-history.md) | Keep one current contract and move migration history to a labelled archive | P3 | M | LOW | 073 | DONE — current guide and labelled archive published; open limits and compiled owners recorded in the inventory |
+| [066](066-evaluate-loom-agent-repair-work.md) | Prepare five agent tasks; capture baseline early and compare named candidate checkpoints | P3 | M + measured run cost | LOW | None for baseline; candidate declares completed repairs | KIT BLOCKED / PILOT NOT RUN — case B reference failed type-check after two attempts; no worker results |
+| [067](067-make-filter-query-ownership-explicit.md) | Declare owned query keys and reverse draft mapping for filters | P1 | M | MED | None; before 069 | DONE — explicit contract, resource binding, 56 mounted view tests, architecture and app gates pass; see Plan 067 for evidence |
+| [068](068-enforce-one-data-source-in-surface-types.md) | Enforce exactly one data source in public TS and Vue contracts | P2 | M | MED | 064; before 069 | DONE — types, 11 resource + 8 TS + 8 Vue diagnostics, 57 core tests including mounted source updates for all four owners, app, architecture, and whitespace gates pass; see plan evidence |
+| [069](069-give-compact-form-contracts-one-owner.md) | Let form types own compact fields; let resources own binding | P2 | M | MED | 064, 067, 068 | DONE — one compact form projection supplies constructor, bound form, and filter types; cold Loom/app types, diagnostics, 478 Loom tests, app, architecture, and whitespace gates pass; OpenClaw/autoreview tools unavailable |
+| [070](070-move-input-model-rules-to-component-owners.md) | Give input components ownership of prop-dependent model rules | P2 | M | MED | 063, 064; recommended after 069 | DONE — component-owned types supply Form mode checks; 23 resource/form, 9 TypeScript, 8 Vue diagnostics, 139 input tests, Loom/app types, and architecture pass; OpenClaw tools unavailable |
+| [071](071-align-file-manager-values-with-canonical-assets.md) | Align the File Manager provider with canonical input asset values | P2 | M | MED | 064 | DONE — non-generic AssetValue adapter, ManagedAsset listing boundary, public type fixtures and paired diagnostics; Loom/app tests and types, architecture and whitespace gates pass; root review accepted |
+| [072](072-preserve-resource-ownership-in-option-caches.md) | Refresh resource-owned option caches without private key handling | P1 | M | MED | Recommended after 070 | DONE — explicit owner keys, whole/record invalidation, mounted invalidation and namespace-removal tests, Loom/web types and architecture pass; OpenClaw review tools unavailable; see Plan 072 |
+| [073](073-remove-module-scaffolding-completely.md) | Retire unused module authoring tools and remove their references | P1 | L | MED | None; before 075, 065 and candidate evaluation | DONE — source tools, fixtures, commands, historical workflow steps, and evidence ties removed; current app checks pass |
+| [074](074-unify-resource-route-access-evaluation.md) | Preserve route operation and static permissions; make dynamic entry policy explicit | P1 | M | MED | 064 | DONE — Loom/Web gates pass, nested navigation fixture corrected; root review accepted; see Plan 074 |
+| [075](075-decouple-transport-from-unselected-operations.md) | Permit non-list transport without a list-query schema | P2 | M | MED | 073, 064 | DONE — partial Hono routes, app diagnostics, types, and transport tests pass; root review accepted |
+| [076](076-preserve-post-write-outcomes-in-delete-surfaces.md) | Preserve uncertain delete outcomes and separate write from refresh failure | P1 | M | MED | 061, 068, 064; serial with 067 | DONE — per-record UI, binder identity, diagnostics, Loom/App types, 62 view tests, and architecture gates pass; see Plan 076 |
 
-Start **066 baseline preparation now**, without making product work wait for the
-worker harness. Run **073 → 065** to remove the unused workflow and publish the
-current direct-authoring guide early. Then use this source-change order:
+The source plans ran in this order: **073 → 065**, then
 **061 → 067 → 062 → 063 → 064 → 068 → 076 → 069 → 070 → 072 → 074 → 075 → 071**.
-Update the current guide with each public contract change. Run candidate
-evaluations at named checkpoints and after the final source repairs. Numbers
-reflect acceptance order; use full root paths because historical bundles reuse
-them. This is a coordination order, not a requirement to run every predecessor
-for an unrelated repair.
+Plan 066 began after the source work. Its kit remains blocked at reference
+preparation, so no candidate evaluation ran. Numbers reflect the execution
+order; use full root paths because historical bundles reuse them.
 
-The user replaced the generator-checker repair with complete removal. Plan 073
-must not produce another scaffolding system. It preserves independent evidence
+The user replaced the old source-tool repair with complete removal. Plan 073
+must not produce another source-writing system. It preserves independent evidence
 recording, current app modules, and required file-route tooling. Historical
 restoration instructions are removed too; Git history retains deleted material.
 
@@ -56,15 +52,16 @@ blocking for 076: resource identity is forwarded once, and other records remain
 usable. Run edits to shared owners serially and reconcile earlier evidence
 instead of treating every unrelated change as a reason to restart discovery.
 
-Plan 066 measures observed authoring/repair work in five cases. It may prepare
-its kit with a blocked pilot when the harness is unavailable; that does not
-block the other plans or establish agent improvement.
+Plan 066 measures observed authoring/repair work in five cases. Its current kit
+is blocked by the case B reference type mismatch after the plan's two-attempt
+limit. No worker ran and no agent improvement is established. This does not
+block the other plans.
 
 Each plan contains its own intent, current excerpts, scope, target decisions,
 ordered steps, commands, meaningful test cases, done criteria, and stop rules.
-Read the entire selected file. Implementation is not done. No code, tests,
-skills, or framework documents were edited while writing these plans. Existing
-local skill/test changes and Plans 059–060 were preserved.
+Read the entire selected file before follow-up work. The original planning pass
+did not edit code, tests, skills, or framework documents. The later source-plan
+implementations and Plan 066 preparation are recorded in their plan files.
 
 Audit evidence: Loom cold type check passed; Loom unit suite passed **450 tests
 in 61 files**. An in-memory compiler probe reproduced the opaque `never` error
@@ -76,7 +73,7 @@ source-union enforcement remains unverified. The form/model duplication and
 File Manager contract mismatch were confirmed from source. Further in-memory
 probes confirmed resource invalidation misses option entries, the route guard
 omits permission arrays, and a create-only Hono query guard becomes never while
-a list-bearing control compiles. Delete outcome handling and generator ties
+a list-bearing control compiles. Delete outcome handling and old authoring-tool ties
 were confirmed from source. These are not measurements of agent performance. New regression,
 browser, app, diagnostic-harness, and evaluation checks
 are future execution gates, not completed evidence. The audit did not cover
@@ -147,11 +144,12 @@ gone and all required, available gates pass.
 | [054](054-resource-binding-and-view-bags.md) | One-object resources and complete primitive/View bags | P1 | L | HIGH | 052, 053 | DONE — 106 focused tests and ListView browser pass; full suites leave only Plan 055 TableInput/LookupInput failures; 35 later-plan/final-gate type diagnostics are recorded in the inventory |
 | [055](055-composite-input-ownership.md) | Explicit filters, row forms, lookup loaders, and location editor | P1 | L | HIGH | 052, 053, 054 | DONE — reviewed after revisions; full Loom unit 502/502 and browser 34/34 pass; only two Plan 058 Drawer/Tabs type diagnostics remain |
 | [056](056-migrate-web-surfaces-and-app-seams.md) | All web settings modules, routes, app seams, and presets migrated | P1 | L | HIGH | 054, 055 | DONE |
-| [057](057-scaffolding-checkers-and-guidance.md) | Generator, checker, active docs, skills, and fixture output migrated | P1 | L | MED | 056 | DONE |
+| 057 | Historical source-tool work, retired by Plan 073 | P1 | L | MED | 056 | RETIRED — current app modules use direct authoring |
 | [058](058-remove-legacy-paths-and-prove-completion.md) | Old code/exports removed; architecture gate and full verification | P1 | L | HIGH | 051–057 | DONE — reviewed after revisions; all required gates pass |
 
-Execution order: **051 → 052 → 053 → 054 → 055 → 056 → 057 → 058**.
-Complete and review each plan before starting the next. Do not ship a partial migration as the final architecture.
+Execution order: **051 → 052 → 053 → 054 → 055 → 056 → 058**.
+Plan 073 retires the old source-tool step. The remaining migration records are
+historical. Do not ship a partial migration as the final architecture.
 Keep framework/API and app transport contracts unchanged, as the specification
 requires. The user request explicitly includes Loom framework changes.
 
@@ -165,13 +163,13 @@ requires. The user request explicitly includes Loom framework changes.
 | Resources and Views still expose dual/aggregate shapes | Extracted primitive bags are not the target guarded operation contract | L | HIGH | HIGH | `packages/loom/src/resources/defineResource.ts:25-44`; `packages/loom/src/components/views/FormView.vue:41-82` | 054 |
 | Composite inputs own implicit fields and cross-form writes | Nested rows/lookup cannot share the new form/display boundaries | L | HIGH | HIGH | `packages/loom/src/components/composites/form-inputs/TableInput.vue:23-35`; `LookupInput.vue:27-47` in the same directory | 055 |
 | Web declarations and defaults remain on the old model | Current settings pages cannot compile after old API deletion | L | HIGH | HIGH | `apps/web/src/routes/(authenticated)/settings/users/users.resource.ts:1-19`; `apps/web/src/configs/defaults.ts:23-55` | 056 |
-| Generator and active guidance recreate old code | A fresh module would regress the migration | L | MED | HIGH | `scripts/scaffold-bounded-module.mjs:610-628`; `scripts/module-ui-check.mjs:516-544` | 057 |
+| Retired authoring tools left a risk of restoring old code | A fresh module could regress the migration | L | MED | HIGH | Plan 073 removes the tool paths; independent UI checks remain | 073 |
 | Public exports and normal validation still allow old paths | A clean break cannot be proved | L | HIGH | HIGH | `packages/loom/src/index.ts:1-8`; `packages/loom/vitest.browser.config.ts:12` | 058 |
 
 ### Scope and decisions
 
 - This audit covered `packages/loom`, the relevant `apps/web` resources and
-  framework adapters, module generators/checkers, active docs/skills, and their
+  framework adapters, application scripts and checkers, active docs/skills, and their
   verification configuration. It did not audit Sprindle, SDK, utilities, API
   implementation, dependency security, unrelated product features, or broad
   performance. Those areas are outside this migration except final workspace
@@ -367,9 +365,9 @@ Implementation instructions are in
 Forward verification of this revision is reserved for the user. Plan 024 is
 already implemented (see the table below); plan 025 remains optional
 follow-up work, not a prerequisite for this trial. The short
-path uses existing controls, ordinary evidence and safe manual generator fallback.
-No new generator, route-type command or connected-entity framework repair is
-claimed as implemented. Those tool limitations remain visible if encountered.
+path uses existing controls, ordinary evidence and direct module authoring.
+No new source-writing command or connected-entity framework repair is claimed
+as implemented. Current app and route-type checks remain available.
 
 The follow-up also reconciles the API runbook and replaces the file-upload
 test's shared-table reset with existing session fixtures. No database or framework
@@ -386,7 +384,7 @@ verification is reserved for the user; no speed or reliability claim is made.
 ## Earlier module skill follow-up — 2026-09-14
 
 The following notes record earlier revisions. The current handoff above governs
-where their mandatory worksheet/generation procedure differs.
+where their worksheet procedure differs.
 
 Discovery/test follow-up: layer skills now read broad architecture, registration
 and export references only for an unresolved fact. Discovery reports occur after
@@ -401,9 +399,10 @@ probes check both test stability and useful detection. These evaluations remain
 TODO; the wording changes make no claim of measured speed or reliability.
 
 The user selected skill changes first, then plans for tool fixes and forward
-tests. Plans 021 and 022 are complete as recorded below.
+tests. Plan 021 was retired under Plan 073; Plan 022 remains a historical record.
 The skill revision uses CRUD tables and custom workflow YAML, reuses discovery,
-checks generation before detailed planning, and assigns one working path first.
+checks the current app contracts before detailed planning, and assigns one
+working path first.
 The worksheet parser now reads CRUD tables as well as custom workflow records.
 
 The final wording pass moved custom workflow YAML into a conditional reference,
@@ -414,7 +413,7 @@ dependencies require the complete predecessor.
 
 | Plan | Priority | Effort | Risk | Depends on | Status |
 |---|---|---|---|---|---|
-| [021: Submit without copy dependency](021-remove-submit-copy-dependency.md) | P1 | S | LOW | None | DONE — 2026-09-14, native submit locator, 21 tool tests pass |
+| 021 | Historical submit workflow, retired under Plan 073 | P1 | S | LOW | None | RETIRED — current app modules use direct authoring |
 | [022: Report raw controls](022-report-raw-interactive-controls.md) | P1 | S | MED | None | DONE — 2026-09-14, native controls reach review, 18 tests pass |
 | [024: Prove shared form controls](024-prove-shared-form-controls.md) | P1 | M | MED | None | IMPLEMENTED — 2026-09-14, real Dialog/Table/calendar cases pass, helper regression passes |
 | [025: Separate runtime and review freshness](025-separate-runtime-and-review-freshness.md) | P2 | S | MED | None | TODO |
@@ -426,17 +425,16 @@ plan status and user application work.
 
 | Finding | Category | Impact | Confidence | Evidence |
 |---|---|---|---|---|
-| English submit selector | Bug/tests | Correct localized forms fail | HIGH | `scripts/scaffold-bounded-module.mjs:819`, `:831` |
 | Raw controls pass without review | DX/tests | Framework replacements can be missed | HIGH | `scripts/module-ui-check.test.mjs:22` |
 | Revised delivery behavior is unproved | Tests | Time and completeness remain uncertain | HIGH | Forward test run facts |
 
 Earlier considered and rejected: removing the worksheet (then judged small;
-superseded for standard CRUD after the later 102-edit planning trace); another
-generator or skill (existing owners suffice); automatic relation/workflow
-generation (business rules remain manual); calling static pass acceptance.
-Plans 019–020 remain historical results, not proof of this new revision.
+superseded for standard CRUD after the later 102-edit planning trace); adding a
+new source-writing tool or skill (direct app authoring is current); automatic
+relation/workflow decisions (business rules remain manual); calling static pass
+acceptance. Earlier run reports remain historical, not proof of this revision.
 
-Scope: selected module skills, generator submission, UI checker, and evaluation
+Scope: selected module skills, UI checks, and evaluation
 contracts. No full application, framework, security, dependency, deployment or
 performance audit was performed. No new product direction was requested.
 Skill validation passed for six changed skill folders, seven Node skill checks
@@ -447,9 +445,8 @@ fixture was corrected. Full runtime forward tests remain unrun.
 Final handoff checks: `pnpm test:module-tooling` passed 92 Node tests and three
 Python tests. Four workflow skill validations and `git diff --check` passed.
 An old Node assertion required command text in the router; it failed after the
-procedure moved to its reference. That wording assertion was removed; the
-generator example check and reference-link checks remain. All five final skill
-changes are complete.
+procedure moved to its reference. That wording assertion was removed. The
+reference-link checks remain. All five final skill changes are complete.
 The next skill pass defines framework/module test ownership in one reference,
 checks assertions before expensive runs, and requires page/artifact diagnosis
 after two failures at one browser interaction. Plan 024 closes real-control
@@ -812,52 +809,13 @@ It is independent of the paused routing and E2E plans above. No source or runtim
 check was changed or run during this planning pass. Skill conventions are updated
 separately under the user's explicit request; pending framework support is marked.
 
-## Faster Carta module delivery — 2026-09-12
+## Local module environment — 2026-09-12
 
-Planned with `$improve` against commit `7eb093d`. The user selected all four
-parts after discussion. The order is configuration, local readiness, bounded
-generation, then skill alignment and controlled measurement. This task changed
-plans only. It did not implement source, change either external project, apply a
-migration, run a seed, or start a service.
-
-| Plan | Title | Priority | Effort | Depends on | Status |
-| --- | --- | --- | --- | --- | --- |
-| [016](016-centralize-app-port-settings.md) | Read application ports only from each app environment | P1 | S | None | IMPLEMENTED — review APPROVE 2026-09-12; E2E-case run deferred to 017 |
-| [017](017-prepare-local-module-environment.md) | Prepare and check the local module environment | P1 | M | 016 | IMPLEMENTED — 2026-09-12, tool tests pass; live DB/S3/E2E integration blocked by missing local services |
-| [018](018-expand-bounded-module-generator.md) | Generate selected standard module actions and their proof | P1 | L | 016, 017 | IMPLEMENTED — 2026-09-13, tooling 84+2 pass, both type-checks pass; live migration/seed/API/browser runs blocked by missing local services |
-| [019](019-align-module-workflow-and-measure-time.md) | Use the new module path and measure its effect | P1 | M | 016, 017, 018 | IMPLEMENTED — 2026-09-13, trials green, repairs committed; no speed claim |
-| [020](020-accept-separator-and-fix-review.md) | Accept the pnpm separator and correct the workflow review findings | P1 | S | 019 | IMPLEMENTED — review APPROVE, 2026-09-13 |
-
-The generator stays in the current command. It creates only selected standard
-actions and the technical read that Update needs. It uses Drizzle for one reviewed
-migration, registers only exact seed records, and creates useful API and browser
-proof when the path is standard. Custom Detail pages, relations, dependent input,
-child resources, scoped access, workflows, concurrency, existing-data changes,
-custom queries, and reports stay in normal module work.
-
-Ports have one owner in each app `.env`. The prepared-environment work adds one
-idempotent file setup command and one read-only preflight. The final plan updates
-the existing skills with short pointers and compares two controlled module runs.
-Raw evaluation logs remain ignored and redacted.
-
-The source evidence includes two supplied time reports. Project A reports about
-6-7 hours of active work, a 72-minute empty worker, and 106 minutes of broad work
-without a usable result. Project B reports 5 hours 35 minutes, 8.18 million input
-tokens, five compactions, and 121 minutes in E2E and verification. The new plans
-do not claim a time reduction before the controlled runs are complete.
-
-### Approaches considered and rejected
-
-- A second module generator or new skill would create two contracts. Extend the
-  current bounded command and reference.
-- Shared port defaults or compatibility aliases would keep more than one owner.
-  Read only the two app `.env` files and fail on invalid values.
-- Automatic migration application, seed execution, or E2E data reset would make
-  generation destructive. Generate and report these artifacts, then stop.
-- Relation, workflow, scope, report, and custom Detail generation would make the
-  first version guess business behavior. Keep those parts in the module plan.
-- Generated source-shape tests repeat renderer logic. Generate direct API and
-  browser behavior proof when the standard path can support it.
+Plans 016 and 017 remain independent: app ports come from each app environment,
+and local setup uses an idempotent file command plus a read-only preflight. The
+old implementation and evaluation records for Plans 018–020 were retired by
+Plan 073. Git history retains the original records. Current modules are authored
+directly from approved designs and plans.
 
 ## Form write-schema seam — 2026-09-15
 
@@ -895,7 +853,7 @@ Plan 029 supersedes the remaining 027 work. Plan 028 is defense in depth
 
 Planned with `$improve` against commit `59ba2d1` on 2026-09-15. Scope: make
 one Carta web schema seam support Hono and custom resource contracts, migrate
-all current app and generator callers, then remove Loom's no-op schema builder.
+all current app callers, then remove Loom's no-op schema builder.
 Planning changed only files under `plans/`. The untracked proof source remains
 unchanged for the implementer to fold into permanent tests.
 
@@ -926,7 +884,7 @@ repository migration is planned, not yet implemented or proven.
 | --- | --- | --- | --- | --- | --- | --- |
 | Web code can bypass the Hono contract through Loom's identity-only builder | correctness / architecture | HIGH | L | MED | HIGH | `apps/web/src/framework/hono/entity.ts`; current Loom imports in web schemas, fixtures, and tests |
 | The current Hono write check compares raw Zod input, but Form submits parsed output | correctness | HIGH | M | MED | `apps/web/src/framework/hono/entity.ts:40-56`; `packages/loom/src/components/core/Form.vue:379-381`; passing prototype assertions |
-| App callers, generator output, agent skills, and architecture docs teach two schema paths | DX / tech debt | HIGH | M | LOW | `scripts/scaffold-bounded-module.mjs`; both named skill files; web architecture document |
+| App callers and old guidance taught two schema paths | DX / tech debt | HIGH | M | LOW | Retired by Plan 073; current skills and app modules use direct contracts |
 | Loom's public `defineSchema` is a no-op after the app seam owns adaptation | tech debt / API | MED | M | MED | `packages/loom/src/resources/defineSchema.ts`; `defineResource` already accepts `WebResourceSchemaBoundary` |
 
 ### Approaches considered and rejected
@@ -951,18 +909,17 @@ Planned with `improve` at `2d6b378`. Scope: the `rpc.coffeeSales` 404 plus the
 with the contract present `rpc.coffeeSales` is TS2339; with
 `apps/api/.sprindle` deleted every `rpc` use is TS18046 plus TS2307 on the
 contract import. No `rpc.camelCase` dot access exists on the current tree.
-Scaffold emits only `rpc['<slug>']` (`scripts/scaffold-bounded-module.mjs:533,615,656`).
 
 | Plan | Title | Priority | Effort | Depends on | Status |
 |---|---|---|---|---|---|
 | [042](042-gate-type-check-on-route-contract.md) | Gate web type-check on the generated route contract | P1 | S | — | DONE — 2026-09-19, review APPROVE with one test-cleanup revision (unused import removed); self-heal proof passed (deleted `.sprindle` regenerates via `type-check`, exit 0, byte-identical contract) |
 | [043](043-windows-safe-contract-links.md) | Make contract staging links Windows-safe | P1 | S | — | DONE — 2026-09-19, review APPROVE (helper plus `vi.mock('node:fs')` recorder test in `manifest.spec.ts`, not `tooling.spec.ts`, since the tooling suite spawns child processes; 37 tooling tests pass, lint and type-check clean) |
-| [044](044-reject-unknown-resource-routes.md) | Reject unknown resource routes at the app seam | P2 | S | 042 | DONE — 2026-09-19, review APPROVE as written (fail-fast guard with kebab-case hint, 2 action tests, SDK hyphen positives plus camelCase negative, 2 scaffold bracket assertions; all suites and lint clean) |
+| [044](044-reject-unknown-resource-routes.md) | Reject unknown resource routes at the app seam | P2 | S | 042 | DONE — 2026-09-19, review APPROVE as written (fail-fast guard with kebab-case hint, 2 action tests, SDK hyphen positives plus camelCase negative; all suites and lint clean) |
 
 Execute 042 and 043 in any order, then 044. Plan 042 makes the contract
 self-healing through the web `type-check` script; 043 makes that build
-reliable on Windows (`junction`); 044 adds the fail-fast guard, compiler
-negatives, and generator assertions.
+reliable on Windows (`junction`); 044 adds the fail-fast guard and compiler
+negatives.
 
 Considered and rejected: camelCase-to-kebab-case runtime aliases (keeps two
 names for one route); a regex lint rule for `rpc.camelCase` (type-check

@@ -44,7 +44,7 @@ TS18046 (`'rpc' is of type 'unknown'`) plus TS2307 on the contract import.
   task. The gate must live inside the web script itself, not in the graph.
 - Filesystem path style exemplar: `apps/api/scripts/ensure-tooling.mjs:7-10`
   derives repo paths from `fileURLToPath(import.meta.url)`. Match it.
-- Node script test style exemplar: `scripts/scaffold-bounded-module.test.mjs:144`
+- Node script test style exemplar: `scripts/module-evidence.test.mjs:15`
   uses `node:test` plus `node:assert/strict` (`assert.match`). Root
   `test:module-tooling` runs `node --test scripts/*.test.mjs`.
 
@@ -127,7 +127,7 @@ Change nothing else in the file.
 
 Create `apps/web/scripts/ensure-routes-contract.test.mjs` with `node:test`
 and `node:assert/strict`, following the `assert.match` style of
-`scripts/scaffold-bounded-module.test.mjs`:
+`scripts/module-evidence.test.mjs`:
 
 - Import `isValid` from the script file.
 - In `os.tmpdir()` fixtures: a missing path returns false; an empty file
@@ -161,7 +161,7 @@ regenerable, but keep the safety copy until the step passes):
 
 - New unit test `apps/web/scripts/ensure-routes-contract.test.mjs`: four
   validator cases (missing, empty, no-marker, valid). Pattern:
-  `scripts/scaffold-bounded-module.test.mjs`.
+  `scripts/module-evidence.test.mjs`.
 - Integration proof is Step 4 (deleted artifact regenerates through the real
   `type-check` command). No committed integration test; the spawn path is
   proved by the Step 4 run output recorded in the review.

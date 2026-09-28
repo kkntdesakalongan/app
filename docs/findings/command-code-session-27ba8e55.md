@@ -1,5 +1,7 @@
 # 27ba8e55-3dea-495c-ad62-ad5d5019f61f
 
+> Editor's note: This historical transcript has targeted redactions under Plan 073; it is not the original export. The original bytes remain in Git history.
+
 - **Session:** 27ba8e55-3dea-495c-ad62-ad5d5019f61f
 - **Exported:** 2026-09-20T06:56:13.395Z
 - **Model:** meta/muse-spark-1.3-contributor
@@ -780,7 +782,7 @@ Read 1/1 file, 485 lines
 385: 
 386: Designs and implementation plans normally live under `plans/<feature>/`. This gives later agent sessions a persistent record of what was agreed and what remains to be done.
 387: 
-388: Generate an approved bounded module with the node CLI: `pnpm scaffold:bounded-module -- --manifest plans/<feature>/module.json --check`, then `--apply`. Read `.agents/skills/carta-module-development/references/bounded.md` for the manifest contract.
+388: [Obsolete module-authoring command and guide instruction redacted under Plan 073.]
 389: 
 390: Repository-wide instructions are in [AGENTS.md](AGENTS.md).
 391: 
@@ -1838,7 +1840,7 @@ Read 1/1 file, 835 lines
 242: 
 243: | Finding | Category | Impact | Confidence | Evidence |
 244: |---|---|---|---|---|
-245: | English submit selector | Bug/tests | Correct localized forms fail | HIGH | `scripts/scaffold-bounded-module.mjs:819`, `:831` |
+245: | English submit selector | Bug/tests | Correct localized forms fail | HIGH | `[retired module-authoring source redacted under Plan 073]:819`, `:831` |
 246: | Raw controls pass without review | DX/tests | Framework replacements can be missed | HIGH | `scripts/module-ui-check.test.mjs:22` |
 247: | Revised delivery behavior is unproved | Tests | Time and completeness remain uncertain | HIGH | Forward test run facts |
 248: 
@@ -2338,7 +2340,7 @@ Read 1/1 file, 835 lines
 742: | --- | --- | --- | --- | --- | --- | --- |
 743: | Web code can bypass the Hono contract through Loom's identity-only builder | correctness / architecture | HIGH | L | MED | HIGH | `apps/web/src/framework/hono/entity.ts`; current Loom imports in web schemas, fixtures, and tests |
 744: | The current Hono write check compares raw Zod input, but Form submits parsed output | correctness | HIGH | M | MED | `apps/web/src/framework/hono/entity.ts:40-56`; `packages/loom/src/components/core/Form.vue:379-381`; passing prototype assertions |
-745: | App callers, generator output, agent skills, and architecture docs teach two schema paths | DX / tech debt | HIGH | M | LOW | `scripts/scaffold-bounded-module.mjs`; both named skill files; web architecture document |
+745: | App callers, generator output, agent skills, and architecture docs teach two schema paths | DX / tech debt | HIGH | M | LOW | `[retired module-authoring source redacted under Plan 073]`; both named skill files; web architecture document |
 746: | Loom's public `defineSchema` is a no-op after the app seam owns adaptation | tech debt / API | MED | M | MED | `packages/loom/src/resources/defineSchema.ts`; `defineResource` already accepts `WebResourceSchemaBoundary` |
 747: 
 748: ### Approaches considered and rejected
@@ -2363,7 +2365,7 @@ Read 1/1 file, 835 lines
 767: with the contract present `rpc.coffeeSales` is TS2339; with
 768: `apps/api/.sprindle` deleted every `rpc` use is TS18046 plus TS2307 on the
 769: contract import. No `rpc.camelCase` dot access exists on the current tree.
-770: Scaffold emits only `rpc['<slug>']` (`scripts/scaffold-bounded-module.mjs:533,615,656`).
+770: Scaffold emits only `rpc['<slug>']` (`[retired module-authoring source redacted under Plan 073]:533,615,656`).
 771: 
 772: | Plan | Title | Priority | Effort | Depends on | Status |
 773: |---|---|---|---|---|---|

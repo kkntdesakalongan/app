@@ -169,7 +169,7 @@ key extraction, do not add a runtime import.
 - `virtual` params, `pinnedOrder` semantics, filter coercion, pagination.
 - `packages/sprindle/src/tooling/*` implementation — declarations flow through
   automatically; specs only.
-- Any `apps/api` or `apps/web` module, the scaffold (emits no sort policy),
+- Any `apps/api` or `apps/web` module (no app resource declares sort policy),
   Loom, the SDK, POS fixtures.
 - E2E or browser tests.
 
@@ -376,7 +376,7 @@ Stop and report back (do not improvise) if:
   with the exact error rather than loosening to `any`/`string`.
 - The tooling specs (`language`, `manifest`) fail on the new declarations.
 - The fix appears to require touching an out-of-scope file (wire schema,
-  memory source, Loom, scaffold, app modules).
+  memory source, Loom, or app modules).
 
 ## Maintenance notes
 

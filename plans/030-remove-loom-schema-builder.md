@@ -75,8 +75,8 @@ export function defineSchema(schema: WebResourceSchemaBoundary): WebResourceSche
 - `packages/loom/README.md:45-60` documents Loom `defineSchema` as its resource
   schema constructor.
 - Root `README.md:270-283` shows the same builder in the Loom overview.
-- Plan 029 must have removed all app and scaffold imports of Loom
-  `defineSchema`. If it did not, this plan cannot start.
+- Plan 029 must have removed all app imports of Loom `defineSchema`. If it
+  did not, this plan cannot start.
 
 ## Commands you will need
 
@@ -293,7 +293,7 @@ Expected:
 
 - first three inventories have no matches;
 - the last inventory lists only the one app implementation, its app imports
-  and tests, current generator output, and current instructions;
+  and tests, current app source, and current instructions;
 - no deleted file or export remains;
 - all commands pass.
 
@@ -334,8 +334,7 @@ All items must hold:
 Stop and report. Do not improvise if:
 
 - The execution request does not explicitly authorize Loom changes.
-- Plan 029 is not complete or any app/scaffold import of Loom `defineSchema`
-  remains.
+- Plan 029 is not complete or any app import of Loom `defineSchema` remains.
 - A new repository caller of Loom `defineSchema` exists outside this inventory.
 - Direct schema values cannot preserve current record, query, create, update,
   identity, field, or action inference with only a named annotation or a narrow

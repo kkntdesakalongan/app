@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH.
+- Status: DONE. Priority: P2. Effort: M. Risk: MED. Confidence: HIGH.
 - Category: separation of concerns / type safety.
 - Depends on root Plans 063 and 064 for the renderer roster and diagnostic gate. Recommended after 069 to keep form type edits serial.
 - Planned at: `1246387`, 2026-09-26.
@@ -68,11 +68,11 @@ Read root AGENTS, the resource architecture input rules, and `test-audit`. Recor
 
 ## Done, stops, and maintenance
 
-- [ ] Component declarations and form compatibility consume the same component-owned mode rules.
-- [ ] `rg -n 'type TextareaModelValue|type AssetModelValue' packages/loom/src/forms/defineForm.ts` returns no matches.
-- [ ] Actual Vue calls retain existing model acceptance; form checks admit every runtime branch of dynamic modes.
-- [ ] Wrong form-schema/control-mode combinations fail with valid paired controls.
-- [ ] Input runtime behavior, defaults, and upload lifecycle remain unchanged; all gates pass.
+- [x] Component declarations and form compatibility consume the same component-owned mode rules.
+- [x] `rg -n 'type TextareaModelValue|type AssetModelValue' packages/loom/src/forms/defineForm.ts` returns no matches.
+- [x] Actual Vue calls retain existing model acceptance; form checks admit every runtime branch of dynamic modes.
+- [x] Wrong form-schema/control-mode combinations fail with valid paired controls.
+- [x] Input runtime behavior, defaults, and upload lifecycle remain unchanged; all gates pass.
 
 Stop if sharing these owners breaks renderer registration or needs a generic SFC rewrite, if runtime behavior must change to satisfy the new type, or if a second list of built-in renderers is required. Keep the minimal failing fixture and report it. Stop after two failed bounded corrections. Future component mode changes must update the component owner and its boundary fixtures, not add a special case in the form constructor.
 
@@ -80,4 +80,23 @@ The baseline audit passed Loom types and 450 tests in 61 files before these chan
 
 ## Execution evidence
 
-Not implemented. Duplicate model policy and the literal-only multi rule are confirmed from source. The shared-owner extraction and new form compiler cases remain unverified.
+Implemented from HEAD `05ebfa3`. The scoped drift command had no committed changes after `1246387`. The starting working tree contained uncommitted work from Plans 063 and 069, the Plan 064 diagnostics harness, and other plans. Those files and the Plan 063 renderer roster and Plan 069 compact form types were preserved.
+
+The source writes match the target matrix. TextareaInput emits a finite number or undefined only for exactly `['number']`; invalid numeric text remains local and reports a validation error. Its current default `['text', 'number']` and every other supported constraint emit strings or undefined. FileInput emits its persisted asset list when `multi` is true, and the first persisted asset or null otherwise. ImageInput emits a copied asset list when `multi` is true, and the first asset or null otherwise. Both asset controls default `multi` to false.
+
+The existing props and defaults remain unchanged. TextareaInput defaults `constraint` to `['text', 'number']`, `placeholder` to `''`, and `rows` to `3`. FileInput defaults `accept` and `maxSize` to undefined, `multi` to false, and `uploadPath` to `''`. ImageInput has an unset optional model, and defaults `maxSize` to `5`, `disableInformation` to false, `multi` to false, `limit` to `-1`, `additionalInfo` and `uploadPath` to `''`. All three retain the shared defaults: `field` and `label` to `''`, `enableHelperMessage`, `disabled`, and `required` to false, and `helperMessage` and `error` to `''`.
+
+The new component-owned textarea and asset types supply both component model declarations and Form's selected-prop model checks. The Form layer only maps selected prop types into those owners. Textarea's omitted, literal, widened, union, and optional prop forms are covered. File and image fixtures cover omitted, literal, widened boolean, union, and optional multi modes. Dynamic asset mode checks reject schemas that support only one cardinality and accept the full asset union. Direct Vue fixtures keep the aggregate model accepted for existing component initialization values. The Plan 064 harness now checks paired public `defineForm` controls for default, numeric, text, widened, union, and optional textarea modes; single, multi, dynamic, and optional asset modes; and ImageInput multi mode. TableInput's generic special case, renderer augmentation, and custom renderer behavior remain unchanged.
+
+The focused input tests add nonnumeric textarea string emission, FileInput clear values for both cardinalities, and ImageInput single selection/clear and multi clear behavior. The existing numeric textarea clear and file/image upload coverage already supplied that evidence, so they were not duplicated. A first optional-multi diagnostic showed that the selected-prop adapter did not include the omitted `false` branch; the adapter now reads the optional prop value and the final diagnostic gate passes.
+
+Final verification passed:
+
+- Loom `vue-tsc --noEmit --incremental false`: exit 0.
+- Contract diagnostics: 23 resource and form cases, 9 TypeScript surface cases, and 8 Vue surface cases passed.
+- Focused input suite: 16 files and 139 tests passed.
+- Framework web `type-check` and cold `vue-tsc --noEmit --incremental false -p tsconfig.vitest.json`: exit 0 for both.
+- Surface architecture: 18 checks and the architecture scan passed.
+- `git diff --check` passed; the local textarea and asset policy aliases are absent from `defineForm.ts`.
+
+The test-audit skill's OpenClaw testing, crabbox, changed-file classification, and autoreview tools were unavailable; they were not reported as passing. No comments, runtime conversion, renderer list, public export, generic SFC rewrite, package install, commit, or push was added.

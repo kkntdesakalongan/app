@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P3. Effort: M for case preparation; run cost depends on the available agent harness. Risk: LOW to product source.
+- Status: KIT BLOCKED / PILOT NOT RUN — case B reference type-check failed after two preparation attempts. Priority: P3. Effort: M for case preparation; run cost depends on the available agent harness. Risk: LOW to product source.
 - Category: direction/evaluation spike.
 - Depends on: no repair for baseline preparation/runs. Capture the baseline before implementation where the available harness permits. Each candidate run names the repairs it includes; it need not wait for all sixteen plans. Plan 073 removal and the first 065 guide publication form a useful early candidate. Use the baseline below, not an inferred historical environment.
 - Planned at: `1246387`, 2026-09-26.
@@ -21,14 +21,14 @@ Read root `AGENTS.md`, `writing-for-agents`, `evals/carta-module-workflow/README
 
 ```json
 {
-  "id": "custom-relations",
-  "stage": "execute",
-  "request": "Run the selected task and report the observed result.",
-  "inputs": ["fixtures/workflow/custom-relations.md", "fixtures/workflow/custom-relations.json"]
+  "id": "review-semantic-defects",
+  "stage": "verify",
+  "request": "Review the existing category list against the approved contract.",
+  "inputs": ["fixtures/approved/design.md", "fixtures/review/category-route.ts"]
 }
 ```
 
-This excerpt shows the shape, not a literal replacement for the existing request. Preserve independent existing cases after Plan 073 has removed generator-only cases and inputs. Do not restore those retired cases. `grading.md` is evaluator-only; source code and result artifacts, not headings or keywords, determine acceptance.
+Use only case IDs and input paths present in `cases.json`. `grading.md` is evaluator-only; source code and result artifacts, not headings or keywords, determine acceptance.
 
 Current Loom reference owners are `packages/loom/src/components/inputs/useOptionSource.ts`, `components/composites/form-inputs/LookupInput.vue`, `forms/defineForm.ts`, `resources/bindResource.ts`, and `apps/web/src/routes/(authenticated)/settings/users/users.resource.ts`. They provide dependency invalidation, raw input/output transformation, explicit record context, and operation binding. Read these owners before preparing fixtures; do not invent an API from this plan's business examples.
 
@@ -39,7 +39,7 @@ Change only:
 - `evals/carta-module-workflow/cases.json`, append five uniquely named cases
 - `evals/carta-module-workflow/grading.md`, add a separate Loom rubric
 - `evals/carta-module-workflow/README.md`, link the new protocol/results
-- `evals/carta-module-workflow/fixtures/loom/` (new prompts, preparation instructions, and bounded fixture files)
+- `evals/carta-module-workflow/fixtures/loom/` (new prompts, preparation instructions, and focused fixture files)
 - `evals/carta-module-workflow/loom-repair-protocol.md` (new)
 - `evals/carta-module-workflow/loom-repair-results.json` (new machine-readable result ledger)
 - `evals/carta-module-workflow/loom-repair-report.md` (new evidence-based report)
@@ -120,11 +120,11 @@ The acceptance test path is new and exists only after preparation in the disposa
 
 ## Done, stops, and maintenance
 
-- [ ] Five self-contained prompts, starter fixtures, private grader, and preparation instructions exist.
+- [x] Five self-contained prompts, starter fixtures, private grader, and preparation instructions exist.
 - [ ] Reference solutions pass; seeded defects fail for the intended reason.
 - [ ] Source/skills/fixture/model/budget differences are recorded and controlled.
-- [ ] Each pilot outcome has real artifacts and acceptance results, or an explicit blocked/not-run status.
-- [ ] The report makes no claim about the original overhaul or statistical reliability that this experiment cannot support.
+- [x] Each pilot outcome has real artifacts and acceptance results, or an explicit blocked/not-run status.
+- [x] The report makes no claim about the original overhaul or statistical reliability that this experiment cannot support.
 
 Stop comparison runs for unequal material dependencies, leaked grader data, missing isolation, an unexpected unsupported API beyond the explicitly recorded baseline limitations, or a needed real backend write. Stop after two failed fixture-preparation attempts and report the contract mismatch. A missing harness blocks the pilot, not preparation of useful cases. Do not change product source to make an evaluation pass.
 
@@ -132,4 +132,8 @@ For future reruns, preserve prior immutable records and append new run ids. Chan
 
 ## Execution evidence
 
-Not executed. This is a design/spike plan; no agent efficiency claim has been established.
+The baseline is commit `12463870df8df3d488070ae1f9c1992cf577756d`; the candidate is a recorded uncommitted pre-final snapshot. The candidate contains earlier work for Plans 061–065 and 067–076, but Plan 074's final nested-navigation fixture correction was pending. The ledger excludes Plan 074 from the completed-plan list and records the earlier work separately. The baseline and candidate use the same lockfile, installed package versions, current instructions, and skills. Their source, instruction, skills, and fixture hashes are in `evals/carta-module-workflow/loom-repair-results.json`.
+
+Case A reference type-check and all three focused acceptance tests passed in both snapshots. Case B reference type-check failed in the baseline and after two candidate fixture-preparation attempts. The second candidate failure reported that the transformed update submit type resolved to `never` and failed `UpdateSubmitInputDiagnostic`. The two-attempt stop rule was reached. Case A seeded-fail evidence and reference/seeded evidence for cases B–E were not run. No worker session started. All ten worker runs are `BLOCKED`; no worker result, cost, or efficiency claim is established. The ledger records missing measurements as null with reasons. JSON syntax and whitespace checks passed. See `evals/carta-module-workflow/loom-repair-protocol.md` and `evals/carta-module-workflow/loom-repair-report.md` for limits and next steps.
+
+The recorded candidate was captured on 2026-09-27 at 13:04 WIB. It is a pre-final checkpoint. The Plan 074 nested-navigation fixture changed after capture to use the same resource owner across two scoped instances; its captured file hash was `656f65502898001870002b4cd64f0c0a80ffb8b541984b405284747ea1247406`, and its current file hash is `df05d75b4b0ecf12992b1d517dca7efc8f2157f9343404c795fc9bf7ce746e51`. Root also updated plan index/status documents after capture. No pilot used this checkpoint. Any future pilot requires a fresh capture and hashes of the final candidate source tree, patch, untracked archive, manifest, and plan state. The existing candidate hash does not identify the final worktree.

@@ -164,7 +164,6 @@ Run from the repo root (or the moved session directory).
 - The rest of the stash (forward-testing trash, navigation, route-map,
   drizzle migration, document-validation): leave stashed. Restore ONLY the
   listed files. If `git checkout stash -- <path>` pulls anything else, revert it.
-- `scripts/scaffold-bounded-module.mjs` — no change needed.
 - `apps/web/src/routes/(authenticated)/settings/permissions/*`,
   `role-assignments/*`, `role-permissions/*` — record-only, untouched.
 - Any `.vue`, permission, or field change — names/wiring only.
@@ -335,7 +334,7 @@ Stop and report back (do not improvise) if:
 ## Maintenance notes
 
 - New modules: start from `defineEntitySchema(route, entity.schemas)` (or the
-  scaffold, which already emits it). Hand `.omit()` bases from select shapes
+  current app resources, which already use it). Hand `.omit()` bases from select shapes
   are the banned pattern — reviewer: reject them on sight.
 - UI refinements (`.extend()`) stay allowed but must pass the seam; required
   keys outside the wire fail type-check by design.

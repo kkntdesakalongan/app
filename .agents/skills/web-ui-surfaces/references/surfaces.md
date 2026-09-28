@@ -97,8 +97,12 @@ loader selects draft values explicitly; a record is not an editable draft.
 Every standard operation declares a permission string or `null`.
 
 Use route names from `apps/web/route-map.d.ts`. Keep inherited parent scope in
-the request parameters and cache context. File-route permission metadata owns
-direct route access; do not create dummy records for child pages.
+the request parameters and cache context. Resource routes use the registered
+operation and its static entry permissions. A routed command with an
+argument-dependent permission callback needs an explicit `routePermission`.
+Use `meta.permission` for extraordinary routes without a resource registration.
+The route guard checks entry access; resource operations and the API check
+access again when they run. Do not create dummy records for child pages.
 
 ## Use the operation bags
 

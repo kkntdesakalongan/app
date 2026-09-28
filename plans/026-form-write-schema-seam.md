@@ -66,9 +66,8 @@ The existing `defineEntitySchema` check (`entity.ts:19-21`) compares
 transforming entities (asset object in, storage id out), so authors bypass the
 seam with raw `defineSchema` + `fromZod` and hand-built `.omit()` bases. This
 plan fixes the seam to check **wire input vs Hono input** plus a
-**phantom-required-keys** check, so the reported defect fails `type-check` —
-a gate command (`scripts/verify-module.mjs:123`) — instead of failing silently
-in a preview no gate executes.
+**phantom-required-keys** check, so the reported defect fails the Web
+`type-check` gate instead of failing silently in a preview.
 
 Intent for judgment calls: prefer accepting valid code (fallback to "no
 opinion") over catching every exotic schema. A false rejection on a valid
@@ -168,8 +167,8 @@ Run from the repo root `/Users/gamer/orca/workspaces/carta/chimaera-5170`
 - `packages/loom/src/**` — framework changes need separate explicit authority
   (per `AGENTS.md`). The Form silent-failure backstop is plan 028, not this plan.
 - `apps/web/src/routes/**` — app migration is plan 027, not this plan.
-- `scripts/scaffold-bounded-module.mjs` — already emits `defineEntitySchema`;
-  no template change needed.
+- The app schemas use the current direct contract; no schema automation is in
+  this plan's scope.
 - `apps/api/**` — entity schemas are already correct; no API change.
 
 ## Git workflow
@@ -230,7 +229,7 @@ select exact-check unchanged:
    - Keep accepting `Parameters<typeof fromZod>[0]` (raw Zod schemas, not
      pre-wrapped) so callers pass entity schemas directly.
 4. Keep the function signature shape `defineEntitySchema(route, { select,
-   create, update })` so the scaffold template and existing callers
+   create, update })` so direct app declarations and existing callers
    (`roles.schema.ts`, `validation-results.schema.ts`) keep compiling.
    Pre-wrapped `fromZod(...)` results must NOT be required as inputs; the seam
    owns `fromZod`.

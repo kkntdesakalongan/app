@@ -17,7 +17,7 @@ The architecture is complete only when no executable path, public export, templa
 - `packages/loom/src/index.ts:1-8` exports `./fields` and `./validation` alongside resources and primitives.
 - `packages/loom/src/resources/defineResource.ts:25-44` still exposes the old two-argument signature at planning time.
 - `packages/loom/src/components/views/FormView.vue:41-82` still has dual prop shapes and type suppression at planning time.
-- `scripts/scaffold-bounded-module.mjs:610-628` and active docs/skills still generate or teach old code at planning time.
+- The current app contract is authored directly and checked at its source owners.
 - `docs/resource_system_overhaul/ARCHITECTURE.md:601-620` lists every removed API and forbids aliases, overloads, dual shapes, fallback resolvers, dead implementations, and parallel legacy/v2 directories.
 
 Current exports (`packages/loom/src/index.ts:1-8`):
@@ -56,15 +56,15 @@ Finish on `resource_system_overhaul`; do not merge or ship until all gates pass.
 
 ## Steps
 
-1. Reconcile the §9.1 inventory with actual imports, re-exports, generated templates, fixtures, aliases, dependent prop types, agent pointers, and all new paths. Move retained validation/display behavior to its new owner, then delete `packages/loom/src/fields/`, `resources/actionResource.ts`, app `framework/fields/`, public `fromZod`, aggregate schema types, and other §9.2 replaced code. **Verify:** `rg -n 'defineFields|fromZod|FieldReference|FieldOverride|ResolvedSurfaceField|WebResourceSchema|appFieldDefaults' packages/loom/src apps/web/src scripts` finds only permitted negative-test literals; `pnpm --filter @southneuhof/loom type-check && pnpm --filter @southneuhof/framework-web type-check` exits 0.
+1. Reconcile the §9.1 inventory with actual imports, re-exports, app examples, fixtures, aliases, dependent prop types, agent pointers, and all new paths. Move retained validation/display behavior to its new owner, then delete `packages/loom/src/fields/`, `resources/actionResource.ts`, app `framework/fields/`, public `fromZod`, aggregate schema types, and other §9.2 replaced code. **Verify:** `rg -n 'defineFields|fromZod|FieldReference|FieldOverride|ResolvedSurfaceField|WebResourceSchema|appFieldDefaults' packages/loom/src apps/web/src scripts` finds only permitted negative-test literals; `pnpm --filter @southneuhof/loom type-check && pnpm --filter @southneuhof/framework-web type-check` exits 0.
 2. Add `scripts/check-surface-architecture.mjs` with syntax-aware import/prop checks and tests. Register it in normal validation/CI. Allow removed names only in negative-test literals/history; allow legitimate command `run`, new form/detail `fields`, and unrelated provider `.list()`. **Verify:** `node --test scripts/check-surface-architecture.test.mjs && node scripts/check-surface-architecture.mjs` exits 0; tests reject aliased old imports, `Form :form`, `Table.fields`, and old resource signatures.
-3. Complete architecture §10.3 parity suites: form/session, display, extraction, composite ownership, existing UI, generator, and type fixtures. Resolve the two `checkUnknownProps` diagnostics in `Drawer.vue` and `Tabs.vue` recorded after Plan 054. Ensure `checkUnknownProps` and `strictTemplates` are active in effective Loom/web configs. **Verify:** `pnpm --filter @southneuhof/loom type-check && pnpm --filter @southneuhof/loom test && pnpm --filter @southneuhof/loom test:browser && pnpm --filter @southneuhof/framework-web type-check && pnpm --filter @southneuhof/framework-web test && pnpm test:module-tooling` exits 0 with no new suppression or OOM.
+3. Complete architecture §10.3 parity suites: form/session, display, extraction, composite ownership, existing UI, and type fixtures. Resolve the two `checkUnknownProps` diagnostics in `Drawer.vue` and `Tabs.vue` recorded after Plan 054. Ensure `checkUnknownProps` and `strictTemplates` are active in effective Loom/web configs. **Verify:** `pnpm --filter @southneuhof/loom type-check && pnpm --filter @southneuhof/loom test && pnpm --filter @southneuhof/loom test:browser && pnpm --filter @southneuhof/framework-web type-check && pnpm --filter @southneuhof/framework-web test && pnpm test:module-tooling` exits 0 with no new suppression or OOM.
 4. Run the full architecture §11 command list in order, including workspace lint/build and web E2E in a configured environment. Measure one cold candidate Loom/web checker run with the same pinned toolchain, disabled incremental reuse, scope, and metrics as Plan 051. Record command, exit status, failure baseline comparison, elapsed time, types/instantiations, checker memory, peak process memory or unavailable metric. **Verify:** evidence table in `plans/resource-system-overhaul-inventory.md` names every gate and result; all available required commands exit 0.
 5. Review the final diff hunk by hunk against the architecture; reject unrelated changes and stale compatibility code. Update `plans/README.md` only after the final review. **Verify:** `git diff --check` exits 0; `git status --short` shows only requested migration and plans.
 
 ## Test plan and done criteria
 
-- Follow the existing Loom unit/browser, web acceptance, and scaffold tests; add one architecture-checker suite and the §10.3 parity fixture.
+- Follow the existing Loom unit/browser and web acceptance tests; add one architecture-checker suite and the §10.3 parity fixture.
 - [x] All §9.2 removed APIs, exports, implementations, and active templates are absent.
 - [x] Every §9.1 group has a completed inventory row and proof.
 - [x] Every §11 gate passes; unavailable environmental gates are reported as blocked, never as passes.
@@ -72,7 +72,7 @@ Finish on `resource_system_overhaul`; do not merge or ship until all gates pass.
 
 ## Review result
 
-**DONE — 2026-09-24.** The final review checked the removed public paths, resource and component contracts, generated output, active guidance, parity fixtures, and architecture checker. Revision requests removed unnecessary checker and test logic, fixed create-result identity, replaced arbitrary test waits, and added the required negative Vue bindings for `Form :form` and `DialogForm :form`. The candidate evidence and cold metrics are in `plans/resource-system-overhaul-inventory.md`.
+**DONE — 2026-09-24.** The final review checked removed public paths, resource and component contracts, current app source, active guidance, parity fixtures, and the architecture checker. Revision requests removed unnecessary checker and test logic, fixed create-result identity, replaced arbitrary test waits, and added the required negative Vue bindings for `Form :form` and `DialogForm :form`. Plan 073 later retired the source-template checks. The candidate evidence and cold metrics are in `plans/resource-system-overhaul-inventory.md`.
 
 The reviewer reran the architecture gate (11 tests), workspace type-check (6 packages), lint (3 tasks), module tooling (110 Node and 3 Python tests), Loom browser tests (34 tests), workspace tests (12 tasks), and `git diff --check`; all passed. The agent also recorded passing Loom and web unit suites, build, and web E2E in the inventory. Web unit and workspace test runs use the documented Node 26 Web Storage flag. No commit or push was made.
 

@@ -1,4 +1,4 @@
-# Plan 069: Make tests, CI, generators, and agent guidance prove the same architecture
+# Plan 069: Make tests, CI, and agent guidance prove the same architecture
 
 ## Status
 
@@ -17,17 +17,17 @@
 
 ## Intent
 
-A green test must distinguish correct behavior from a plausible broken implementation. CI must execute the framework suites. A new agent-generated module must follow the same component-native contracts as existing code without reading historical plans or remembering an adapter. Complete the clean break and report unexecuted checks honestly.
+A green test must distinguish correct behavior from a plausible broken implementation. CI must execute the framework suites. A new directly authored module must follow the same component-native contracts as existing code without reading historical plans or remembering an adapter. Complete the clean break and report unexecuted checks honestly.
 
 ## Current state and evidence
 
 | Finding | Baseline defect |
 |---|---|
 | F20 | SurfaceParity.browser replaces selection controls with a span/setter, DisplayParity.browser avoids a renderer on the tree column, public-api.spec checks type-only exports in JavaScript, and defineForm.spec fixes incidental top-level key order. These tests prove some useful invariants but miss the reported failures. |
-| F21 | `.github/workflows/web-validation.yml:86–93` selects framework-web unit tests but only Loom browser tests. Turbo build dependencies do not run dependency unit suites. Generator-only edits are not fully covered by the listed workflow paths. |
+| F21 | `.github/workflows/web-validation.yml:86–93` selects framework-web unit tests but only Loom browser tests. Turbo build dependencies do not run dependency unit suites. Source-check edits are not fully covered by the listed workflow paths. |
 | F25 | `build-resource-form/SKILL.md:119–126` promises implicit operation/permission context not supplied by the binder. Its field-type reference still lists TableInput.fields and optional toDraft. The root README also contains an active defineSchema example. |
 
-Prior isolated probes confirm stated observations only; they used explicit runtime/schema doubles and global TS 5.8.3. The earlier scaffold run was 21 passed/1 skipped. No pinned workspace/browser/E2E run occurred during plan preparation. Historical DONE entries in repository plans are not fresh acceptance evidence for these findings.
+Prior isolated probes confirm stated observations only; they used explicit runtime/schema doubles and global TS 5.8.3. Plan 073 later retired the source-tool checks and their output fixtures. No pinned workspace/browser/E2E run occurred during plan preparation. Historical DONE entries in repository plans are not fresh acceptance evidence for these findings.
 
 `.github/workflows/web-validation.yml:80–96`
 
@@ -99,8 +99,8 @@ Modify these owners, their callers reached through the named contract, and their
 - `apps/web/src/** test/type/browser/E2E fixtures affected by surface contracts`
 - `packages/loom/tsconfig.json, apps/web/tsconfig*.json and package verification scripts: inclusion/strictness only`
 - `.github/workflows/web-validation.yml and existing related CI workflows`
-- `scripts/{check-surface-architecture,module-ui-check,scaffold-bounded-module,verify-module,integrate-bounded-module,module-evidence}.mjs and tests`
-- `scripts/test-support/bounded-fixture.mjs, module-tooling tests, generated source/type fixtures`
+- `scripts/{check-surface-architecture,module-ui-check,module-evidence}.mjs and tests`
+- Module-tooling tests, current application source and type fixtures
 - `README.md, AGENTS.md, DESIGN.md, packages/loom/README.md, apps/web/README.md`
 - `docs/resource_system_overhaul/ARCHITECTURE.md, docs/ui/{forms,collections}.md, docs/architecture/web-application-architecture.md and asset/custom-field guides`
 - `.agents/skills/{build-resource-form,web-ui-surfaces,migrate-web-resource,implement-schema-first-zod,carta-module-design,carta-module-plan,carta-module-development,verify-carta-module}/**`
@@ -128,7 +128,7 @@ Use installed package-local tools pinned by `package.json` and the lockfile. Rec
 | Web types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 without boundary suppressions. |
 | Web behavior | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test` | Exit 0 on this Node 26 checkout. |
 | Architecture | `pnpm test:surface-architecture` | Exit 0; no acceptance allowlist for removed executable paths. |
-| Tooling | `pnpm test:module-tooling` | Exit 0 when callers, generators, docs fixtures, or checkers change. |
+| Tooling | `pnpm test:module-tooling` | Exit 0 when callers, active examples, or source checkers change. |
 | Final workspace | `pnpm type-check && NODE_OPTIONS=--no-experimental-webstorage pnpm test && pnpm lint && pnpm build` | Exit 0 on this Node 26 checkout after the coordinated implementation. |
 
 ## Steps
@@ -174,27 +174,23 @@ pnpm test:module-tooling
 pnpm test:surface-architecture
 ```
 
-Keep Loom browser checks and both package type checks, including all new files. Trigger validation for affected frontend/framework files, module generator/checker/test-support scripts, skill scripts, the root README/AGENTS/DESIGN, current architecture/UI docs, and lock/config/workflow changes. A Loom-only change and a generator-only change must run their respective suites. Do not rely on a dependency build task to execute tests.
+Keep Loom browser checks and both package type checks, including all new files. Trigger validation for affected frontend/framework files, module UI/evidence/architecture checks, skill scripts, the root README/AGENTS/DESIGN, current architecture/UI docs, and lock/config/workflow changes. App-only changes and tooling-only changes must run their respective suites. Do not rely on a dependency build task to execute tests.
 
 Use the repository's installed pnpm and supported Node engine; this plan changes no dependency versions. Preserve package bootstrap/environment setup and browser installation used by CI. Add a narrow workflow/task-selection test that checks actual commands and path coverage; it is appropriate structural coverage for the CI contract, not a substitute for running the suites.
 
 **Verify:** `pnpm test:module-tooling` plus the exact four commands above exit 0. Capture the selected task graph for any remaining Turbo affected jobs. Confirm the actual workflow includes Loom tests and tooling tests; record unavailable live-CI execution as unverified rather than passed.
 
-### 5. Make generator output and active guidance use only the final contract
+### 5. Directly author modules and remove the old source-tool workflow
 
-Update the scaffolder, manifest parser, bounded fixture, UI checker, module verifier/evidence/integration scripts and Python skill checks. Generated fields require renderer; component data/load/pick/view/loadDetail props remain canonical. File/image fields rely on the globally installed asset service with no adapter props. Emit raw operation schemas, ordinary input/display fragments, one-object resource composition, static list/create bags, and identity-bound detail/update bags. Update-only modules load drafts explicitly; they do not fabricate visible detail pages.
-
-Remove automatic context.operation/context.permission promises. Workflow context is explicit caller data. TableInput uses separate table/form plus mandatory toDraft; its nested form is submit-free. Remove source wrappers, enum inference, form-side read/write/hydration, form-actions, flat View alternatives, and old defineSchema examples from current guidance. Preserve shared role-name accessors, status catalogs, date formats, and schema-owned requiredness/transformations.
-
-Use a small set of real compiled fixtures as the canonical examples: direct and managed select, default/overridden submit, globally configured file+preview, shared relation display, row editor, and resource page extraction. Generate/compile actual output in tests. Keep docs linked to these examples; do not build a Markdown interpreter. Check active references, including root README and nested skill references, not just the architecture document.
-
-**Verify:** Tooling, both type gates, Web behavior and Architecture. Fresh fixture modules compile without casts and pass the module checker. No active example requires remembering a hidden helper.
+Plan 073 replaced this historical step. Current application modules own their
+source contracts; independent UI, evidence, and architecture checks remain.
+The current authoring instructions live in the module skill.
 
 ### 6. Enforce the clean break and publish evidence
 
-Extend the existing syntax-aware architecture gate to remove field-level source, generic input-prop adapters/registry injection, automatic renderer inference, model-conversion wrappers, old field/reference/projection paths, command arity-context guessing, and obsolete wrapper props. Resolve aliases and generated templates. Preserve legitimate component props named options, frontend transport encoders, global asset read/preview/upload, read-only display accessors, command run, provider list operations, CSS source properties, and new form/detail fields maps. Do not ban words without their syntactic context.
+Extend the existing syntax-aware architecture gate to remove field-level source, generic input-prop adapters/registry injection, automatic renderer inference, model-conversion wrappers, old field/reference/projection paths, command arity-context guessing, and obsolete wrapper props. Resolve aliases and inspect Vue templates. Preserve legitimate component props named options, frontend transport encoders, global asset read/preview/upload, read-only display accessors, command run, provider list operations, CSS source properties, and new form/detail fields maps. Do not ban words without their syntactic context.
 
-Allow old names only in negative-test literals and historical/removal prose. Executable old code, aliases, public exports, generated examples, and active authoring guidance have no exemptions. Do not obfuscate a retained implementation's spelling to evade the checker. Delete duplicate tests/utilities and debug scaffolding that no longer exercise a real contract.
+Allow old names only in negative-test literals and historical/removal prose. Executable old code, aliases, public exports, obsolete examples, and active authoring guidance have no exemptions. Do not obfuscate a retained implementation's spelling to evade the checker. Delete duplicate tests/utilities and debug helpers that no longer exercise a real contract.
 
 Run the complete integration commands:
 
@@ -227,7 +223,7 @@ The final ledger must connect source evidence to actual production-boundary test
 - [ ] All F01–F27 have an implemented outcome, production owner and executed regression; no simplification finding remains an unassigned backlog.
 - [ ] Accepted transparency, native attribute and global asset decisions have direct/managed/preview parity coverage.
 - [ ] CI explicitly runs Loom units, browser parity and module-tooling tests with matching path triggers.
-- [ ] Current docs, root README, skills, generators and generated fixtures teach the same final API.
+- [ ] Current docs, root README, skills, and application examples teach the same final API.
 - [ ] Old executable paths and compatibility fallbacks are absent, with a tested syntax-aware removal gate.
 - [ ] Workspace and configured E2E results, limitations and comparable type measurements are recorded accurately.
 - [ ] Scoped unit/browser/type gates pass with exact executed commands, counts, skips, and exit status recorded.
@@ -242,4 +238,4 @@ Do not improvise a new backend contract or suppress a required check. Report a r
 
 ## Maintenance
 
-Treat executable examples as the normal authoring path. A change to that path updates its component contract, direct/managed tests, generator and active guidance together. Keep historical execution records labeled as history and out of current agent entrypoints. Completion is evidence, not the absence of visible TypeScript errors.
+Treat executable examples as the normal authoring path. A change to that path updates its component contract, direct/managed tests, and active guidance together. Keep historical execution records labeled as history and out of current agent entrypoints. Completion is evidence, not the absence of visible TypeScript errors.

@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P1. Effort: M. Risk: MED. Confidence: HIGH.
+- Status: DONE. Priority: P1. Effort: M. Risk: MED. Confidence: HIGH.
 - Category: correctness / unfinished migration. Depends on: none. Execute before root Plan 069.
 - Planned at: `1246387`, 2026-09-26.
 
@@ -32,7 +32,7 @@ The same component discovers output keys only after a successful parse through `
 Change only the following owners and their direct filter declarations:
 
 - `packages/loom/src/contracts/views.ts`, `components/views/ListView.vue`, and `resources/operations.ts` under `packages/loom/src/`.
-- `packages/loom/src/components/views/__tests__/views.spec.ts`, `components/views/__type-tests__/list-view.type-test.ts`, and `resources/__type-tests__/bound-resource.type-test.ts`.
+- `packages/loom/src/components/views/__tests__/views.spec.ts`, `components/views/__type-tests__/list-view.type-test.ts`, `resources/__type-tests__/bound-resource.type-test.ts`, and `resources/__tests__/boundResource.spec.ts`.
 - Filter examples in `docs/resource_system_overhaul/ARCHITECTURE.md` and `docs/ui/collections.md`.
 - This plan and its root index row.
 
@@ -77,10 +77,10 @@ Run from repository root. Read root AGENTS, the resource architecture, and `test
 
 ## Done, stops, and maintenance
 
-- [ ] All listed gates pass, including the new mounted regressions.
-- [ ] `rg -n 'lastFilterOutputKeys|function filterValues' packages/loom/src/components/views/ListView.vue` returns no matches.
-- [ ] No query ownership is inferred from schema input, fields, or a previous parse.
-- [ ] Every active filter example has the explicit mapping and key list.
+- [x] All listed gates pass, including the new mounted regressions.
+- [x] `rg -n 'lastFilterOutputKeys|function filterValues' packages/loom/src/components/views/ListView.vue` returns no matches.
+- [x] No query ownership is inferred from schema input, fields, or a previous parse.
+- [x] Every active filter example has the explicit mapping and key list.
 
 Stop if implementing the contract needs another query owner, or if a gate fails twice after a bounded correction. Report drift before adapting an incompatible owner. Future filter schema changes must update both the key list and reverse mapping. This duplication is intentional: a forward transform does not define its inverse or all keys it can clear.
 
@@ -88,4 +88,34 @@ The baseline audit passed Loom types and 450 tests in 61 files before these chan
 
 ## Execution evidence
 
-Not implemented. Source review and an in-memory hydration probe confirm the bug. New runtime, type, and application gates remain unrun.
+STATUS: COMPLETE
+
+STEPS:
+
+- Drift and callers: the committed drift check exited 0 with no changes from `1246387..HEAD` in the listed owners. The caller search found two mounted ListView declarations, three ListFilters type declarations, one bound-resource runtime declaration in `resources/__tests__/boundResource.spec.ts`, and the collection guide's `usersFilters` reference. The runtime bound-resource declaration was added to scope and migrated. No app module declares ListView filters. The matching architecture and current filter declaration in the collection guide were updated. Historical architecture snapshots and retired planning records were not live declarations.
+- Baseline: Loom type check passed. The focused ListView suite passed 51 tests. The worktree already contained unrelated Plans 061, 065, and 073 edits; the Plan 061 `views.spec.ts` test and Plan 065 architecture changes were reviewed and preserved.
+- Expected-red proof: the new mounted tests failed before the ListView repair for transformed hydration, undeclared output keys, and reserved `page` ownership. The follow-up reset regression also failed before its repair because Reset emitted no query update when the displayed draft already matched its default. A separate baseline run of the raw URL test showed the old field-name hydration returned `['3', 'active', 'default']`; the expected mapped draft was `['3', '', '']`.
+- Contract and callers: `ListFilters` now requires `queryKeys` and `toDraft`. Bound resource filters retain each property type. Type fixtures reject an unknown query key and an invalid draft mapper, and verify both mappings on bound resources.
+- Behavior: ListView hydrates only through `toDraft`, rejects output outside declared ownership, deletes every owned key before merging defined parsed values, and resets `page` once. It uses the parent query as authoritative in controlled mode, cancels stale validation, and matches pending self-echo state after Collection applies page and limit defaults. The mounted tests cover transformed and identity mappings, empty output on the first validation, raw URL normalization, invalid parsing, late validation after replacement, self-echo draft preservation with normalized defaults, reset, unknown output, reserved `page`, and retained unowned values. A reset with an unchanged displayed default now also proves that validation commits the declared default over an unsupported authoritative query value.
+- Documentation: architecture section 7.2 and the collection guide now show the shipped contract and a transformed `selection` to `status` mapping.
+- Final verification: Loom `vue-tsc` exited 0. The focused ListView suite passed 56 tests. `pnpm test:surface-architecture` passed all 18 checks. The app type check exited 0; route contract validation passed and generation added no new tracked artifacts. `git diff --check` exited 0. The removed-path search returned no matches.
+
+FILES CHANGED:
+
+- `packages/loom/src/contracts/views.ts`
+- `packages/loom/src/components/views/ListView.vue`
+- `packages/loom/src/resources/operations.ts`
+- `packages/loom/src/components/views/__tests__/views.spec.ts`
+- `packages/loom/src/components/views/__type-tests__/list-view.type-test.ts`
+- `packages/loom/src/resources/__type-tests__/bound-resource.type-test.ts`
+- `packages/loom/src/resources/__tests__/boundResource.spec.ts`
+- `docs/resource_system_overhaul/ARCHITECTURE.md`
+- `docs/ui/collections.md`
+- This plan and its row in `plans/README.md`.
+
+NOTES:
+
+- The `test-audit` skill names OpenClaw tools `$openclaw-testing`, `$crabbox`, `$autoreview`, and `scripts/check-changed.mjs`. They are not available in this session. No result is claimed for them. The independent contract test rule was applied with mounted owner-boundary behavior tests and compile-time API cases.
+- The architecture and views test files already held unrelated shared-tree changes from Plans 065 and 061. This work changed only the filter section and ListView tests. The app type check left the previously recorded worktree status unchanged outside this plan's scope. No other shared changes were edited.
+- The page-size self-echo case passes on the old Table-first query path because that path already included Collection defaults. It remains as an independent guard for the parent-authoritative query path: without matching Collection's coercion, the mounted test resets the draft after its own query update and loses raw text.
+- Reset invokes the same validation and query commit flow directly after Form restores its draft, so an unchanged displayed default still commits. Filter ownership keys are read from the current declaration at commit time, not captured during setup.

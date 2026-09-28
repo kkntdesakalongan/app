@@ -111,7 +111,7 @@ Modify these owners, their callers reached through the named contract, and their
 - `packages/loom/src/adapters/plugin.ts and affected barrels`
 - `apps/web/src/framework/inputs/registry.ts and all its imports (delete)`
 - `apps/web/src/routes/**, configs/input-presets.ts, framework/acceptance/** and relevant fixtures: replace source/inferred fields and align actual model types`
-- `scripts/{scaffold-bounded-module,module-ui-check,check-surface-architecture}.mjs and tests: this contract migration only`
+- `scripts/{module-ui-check,check-surface-architecture}.mjs and tests: this contract migration only`
 - `docs/ui/forms.md, docs/resource_system_overhaul/ARCHITECTURE.md, active form/control/asset skills and examples`
 - `packages/loom/vitest.browser.config.ts and affected TS/Vue test files`
 
@@ -136,7 +136,7 @@ Use installed package-local tools pinned by `package.json` and the lockfile. Rec
 | Web types | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 without boundary suppressions. |
 | Web behavior | `NODE_OPTIONS=--no-experimental-webstorage pnpm --filter @southneuhof/framework-web test` | Exit 0 on this Node 26 checkout. |
 | Architecture | `pnpm test:surface-architecture` | Exit 0; no acceptance allowlist for removed executable paths. |
-| Tooling | `pnpm test:module-tooling` | Exit 0 when callers, generators, docs fixtures, or checkers change. |
+| Tooling | `pnpm test:module-tooling` | Exit 0 when callers, active examples, or checks change. |
 | Final workspace | `pnpm type-check && NODE_OPTIONS=--no-experimental-webstorage pnpm test && pnpm lint && pnpm build` | Exit 0 on this Node 26 checkout after the coordinated implementation. |
 
 ## Steps
@@ -224,7 +224,7 @@ The selected loader already satisfies the component context/result/cancellation 
 
 ### 5. Migrate every producer and remove alternate meanings
 
-Update all app input fragments, standalone forms, nested forms, renderer tests, schemas that relied on hidden Date conversion, scaffolder manifests/output, and module/static checks. Retain one schema per operation, shared labels and explicit display fragments. Preserve model-only forms, submit-presence inference, and Form/DialogForm flat props.
+Update all app input fragments, standalone forms, nested forms, renderer tests, schemas that relied on hidden Date conversion, and module/static checks. Retain one schema per operation, shared labels and explicit display fragments. Preserve model-only forms, submit-presence inference, and Form/DialogForm flat props.
 
 Remove `InputPropsRegistry`, adapter/default/normalizer/hydrate interfaces and injection, `FrameworkPlugin.inputProps`, source-only app registry modules, and every caller. Move component validity checks to the component-local validity contract rather than leaving them in a new registry. Update current control guides and architecture facts in this same plan so subsequent implementations cannot follow obsolete inference/source instructions.
 

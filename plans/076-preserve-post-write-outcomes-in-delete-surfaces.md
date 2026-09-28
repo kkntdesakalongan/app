@@ -2,7 +2,7 @@
 
 ## Status and intent
 
-- Status: TODO. Priority: P1. Effort: M. Risk: MED. Confidence: HIGH from source.
+- Status: DONE. Priority: P1. Effort: M. Risk: MED. Confidence: HIGH from source.
 - Category: correctness / lifecycle ownership. Depends on root Plans 061, 068, and 064 for mounted-session semantics, final surface prop composition, and the compiler gate. Run serially with Plan 067's ListView changes.
 - Planned at: `1246387`, 2026-09-26.
 
@@ -22,7 +22,7 @@ Use `useFrameworkAdapters().data.normalizeError` to classify errors through the 
 
 ## Target behavior
 
-1. Add `recordIdentity: (record: TRecord) => RecordIdentity` to the ListView delete contract. Require it when `deleteRecord` is present, both in public types and runtime configuration checks; callers without delete need neither property. Resource binding supplies the already-declared resource identity automatically. Standalone ListView authors with a delete callback supply identity explicitly. Do not infer it from `id`, table `rowKey`, object reference, or query namespace. The binder owns the resource identity; no second identity declaration is added to resource authoring.
+1. Add `recordIdentity: (record: TRecord) => RecordIdentity` to the ListView delete contract. Require it when `deleteRecord` is present, both in public types and runtime configuration checks; a view without delete does not accept `recordIdentity`. Resource binding supplies the already-declared resource identity automatically. Standalone ListView authors with a delete callback supply identity explicitly. Do not infer it from `id`, table `rowKey`, object reference, or query namespace. The binder owns the resource identity; no second identity declaration is added to resource authoring.
 2. Keep a mounted-view map of unresolved delete errors keyed by resource owner plus canonical scalar/composite identity. This stores unresolved outcomes only, not operation history. Capture identity before starting the write using the existing stable identity validation/encoding. On post-write error, block that identity and show persistent guidance. Different records remain deletable. Refresh, pagination, namespace changes, replacement row objects, and dialog reopen cannot unlock the affected identity. Preserve multiple unresolved records independently; a later failure must not overwrite the first. Clear local state on unmount; no global registry or automatic reconciliation is added.
 3. Route default delete buttons and the ListView-provided delete callback in custom action slots through the same guard. Expose read-only per-record error/disabled state to those slots so a custom control can show the reason; the callback still blocks if the control ignores that state. This guarantee covers callbacks supplied by ListView, not arbitrary direct resource calls made outside the view. Ordinary pre-write errors leave retry available and retain the actual normalized message. Pending operations cannot be submitted twice. A post-write failure displays that deletion may have completed and the user should verify the result; it never claims rollback.
 4. Recheck imports at execution, then remove the unused hook and its tests. Preserve the independent access cases from the mixed test file. No replacement helper or generic confirmation API is required.
@@ -53,14 +53,29 @@ Run the drift command first. Compare changed owners with the excerpts below and 
 
 ## Done and stops
 
-- [ ] Deletion of an unresolved identity cannot be repeated through that mounted ListView, while other identities remain usable.
-- [ ] Pre-write rejection remains retryable; post-write outcomes stay distinct and visible.
-- [ ] Late delete completion cannot affect a newer target; the unused confirmation hook and its dedicated cases are gone.
-- [ ] Only unresolved per-record outcomes are retained locally; no global operation history, identity guess, generic unlock button, or new mutation framework exists.
-- [ ] Applicable checks pass; unused hook code is not expanded.
+- [x] Deletion of an unresolved identity cannot be repeated through that mounted ListView, while other identities remain usable.
+- [x] Pre-write rejection remains retryable; post-write outcomes stay distinct and visible.
+- [x] Late delete completion cannot affect a newer target; the unused confirmation hook and its dedicated cases are gone.
+- [x] Only unresolved per-record outcomes are retained locally; no global operation history, identity guess, generic unlock button, or new mutation framework exists.
+- [x] Applicable checks pass; unused hook code is not expanded.
 
 Stop if a new production hook caller exists or a consumer needs a different business recovery policy or if persistent outcome UI requires an unrelated dialog redesign. A new mount is only a local UI reset, not proof of server reconciliation or idempotency.
 
 ## Evidence
 
-Planning only. Outcome production and deletion consumers were read. The mounted repeat-delete regression has not run.
+The first App run failed on a recursive renderer type in Plan 063. After that renderer contract was repaired, the required App gate passed on the current shared tree. A review found no caller that supplies `recordIdentity` without `deleteRecord`, so the standalone contract now rejects that combination, in line with the resource page type.
+
+| Gate | Command | Result |
+|---|---|---|
+| Drift | `git diff --stat 1246387..HEAD -- packages/loom/src/components/views apps/web/src/framework/use-confirm-delete.ts apps/web/src/framework/__tests__` | Exit 0. The only reported file was the unrelated `entity-schema-import.spec.ts` predecessor change; no incompatible Plan 076 drift. |
+| Callers | `rg -n 'useConfirmDelete|use-confirm-delete' apps/web/src` | Exit 1 after removal, with no matches. Before removal, the hook had no production caller. |
+| View | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/components/views/__tests__/views.spec.ts` | Exit 0; 62 tests passed. |
+| Loom types | `pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json` | Exit 0. |
+| Bound resource | `pnpm --filter @southneuhof/loom exec vitest run --environment jsdom src/resources/__tests__/boundResource.spec.ts` | Exit 0; 12 tests passed. |
+| Diagnostics | `pnpm --filter @southneuhof/loom test:diagnostics` | Exit 0; 11 resource, 9 TypeScript surface, and 8 Vue surface cases passed. |
+| Retained access tests | `pnpm --filter @southneuhof/framework-web test:focused -- framework/__tests__/access.spec.ts` | Exit 0; 2 tests passed. |
+| App | `pnpm --filter @southneuhof/framework-web type-check` | Exit 0 after the Plan 063 renderer repair; route contract validation and route type generation passed. |
+| Architecture | `pnpm test:surface-architecture` | Exit 0; 18 tests passed and the checker passed. |
+| Whitespace | `git diff --check` | Exit 0. |
+
+The test-audit workflow's `openclaw-testing`, `crabbox`, `scripts/run-vitest.mjs`, `scripts/check-changed.mjs`, and `$autoreview` tools are not available in this checkout. Direct package Vitest commands supplied the focused evidence above. No commit, push, install, or external write was performed.

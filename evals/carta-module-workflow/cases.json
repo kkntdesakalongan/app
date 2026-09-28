@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "evaluationStatus": "PARTIAL",
+  "evaluationStatus": "NOT_RUN",
   "cases": [
     {
       "id": "discovery-process",
@@ -33,42 +33,6 @@
         "fixtures/approved/design.md",
         "fixtures/owners/categories.ts"
       ]
-    },
-    {
-      "id": "partial-standard-module",
-      "stage": "execute",
-      "request": "Run `pnpm scaffold:bounded-module -- --manifest evals/carta-module-workflow/fixtures/workflow/partial-standard-module.json --check --json` and report the observed result. State what the generator creates and what stays manual from the approved design. Do not apply changes.",
-      "inputs": ["fixtures/workflow/partial-standard-module.md", "fixtures/workflow/partial-standard-module.json"]
-    },
-    {
-      "id": "update-without-detail",
-      "stage": "execute",
-      "request": "Run `pnpm scaffold:bounded-module -- --manifest evals/carta-module-workflow/fixtures/workflow/update-without-detail.json --check --json` and report the observed result. State the generated dependency and browser redirect. Do not apply changes.",
-      "inputs": ["fixtures/workflow/update-without-detail.md", "fixtures/workflow/update-without-detail.json"]
-    },
-    {
-      "id": "read-only-seeded-module",
-      "stage": "execute",
-      "request": "Run `pnpm scaffold:bounded-module -- --manifest evals/carta-module-workflow/fixtures/workflow/read-only-seeded-module.json --check --json` and report the observed result. State the generated outputs and proof. Do not apply a migration or run a seed.",
-      "inputs": ["fixtures/workflow/read-only-seeded-module.md", "fixtures/workflow/read-only-seeded-module.json"]
-    },
-    {
-      "id": "custom-relations",
-      "stage": "execute",
-      "request": "Run `pnpm scaffold:bounded-module -- --manifest evals/carta-module-workflow/fixtures/workflow/custom-relations.json --check --json` and report the observed result. Separate the compatible generated work from the manual work in the approved design. Do not change a framework package.",
-      "inputs": ["fixtures/workflow/custom-relations.md", "fixtures/workflow/custom-relations.json"]
-    },
-    {
-      "id": "environment-failure",
-      "stage": "execute",
-      "request": "Run `pnpm module:preflight -- --needs browser`. Report the exact failed capability and correction from the observed result. Then run the partial-standard-module read-only manifest check and report what independent work can continue. Do not apply changes.",
-      "inputs": ["fixtures/workflow/partial-standard-module.md", "fixtures/workflow/partial-standard-module.json"]
-    },
-    {
-      "id": "migration-contamination",
-      "stage": "execute",
-      "request": "Run `node --test --test-name-pattern='bounded --apply orchestrates migration with rollback on unrelated operations' scripts/scaffold-bounded-module.test.mjs`. Inspect the isolated failure-path assertions and report the observed safe result. Do not change product source.",
-      "inputs": ["fixtures/workflow/read-only-seeded-module.md"]
     },
     {
       "id": "resume-implemented-plan",
@@ -111,6 +75,58 @@
       "inputs": [
         "fixtures/sources/approval-procedure.md"
       ]
+    },
+    {
+      "id": "loom-dependent-selection",
+      "stage": "implement",
+      "request": "Complete the department and team fields in `apps/web/src/framework/__eval/plan066/loom-dependent-selection.module.ts`. Use only that module file for changes. The co-located service file defines the option and submit function types and behavior. The editor must load teams for its selected department, clear an old team when the department changes, ignore a late response for the old department, and submit the selected new team id unchanged. An unset department has no selectable teams. Do not add a custom dependency engine or edit Loom. Acceptance: A-01 the service receives the current department id and no selectable teams exist without one; A-02 the old team clears immediately and an old response cannot restore it; A-03 selecting a valid team submits its string id and department unchanged.",
+      "inputs": [
+        "fixtures/loom/cases/loom-dependent-selection.module.ts",
+        "fixtures/loom/cases/loom-dependent-selection.services.ts"
+      ],
+      "preparation": "Materialize the named module and service in one clean isolated app checkout. The evaluator adds the acceptance test only after the worker finishes."
+    },
+    {
+      "id": "loom-transformed-update",
+      "stage": "implement",
+      "request": "Complete the update editor in `apps/web/src/framework/__eval/plan066/loom-transformed-update.module.ts` and remove the deliberate `create.typo` declaration from `apps/web/src/framework/__eval/plan066/loom-transformed-update-invalid-resource.ts`. These are the only files you may change. The co-located services define the endpoint types. The detail service returns `{ id, displayName, amountMinor }`; the form draft uses `{ displayName, amountText }`; its raw schema must produce `{ displayName, amountMinor }`. Accept ASCII digits with an optional decimal point and one or two decimal digits in the range 0 through 999999.99. Reject signs, spaces, empty text, exponent notation, a trailing point, and more than two decimal digits. `12.34` produces `1234`; `0.1` produces `10`; leading zeroes are valid. Load id `amount-7` with amount `1234` as text `12.34`, then submit numeric minor units once to the exact update id. Keep List route `loom-eval-amounts` and edit route `loom-eval-amounts-edit`; successful update returns to List through the normal view behavior. Do not cast the invalid declaration, add a Detail operation, or add permissions. Acceptance: B-01 exact parser rules; B-02 string draft and one numeric transform; B-03 exact record id and update payload; B-04 update destination is the List route; B-05 the deliberate declaration error is removed without a cast.",
+      "inputs": [
+        "fixtures/loom/cases/loom-transformed-update.module.ts",
+        "fixtures/loom/cases/loom-transformed-update-invalid-resource.ts",
+        "fixtures/loom/cases/loom-transformed-update.services.ts"
+      ],
+      "preparation": "Materialize the named files and the two route stubs under `apps/web/src/routes/(authenticated)/loom-eval-amounts/`. The evaluator adds the acceptance test after the worker finishes."
+    },
+    {
+      "id": "loom-row-command",
+      "stage": "implement",
+      "request": "Complete the `verify` command in `apps/web/src/framework/__eval/plan066/loom-row-command.module.ts`. Use only that module file for changes. Each row has `{ id, status, allowedOperations }`. The command accepts one business payload `{ id, note }`, requires the declared `requests.verify` permission, and runs only when the current row policy allows `verify`. The denied-by-permission row and denied-by-row-policy row are separate cases. The allowed call must preserve its payload and result, and a successful call must refresh the bound resource data. Do not change backend permissions or add framework wrappers. Acceptance: C-01 each denial blocks transport for its own reason; C-02 the allowed call sends exactly the business payload and returns the service result; C-03 the bound request list reloads after success.",
+      "inputs": [
+        "fixtures/loom/cases/loom-row-command.module.ts",
+        "fixtures/loom/cases/loom-row-command.services.ts"
+      ],
+      "preparation": "Materialize the named module and service in one clean isolated app checkout. The evaluator adds the acceptance test only after the worker finishes."
+    },
+    {
+      "id": "loom-create-only",
+      "stage": "implement",
+      "request": "Build the create-only service request module in `apps/web/src/framework/__eval/plan066/loom-create-only.module.ts` and the thin create route in `apps/web/src/routes/(authenticated)/loom-eval-create-only/create.route.vue`. These are the only files you may change. A typed local endpoint and raw create schema are already provided. Add a standard create form and no list or detail operation. The route must render the bound create page through the normal view. Use the endpoint as supplied. Do not invent endpoints or change Loom. If the baseline framework cannot express the operation, identify the exact type or runtime block and stop. Acceptance: D-01 valid form output reaches the supplied endpoint and returns its typed id; D-02 the module exposes create and has no list or detail operation; D-03 the route renders the bound create page; D-04 the module and route type-check in the candidate.",
+      "inputs": [
+        "fixtures/loom/cases/loom-create-only.module.ts",
+        "fixtures/loom/cases/loom-create-only.services.ts",
+        "fixtures/loom/cases/loom-create-only.route.vue"
+      ],
+      "preparation": "Materialize the named module and service in one clean isolated app checkout. The evaluator adds the acceptance test only after the worker finishes."
+    },
+    {
+      "id": "loom-relation-source-freshness",
+      "stage": "implement",
+      "request": "Complete the service request relation picker in `apps/web/src/framework/__eval/plan066/loom-relation-source-freshness.module.ts`. Use only that module file for changes. The co-located service file defines the category loader, update action, and endpoint types. The app has a category resource with a rename action and a service request create form. After the picker loads and selects category `support`, renaming that category must refresh its displayed label while keeping the selected id `support`. Use the supported resource ownership contract. Do not use private cache keys or manual picker refresh wiring. Acceptance: E-01 the mounted picker displays the new label after the category write; E-02 the selected id stays `support`; E-03 source review finds no private cache key or manual refresh coupling.",
+      "inputs": [
+        "fixtures/loom/cases/loom-relation-source-freshness.module.ts",
+        "fixtures/loom/cases/loom-relation-source-freshness.services.ts"
+      ],
+      "preparation": "Materialize the named module and service in one clean isolated app checkout. The evaluator adds the acceptance test only after the worker finishes."
     }
   ]
 }
