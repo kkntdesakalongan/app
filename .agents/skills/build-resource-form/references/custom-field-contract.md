@@ -1,7 +1,8 @@
 # Custom field contract
 
 Read this file only after `docs/ui/forms.md` selects a module-owned custom
-field. The selection decision belongs in that UI contract. Use
+field. Keep the selection decision in the approved design or existing work
+record. Use
 [form-field-types.md](form-field-types.md) only to confirm that no registered
 renderer or composite expresses the value.
 

@@ -5,9 +5,9 @@ import { orgIdentity, requirePermission } from '../../../../identity'
 import { createAuth } from '../../../auth/auth'
 import { readJsonBody } from '../../../../request-body'
 import { publicRecord } from '../../../../storage/assets'
-import { roleAssignments, roles } from '../../roles/roles.entity'
-import { user, users } from '../users.entity'
-import { createUserSchema } from '../users.create.contract'
+import { roleAssignments, roles } from '../../roles/roles.table'
+import { createUserSchema, userSelectSchema } from '../schema'
+import { users } from '../users.table'
 
 function initialRoleIds(roleIds: string[]) {
   const uniqueRoleIds = [...new Set(roleIds)]
@@ -57,8 +57,8 @@ export const POST = defineRoute({
       if (!userId) return args.c.json({ error: 'user_create_failed' }, 422)
       const updated = await getDb().select().from(users).where(eq(users.id, userId)).limit(1)
       await assignInitialRoles(identity.userId, userId, input.roleIds)
-      const createdUser = user.schemas.select.parse(updated[0] ?? result.user)
-      return created(args.c, publicRecord(user.schemas.select, createdUser))
+      const createdUser = userSelectSchema.parse(updated[0] ?? result.user)
+      return created(args.c, publicRecord(userSelectSchema, createdUser))
     } catch (error) {
       if (userId) await getDb().delete(users).where(eq(users.id, userId))
       if (isHttpError(error)) return args.c.json({ error: error.code, ...(error.message ? { message: error.message } : {}) }, error.status as 400)

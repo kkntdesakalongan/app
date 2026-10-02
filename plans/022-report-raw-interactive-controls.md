@@ -1,5 +1,9 @@
 # Plan 022: Report raw interactive controls for UI review
 
+> Historical record. Plan 077 replaced the checker described below. The
+> implementation steps and commands record past evidence; do not run or
+> recreate that checker.
+
 ## Status
 
 - Priority: P1

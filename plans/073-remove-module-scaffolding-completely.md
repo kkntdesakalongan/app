@@ -1,5 +1,8 @@
 # Plan 073: Remove module scaffolding completely
 
+Historical execution record. Plan 077 supersedes the UI checker ownership
+described below and removes that checker and its tests.
+
 ## Status and intent
 
 - Status: DONE. Priority: P1. Effort: L. Risk: MED. Confidence: HIGH.
@@ -12,7 +15,7 @@ The user states that module generation is unused and requests its complete remov
 
 The root scripts expose `scaffold:bounded-module` and `verify:module`. `scripts/integrate-bounded-module.mjs:6` imports configuration/metadata from the generator. `scripts/verify-module.mjs:9` imports generated-path discovery, metadata, and validation. Its static checks require exact generator source text. `scripts/check-surface-architecture.mjs:6` imports its fixture and generator, then runs generated-source checks near line 704. Evaluation requests still invoke the CLI. Root README links a removed `references/bounded.md` guide.
 
-The evidence recorder is independent: `scripts/module-evidence.mjs` captures inputs and records commands without importing the generator. The current module skill uses it directly. Keep that tool and its independent tests. `module-ui-check.mjs` also has direct source/UI-contract uses; inspect and retain those, removing only generator-specific paths if any.
+The evidence recorder is independent: `scripts/module-evidence.mjs` captures inputs and records commands without importing the generator. The current module skill uses it directly. Keep that tool and its independent tests. At the time of Plan 073, `module-ui-check.mjs` also had direct source/UI-contract uses. Plan 077 supersedes that ownership and removes the checker and its tests.
 
 ## Removal scope
 

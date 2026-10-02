@@ -1,5 +1,6 @@
 import { defineDomainPart } from '@southneuhof/sprindle/model'
-import { permission, permissions } from './permissions.entity'
+import { permission } from './permissions.entity'
+import { permissions } from './permissions.table'
 
 export const domain = defineDomainPart({
   tables: { permissions },

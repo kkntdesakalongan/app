@@ -5,9 +5,9 @@ import { app } from '../../../app'
 import { closeDb, getDb } from '../../../db'
 import { accounts, sessions } from '../../auth/auth.entity'
 import { getAuth } from '../../auth/auth'
-import { permissions } from '../permissions/permissions.entity'
-import { rolePermissions, roles, roleAssignments } from '../roles/roles.entity'
-import { users } from './users.entity'
+import { permissions } from '../permissions/permissions.table'
+import { rolePermissions, roles, roleAssignments } from '../roles/roles.table'
+import { users } from './users.table'
 
 function id(prefix: string) {
   return `user-create-test-${prefix}-${crypto.randomUUID()}`

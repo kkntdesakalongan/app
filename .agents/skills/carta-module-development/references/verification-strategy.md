@@ -17,6 +17,7 @@ as unverified.
 | Changed risk | Suitable proof |
 |---|---|
 | Validation or conversion | Accepted and rejected values through the actual schema |
+| Shared API schema imports or dependencies | Normal web build for runtime dependency checks; reuse the [boundary proof](../../../../docs/architecture/web-application-architecture.md#api-schema-boundary) when enforcement is unchanged |
 | Relation | Submitted identity, returned label, edit load, and rejection of an invalid parent reference |
 | Access | Allowed action and denied action with stored data unchanged |
 | Filter | Results from distinguishing records and source review of query wiring |

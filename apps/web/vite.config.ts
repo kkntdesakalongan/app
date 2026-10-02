@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import VueRouter from 'vue-router/vite'
+import { schemaBoundaryPlugin } from './scripts/schema-boundary.mjs'
 import { fileRouteOptions } from './src/router/file-routing/options'
 
 // https://vitejs.dev/config/
@@ -16,6 +17,7 @@ export default defineConfig(({ command, mode }) => {
     }
   }
   const validPort = Number.isInteger(port) && port >= 1 && port <= 65535 ? port : undefined
+  const schemaBoundary = schemaBoundaryPlugin()
   return {
     envPrefix: ['VITE_'],
     server: {
@@ -27,6 +29,7 @@ export default defineConfig(({ command, mode }) => {
       strictPort: true,
     },
     plugins: [
+      schemaBoundary,
       VueRouter(fileRouteOptions),
       vue({
         script: {
@@ -35,7 +38,12 @@ export default defineConfig(({ command, mode }) => {
       }),
     ],
     optimizeDeps: {
-      include: ['@southneuhof/api > drizzle-orm', '@southneuhof/api > drizzle-orm/pg-core', '@southneuhof/api > drizzle-orm/zod'],
+      rolldownOptions: {
+        plugins: [schemaBoundary],
+      },
+    },
+    worker: {
+      plugins: () => [schemaBoundaryPlugin()],
     },
     resolve: {
       dedupe: ['vue', 'vue-router'],
@@ -52,14 +60,6 @@ export default defineConfig(({ command, mode }) => {
         {
           find: /^@southneuhof\/loom\//,
           replacement: fileURLToPath(new URL('../../packages/loom/src/', import.meta.url)),
-        },
-        {
-          find: /^@southneuhof\/api$/,
-          replacement: fileURLToPath(new URL('../api/src/index.ts', import.meta.url)),
-        },
-        {
-          find: /^@southneuhof\/api\//,
-          replacement: fileURLToPath(new URL('../api/src/', import.meta.url)),
         },
         {
           find: /^@southneuhof\/sdk$/,

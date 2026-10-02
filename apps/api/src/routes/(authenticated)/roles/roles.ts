@@ -1,10 +1,6 @@
 import { defineDomainPart } from '@southneuhof/sprindle/model'
-import {
-  role,
-  rolePermissions,
-  roles,
-  roleAssignments,
-} from './roles.entity'
+import { role } from './roles.entity'
+import { roleAssignments, rolePermissions, roles } from './roles.table'
 
 export const domain = defineDomainPart({
   tables: {

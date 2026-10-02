@@ -2,8 +2,8 @@ import { defineRoute, HttpError, notFound } from '@southneuhof/sprindle'
 import { and, eq } from 'drizzle-orm'
 import { getDb } from '../../../../../../db'
 import { requireOrgIdentity, requirePermission } from '../../../../../../identity'
-import { permissions } from '../../../../permissions/permissions.entity'
-import { rolePermissions, roles } from '../../../roles.entity'
+import { permissions } from '../../../../permissions/permissions.table'
+import { rolePermissions, roles } from '../../../roles.table'
 
 function now() {
   return new Date().toISOString()

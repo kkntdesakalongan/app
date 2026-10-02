@@ -12,7 +12,8 @@
     "src/**/__tests__/*",
     "../../packages/sdk/src/__tests__/*",
     "../../packages/loom/src/**/__tests__/*",
-    "../../packages/utilities/src/**/__tests__/*"
+    "../../packages/utilities/src/**/__tests__/*",
+    "../../packages/loom/src/**/__type-tests__/**/*"
   ],
   "compilerOptions": {
     "strictNullChecks": true,
@@ -26,12 +27,6 @@
       ],
       "vue3-google-map": [
         "./node_modules/vue3-google-map/dist/types/index.d.ts"
-      ],
-      "@southneuhof/api": [
-        "./../api/src/index.ts"
-      ],
-      "@southneuhof/api/*": [
-        "./../api/src/*"
       ],
       "@southneuhof/sdk": [
         "./../../packages/sdk/src/index.ts"
@@ -59,6 +54,8 @@
       ],
     },
     "module": "esnext",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "target": "es2017"
   },
   "vueCompilerOptions": {
@@ -66,7 +63,7 @@
     "checkUnknownProps": true,
     "checkUnknownEvents": false,
     "checkUnknownDirectives": false,
-    "checkUnknownComponents": false,
+    "checkUnknownComponents": true,
     "checkUnknownSlots": true,
     "checkUnknownAttributes": false
   }

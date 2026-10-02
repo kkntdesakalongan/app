@@ -3,7 +3,8 @@
   "exclude": [
     "../../packages/sdk/src/__tests__/*",
     "../../packages/loom/src/**/__tests__/*",
-    "../../packages/utilities/src/**/__tests__/*"
+    "../../packages/utilities/src/**/__tests__/*",
+    "../../packages/loom/src/**/__type-tests__/**/*"
   ],
   "compilerOptions": {
     "lib": ["DOM", "es2022"],

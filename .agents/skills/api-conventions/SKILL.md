@@ -5,6 +5,7 @@ description: Build or review Carta backend file routes, inherited scopes, entiti
 
 # API conventions
 
+Use [Carta module terms](../../../CONTEXT.md) for module ownership language.
 Apply [discovery reuse](../carta-module-development/SKILL.md#discovery-reuse).
 Read the approved behavior and affected owners in `apps/api/src`. For route
 changes, read [file routing](references/file-routing.md) before choosing files

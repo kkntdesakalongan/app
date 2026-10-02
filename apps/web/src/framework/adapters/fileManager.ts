@@ -1,5 +1,5 @@
 import type { FileManagerPluginOptions, ManagedAsset } from '@southneuhof/loom/file-manager'
-import { storedAssetSchema, type StoredAsset } from '@southneuhof/api/schema'
+import { storedAssetSchema, type StoredAsset } from '@southneuhof/api/src/schema.ts'
 import { deleteFile, listFiles, uploadFile, type StoredFolder } from './storage'
 
 function isFolder(input: unknown): input is StoredFolder {

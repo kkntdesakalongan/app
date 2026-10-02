@@ -1,5 +1,8 @@
 # Plan 065 current Loom contract inventory
 
+Historical inventory evidence from Plan 065. Plan 077 supersedes the UI checker
+entries in this ledger; the listed checker commands and results are historical.
+
 This ledger records the current guide split, preserved rules, examples, links, and checks. It does not describe any TODO repair as shipped.
 
 ## Source and provenance

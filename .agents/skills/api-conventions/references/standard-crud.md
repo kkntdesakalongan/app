@@ -2,10 +2,53 @@
 
 ## Entity and schema
 
-Define the Drizzle table, write/select schemas, and `createEntity` together.
-Group database entities with `defineDomainPart`. Put the entity in `+scope.ts`
-and each resource operation in its `+server.ts` file.
+Keep the API owners a feature needs within its module folder. Put the table,
+schema, and entity in their own files. `+scope.ts` registers the entity for its
+route subtree; the entity stays in its own file. Group database entities with
+`defineDomainPart`.
 Keep route placement and inheritance under the [file-routing contract](file-routing.md).
+
+The users module shows one complete example. A feature does not need every file
+in this tree:
+
+```text
+apps/api/src/routes/(authenticated)/users/
+  users.table.ts
+  schema.ts
+  users.entity.ts
+  +scope.ts
+  create/+server.ts
+```
+
+`schema.ts` derives the table record schema from the local table:
+
+```ts
+export const userSelectSchema = createSelectSchema(users).extend({
+  statusCode: userStatusCodeSchema,
+})
+```
+
+The [entity](../../../../apps/api/src/routes/%28authenticated%29/users/users.entity.ts)
+joins `users`, `userCreateSchema`, `userUpdateSchema`, and `userSelectSchema`.
+The custom create route imports `createUserSchema` and `userSelectSchema` from
+`../schema`. `createUserSchema` accepts the password and role IDs for that
+operation; `userCreateSchema` describes a Drizzle insert. The
+[schema](../../../../apps/api/src/routes/%28authenticated%29/users/schema.ts)
+and [create route](../../../../apps/api/src/routes/%28authenticated%29/users/create/+server.ts)
+show both values in use.
+
+Tables import other table owners for foreign keys. For example,
+[roles.table.ts](../../../../apps/api/src/routes/%28authenticated%29/roles/roles.table.ts)
+imports `users` and `permissions` from their `*.table.ts` files. This keeps
+foreign keys with storage metadata and does not import entity configuration
+into a table.
+
+Keep a custom action in its route when one route owns it. The user create
+action stays in `create/+server.ts`. Extract an operation when multiple routes
+share it: the two role-assignment routes use `listRoleAssignments` from the
+[shared helper](../../../../apps/api/src/routes/%28authenticated%29/users/%5BuserId%5D/role-assignments/role-assignments.ts).
+This placement follows real consumers; it does not define a required file
+suffix for operations.
 
 - Use database constraints for foreign keys, uniqueness, and valid stored values.
   Use Zod for request shape, normalization, and field errors. An enum belongs in

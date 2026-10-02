@@ -5,6 +5,8 @@ description: Review an implemented Carta module or completed plan against approv
 
 # Verify Carta module
 
+Use [Carta module terms](../../../CONTEXT.md) for module ownership language.
+
 Review the named result; return findings without changing source, decisions, or
 execution state. Safe checks and report output are allowed within the declared
 test boundary. Follow the
@@ -42,12 +44,11 @@ Use the relevant layer skill for unresolved contracts. For web work, apply
 input wiring, readable values, and action ownership. Check forms through
 `$build-resource-form`; check resource declarations against the
 [current architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md).
-Run the source checker for changed surfaces.
+Run package lint and type checks plus focused behavior tests for changed owners.
 
-Use supported components and operation bags. A custom replacement needs a
-requirement that their extension points cannot meet. Inspect the whole page;
-a standard View beside a replacement body does not establish compliance.
-Check scope and write authority as well as behavior.
+Use supported components and operation bags. Inspect the whole page; a
+standard View beside a replacement body does not establish compliance. Check
+scope and write authority as well as behavior.
 
 ## Evaluate evidence
 
@@ -61,9 +62,7 @@ Framework proof covers unchanged controls; module proof must reach its own rules
 and coordination. A mock cannot prove the boundary it replaces.
 
 For full-process work, check acceptance coverage and worksheet consistency.
-Use the [UI contract check](../web-ui-surfaces/references/ui-contract.md) when
-required by that process, an existing contract, or custom composition. Static
-checks do not establish semantic acceptance or runtime freshness.
+Use the web skill's linked verification guidance for changed surfaces.
 
 ## Return the verdict
 

@@ -82,10 +82,10 @@ coordinate the same dialog.
 
 ## Controls and values
 
-Use shared buttons, chips, forms, file inputs, and feedback components for
-standard interactions, including custom business actions. A custom action does
-not require custom controls. Import each component from its public export, or
-verify its runtime registration.
+Use shared controls and keep their standard designs. Customize only for an
+explicit user request or a required interaction they cannot support. Change
+wording through label configuration. Import components from public exports or
+verify their runtime registration.
 
 Choose display behavior for every visible field. Use a reusable display
 fragment when several fields share a renderer, accessor, or format. Pass the

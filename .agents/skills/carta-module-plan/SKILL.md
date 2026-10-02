@@ -5,6 +5,8 @@ description: Turn an approved Carta module design into implementation plans, or 
 
 # Carta module plan
 
+Use [Carta module terms](../../../CONTEXT.md) for module ownership language.
+
 Translate approved behavior into owners, work order, setup, and checks. This
 skill produces plans; it does not implement source changes or expand scope.
 
@@ -31,6 +33,10 @@ and migration history do not define the shipped API.
 
 - For API work, use `$api-conventions`. Name method exports, URL parameters,
   inherited scope, transaction boundaries, and affected SDK consumers.
+- For API schemas used by web code, follow the
+  [API schema boundary](../../../docs/architecture/web-application-architecture.md#api-schema-boundary).
+  Name backend schema owners, physical export paths, web consumers, and value
+  conversions. Distinguish table write schemas from operation input schemas.
 - For web work, use `$web-ui-surfaces` and `$build-resource-form` for inputs.
   Read [DESIGN.md](../../../DESIGN.md) and the
   [resource architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md)
@@ -65,8 +71,8 @@ routine implementation details to the executor.
 
 For full-process work, the worksheet owns acceptance-to-plan and test mappings;
 plans own technical steps. Apply its dependency rules when defining assignments.
-Keep exact new tests `PENDING` until implementation supplies them. Record UI
-composition under the web skill's UI contract rule.
+Keep exact new tests `PENDING` until implementation supplies them. For web
+work, name the selected public surfaces and their route owners in the plan.
 
 ## Review and hand off
 

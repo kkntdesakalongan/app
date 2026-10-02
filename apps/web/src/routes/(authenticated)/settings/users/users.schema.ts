@@ -1,5 +1,4 @@
-import { createUserSchema } from '@southneuhof/api/routes/(authenticated)/users/users.create.contract'
-import { user } from '@southneuhof/api/routes/(authenticated)/users/users.entity'
+import { createUserSchema, userSelectSchema, userUpdateSchema } from '@southneuhof/api/src/routes/(authenticated)/users/schema.ts'
 import { z } from 'zod/v4'
 import { collectionQueryFields } from '@/framework/hono/collectionQuery'
 import { rpc } from '@/framework/rpc'
@@ -19,8 +18,8 @@ export const createUserFormSchema = checkedHonoCreateSchema(
   })
 )
 
-export const userRecordSchema = checkedHonoRecordSchema(rpc.users, user.schemas.select)
-export const userUpdateFormSchema = checkedHonoUpdateSchema(rpc.users, user.schemas.update)
+export const userRecordSchema = checkedHonoRecordSchema(rpc.users, userSelectSchema)
+export const userUpdateFormSchema = checkedHonoUpdateSchema(rpc.users, userUpdateSchema)
 export const usersQuerySchema = z.object({
   ...collectionQueryFields,
   sort_by: z.enum(['name', 'email']).optional(),

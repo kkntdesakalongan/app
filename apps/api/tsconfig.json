@@ -6,11 +6,8 @@
     "module": "esnext",
     "moduleSuffixes": [".server", ""],
     "paths": {
-      "@southneuhof/api": ["./src/index.ts"],
-      "@southneuhof/api/*": ["./src/*"],
       "@southneuhof/sdk": ["../../packages/sdk/src/index.ts"],
       "@southneuhof/sdk/*": ["../../packages/sdk/src/*"],
-
     }
   },
   "include": [

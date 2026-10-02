@@ -5,6 +5,7 @@ description: Build or review Carta web pages, resources, file routes, navigation
 
 # Web UI surfaces
 
+Use [Carta module terms](../../../CONTEXT.md) for module ownership language.
 Read [DESIGN.md](../../../DESIGN.md) before selecting page structure or controls.
 Read the [resource architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md)
 before changing resource declarations. Author modules directly against the current
@@ -44,9 +45,9 @@ when only that primitive is needed. Keep page navigation and completion with
 the route or View; keep transport in app actions. A wrapper or separate actions
 file is useful only when it owns behavior.
 
-Use the [UI contract](references/ui-contract.md) for full-process work, an
-existing contract, or custom composition that needs static checking. Standard
-work needs no new UI JSON. Review exceptions against the required behavior.
+Use `ListView.actionLabels` for standard Create and row-action wording. Check
+[DESIGN.md](../../../DESIGN.md#controls-and-values) before replacing a standard
+control.
 
 ## Check the result
 

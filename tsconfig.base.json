@@ -9,8 +9,6 @@
     "noImplicitAny": false,
     "skipLibCheck": true,
     "paths": {
-      "@southneuhof/api": ["./apps/api/src/index.ts"],
-      "@southneuhof/api/*": ["./apps/api/src/*"],
       "@southneuhof/sdk": ["./packages/sdk/src/index.ts"],
       "@southneuhof/sdk/*": ["./packages/sdk/src/*"],
       "@southneuhof/sprindle": ["./packages/sprindle/src/index.ts"],

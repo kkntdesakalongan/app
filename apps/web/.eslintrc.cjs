@@ -10,6 +10,27 @@ module.exports = {
   },
   rules: {
     'no-extra-semi': 'off',
+    'vue/no-undef-components': 'error',
+    'vue/component-name-in-template-casing': ['error', 'PascalCase', { registeredComponentsOnly: false }],
+    'vue/no-restricted-syntax': [
+      'warn',
+      {
+        selector: "VElement[rawName='button']",
+        message: 'Review this native control against DESIGN.md#controls-and-values.',
+      },
+      {
+        selector: "VElement[rawName='input']:not(:has(VStartTag:has(VAttribute[key.name='type'][value.value='hidden'])))",
+        message: 'Review this native control against DESIGN.md#controls-and-values.',
+      },
+      {
+        selector: "VElement[rawName='select'], VElement[rawName='textarea']",
+        message: 'Review this native control against DESIGN.md#controls-and-values.',
+      },
+      {
+        selector: "VAttribute[directive=true][key.name.name='slot'][key.argument.name=/^(create-action|row-actions|row-actions-view|row-actions-edit|row-actions-delete|actions)$/]",
+        message: 'Review this standard-control replacement against DESIGN.md#controls-and-values.',
+      },
+    ],
   },
   overrides: [
     {

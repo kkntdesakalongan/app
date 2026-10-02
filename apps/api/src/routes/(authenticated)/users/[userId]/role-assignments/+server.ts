@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 import { getDb } from '../../../../../db'
 import { requirePermission } from '../../../../../identity'
 import { listRoleAssignments } from './role-assignments'
-import { users } from '../../users.entity'
+import { users } from '../../users.table'
 
 export const GET = defineRoute({
   authorize: requirePermission('list-role-assignments'),

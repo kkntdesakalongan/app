@@ -1,5 +1,8 @@
 # Carta module skill alignment
 
+Historical verification report. Plan 077 removed the UI checker described
+below. The command and results in this report record prior evidence only.
+
 Updated seven skills: development, design, planning, API, web surfaces, forms and
 acceptance review. Framework packages and application source in Carta were unchanged.
 

@@ -1,13 +1,13 @@
 import { and, eq } from 'drizzle-orm'
 import type { PermissionCode } from './authorization/catalog'
 import { getDb } from './db'
-import { permissions } from './routes/(authenticated)/permissions/permissions.entity'
+import { permissions } from './routes/(authenticated)/permissions/permissions.table'
 import {
   roleAssignments,
   roles,
   rolePermissions,
-} from './routes/(authenticated)/roles/roles.entity'
-import { users } from './routes/(authenticated)/users/users.entity'
+} from './routes/(authenticated)/roles/roles.table'
+import { users } from './routes/(authenticated)/users/users.table'
 
 export type OrgIdentity = {
   userId: string

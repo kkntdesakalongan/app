@@ -30,11 +30,11 @@ import { hashPassword } from 'better-auth/crypto'
 import { eq } from 'drizzle-orm'
 import { app } from '../../../app'
 import { closeDb, getDb } from '../../../db'
-import { permissions } from '../permissions/permissions.entity'
-import { rolePermissions, roles, roleAssignments } from '../roles/roles.entity'
+import { permissions } from '../permissions/permissions.table'
+import { rolePermissions, roles, roleAssignments } from '../roles/roles.table'
 import { accounts, sessions } from '../../auth/auth.entity'
 import { getAuth } from '../../auth/auth'
-import { users } from './users.entity'
+import { users } from './users.table'
 
 function id(prefix: string) {
   return `user-compensation-test-${prefix}-${crypto.randomUUID()}`

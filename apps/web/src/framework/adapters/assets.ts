@@ -1,5 +1,5 @@
 import type { AssetAdapter, AssetPreview, AssetValue } from '@southneuhof/loom'
-import { storedAssetSchema, type StoredAsset } from '@southneuhof/api/schema'
+import { storedAssetSchema, type StoredAsset } from '@southneuhof/api/src/schema.ts'
 import { uploadFile } from './storage'
 
 function readAsset(value: unknown): AssetValue | null {

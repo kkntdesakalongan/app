@@ -1,5 +1,53 @@
 # File-routing plans
 
+## Colocated portable schemas — 2026-10-01
+
+Planned with `improve` at `8046201`. The user approved backend module
+colocation, physical schema import paths, and automatic import enforcement,
+then authorized one GPT-6 Luna executor with maximum reasoning effort for
+each plan. Execute in dependency order and wait for each worker to finish.
+No worker runs in parallel with another worker that edits these owners.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [078](078-make-entity-declarations-portable.md) | Make the existing Sprindle entity declaration seam portable | P1 | M | MED | None | DONE — APPROVE; 16 focused tests, executable browser-target bundle, package types/lint pass |
+| [079](079-colocate-backend-module-schemas.md) | Keep table-derived schemas beside backend modules and migrate real callers | P1 | M | MED | 078 | DONE — APPROVE; API types/lint, six schema tests, physical package imports pass; web alias removal follows in 080 |
+| [080](080-enforce-physical-schema-imports.md) | Remove API aliases and enforce direct/transitive runtime boundaries in normal Vite dev/build | P1 | L | MED | 078, 079 | DONE — APPROVE; 15 graph tests, 70 tooling tests, app types/build/lint pass; root review closes optimizer/worker/cache gaps |
+| [081](081-align-module-language-and-authoring.md) | Give Carta terms and current schema authoring guidance one owner | P2 | M | LOW | 078–080 | DONE — APPROVE; glossary, live examples, five skill validators and architecture/workflow/graph checks pass |
+
+Order: **078 → 079 → 080 → 081**. Each plan contains the intent, source
+excerpts, allowed files, checks, and stop conditions for an executor without
+chat history. Accepted uncommitted UI enforcement and pagination work is
+recorded in [the baseline](schema-import-migration/baseline.json), with
+the original diff in [baseline.patch](schema-import-migration/baseline.patch).
+Preserve it. The root reviewer owns the final status after each worker returns.
+
+Selected scope: Sprindle declaration imports, the existing API users/roles/
+permissions modules, web package resolution and bundling, and relevant docs
+and skills. This is not a full framework or application audit. Loom, UI design,
+preview setup, database execution, and live POS feature work are excluded.
+
+Considered and rejected: a separate contract/domain package, generated schema
+contracts, a schema compiler, virtual schema aliases, a universal workflow
+layer, a database binding rewrite, and a special command that agents must
+remember. The supported path keeps backend ownership and portable Drizzle
+metadata, with the boundary enforced by package exports and ordinary tooling.
+
+## UI enforcement clean break — 2026-09-30
+
+Planned with `improve` at `8046201`. The user authorized implementation by one
+GPT-6 Luna executor with maximum reasoning effort. This plan replaces the live
+UI source checker and UI JSON inventory; it preserves current component types,
+runtime guards, independent architecture checks, and module evidence records.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [077](077-move-ui-enforcement-to-types-and-lint.md) | Move UI enforcement to normal lint/types, protect standard action slots, and remove the separate checker/inventory | P1 | L | MED | None | DONE — APPROVE; see execution record |
+
+Plan 077 supersedes current UI-checker ownership from Plans 022, 045, and 049.
+Their prior results remain historical evidence. Preview setup and browser-safe
+API imports are outside this migration. Existing list/OpenAPI work is preserved.
+
 ## Loom agent authoring follow-up — 2026-09-26
 
 Planned with `improve` at `1246387`. The user selected all four audit repairs

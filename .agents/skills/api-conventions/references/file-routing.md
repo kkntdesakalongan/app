@@ -35,8 +35,13 @@ manual generation, per-route type plumbing, or registry edits.
 
 A move can change both URL and inherited access. Check the old and new parent
 chains and affected consumers. Preserve existing URLs unless the requested
-behavior changes them. A public SDK import owns consumer types; clients do not
-import backend source files or private artifacts.
+behavior changes them. A public SDK import owns consumer route types. Keep
+`RouteContract` as an `import type` from `@southneuhof/api/routes-contract`.
+Web runtime imports may use the physical API `schema.ts` package exports
+described by the
+[API schema boundary](../../../../docs/architecture/web-application-architecture.md#api-schema-boundary).
+Web code does not import API table files, entities, operations, route
+implementations, or private artifacts.
 
 These complete files use the existing role entity:
 

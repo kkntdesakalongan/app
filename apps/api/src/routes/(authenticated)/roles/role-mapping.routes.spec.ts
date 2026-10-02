@@ -3,8 +3,8 @@ import { and, eq, inArray } from 'drizzle-orm'
 import { app } from '../../../app'
 import { closeDb, getDb } from '../../../db'
 import { cleanupSessions, createSystemSession, testId } from '../../../testing/session'
-import { permissions } from '../permissions/permissions.entity'
-import { rolePermissions, roles } from './roles.entity'
+import { permissions } from '../permissions/permissions.table'
+import { rolePermissions, roles } from './roles.table'
 
 afterAll(() => closeDb())
 
@@ -38,7 +38,10 @@ it('paginates active permissions and protects mapping writes', async () => {
     expect(sorted.data.map((row: { id: string }) => row.id)).toEqual([fixtures[10]!.id, fixtures[9]!.id])
     const tied = await (await request(`?search=${prefix}&limit=2&sort_by=name&sort=desc`)).json()
     expect(tied.data.map((row: { id: string }) => row.id)).toEqual([fixtures[0]!.id, fixtures[1]!.id])
-    for (const query of ['page=0', 'page=1.5', 'limit=0', 'limit=101', 'limit=bad', 'sort_by=unknown', 'sort=bad']) {
+    const large = await request(`?search=${prefix}&limit=1000`)
+    expect(large.status).toBe(200)
+    expect(await large.json()).toMatchObject({ total: 11, data: fixtures.slice(0, 11).map(({ id }) => ({ id, assigned: false })) })
+    for (const query of ['page=0', 'page=1.5', 'limit=0', 'limit=bad', 'sort_by=unknown', 'sort=bad']) {
       expect((await request(`?${query}`)).status, query).toBe(400)
     }
     expect((await request('', '')).status).toBe(401)

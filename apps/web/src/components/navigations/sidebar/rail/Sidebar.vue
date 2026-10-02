@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { activeNavigationModule, matchesNavigationPath, visibleNavigation, type VisibleNavigationModule, type VisibleNavigationRoute } from '@/manifest'
 import { allowsPermission } from '@/framework/adapters/bundle'
 import Icon from '@southneuhof/loom/components/base/Icon.vue'

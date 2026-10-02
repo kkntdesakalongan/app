@@ -1,5 +1,8 @@
 # Plan 065: Separate the current Loom contract from migration history
 
+Historical plan and verification record. Plan 077 supersedes the UI checker
+command recorded below; it remains past evidence and is not a current check.
+
 ## Status and intent
 
 - Status: DONE. Priority: P3. Effort: M. Risk: LOW. Confidence: HIGH for the mixed document; benefit to agent performance remains unmeasured.

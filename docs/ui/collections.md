@@ -141,8 +141,7 @@ uses one joined-relation accessor in Table, TreeTable, Detail, and extracted
 resource bags. The [export fixture](../../packages/loom/src/services/__tests__/export.spec.ts)
 checks the same accessor and format in workbook output.
 
-Run the source checker after resource changes:
-
-```sh
-node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
-```
+Use the Loom and web type checks to verify surface keys and component props.
+Run web lint and focused behavior tests for changed app owners. Review route
+targets, displayed values and access rules in source. See the
+[web verification guide](../../.agents/skills/web-ui-surfaces/references/verification.md).

@@ -2,7 +2,7 @@ import { drizzleAdapter } from '@better-auth/drizzle-adapter'
 import { betterAuth } from 'better-auth'
 import { eq } from 'drizzle-orm'
 import { getDb } from '../../db'
-import { users } from '../(authenticated)/users/users.entity'
+import { users } from '../(authenticated)/users/users.table'
 import { accounts, sessions, verifications } from './auth.entity'
 
 const schema = { users, sessions, accounts, verifications }

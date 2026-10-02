@@ -2,11 +2,16 @@
 
 **Current contract.** This is the current authoring guide for Loom and its Carta web integration. It describes behavior in the current source. Open repair plans below record gaps. A planned target is not a shipped contract.
 
+Use [Carta module terms](../../CONTEXT.md) for ownership language. Use the
+[API schema boundary](../architecture/web-application-architecture.md#api-schema-boundary)
+for backend schema imports in web code.
+
 ## Direct module authoring
 
 | Owner | API | Author writes | Current compiled example |
 |---|---|---|---|
-| App schemas | Raw Zod schemas in a module's schema file | Record, query, create, and update shapes | [users.schema.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.schema.ts) |
+| Backend schemas | The API module's `schema.ts` | Create, update, and select values generated from tables; operation input values | [API users schema](../../apps/api/src/routes/%28authenticated%29/users/schema.ts) |
+| Web schema adapters | The web module's schema file | Collection query values and conversion for web forms | [users.schema.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.schema.ts) |
 | App transport | The app's Hono action adapter | Endpoint calls and response normalization | [users.actions.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.actions.ts) |
 | Surfaces | Loom's form, table, and detail constructors | Selected form inputs and display entries | [users.resource.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.resource.ts) |
 | Operations | Loom's resource binder | Supported operations, identity, permissions, routes, and page bags | [users.resource.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.resource.ts) |
@@ -26,11 +31,11 @@ These bindings are literal template expressions in the [users list route](../../
 | Step | Write | Conditions and check |
 |---|---|---|
 | 1. Select behavior | Use the approved design and plan. State which operations, routes, and page behavior the module needs. | The route owns dialogs, navigation, notices, and workflow state. For nonstandard composition, see the compiled [direct Form and Table fixture](../../apps/web/src/framework/acceptance/QueryOwnershipFixture.vue). |
-| 2. Define schemas and transport | Put raw operation schemas in the module schema file. Put app calls in its action file. Keep input, parsed output, returned record, and query values distinct. | A typed list operation needs a query schema. A route without list calls the Hono factory without options. |
+| 2. Define schemas and transport | Use the API module's schema values for backend create, update, and record values. Put Collection query values and web form conversion in the web module. Put app calls in its action file. | Keep input, parsed output, returned record, and query values distinct. A typed list operation needs a query schema. A route without list calls the Hono factory without options. |
 | 3. Define surfaces | Use defineForm for an editor, defineTable for a collection, and defineDetail for a record display. Use only the surfaces the page needs. | Every form entry names a renderer. Tables and details use record keys; forms use input keys. The users module is the compiled example. |
 | 4. Bind operations | Use one defineResource object for supported standard operations. Keep list and create bags static. Bind detail, update, and delete to a resource identity. | An update form maps the loaded record to its input draft. An update-only resource does not need a visible detail operation. |
 | 5. Compose the route | Pass the resource bag to ListView, DetailView, or FormView. Let the route own page-specific workflow. | The [users list](../../apps/web/src/routes/%28authenticated%29/settings/users/index.route.vue), [create](../../apps/web/src/routes/%28authenticated%29/settings/users/create.route.vue), [detail](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/detail.route.vue), and [edit](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/edit.route.vue) routes show the current page bindings. |
-| 6. Check the module | Run the source check on the changed route folder, the focused behavior tests, and the app type check. | The current command and compiled contract fixtures are in [Verification](#10-type-and-runtime-verification) and the [Loom examples](../../packages/loom/README.md#executable-examples). |
+| 6. Check the module | Run ordinary app lint and type checks plus focused behavior tests for changed owners. Review field and relation wiring in source. | Use [web verification](../../.agents/skills/web-ui-surfaces/references/verification.md) and the [Loom examples](../../packages/loom/README.md#executable-examples). |
 
 ## 1. Target contract
 
@@ -369,13 +374,7 @@ Use the Loom package type check for component and resource contracts. Use the we
 
 ### 10.2 Runtime diagnostics
 
-Run the architecture gate after a contract or authoring-guide change. For a changed application module, run the module UI source check and focused tests for the owner changed. The source-check command is:
-
-~~~sh
-node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
-~~~
-
-Read the error at its declared boundary. A static pass does not validate external records or prove a server access policy.
+Run the architecture gate after a contract or authoring-guide change. For a changed application module, run web lint and type checks plus focused tests for the changed owner. Read each diagnostic at its declared boundary. These checks do not validate external records or prove a server access policy.
 
 ### 10.3 Decisive integration tests
 

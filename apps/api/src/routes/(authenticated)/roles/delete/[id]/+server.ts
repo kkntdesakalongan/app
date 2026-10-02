@@ -2,7 +2,7 @@ import { deleteRoute, HttpError, isHttpError, notFound } from '@southneuhof/spri
 import { and, eq } from 'drizzle-orm'
 import { getDb } from '../../../../../db'
 import { requirePermission } from '../../../../../identity'
-import { roleAssignments, roles } from '../../roles.entity'
+import { roleAssignments, roles } from '../../roles.table'
 
 export const DELETE = deleteRoute({
   authorize: requirePermission('delete-roles'),

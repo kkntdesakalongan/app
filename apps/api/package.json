@@ -39,6 +39,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./app": "./src/app.ts",
+    "./src/routes/*/schema.ts": "./src/routes/*/schema.ts",
+    "./src/schema.ts": "./src/schema.ts",
     "./routes-contract": "./.sprindle/routes.d.ts"
   },
   "dependencies": {

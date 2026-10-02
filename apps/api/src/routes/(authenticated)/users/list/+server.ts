@@ -2,7 +2,8 @@ import { list, validationError } from '@southneuhof/sprindle'
 import { and, asc, countDistinct, desc, eq, getTableColumns, ilike, or, type SQL } from 'drizzle-orm'
 import { getDb } from '../../../../db'
 import { requirePermission } from '../../../../identity'
-import { user, users } from '../users.entity'
+import { userSelectSchema } from '../schema'
+import { users } from '../users.table'
 
 const userColumns = getTableColumns(users) as Record<string, unknown>
 const userReservedQueryKeys = new Set(['page', 'limit', 'search', 'sort', 'order'])
@@ -58,7 +59,7 @@ export const GET = list({
       db.select({ value: countDistinct(users.id) }).from(users).where(where),
     ])
     return {
-      data: rows.map(({ user: row }) => user.schemas.select.parse(row)),
+      data: rows.map(({ user: row }) => userSelectSchema.parse(row)),
       total: Number(totalRows[0]?.value ?? 0),
     }
   },

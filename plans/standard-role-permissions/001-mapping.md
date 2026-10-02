@@ -11,9 +11,9 @@
 Keep authenticated scopes and operation guards. GET /roles/:roleId/permissions accepts page, limit, search and supported sort; returns data and total. PUT/DELETE keep existing permission mapping contract.
 Web actions forward list query and normalize totals. ListView uses the assigned cell slot and Switch. A local pending value per role and permission provides the optimistic display; successful custom writes invalidate the resource.
 
-## UI contract
+## UI composition
 
-See ui-contract.json. Use existing ListView and DetailView; remove the single role permission tab label so the table sits below the detail view. Switch does not expose button attributes, so use a supported local attribute binding if needed for an accessible button. No framework edits.
+Use existing ListView and DetailView; remove the single role permission tab label so the table sits below the detail view. Switch does not expose button attributes, so use a supported local attribute binding if needed for an accessible button. No framework edits.
 
 ## TDD cycles
 

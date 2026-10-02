@@ -43,12 +43,11 @@ preparation and the check that ends each assignment.
 Include the development migration, required seed and preview URL checkpoint.
 The first UI result includes all necessary layers; test setup alone is insufficient.
 
-## UI contract
+## Web composition
 
-For changed web surfaces, reference `ui-contract.json` from the
-[UI contract](../../web-ui-surfaces/references/ui-contract.md). Record the selected
-component, extension and actual gap once. Review field and relation wiring in
-source. Browser journeys and E2E work are outside module delivery.
+For web work, name the selected public surfaces and route owners. Link any
+approved requirement that changes the standard design. Review field and
+relation wiring in source.
 
 ## Test strategy
 

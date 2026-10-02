@@ -1,0 +1,232 @@
+{
+  "planned_at": "80462010fd6c09911b1bbbcec4cc272649036783",
+  "date": "2026-10-01",
+  "purpose": "Preserve the current UI enforcement and pagination work. Dirty files are an accepted baseline, not scope for this migration.",
+  "files": [
+    {
+      "status": " M",
+      "path": ".agents/skills/build-resource-form/references/custom-field-contract.md",
+      "sha256": "a237d48a35731f009fd8f0058359b83cf0ce3f65686ed69777faaa1f9280c466"
+    },
+    {
+      "status": " M",
+      "path": ".agents/skills/carta-module-development/SKILL.md",
+      "sha256": "ed5b9bd49ba716201cb2a562ec4006762b10efafc6bdd471ff19420346a11f45"
+    },
+    {
+      "status": " M",
+      "path": ".agents/skills/carta-module-plan/SKILL.md",
+      "sha256": "26339f81937c0614538ad5b82026774e824ebde876907438b65f48f3a4a495f8"
+    },
+    {
+      "status": " M",
+      "path": ".agents/skills/carta-module-plan/references/plan-template.md",
+      "sha256": "48359808ebe8ba5e0ded69bd08be713734b545f70d506e8fdb8c69bf09308ca3"
+    },
+    {
+      "status": " M",
+      "path": ".agents/skills/verify-carta-module/SKILL.md",
+      "sha256": "c93276602f362b10ed7dc73b6f7ab46d3112060674e42749994675fb2096f3b3"
+    },
+    {
+      "status": " M",
+      "path": ".agents/skills/web-ui-surfaces/SKILL.md",
+      "sha256": "94fa96b0f8d01a041818cbe5d7120810bb72becde3af9f8cdb212d5a8affd77b"
+    },
+    {
+      "status": " D",
+      "path": ".agents/skills/web-ui-surfaces/references/ui-contract.md",
+      "sha256": null
+    },
+    {
+      "status": " M",
+      "path": ".agents/skills/web-ui-surfaces/references/verification.md",
+      "sha256": "ffe41a300bd6399826eb2da4f4b1b4e8c54c170e630a34208506aaceec97be7b"
+    },
+    {
+      "status": " M",
+      "path": "DESIGN.md",
+      "sha256": "d10941abd7cbf6c63a38245a3bbc5e108b53f1c640f5171ee539a7d154130dfb"
+    },
+    {
+      "status": " M",
+      "path": "apps/api/src/routes/(authenticated)/roles/[roleId]/permissions/+server.ts",
+      "sha256": "56df515cd15873fbd8b8e2b5e2cd7fef5e0b104a7df990d10cbefcef54ecc226"
+    },
+    {
+      "status": " M",
+      "path": "apps/api/src/routes/(authenticated)/roles/role-mapping.routes.spec.ts",
+      "sha256": "af57623a29bd1b0da87ad01a792d77a1936495e64e9d97e52b55a598be6bff5b"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/.eslintrc.cjs",
+      "sha256": "763d6818bce2ab4b91480a5762195bb56f1cfca173eda1f2b8cc08bae1b0abe4"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/package.json",
+      "sha256": "95c5c1873fc8cac72ba4720aa4d756bda9658d0b459a7159fad07f8026c5e806"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/src/components/navigations/GlobalToolbar.vue",
+      "sha256": "ceccff1a4ccfe73e37363fa2449a3faf312499d3eb7ccaf97f5d3caba6c73949"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/src/components/navigations/sidebar/drawer/NavigationDrawer.vue",
+      "sha256": "43c6653279dfd5cb06f9890da2e9fe0b82ae4b08a8b0f6f27811f0cb44e79712"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/src/components/navigations/sidebar/rail/Sidebar.vue",
+      "sha256": "50ecba1f2b602da7c3fef18a9f3a41aa761c0748c2ac23081b53f894e9558cfa"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/src/components/routing/Tabs.vue",
+      "sha256": "2c6e216613efd755582579130eb2add9f50448ddfbbf4ca2c52488fdf1b5d3d6"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/src/routes/not-found.route.vue",
+      "sha256": "04a08fd8546cba8ec081af683a0f875351b0d0048a437b7bf9f68bcc62064aef"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/tsconfig.app.json",
+      "sha256": "6f6afc3301278da074b2202ecac3e883f751a21653f99b6c13ca21d4d7607eb2"
+    },
+    {
+      "status": " M",
+      "path": "apps/web/tsconfig.vitest.json",
+      "sha256": "dac809442e384fcad056e1d0a95af94ff582e342219e211b4cddd95c902b8c41"
+    },
+    {
+      "status": " M",
+      "path": "docs/architecture/web-application-architecture.md",
+      "sha256": "95556083423493da1473c2de72a1bc1814d317446409c8fb614c6f53e7780b3a"
+    },
+    {
+      "status": " M",
+      "path": "docs/resource_system_overhaul/ARCHITECTURE.md",
+      "sha256": "322f926d1268e51bd5e3609f437a5dd636d5dc370c1ea2dba194c596e0667ab8"
+    },
+    {
+      "status": " M",
+      "path": "docs/ui/collections.md",
+      "sha256": "dd946764535341141345d2edeabbd062aac226bdce3324720fa6dcb7bec772f0"
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/README.md",
+      "sha256": "fc5a2e79beb3dd2a14b19a98286202455bdb7bf2255c2f445c41d1d6dd35b1b2"
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/scripts/check-contract-diagnostics.mjs",
+      "sha256": "07d7312f9be077e8bbd81c3e1141d090acb450edda483d7343e458a45aaf565b"
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/src/components/views/ListView.vue",
+      "sha256": "28ecf30e3ea1b8368ffc480e11e6b1b0d4a3053fa034368ec9a7e527698f3961"
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/src/components/views/__tests__/views.spec.ts",
+      "sha256": "597a637a9452d7017f89924e96764b7df9c55e6bfd91c27f2af8d4d51faa2660"
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/src/components/views/__type-tests__/list-view.type-test.ts",
+      "sha256": "2c1cc0e690e9d8baa809392c3111356c5a12299fcdc1b4fd65eccdfc47190cb1"
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/src/contracts/__type-tests__/surface-definitions.type-test.ts",
+      "sha256": "58697a94a43f478cb7d5d7b389fe121f7f8d7237e689321b4db8d1d527e348e7"
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/src/contracts/views.ts",
+      "sha256": "0250d4850dbd7538ac9a0dca2668a2b2a02d9ab8d33ca2ca04c5587949b1e0c2"
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/src/display/__tests__/requirements.spec.ts",
+      "sha256": "bf009fcf0953494ceae8b297d008eda1109abeacf868d636a924631f8eb2c24d"
+    },
+    {
+      "status": " D",
+      "path": "packages/loom/src/display/requirements.policy.d.mts",
+      "sha256": null
+    },
+    {
+      "status": " D",
+      "path": "packages/loom/src/display/requirements.policy.mjs",
+      "sha256": null
+    },
+    {
+      "status": " M",
+      "path": "packages/loom/src/display/requirements.ts",
+      "sha256": "3c7ff545c941429cbc0aa1bb3ffe04befc8f4e3299ef7aec8cb64005cebd2c03"
+    },
+    {
+      "status": " M",
+      "path": "packages/sprindle/src/__tests__/declared-read-contract.spec.ts",
+      "sha256": "68096d5c2b5e0c58be8a90ef69234e9181bbbbe6337c8564d3e39fb4928cf868"
+    },
+    {
+      "status": " M",
+      "path": "packages/sprindle/src/__tests__/module-bundles.spec.ts",
+      "sha256": "a0df0432708de2df008dd2b4a053d1ea7e407c8e9d5ddd710b4e0299e12fc021"
+    },
+    {
+      "status": " M",
+      "path": "packages/sprindle/src/__tests__/readme-example.spec.ts",
+      "sha256": "2659de88af4f36a193fbde9fc80046f2d9914f326a19c9aebaac2bf657415cc6"
+    },
+    {
+      "status": " M",
+      "path": "packages/sprindle/src/openapi/__tests__/openapi.spec.ts",
+      "sha256": "ffd0d0edc8453c8de44e2b5e773cb0f222a22ab9b1d7f88566ea476e49bceda7"
+    },
+    {
+      "status": " M",
+      "path": "packages/sprindle/src/openapi/index.ts",
+      "sha256": "b95285555ad2f8b6b6b9fb9f432eeb584942b1cecc3b1b791ada26be10a12e2e"
+    },
+    {
+      "status": " M",
+      "path": "packages/sprindle/src/testing/__tests__/memory-source.spec.ts",
+      "sha256": "e3e638f0664240b5f7fdc707ea1146f60a1930ba5bdecf688ee0a7f28f9db468"
+    },
+    {
+      "status": " M",
+      "path": "packages/sprindle/src/tooling/manifest.spec.ts",
+      "sha256": "4a3735e5616157753c550c8a18c41761f83a6c5938a5e183724c3c5103569660"
+    },
+    {
+      "status": " M",
+      "path": "packages/sprindle/src/validation/common-schemas.ts",
+      "sha256": "dea88aa816ac25216d5620bc8214b9c607279910918ee083fb06cc2b8b5413b6"
+    },
+    {
+      "status": " D",
+      "path": "scripts/module-ui-check.mjs",
+      "sha256": null
+    },
+    {
+      "status": " D",
+      "path": "scripts/module-ui-check.test.mjs",
+      "sha256": null
+    },
+    {
+      "status": "??",
+      "path": "scripts/web-component-enforcement.test.mjs",
+      "sha256": "02af48c865ca1b8cf4e26607426ae7f7df128086f8a3fd0e835b5a249eccb393"
+    }
+  ]
+}

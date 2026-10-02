@@ -3,7 +3,7 @@ import { createApp, defineComponent, h, nextTick } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { z } from 'zod/v4'
 import { defineForm, Form, FrameworkPlugin, createFrameworkQueryClient } from '@southneuhof/loom'
-import { storedAssetInput, storedAssetSchema } from '@southneuhof/api/schema'
+import { storedAssetInput, storedAssetSchema } from '@southneuhof/api/src/schema.ts'
 import { assetAdapter } from './assets'
 
 const { uploadFile } = vi.hoisted(() => ({ uploadFile: vi.fn() }))

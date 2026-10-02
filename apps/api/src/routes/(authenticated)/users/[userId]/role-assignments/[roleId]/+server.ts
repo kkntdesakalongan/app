@@ -2,9 +2,9 @@ import { defineRoute, HttpError, notFound } from '@southneuhof/sprindle'
 import { and, eq } from 'drizzle-orm'
 import { getDb } from '../../../../../../db'
 import { requireOrgIdentity, requirePermission } from '../../../../../../identity'
-import { roleAssignments, roles } from '../../../../roles/roles.entity'
+import { roleAssignments, roles } from '../../../../roles/roles.table'
 import { listRoleAssignments } from '../role-assignments'
-import { users } from '../../../users.entity'
+import { users } from '../../../users.table'
 
 function now() {
   return new Date().toISOString()

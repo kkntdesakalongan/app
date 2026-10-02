@@ -1,5 +1,5 @@
 import type { UploadContext, UploadProgress } from '@southneuhof/loom'
-import { storedAssetSchema, type StoredAsset } from '@southneuhof/api/schema'
+import { storedAssetSchema, type StoredAsset } from '@southneuhof/api/src/schema.ts'
 import { rpc } from '../rpc'
 
 type SignedUpload = {

@@ -5,6 +5,8 @@ description: Design or revise a Carta module when business behavior, application
 
 # Carta module design
 
+Use [Carta module terms](../../../CONTEXT.md) for module ownership language.
+
 Resolve requested behavior without inventing business rules. This skill writes
 the design; it does not edit application source or grant new write authority.
 

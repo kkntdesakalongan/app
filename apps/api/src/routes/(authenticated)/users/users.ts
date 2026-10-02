@@ -1,5 +1,6 @@
 import { defineDomainPart } from "@southneuhof/sprindle/model";
-import { user, users } from "./users.entity";
+import { user } from "./users.entity";
+import { users } from "./users.table";
 
 export const domain = defineDomainPart({
   tables: { users },

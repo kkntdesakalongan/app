@@ -1,5 +1,10 @@
 # Plan 049: Static gate and docs for row-op sync
 
+> Historical record. Plan 077 retired this plan's source-scanner step. Use
+> focused behavior evidence and source review for row-operation coverage. The
+> steps and commands below record past evidence; do not run or recreate the
+> scanner. Do not follow the implementation instructions below.
+
 > **Implementation instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and

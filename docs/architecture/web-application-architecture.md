@@ -1,5 +1,6 @@
 # Web application architecture
 
+Use [Carta module terms](../../CONTEXT.md) for module ownership language.
 Use the [current Loom authoring path](../resource_system_overhaul/ARCHITECTURE.md#direct-module-authoring)
 when you add a module. This file summarizes the app owners and route rules. Read
 [file routing](file-routing.md) for route placement and parent ownership.
@@ -8,7 +9,8 @@ when you add a module. This file summarizes the app owners and route rules. Read
 
 Routes own URLs, page composition, navigation, dialogs, confirmations,
 notifications, and workflow state. App adapters own transport and response
-normalization. Raw schemas define record, query, create, and update contracts.
+normalization. API module schemas define create, update, select, and operation
+input values. Web modules define Collection query schemas and form adapters.
 Loom constructors define one form, table, or detail surface. A resource binds
 the surface bags to standard operations and access metadata.
 
@@ -22,6 +24,38 @@ flowchart LR
   Actions["App operation adapters"] --> Resource
   Resource --> Views
 ```
+
+## API schema boundary
+
+The API module owns schemas for backend values. Keep the `schema.ts`,
+`*.table.ts`, entity, route, and scope files that the feature needs within its
+module folder. Import a schema value in web code through the physical API
+package export:
+
+```ts
+import {
+  createUserSchema,
+  userSelectSchema,
+  userUpdateSchema,
+} from '@southneuhof/api/src/routes/(authenticated)/users/schema.ts'
+```
+
+The package export maps this path to the same file. Shared API values use
+`@southneuhof/api/src/schema.ts`. Keep `RouteContract` as an `import type` from
+`@southneuhof/api/routes-contract`.
+
+The schema names describe different inputs. `userCreateSchema` is generated
+from the users table for an insert. `createUserSchema` accepts the password and
+role IDs for the custom user create operation. The web users module extends
+that operation schema for the role selector; see its
+[current schema adapter](../../apps/web/src/routes/%28authenticated%29/settings/users/users.schema.ts).
+Do not read schema values from a Sprindle entity.
+
+Normal Vite dev/build checks the resolved web runtime graph. Dependency
+optimization and worker bundles use the same boundary. The real
+[schema graph proof](../../scripts/web-schema-boundary.test.mjs) covers these
+imports. It proves dependency portability; it does not prove API authorization
+or rendered behavior.
 
 ## Route ownership
 
@@ -44,31 +78,44 @@ The detail page remains visible for a child section. Use named route tabs for
 several child sections. Route files and Back targets must follow
 [the file-routing convention](file-routing.md).
 
-## Raw schemas and surface definitions
+## Schemas and surface definitions
 
-Keep operation schemas local to the module and export their raw Zod values and
-inferred types. The compiled app examples are
+Import backend create, update, and record values from the API module schema.
+Keep web query schemas and form value conversion in the web module. The
+compiled app examples are
 [users.schema.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.schema.ts),
 [users.actions.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.actions.ts),
 and [users.resource.ts](../../apps/web/src/routes/%28authenticated%29/settings/users/users.resource.ts).
-Use the schemas directly in form, table, detail, and operation definitions.
+The web adapter checks returned record and update values against the typed Hono
+route:
+
+```ts
+import {
+  userSelectSchema,
+  userUpdateSchema,
+} from '@southneuhof/api/src/routes/(authenticated)/users/schema.ts'
+import { rpc } from '@/framework/rpc'
+import { checkedHonoRecordSchema, checkedHonoUpdateSchema } from '@/framework/schema'
+
+export const userRecordSchema = checkedHonoRecordSchema(rpc.users, userSelectSchema)
+export const userUpdateFormSchema = checkedHonoUpdateSchema(rpc.users, userUpdateSchema)
+```
+
+The user create form uses `createUserSchema` as its request base and keeps its
+role selector transform and duplicate check in the web adapter. The query
+schema stays in that web module:
 
 ```ts
 import { z } from 'zod/v4'
 import { collectionQueryFields } from '@/framework/hono/collectionQuery'
 
-export const usersRecordSchema = user.schemas.select
-export const usersCreateSchema = user.schemas.create
-export const usersUpdateSchema = user.schemas.update
 export const usersQuerySchema = z.object({
   ...collectionQueryFields,
   sort_by: z.enum(['name', 'email']).optional(),
   statusCode: z.string().optional(),
 })
 
-export type User = z.output<typeof usersRecordSchema>
-export type UserCreate = z.input<typeof usersCreateSchema>
-export type UserUpdate = z.input<typeof usersUpdateSchema>
+export type User = z.output<typeof userRecordSchema>
 ```
 
 Define the three UI surfaces separately. A reusable display fragment is a
@@ -78,7 +125,7 @@ plain object and can be spread into a table column or detail field:
 const statusDisplay = { renderer: 'chip', props: { options: statusLabels } }
 
 const usersTable = defineTable({
-  schema: usersRecordSchema,
+  schema: userRecordSchema,
   labels: userLabels,
   columns: {
     name: { sortable: true },
@@ -87,7 +134,7 @@ const usersTable = defineTable({
 })
 
 const userDetail = defineDetail({
-  schema: usersRecordSchema,
+  schema: userRecordSchema,
   labels: userLabels,
   fields: {
     name: {},
@@ -96,7 +143,7 @@ const userDetail = defineDetail({
 })
 
 const createForm = defineForm({
-  schema: usersCreateSchema,
+  schema: createUserFormSchema,
   labels: userLabels,
   fields: { name: { renderer: 'text' } },
   submit: usersActions.create,
@@ -238,14 +285,8 @@ detail, update, and delete operations. Do not invent IDs for nested pages.
 
 ## Check changes
 
-Run the source checker on a changed module route directory:
-
-```sh
-node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
-```
-
-The checker follows references, aliases, and object spreads in resource surface
-maps. It reports surface keys that are missing from their schema and display
-maps that need a renderer, accessor, or format. It does not prove visual
-acceptance, API authorization, or runtime behavior. Use the focused tests,
-effective `vue-tsc` type check, and source review for those boundaries.
+Run the web lint and type checks plus focused tests for each changed owner. Vue
+types own schema membership and component props. Review displayed values,
+authorization and workflow behavior in source and tests. See the
+[web verification guide](../../.agents/skills/web-ui-surfaces/references/verification.md)
+for lint findings and source review.

@@ -1,5 +1,8 @@
 # Plan 073 removal ledger
 
+Historical evidence from Plan 073. Its UI checker status and checks describe
+the pre-077 tree. Plan 077 removes that owner and sets the current UI checks.
+
 This ledger records the owner search, removals, and checks for Plan 073. The
 previous authoring tools are retired. Agents now write modules from the current
 design, plan, and package contracts.
@@ -31,7 +34,7 @@ opened before its action was selected.
 | `scripts/module-tooling.test.mjs` | Move the worksheet initializer case to its own test file. Move the command-output contract to the evidence test owner. Delete checker-only cases and this mixed file. |
 | `scripts/module-skills.test.mjs` | Keep skill-link, active-skill, API test setup, and evidence-command checks. Remove checks tied to the retired commands and example path. |
 | `scripts/module-evidence.mjs` and `.test.mjs` | Keep. This recorder has no dependency on the retired owners. |
-| `scripts/module-ui-check.mjs` and `.test.mjs` | Keep. These checks inspect real app sources and UI contracts. |
+| `scripts/module-ui-check.mjs` and `.test.mjs` | Keep at the time of Plan 073. Plan 077 supersedes this entry and removes both files; web lint and type checks now own their supported boundaries. |
 | `package.json` | Remove the two retired command aliases. Keep `module:evidence` and the independent tooling test command. |
 | `README.md` | Remove the obsolete manifest workflow and missing guide link. State the direct-authoring handoff. |
 | `AGENTS.md` | Replace the stale module-scaffolding prerequisite with direct application authoring. |
@@ -51,7 +54,7 @@ opened before its action was selected.
 | `docs/resource_system_overhaul/findings/plans/implementation-evidence/baseline-verification.json` | Restore and keep the original result unchanged. The recorded test result describes the baseline run and contains no direct reference to a retired command or source owner. |
 | `plans/carta-module-skill-alignment/reports/tooling.json`, `tooling-final.json` | Retire the source-fingerprint reports. Their hashes cover files removed by this plan. Keep the independent UI report. |
 | `docs/findings/command-code-session-27ba8e55.md` | Keep the coffee-shop transcript. Redact its obsolete CLI instruction, manifest guide link, and three source-file paths; add a notice that this is a targeted redaction and not the original export. |
-| `.github/workflows/module-tooling-validation.yml`, `.github/workflows/web-validation.yml` | Keep. Their selected checks still cover evidence, skills, UI contracts, and app source. They do not depend on the removed commands. |
+| `.github/workflows/module-tooling-validation.yml`, `.github/workflows/web-validation.yml` | Keep. At the time of Plan 073, their selected checks covered evidence, skills, UI contracts, and app source. They do not depend on the removed module commands. |
 | `apps/web/src/components/navigations/CommandPalette.spec.ts` | Remove a stale comment that credited navigation entries to generated modules. Keep the current app navigation assertions unchanged. |
 
 The module CLI also accepted a `routes` manifest. It had no caller outside the
@@ -114,10 +117,10 @@ route artifacts. No commits, pushes, migrations, or seeds were made.
 ## Self-review
 
 The app resource fixtures were duplicates of the real users resource and routes;
-the web type check still compiles those real owners. The source checker lost only
-its generated-output branch and still scans current source, type settings, and
-active documentation. The evidence recorder and UI checker still run through the
-tooling suite. The independent worksheet initializer and command-output case
+the web type check still compiles those real owners. At that time, the source
+checker lost its generated-output branch and scanned app source, type settings,
+and active documentation. Plan 077 later removed that checker. The evidence
+recorder remains independent. The worksheet initializer and command-output case
 remain under their owning tests. The coffee-shop transcript retains its original
 body apart from the targeted command, guide, and source-path redactions; its note
 states that the edited file is not the original export. Both baseline JSON records

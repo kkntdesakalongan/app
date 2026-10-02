@@ -3,12 +3,12 @@ import { and, asc, count, desc, eq, ilike, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { getDb } from '../../../../../db'
 import { requirePermission } from '../../../../../identity'
-import { permissions } from '../../../permissions/permissions.entity'
-import { rolePermissions, roles } from '../../roles.entity'
+import { permissions } from '../../../permissions/permissions.table'
+import { rolePermissions, roles } from '../../roles.table'
 
 const querySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(10),
+  limit: z.coerce.number().int().min(1).default(10),
   search: z.string().trim().optional(),
   sort_by: z.enum(['permissionCode', 'name', 'description', 'assigned']).default('permissionCode'),
   sort: z.enum(['asc', 'desc']).default('asc'),

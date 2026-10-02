@@ -1,5 +1,9 @@
 # Plan 045: Require explicit display for non-string visible fields
 
+> Historical record. Plan 077 removed the source checker used in this plan.
+> The steps and commands below record past evidence; do not run or recreate that
+> checker. Do not follow the implementation instructions below.
+
 > **Implementation instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before moving to the
 > next step. If anything in the "STOP conditions" section occurs, stop and

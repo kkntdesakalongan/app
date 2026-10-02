@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from '@southneuhof/loom/components/base/Button.vue'
 import Icon from '@southneuhof/loom/components/base/Icon.vue'
+import { RouterLink } from 'vue-router'
 definePage({ path: '/:path(.*)' })
 </script>
 

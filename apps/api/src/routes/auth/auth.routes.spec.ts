@@ -3,7 +3,7 @@ import { hashPassword } from 'better-auth/crypto'
 import { eq } from 'drizzle-orm'
 import { app } from '../../app'
 import { closeDb, getDb } from '../../db'
-import { users } from '../(authenticated)/users/users.entity'
+import { users } from '../(authenticated)/users/users.table'
 import { accounts, sessions } from './auth.entity'
 
 function id(prefix: string) {

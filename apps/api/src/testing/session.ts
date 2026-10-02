@@ -3,13 +3,13 @@ import { hashPassword } from 'better-auth/crypto'
 import { getDb, setPoolCloseHook } from '../db'
 import { getAuth } from '../routes/auth/auth'
 import { accounts, sessions } from '../routes/auth/auth.entity'
-import { permissions } from '../routes/(authenticated)/permissions/permissions.entity'
+import { permissions } from '../routes/(authenticated)/permissions/permissions.table'
 import {
   rolePermissions,
   roleAssignments,
   roles,
-} from '../routes/(authenticated)/roles/roles.entity'
-import { users } from '../routes/(authenticated)/users/users.entity'
+} from '../routes/(authenticated)/roles/roles.table'
+import { users } from '../routes/(authenticated)/users/users.table'
 
 export type TestSession = {
   userId: string

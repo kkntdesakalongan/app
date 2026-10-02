@@ -1,6 +1,6 @@
 import { and, eq } from 'drizzle-orm'
 import { getDb } from '../../../../../db'
-import { roleAssignments, roles } from '../../../roles/roles.entity'
+import { roleAssignments, roles } from '../../../roles/roles.table'
 
 export async function listRoleAssignments(userId: string) {
   const db = getDb()

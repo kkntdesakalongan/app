@@ -1,0 +1,2252 @@
+diff --git a/.agents/skills/build-resource-form/references/custom-field-contract.md b/.agents/skills/build-resource-form/references/custom-field-contract.md
+index 3661142..296a189 100644
+--- a/.agents/skills/build-resource-form/references/custom-field-contract.md
++++ b/.agents/skills/build-resource-form/references/custom-field-contract.md
+@@ -1,7 +1,8 @@
+ # Custom field contract
+ 
+ Read this file only after `docs/ui/forms.md` selects a module-owned custom
+-field. The selection decision belongs in that UI contract. Use
++field. Keep the selection decision in the approved design or existing work
++record. Use
+ [form-field-types.md](form-field-types.md) only to confirm that no registered
+ renderer or composite expresses the value.
+ 
+diff --git a/.agents/skills/carta-module-development/SKILL.md b/.agents/skills/carta-module-development/SKILL.md
+index 1a2bda1..e222be8 100644
+--- a/.agents/skills/carta-module-development/SKILL.md
++++ b/.agents/skills/carta-module-development/SKILL.md
+@@ -26,7 +26,8 @@ production, external, or destructive writes need explicit authorization.
+ 4. **Build and prepare a preview.** Read [execution.md](references/execution.md).
+    Complete the API, surface, access, navigation, and required development setup
+    for the first usable result, then finish the remaining requested behavior.
+-5. **Verify and review.** Use [verification-strategy.md](references/verification-strategy.md)
++5. **Verify and review.** Use package lint and type checks plus focused behavior
++   tests for changed owners. Follow [verification-strategy.md](references/verification-strategy.md)
+    and `$verify-carta-module`. Repair in-scope defects and record the verdict.
+    Report source readiness, preview URL and setup status, checks, and gaps.
+    Completion requires the requested result and a recorded `PASS` review.
+diff --git a/.agents/skills/carta-module-plan/SKILL.md b/.agents/skills/carta-module-plan/SKILL.md
+index fdbc9d4..ec9b2f0 100644
+--- a/.agents/skills/carta-module-plan/SKILL.md
++++ b/.agents/skills/carta-module-plan/SKILL.md
+@@ -65,8 +65,8 @@ routine implementation details to the executor.
+ 
+ For full-process work, the worksheet owns acceptance-to-plan and test mappings;
+ plans own technical steps. Apply its dependency rules when defining assignments.
+-Keep exact new tests `PENDING` until implementation supplies them. Record UI
+-composition under the web skill's UI contract rule.
++Keep exact new tests `PENDING` until implementation supplies them. For web
++work, name the selected public surfaces and their route owners in the plan.
+ 
+ ## Review and hand off
+ 
+diff --git a/.agents/skills/carta-module-plan/references/plan-template.md b/.agents/skills/carta-module-plan/references/plan-template.md
+index 23e71ed..2476ed9 100644
+--- a/.agents/skills/carta-module-plan/references/plan-template.md
++++ b/.agents/skills/carta-module-plan/references/plan-template.md
+@@ -43,12 +43,11 @@ preparation and the check that ends each assignment.
+ Include the development migration, required seed and preview URL checkpoint.
+ The first UI result includes all necessary layers; test setup alone is insufficient.
+ 
+-## UI contract
++## Web composition
+ 
+-For changed web surfaces, reference `ui-contract.json` from the
+-[UI contract](../../web-ui-surfaces/references/ui-contract.md). Record the selected
+-component, extension and actual gap once. Review field and relation wiring in
+-source. Browser journeys and E2E work are outside module delivery.
++For web work, name the selected public surfaces and route owners. Link any
++approved requirement that changes the standard design. Review field and
++relation wiring in source.
+ 
+ ## Test strategy
+ 
+diff --git a/.agents/skills/verify-carta-module/SKILL.md b/.agents/skills/verify-carta-module/SKILL.md
+index c96276b..36b6de3 100644
+--- a/.agents/skills/verify-carta-module/SKILL.md
++++ b/.agents/skills/verify-carta-module/SKILL.md
+@@ -42,12 +42,11 @@ Use the relevant layer skill for unresolved contracts. For web work, apply
+ input wiring, readable values, and action ownership. Check forms through
+ `$build-resource-form`; check resource declarations against the
+ [current architecture](../../../docs/resource_system_overhaul/ARCHITECTURE.md).
+-Run the source checker for changed surfaces.
++Run package lint and type checks plus focused behavior tests for changed owners.
+ 
+-Use supported components and operation bags. A custom replacement needs a
+-requirement that their extension points cannot meet. Inspect the whole page;
+-a standard View beside a replacement body does not establish compliance.
+-Check scope and write authority as well as behavior.
++Use supported components and operation bags. Inspect the whole page; a
++standard View beside a replacement body does not establish compliance. Check
++scope and write authority as well as behavior.
+ 
+ ## Evaluate evidence
+ 
+@@ -61,9 +60,7 @@ Framework proof covers unchanged controls; module proof must reach its own rules
+ and coordination. A mock cannot prove the boundary it replaces.
+ 
+ For full-process work, check acceptance coverage and worksheet consistency.
+-Use the [UI contract check](../web-ui-surfaces/references/ui-contract.md) when
+-required by that process, an existing contract, or custom composition. Static
+-checks do not establish semantic acceptance or runtime freshness.
++Use the web skill's linked verification guidance for changed surfaces.
+ 
+ ## Return the verdict
+ 
+diff --git a/.agents/skills/web-ui-surfaces/SKILL.md b/.agents/skills/web-ui-surfaces/SKILL.md
+index 2411f3e..26240fc 100644
+--- a/.agents/skills/web-ui-surfaces/SKILL.md
++++ b/.agents/skills/web-ui-surfaces/SKILL.md
+@@ -44,9 +44,9 @@ when only that primitive is needed. Keep page navigation and completion with
+ the route or View; keep transport in app actions. A wrapper or separate actions
+ file is useful only when it owns behavior.
+ 
+-Use the [UI contract](references/ui-contract.md) for full-process work, an
+-existing contract, or custom composition that needs static checking. Standard
+-work needs no new UI JSON. Review exceptions against the required behavior.
++Use `ListView.actionLabels` for standard Create and row-action wording. Check
++[DESIGN.md](../../../DESIGN.md#controls-and-values) before replacing a standard
++control.
+ 
+ ## Check the result
+ 
+diff --git a/.agents/skills/web-ui-surfaces/references/ui-contract.md b/.agents/skills/web-ui-surfaces/references/ui-contract.md
+deleted file mode 100644
+index a0071c6..0000000
+--- a/.agents/skills/web-ui-surfaces/references/ui-contract.md
++++ /dev/null
+@@ -1,76 +0,0 @@
+-# UI contract check
+-
+-Use [source mode](verification.md) for every changed web surface. Use this
+-additional contract mode for the full process, an existing contract or
+-custom composition that needs it. Ordinary standard Views need no JSON record;
+-inspect their actual output and composition. When selected, record
+-`plans/<feature>/ui-contract.json`. Paths are repository-relative. Select current
+-public exports; default imports use `default`.
+-
+-```json
+-{
+-  "surfaces": [
+-    {
+-      "file": "apps/web/src/routes/items/index.route.vue",
+-      "kind": "list",
+-      "components": [{ "name": "ListView", "from": "@southneuhof/loom" }]
+-    },
+-    {
+-      "file": "apps/web/src/routes/items/detail.route.vue",
+-      "kind": "detail",
+-      "components": [{ "name": "DetailView", "from": "@southneuhof/loom" }]
+-    }
+-  ]
+-}
+-```
+-
+-List each changed route and its local surface components. `kind` is `list`,
+-`detail`, `create`, `update` or `custom`; it describes the user task and determines the required standard View. A workflow
+-record is still `detail`. The checker enforces kind for conventional detail,
+-create and edit route filenames. `custom` is for other surfaces, such as dashboards. `components` names the
+-framework exports that the template must use; an unused import fails. Slots and
+-adjacent sections extend the selected View. A lower-level component needs a `gap`
+-that names the unsupported requirement and local owner. A custom record layout
+-retains `Detail`; cards and a header alone do not meet the record contract. Review that claim against
+-current source. Standard use needs no explanation.
+-
+-A requested standard Create override adds
+-`"extensions": [{"slot": "create-action", "reason": "<required interaction>"}]`.
+-An unused exception fails. Check action text against
+-[DESIGN.md](../../../../DESIGN.md#text-and-spacing). Inspect label props or the
+-app dictionary before replacing a control. Cite the requirement when a control
+-override exists only to change its label.
+-
+-Run from the repository root and preserve the command result:
+-
+-```sh
+-node scripts/module-ui-check.mjs plans/<feature>/ui-contract.json
+-```
+-
+-Exit `0` means the declared static checks pass; `1` means defects; `2` means
+-exceptions need review. The orchestrator resolves each exception against the
+-requirement and component source before acceptance. Label self-review when an
+-independent reviewer is unavailable or the user requests direct work.
+-
+-The checker uses the installed Vue parser. It checks template component bindings,
+-selected imports in template use, and declared Create overrides. It reports
+-each native `button`, visible `input`, `select`, and `textarea` as a review
+-item with file and line, since any of them can replace a shared control.
+-A literal `type="hidden"` input carries state rather than an interaction and
+-stays silent; any other type source (absent, dynamic, spread) needs review.
+-Vue built-ins
+-and Vue Router components are recognized; confirm the app installs its router.
+-For explicit globals, add `"globals": [{"tag": "SharedWidget", "registration":
+-"apps/web/src/main.ts"}]`. The checker requires a literal `.component()` call;
+-the reviewer confirms that registration runs. Type declarations and test stubs
+-are not runtime registration.
+-
+-Dynamic components, plugin registration and aliases outside supported syntax
+-need source review or a focused extension to the checker. A binding check cannot
+-prove that an imported module exports the symbol; run the app type check too.
+-A review item is not a defect: open the file and line, compare the native
+-control against the shared controls, and either replace it with the shared
+-control or keep it for the named requirement in the surface `gap`.
+-Compare the contract with the complete changed file list. Inspect file renderers,
+-slots and adjacent sections; a token View beside a replacement body is a defect.
+-A static pass does not prove requirement coverage, runtime behavior or acceptance.
+diff --git a/.agents/skills/web-ui-surfaces/references/verification.md b/.agents/skills/web-ui-surfaces/references/verification.md
+index 8a6cd99..d716ba4 100644
+--- a/.agents/skills/web-ui-surfaces/references/verification.md
++++ b/.agents/skills/web-ui-surfaces/references/verification.md
+@@ -2,19 +2,14 @@
+ 
+ Use the shared [verification strategy](../../carta-module-development/references/verification-strategy.md).
+ Module delivery excludes E2E generation, execution, repair and manual journeys.
+-Run relevant type checks, lint and existing focused non-browser checks.
++Run the web type check and lint plus relevant focused non-browser checks. Fix
++component resolution and casing errors with public imports or runtime
++registration.
+ 
+-Run the source check on each changed module route directory and any changed
+-local Vue component outside it. This includes standard Views and custom actions:
+-
+-```sh
+-node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
+-```
+-
+-This check needs no JSON contract. Resolve each failed binding and review each
+-native control against the shared component contract. Exit `2` needs source
+-review; it is not a pass. Use the contract mode below for explicit globals or
+-declared composition exceptions.
++Normal and focused ESLint show warnings for native controls and standard
++replacement slots. Treat each warning as a review signal against
++[DESIGN.md](../../../../DESIGN.md#controls-and-values). A warning does not prove
++a defect or approve an exception.
+ 
+ Review source for readable values for every visible field, edit loading,
+ field dependencies, filter wiring, access declarations and standard actions.
+@@ -26,8 +21,8 @@ For custom integration, trace the complete boundary: query to collection result,
+ field definition to control and submitted value, and write completion to dialog
+ state, feedback and affected data refresh. Check the application composition,
+ even when each framework component is already tested. Use the focused proof
+-rules in the shared verification strategy. A source-check pass proves only the
+-checks that the tool reports.
++rules in the shared verification strategy. Each lint and type check proves
++only its declared checks.
+ 
+ Review custom composition against the
+ [framework-first rule](../SKILL.md#framework-first-composition).
+@@ -35,11 +30,8 @@ Each custom block must meet a requirement not met by the standard components.
+ Compare the complete page with [DESIGN.md](../../../../DESIGN.md). Check the
+ applicable page structure, actions, controls, displayed values, text, and access
+ rules. In the existing review, cite the design sections checked and report
+-required exceptions with their authority. The source checker does not prove
+-these design rules. Record a defect when the source breaks them, even if a
+-standard View is also present.
+-Use the [UI contract check](ui-contract.md) when an existing contract or custom
+-composition needs it. Standard work needs no new JSON solely for review.
++required exceptions with their authority. Record a defect when the source breaks
++them, even if a standard View is also present.
+ For routing, use [file routing](file-routing.md#verify-changed-behavior).
+ 
+ Report which checks ran and state that actual rendered behavior was not verified.
+diff --git a/DESIGN.md b/DESIGN.md
+index 81f3c45..1610243 100644
+--- a/DESIGN.md
++++ b/DESIGN.md
+@@ -82,10 +82,10 @@ coordinate the same dialog.
+ 
+ ## Controls and values
+ 
+-Use shared buttons, chips, forms, file inputs, and feedback components for
+-standard interactions, including custom business actions. A custom action does
+-not require custom controls. Import each component from its public export, or
+-verify its runtime registration.
++Use shared controls and keep their standard designs. Customize only for an
++explicit user request or a required interaction they cannot support. Change
++wording through label configuration. Import components from public exports or
++verify their runtime registration.
+ 
+ Choose display behavior for every visible field. Use a reusable display
+ fragment when several fields share a renderer, accessor, or format. Pass the
+diff --git a/apps/api/src/routes/(authenticated)/roles/[roleId]/permissions/+server.ts b/apps/api/src/routes/(authenticated)/roles/[roleId]/permissions/+server.ts
+index f55e9f6..c0d36fe 100644
+--- a/apps/api/src/routes/(authenticated)/roles/[roleId]/permissions/+server.ts
++++ b/apps/api/src/routes/(authenticated)/roles/[roleId]/permissions/+server.ts
+@@ -8,7 +8,7 @@ import { rolePermissions, roles } from '../../roles.entity'
+ 
+ const querySchema = z.object({
+   page: z.coerce.number().int().min(1).default(1),
+-  limit: z.coerce.number().int().min(1).max(100).default(10),
++  limit: z.coerce.number().int().min(1).default(10),
+   search: z.string().trim().optional(),
+   sort_by: z.enum(['permissionCode', 'name', 'description', 'assigned']).default('permissionCode'),
+   sort: z.enum(['asc', 'desc']).default('asc'),
+diff --git a/apps/api/src/routes/(authenticated)/roles/role-mapping.routes.spec.ts b/apps/api/src/routes/(authenticated)/roles/role-mapping.routes.spec.ts
+index 6059d50..6f17447 100644
+--- a/apps/api/src/routes/(authenticated)/roles/role-mapping.routes.spec.ts
++++ b/apps/api/src/routes/(authenticated)/roles/role-mapping.routes.spec.ts
+@@ -38,7 +38,10 @@ it('paginates active permissions and protects mapping writes', async () => {
+     expect(sorted.data.map((row: { id: string }) => row.id)).toEqual([fixtures[10]!.id, fixtures[9]!.id])
+     const tied = await (await request(`?search=${prefix}&limit=2&sort_by=name&sort=desc`)).json()
+     expect(tied.data.map((row: { id: string }) => row.id)).toEqual([fixtures[0]!.id, fixtures[1]!.id])
+-    for (const query of ['page=0', 'page=1.5', 'limit=0', 'limit=101', 'limit=bad', 'sort_by=unknown', 'sort=bad']) {
++    const large = await request(`?search=${prefix}&limit=1000`)
++    expect(large.status).toBe(200)
++    expect(await large.json()).toMatchObject({ total: 11, data: fixtures.slice(0, 11).map(({ id }) => ({ id, assigned: false })) })
++    for (const query of ['page=0', 'page=1.5', 'limit=0', 'limit=bad', 'sort_by=unknown', 'sort=bad']) {
+       expect((await request(`?${query}`)).status, query).toBe(400)
+     }
+     expect((await request('', '')).status).toBe(401)
+diff --git a/apps/web/.eslintrc.cjs b/apps/web/.eslintrc.cjs
+index 6976151..c067ee0 100644
+--- a/apps/web/.eslintrc.cjs
++++ b/apps/web/.eslintrc.cjs
+@@ -10,6 +10,27 @@ module.exports = {
+   },
+   rules: {
+     'no-extra-semi': 'off',
++    'vue/no-undef-components': 'error',
++    'vue/component-name-in-template-casing': ['error', 'PascalCase', { registeredComponentsOnly: false }],
++    'vue/no-restricted-syntax': [
++      'warn',
++      {
++        selector: "VElement[rawName='button']",
++        message: 'Review this native control against DESIGN.md#controls-and-values.',
++      },
++      {
++        selector: "VElement[rawName='input']:not(:has(VStartTag:has(VAttribute[key.name='type'][value.value='hidden'])))",
++        message: 'Review this native control against DESIGN.md#controls-and-values.',
++      },
++      {
++        selector: "VElement[rawName='select'], VElement[rawName='textarea']",
++        message: 'Review this native control against DESIGN.md#controls-and-values.',
++      },
++      {
++        selector: "VAttribute[directive=true][key.name.name='slot'][key.argument.name=/^(create-action|row-actions|row-actions-view|row-actions-edit|row-actions-delete|actions)$/]",
++        message: 'Review this standard-control replacement against DESIGN.md#controls-and-values.',
++      },
++    ],
+   },
+   overrides: [
+     {
+diff --git a/apps/web/package.json b/apps/web/package.json
+index 577c0ad..81bb2ab 100644
+--- a/apps/web/package.json
++++ b/apps/web/package.json
+@@ -13,7 +13,7 @@
+     "routes:generate": "node scripts/generate-route-types.mjs",
+     "type-check": "node scripts/ensure-routes-contract.mjs && pnpm run routes:generate && vue-tsc --noEmit --incremental -p tsconfig.vitest.json",
+     "lint": "oxlint . --ignore-path ../../.gitignore && run-p lint:eslint format:check",
+-    "lint:focused": "sh -c 'if [ \"$1\" = \"--\" ]; then shift; fi; oxlint --quiet --ignore-path ../../.gitignore \"$@\" && eslint --quiet --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path ../../.gitignore \"$@\" && exec oxfmt --check \"$@\"' --",
++    "lint:focused": "sh -c 'if [ \"$1\" = \"--\" ]; then shift; fi; oxlint --quiet --ignore-path ../../.gitignore \"$@\" && eslint --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path ../../.gitignore \"$@\" && exec oxfmt --check \"$@\"' --",
+     "lint:eslint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --ignore-path ../../.gitignore",
+     "lint:check": "pnpm run lint",
+     "lint:fix": "oxlint . --fix --ignore-path ../../.gitignore && eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path ../../.gitignore && oxfmt '**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}'",
+diff --git a/apps/web/src/components/navigations/GlobalToolbar.vue b/apps/web/src/components/navigations/GlobalToolbar.vue
+index 4ed7c50..052dfb5 100644
+--- a/apps/web/src/components/navigations/GlobalToolbar.vue
++++ b/apps/web/src/components/navigations/GlobalToolbar.vue
+@@ -1,6 +1,6 @@
+ <script setup lang="ts">
+ import { computed } from 'vue'
+-import { useRoute, useRouter } from 'vue-router'
++import { RouterLink, useRoute, useRouter } from 'vue-router'
+ import { visibleNavigation } from '@/manifest'
+ import { allowsPermission } from '@/framework/adapters/bundle'
+ import Logo from '@/assets/corporate/common/Logo.vue'
+diff --git a/apps/web/src/components/navigations/sidebar/drawer/NavigationDrawer.vue b/apps/web/src/components/navigations/sidebar/drawer/NavigationDrawer.vue
+index 5e71265..13218d3 100644
+--- a/apps/web/src/components/navigations/sidebar/drawer/NavigationDrawer.vue
++++ b/apps/web/src/components/navigations/sidebar/drawer/NavigationDrawer.vue
+@@ -1,6 +1,6 @@
+ <script setup lang="ts">
+ import { computed, onBeforeUnmount, ref, watch } from 'vue'
+-import { useRoute } from 'vue-router'
++import { RouterLink, useRoute } from 'vue-router'
+ import { onClickOutside } from '@vueuse/core'
+ import { visibleNavigation } from '@/manifest'
+ import { allowsPermission } from '@/framework/adapters/bundle'
+diff --git a/apps/web/src/components/navigations/sidebar/rail/Sidebar.vue b/apps/web/src/components/navigations/sidebar/rail/Sidebar.vue
+index a688d51..96ad29d 100644
+--- a/apps/web/src/components/navigations/sidebar/rail/Sidebar.vue
++++ b/apps/web/src/components/navigations/sidebar/rail/Sidebar.vue
+@@ -1,6 +1,6 @@
+ <script setup lang="ts">
+ import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+-import { useRoute, useRouter } from 'vue-router'
++import { RouterLink, useRoute, useRouter } from 'vue-router'
+ import { activeNavigationModule, matchesNavigationPath, visibleNavigation, type VisibleNavigationModule, type VisibleNavigationRoute } from '@/manifest'
+ import { allowsPermission } from '@/framework/adapters/bundle'
+ import Icon from '@southneuhof/loom/components/base/Icon.vue'
+diff --git a/apps/web/src/components/routing/Tabs.vue b/apps/web/src/components/routing/Tabs.vue
+index d5ff56d..87792c6 100644
+--- a/apps/web/src/components/routing/Tabs.vue
++++ b/apps/web/src/components/routing/Tabs.vue
+@@ -4,7 +4,7 @@
+  * Named route tabs owned explicitly by parent layouts.
+  */
+ import { computed, watchEffect } from 'vue'
+-import { useRoute, useRouter, type RouteRecordNormalized } from 'vue-router'
++import { RouterLink, useRoute, useRouter, type RouteRecordNormalized } from 'vue-router'
+ import { useResourceRuntime } from '@southneuhof/loom'
+ import Card from '@southneuhof/loom/components/base/Card.vue'
+ import type { RouteTab } from '@/router/tabs'
+diff --git a/apps/web/src/routes/not-found.route.vue b/apps/web/src/routes/not-found.route.vue
+index e1d8477..00367da 100644
+--- a/apps/web/src/routes/not-found.route.vue
++++ b/apps/web/src/routes/not-found.route.vue
+@@ -1,6 +1,7 @@
+ <script setup lang="ts">
+ import Button from '@southneuhof/loom/components/base/Button.vue'
+ import Icon from '@southneuhof/loom/components/base/Icon.vue'
++import { RouterLink } from 'vue-router'
+ definePage({ path: '/:path(.*)' })
+ </script>
+ 
+diff --git a/apps/web/tsconfig.app.json b/apps/web/tsconfig.app.json
+index ce1e94d..8038ce8 100644
+--- a/apps/web/tsconfig.app.json
++++ b/apps/web/tsconfig.app.json
+@@ -12,7 +12,8 @@
+     "src/**/__tests__/*",
+     "../../packages/sdk/src/__tests__/*",
+     "../../packages/loom/src/**/__tests__/*",
+-    "../../packages/utilities/src/**/__tests__/*"
++    "../../packages/utilities/src/**/__tests__/*",
++    "../../packages/loom/src/**/__type-tests__/**/*"
+   ],
+   "compilerOptions": {
+     "strictNullChecks": true,
+@@ -66,7 +67,7 @@
+     "checkUnknownProps": true,
+     "checkUnknownEvents": false,
+     "checkUnknownDirectives": false,
+-    "checkUnknownComponents": false,
++    "checkUnknownComponents": true,
+     "checkUnknownSlots": true,
+     "checkUnknownAttributes": false
+   }
+diff --git a/apps/web/tsconfig.vitest.json b/apps/web/tsconfig.vitest.json
+index d85294b..67f8b9a 100644
+--- a/apps/web/tsconfig.vitest.json
++++ b/apps/web/tsconfig.vitest.json
+@@ -3,7 +3,8 @@
+   "exclude": [
+     "../../packages/sdk/src/__tests__/*",
+     "../../packages/loom/src/**/__tests__/*",
+-    "../../packages/utilities/src/**/__tests__/*"
++    "../../packages/utilities/src/**/__tests__/*",
++    "../../packages/loom/src/**/__type-tests__/**/*"
+   ],
+   "compilerOptions": {
+     "lib": ["DOM", "es2022"],
+diff --git a/docs/architecture/web-application-architecture.md b/docs/architecture/web-application-architecture.md
+index a41adb9..1bd7dad 100644
+--- a/docs/architecture/web-application-architecture.md
++++ b/docs/architecture/web-application-architecture.md
+@@ -238,14 +238,8 @@ detail, update, and delete operations. Do not invent IDs for nested pages.
+ 
+ ## Check changes
+ 
+-Run the source checker on a changed module route directory:
+-
+-```sh
+-node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
+-```
+-
+-The checker follows references, aliases, and object spreads in resource surface
+-maps. It reports surface keys that are missing from their schema and display
+-maps that need a renderer, accessor, or format. It does not prove visual
+-acceptance, API authorization, or runtime behavior. Use the focused tests,
+-effective `vue-tsc` type check, and source review for those boundaries.
++Run the web lint and type checks plus focused tests for each changed owner. Vue
++types own schema membership and component props. Review displayed values,
++authorization and workflow behavior in source and tests. See the
++[web verification guide](../../.agents/skills/web-ui-surfaces/references/verification.md)
++for lint findings and source review.
+diff --git a/docs/resource_system_overhaul/ARCHITECTURE.md b/docs/resource_system_overhaul/ARCHITECTURE.md
+index 33625c4..de93e79 100644
+--- a/docs/resource_system_overhaul/ARCHITECTURE.md
++++ b/docs/resource_system_overhaul/ARCHITECTURE.md
+@@ -30,7 +30,7 @@ These bindings are literal template expressions in the [users list route](../../
+ | 3. Define surfaces | Use defineForm for an editor, defineTable for a collection, and defineDetail for a record display. Use only the surfaces the page needs. | Every form entry names a renderer. Tables and details use record keys; forms use input keys. The users module is the compiled example. |
+ | 4. Bind operations | Use one defineResource object for supported standard operations. Keep list and create bags static. Bind detail, update, and delete to a resource identity. | An update form maps the loaded record to its input draft. An update-only resource does not need a visible detail operation. |
+ | 5. Compose the route | Pass the resource bag to ListView, DetailView, or FormView. Let the route own page-specific workflow. | The [users list](../../apps/web/src/routes/%28authenticated%29/settings/users/index.route.vue), [create](../../apps/web/src/routes/%28authenticated%29/settings/users/create.route.vue), [detail](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/detail.route.vue), and [edit](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/edit.route.vue) routes show the current page bindings. |
+-| 6. Check the module | Run the source check on the changed route folder, the focused behavior tests, and the app type check. | The current command and compiled contract fixtures are in [Verification](#10-type-and-runtime-verification) and the [Loom examples](../../packages/loom/README.md#executable-examples). |
++| 6. Check the module | Run ordinary app lint and type checks plus focused behavior tests for changed owners. Review field and relation wiring in source. | Use [web verification](../../.agents/skills/web-ui-surfaces/references/verification.md) and the [Loom examples](../../packages/loom/README.md#executable-examples). |
+ 
+ ## 1. Target contract
+ 
+@@ -369,13 +369,7 @@ Use the Loom package type check for component and resource contracts. Use the we
+ 
+ ### 10.2 Runtime diagnostics
+ 
+-Run the architecture gate after a contract or authoring-guide change. For a changed application module, run the module UI source check and focused tests for the owner changed. The source-check command is:
+-
+-~~~sh
+-node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
+-~~~
+-
+-Read the error at its declared boundary. A static pass does not validate external records or prove a server access policy.
++Run the architecture gate after a contract or authoring-guide change. For a changed application module, run web lint and type checks plus focused tests for the changed owner. Read each diagnostic at its declared boundary. These checks do not validate external records or prove a server access policy.
+ 
+ ### 10.3 Decisive integration tests
+ 
+diff --git a/docs/ui/collections.md b/docs/ui/collections.md
+index 4859016..7dbfd40 100644
+--- a/docs/ui/collections.md
++++ b/docs/ui/collections.md
+@@ -141,8 +141,7 @@ uses one joined-relation accessor in Table, TreeTable, Detail, and extracted
+ resource bags. The [export fixture](../../packages/loom/src/services/__tests__/export.spec.ts)
+ checks the same accessor and format in workbook output.
+ 
+-Run the source checker after resource changes:
+-
+-```sh
+-node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
+-```
++Use the Loom and web type checks to verify surface keys and component props.
++Run web lint and focused behavior tests for changed app owners. Review route
++targets, displayed values and access rules in source. See the
++[web verification guide](../../.agents/skills/web-ui-surfaces/references/verification.md).
+diff --git a/packages/loom/README.md b/packages/loom/README.md
+index ccc60ec..829789b 100644
+--- a/packages/loom/README.md
++++ b/packages/loom/README.md
+@@ -196,7 +196,8 @@ visibility.
+ ## Executable examples
+ 
+ Use these fixtures as current contract examples. They exercise real components
+-and application source. The Loom and web type checks compile the type fixtures.
++and application source. Loom checks its type fixtures; the web type check checks
++application source.
+ 
+ | Contract | Fixture |
+ |---|---|
+@@ -210,15 +211,10 @@ and application source. The Loom and web type checks compile the type fixtures.
+ 
+ ## Checks and exports
+ 
+-Run the checker on changed route directories:
+-
+-```sh
+-node scripts/module-ui-check.mjs --sources 'apps/web/src/routes/(authenticated)/<module>'
+-```
+-
+-The checker follows resource surface maps and their local fragments. Review its
+-display messages against returned values and API contracts. A pass does not
+-prove visual acceptance.
++Use Loom and web type checks for surface and app contracts. Run web lint and
++focused tests for changed app owners. The [surface architecture guide](../../docs/resource_system_overhaul/ARCHITECTURE.md)
++and [web verification guide](../../.agents/skills/web-ui-surfaces/references/verification.md)
++describe the current checks.
+ 
+ | Import | Purpose |
+ |---|---|
+diff --git a/packages/loom/scripts/check-contract-diagnostics.mjs b/packages/loom/scripts/check-contract-diagnostics.mjs
+index d66f024..ff63f73 100644
+--- a/packages/loom/scripts/check-contract-diagnostics.mjs
++++ b/packages/loom/scripts/check-contract-diagnostics.mjs
+@@ -17,7 +17,9 @@ const moduleSpecifier = (fromDirectory, targetPath) => {
+   return path.startsWith('.') ? path : `./${path}`
+ }
+ const common = (runDirectory) => `import { defineResource } from ${JSON.stringify(relative(runDirectory, join(packageDirectory, 'src/resources/defineResource')).replaceAll('\\', '/'))}
++import { defineDetail } from ${JSON.stringify(relative(runDirectory, join(packageDirectory, 'src/details/defineDetail')).replaceAll('\\', '/'))}
+ import { defineForm } from ${JSON.stringify(relative(runDirectory, join(packageDirectory, 'src/forms/defineForm')).replaceAll('\\', '/'))}
++import { defineTable } from ${JSON.stringify(relative(runDirectory, join(packageDirectory, 'src/tables/defineTable')).replaceAll('\\', '/'))}
+ import type { RawSchema } from ${JSON.stringify(relative(runDirectory, join(packageDirectory, 'src/contracts/schema')).replaceAll('\\', '/'))}
+ import type { AssetValue } from '@southneuhof/loom/assets'
+ import type { FileManagerValueAdapter, ManagedAsset } from '@southneuhof/loom/file-manager'
+@@ -682,6 +684,80 @@ void resource
+ ]
+ 
+ const surfaceCases = [
++  {
++    name: 'form-fields-use-schema-input',
++    expectedLocation: 'form field absent from schema input',
++    expectedLineOffset: 2,
++    expectedTerms: [],
++    valid: `const sharedFields = { name: { renderer: 'text' } } as const
++const form = defineForm({ schema: draftSchema, fields: { ...sharedFields } })
++void form
++`,
++    invalid: `const sharedFields = { name: { renderer: 'text' } } as const
++defineForm({ schema: draftSchema, fields: { ...sharedFields, missing: { renderer: 'text' } } })
++`,
++  },
++  {
++    name: 'table-columns-use-schema-output',
++    expectedLocation: 'table column absent from schema output',
++    expectedLineOffset: 2,
++    expectedTerms: [],
++    valid: `const sharedColumns = { name: {} }
++const table = defineTable({ schema: rowSchema, columns: { ...sharedColumns, id: {} } })
++void table
++`,
++    invalid: `const sharedColumns = { name: {} }
++defineTable({ schema: rowSchema, columns: { ...sharedColumns, missing: {} } })
++`,
++  },
++  {
++    name: 'detail-fields-use-schema-output',
++    expectedLocation: 'detail field absent from schema output',
++    expectedLineOffset: 2,
++    expectedTerms: [],
++    valid: `const sharedFields = { name: {} }
++const detail = defineDetail({ schema: rowSchema, fields: { ...sharedFields, id: {} } })
++void detail
++`,
++    invalid: `const sharedFields = { name: {} }
++defineDetail({ schema: rowSchema, fields: { ...sharedFields, missing: {} } })
++`,
++  },
++  {
++    name: 'display-accessor-path-must-exist',
++    expectedLocation: 'display accessor reads a missing record property',
++    expectedLineOffset: 3,
++    expectedTerms: ['missing'],
++    valid: `const table = defineTable({
++  schema: rowSchema,
++  columns: { displayName: { read: (record: Row) => record.name } },
++})
++void table
++`,
++    invalid: `defineTable({
++  schema: rowSchema,
++  columns: { displayName: { read: (record: Row) => record.missing } },
++})
++`,
++  },
++  {
++    name: 'typed-derived-display-key-needs-read',
++    expectedLocation: 'derived display key without an accessor',
++    expectedLineOffset: 1,
++    expectedTerms: [],
++    valid: `const table = defineTable({
++  schema: rowSchema,
++  columns: { displayName: { read: (record: Row) => record.name.toUpperCase() } },
++})
++const detail = defineDetail({
++  schema: rowSchema,
++  fields: { displayName: { read: (record: Row) => record.name.toUpperCase() } },
++})
++void [table, detail]
++`,
++    invalid: `defineTable({ schema: rowSchema, columns: { displayName: {} } })
++`,
++  },
+   {
+     name: 'collection-both-sources',
+     expectedLocation: 'Collection both data and load',
+diff --git a/packages/loom/src/components/views/ListView.vue b/packages/loom/src/components/views/ListView.vue
+index d766a79..332972c 100644
+--- a/packages/loom/src/components/views/ListView.vue
++++ b/packages/loom/src/components/views/ListView.vue
+@@ -536,11 +536,11 @@ const customActions = computed<ListViewSlotActions<TRecord>>(() => ({
+             </div>
+           </div>
+           <div v-if="surface.createRoute || $slots['resource-action']" class="flex flex-row justify-end gap-2">
+-            <template v-if="surface.createRoute">
++            <template v-if="surface.createRoute && (surface.can?.('create') ?? true)">
+               <slot name="create-action" v-bind="{ can: surface.can, target: surface.createRoute }">
+-                <RouterLink v-if="surface.can?.('create') ?? true" :to="surface.createRoute">
++                <RouterLink :to="surface.createRoute">
+                   <Button>
+-                    <template #icon><Icon name="add" /></template>Create
++                    <template #icon><Icon name="add" /></template>{{ props.actionLabels?.create ?? 'Create' }}
+                   </Button>
+                 </RouterLink>
+               </slot>
+@@ -588,7 +588,7 @@ const customActions = computed<ListViewSlotActions<TRecord>>(() => ({
+                     class="flex items-center justify-end gap-1"
+                     aria-label="Row actions"
+                   >
+-                    <template v-if="surface.detailRoute?.(record)">
++                    <template v-if="surface.detailRoute?.(record) && (surface.can?.('detail', record) ?? true)">
+                       <slot name="row-actions-view" v-bind="{ record, can: surface.can, target: surface.detailRoute(record)! }">
+                         <RouterLink
+                           v-slot="{ href, navigate }"
+@@ -599,7 +599,7 @@ const customActions = computed<ListViewSlotActions<TRecord>>(() => ({
+                             kind="icon"
+                             variant="standard"
+                             :href="href"
+-                            ariaLabel="View"
++                            :ariaLabel="props.actionLabels?.view ?? 'View'"
+                             @click.stop="navigate"
+                           >
+                             <template #icon><Icon name="eye" size="base" /></template>
+@@ -607,7 +607,7 @@ const customActions = computed<ListViewSlotActions<TRecord>>(() => ({
+                         </RouterLink>
+                       </slot>
+                     </template>
+-                    <template v-if="surface.updateRoute?.(record)">
++                    <template v-if="surface.updateRoute?.(record) && (surface.can?.('update', record) ?? true)">
+                       <slot name="row-actions-edit" v-bind="{ record, can: surface.can, target: surface.updateRoute(record)! }">
+                         <RouterLink
+                           v-slot="{ href, navigate }"
+@@ -618,7 +618,7 @@ const customActions = computed<ListViewSlotActions<TRecord>>(() => ({
+                             kind="icon"
+                             variant="standard"
+                             :href="href"
+-                            ariaLabel="Edit"
++                            :ariaLabel="props.actionLabels?.edit ?? 'Edit'"
+                             @click.stop="navigate"
+                           >
+                             <template #icon><Icon name="edit" size="base" /></template>
+@@ -641,7 +641,7 @@ const customActions = computed<ListViewSlotActions<TRecord>>(() => ({
+                               kind="icon"
+                               variant="standard"
+                               color="error"
+-                              ariaLabel="Delete"
++                              :ariaLabel="props.actionLabels?.delete ?? 'Delete'"
+                               @click.stop
+                             >
+                               <template #icon><Icon name="delete-bin" size="base" /></template>
+diff --git a/packages/loom/src/components/views/__tests__/views.spec.ts b/packages/loom/src/components/views/__tests__/views.spec.ts
+index d2d236b..dc89bfe 100644
+--- a/packages/loom/src/components/views/__tests__/views.spec.ts
++++ b/packages/loom/src/components/views/__tests__/views.spec.ts
+@@ -1530,19 +1530,20 @@ describe('ListView standard action overrides', () => {
+     },
+   }
+ 
+-  function mountWith(slots: Record<string, unknown>) {
++  function mountWith(slots: Record<string, unknown>, overrides: Record<string, unknown> = {}) {
+     return mountCore(
+       ListView,
+       {
+         ...baseProps,
+         table: { ...baseProps.table, load: () => ({ data: [{ id: '1', name: 'Admin' }], meta: { total: 1, totalPage: 1 } }) },
+         createRoute: { name: 'test-route' },
+-        detailRoute: (record: Record<string, unknown>) => ({ name: 'test-route', params: { id: String(record.id) } }),
+-        updateRoute: (record: Record<string, unknown>) => ({ name: 'test-route', params: { id: String(record.id) } }),
++        detailRoute: (record: Record<string, unknown>) => `/records/${String(record.id)}`,
++        updateRoute: (record: Record<string, unknown>) => `/records/${String(record.id)}/edit`,
+         can: (operation: string, record?: Record<string, unknown>) =>
+-          operation === 'delete' ? record?.id === '1' : operation === 'create',
++          operation === 'delete' ? record?.id === '1' : ['create', 'detail', 'update'].includes(operation),
+         deleteRecord: async () => undefined,
+         recordIdentity: (record: Record<string, unknown>) => String(record.id),
++        ...overrides,
+       },
+       { slots },
+     )
+@@ -1577,6 +1578,24 @@ describe('ListView standard action overrides', () => {
+     view.unmount()
+   })
+ 
++  it('does not render view or edit replacements when their record access is denied', async () => {
++    const view = mountWith({
++      'row-actions-view': () => h('span', { class: 'ov-view' }, 'V'),
++      'row-actions-edit': () => h('span', { class: 'ov-edit' }, 'E'),
++      'row-actions-delete': () => h('span', { class: 'ov-del' }, 'D'),
++    }, {
++      can: (operation: string, record?: Record<string, unknown>) =>
++        operation === 'create' || (operation === 'delete' && record?.id === '1'),
++    })
++    await flush()
++    expect(view.find('.ov-view')).toBeNull()
++    expect(view.find('.ov-edit')).toBeNull()
++    expect(view.find('.ov-del')).not.toBeNull()
++    expect(view.find('a[aria-label="View"]')).toBeNull()
++    expect(view.find('a[aria-label="Edit"]')).toBeNull()
++    view.unmount()
++  })
++
+   it('replaces the toolbar Create button via #create-action', async () => {
+     let createCan: unknown
+     const view = mountWith({
+@@ -1593,22 +1612,88 @@ describe('ListView standard action overrides', () => {
+     view.unmount()
+   })
+ 
+-  it('hides create override content when no create route is permitted', async () => {
++  it('hides a denied Create replacement while keeping resource actions available', async () => {
++    const createAction = vi.fn(() => h('span', { class: 'ov-create' }, 'should-not-render'))
+     const view = mountCore(
+       ListView,
+       {
+         ...baseProps,
+         table: { ...baseProps.table, load: () => ({ data: [{ id: '1', name: 'Admin' }], meta: { totalPage: 1 } }) },
++        createRoute: { name: 'test-route' },
++        can: () => false,
+       },
+       {
+         slots: {
+-          'create-action': () => h('span', { class: 'ov-create' }, 'should-not-render'),
++          'create-action': createAction,
++          'resource-action': () => h('span', { class: 'ov-resource' }, 'Independent action'),
+         },
+       },
+     )
+     await flush()
+     expect(view.find('.ov-create')).toBeNull()
+     expect(view.text()).not.toContain('should-not-render')
++    expect(view.find('.ov-resource')).not.toBeNull()
++    expect(createAction).not.toHaveBeenCalled()
++    view.unmount()
++  })
++
++  it('does not render the default Create control when create access is denied', async () => {
++    const view = mountWith({}, { can: () => false })
++    await flush()
++    expect(view.find('a[href="/"]')).toBeNull()
++    expect(view.text()).not.toContain('Create')
++    view.unmount()
++  })
++
++  it('updates Create visibility when permission changes', async () => {
++    const canCreate = ref(false)
++    const createAction = vi.fn(() => h('span', { class: 'ov-create' }, 'New sale'))
++    const Host = defineComponent({
++      setup(_, { slots }) {
++        return () => h(ListView, {
++          ...baseProps,
++          table: { ...baseProps.table, data: [] },
++          createRoute: { name: 'test-route' },
++          can: (operation: string) => operation !== 'create' || canCreate.value,
++        }, slots)
++      },
++    })
++    const view = mountCore(Host, {}, {
++      slots: { 'create-action': createAction },
++    })
++    await flush()
++    expect(view.find('.ov-create')).toBeNull()
++    expect(createAction).not.toHaveBeenCalled()
++    canCreate.value = true
++    await flush()
++    expect(view.find('.ov-create')?.textContent).toBe('New sale')
++    expect(createAction).toHaveBeenCalled()
++    createAction.mockClear()
++    canCreate.value = false
++    await flush()
++    expect(view.find('.ov-create')).toBeNull()
++    expect(createAction).not.toHaveBeenCalled()
++    view.unmount()
++  })
++
++  it('uses action labels for the standard controls and keeps their route targets', async () => {
++    const view = mountWith({}, {
++      actionLabels: {
++        create: 'New Sale',
++        view: 'Open Sale',
++        edit: 'Change Sale',
++        delete: 'Remove Sale',
++      },
++    })
++    await flush()
++
++    const createLink = view.find<HTMLAnchorElement>('a[href="/"]')
++    const viewLink = view.find<HTMLAnchorElement>('a[aria-label="Open Sale"]')
++    const editLink = view.find<HTMLAnchorElement>('a[aria-label="Change Sale"]')
++    expect(createLink?.textContent).toContain('New Sale')
++    expect(viewLink?.getAttribute('href')).toBe('/records/1')
++    expect(editLink?.getAttribute('href')).toBe('/records/1/edit')
++    expect(view.find('button[aria-label="Remove Sale"]')).not.toBeNull()
+     view.unmount()
+   })
+ })
+diff --git a/packages/loom/src/components/views/__type-tests__/list-view.type-test.ts b/packages/loom/src/components/views/__type-tests__/list-view.type-test.ts
+index 6599003..ca0c11f 100644
+--- a/packages/loom/src/components/views/__type-tests__/list-view.type-test.ts
++++ b/packages/loom/src/components/views/__type-tests__/list-view.type-test.ts
+@@ -35,6 +35,7 @@ const transformedFilters = {
+ 
+ ListView({ table, filters: transformedFilters })
+ ListView({ table: { ...table, reorderable: true } })
++ListView({ table, actionLabels: { create: 'New Sale', view: 'Open Sale' } })
+ 
+ const identityWithoutDelete = { table, recordIdentity: (record: Role) => record.id }
+ type IdentityRequiresDelete = Assert<Equal<typeof identityWithoutDelete extends ListViewProps<Role, RoleQuery> ? true : false, false>>
+diff --git a/packages/loom/src/contracts/__type-tests__/surface-definitions.type-test.ts b/packages/loom/src/contracts/__type-tests__/surface-definitions.type-test.ts
+index d7b347e..2fbf442 100644
+--- a/packages/loom/src/contracts/__type-tests__/surface-definitions.type-test.ts
++++ b/packages/loom/src/contracts/__type-tests__/surface-definitions.type-test.ts
+@@ -78,6 +78,12 @@ const goodTable = defineTable({
+   },
+ })
+ const goodDetail = defineDetail({ schema: schemaUser, fields: { displayName: sharedName } })
++const sharedFormFields = { name: { renderer: 'text' } } as const
++const goodSpreadForm = defineForm({ schema: schemaUser, fields: { ...sharedFormFields } })
++const sharedTableColumns = { name: {} } as const
++const goodSpreadTable = defineTable({ schema: schemaUser, columns: { ...sharedTableColumns } })
++const sharedDetailFields = { name: {} } as const
++const goodSpreadDetail = defineDetail({ schema: schemaUser, fields: { ...sharedDetailFields } })
+ 
+ const userRoleReadSchema = z4.object({
+   id: z4.string(),
+@@ -225,6 +231,9 @@ void [
+   input3,
+   submitted3,
+   submitted4,
++  goodSpreadForm,
++  goodSpreadTable,
++  goodSpreadDetail,
+   readRoleNames,
+   nullableDraft,
+   draftShape,
+diff --git a/packages/loom/src/contracts/views.ts b/packages/loom/src/contracts/views.ts
+index 637ad91..f785777 100644
+--- a/packages/loom/src/contracts/views.ts
++++ b/packages/loom/src/contracts/views.ts
+@@ -69,6 +69,7 @@ export type ListViewSlotActions<TRecord extends object = Record<string, unknown>
+ export type ListViewProps<TRecord extends object = Record<string, unknown>, TQuery extends object = Record<string, unknown>, TFilterInput extends object = Partial<TQuery>> = {
+   title?: string
+   description?: string
++  actionLabels?: Partial<Record<'create' | 'view' | 'edit' | 'delete', string>>
+   filters?: ListFilters<TQuery, TFilterInput>
+   export?: ListExportOptions<TRecord, TQuery> | false
+   table: TableProps<TRecord, TQuery>
+diff --git a/packages/loom/src/display/__tests__/requirements.spec.ts b/packages/loom/src/display/__tests__/requirements.spec.ts
+index 6e6ee07..8989014 100644
+--- a/packages/loom/src/display/__tests__/requirements.spec.ts
++++ b/packages/loom/src/display/__tests__/requirements.spec.ts
+@@ -1,29 +1,7 @@
+ import { describe, expect, it } from 'vitest'
+-import { displayRequirement, displayValueRequirement } from '../requirements'
++import { displayValueRequirement } from '../requirements'
+ 
+ describe('display requirements', () => {
+-  it('allows scalar fallbacks and unknown schema kinds', () => {
+-    expect(displayRequirement('string', {})).toBeUndefined()
+-    expect(displayRequirement('number', {})).toBeUndefined()
+-    expect(displayRequirement('boolean', {})).toBeUndefined()
+-    expect(displayRequirement('enum', {})).toBeUndefined()
+-    expect(displayRequirement('unknown', {})).toBeUndefined()
+-  })
+-
+-  it('requires a formatter for date schema values', () => {
+-    expect(displayRequirement('date', {})).toBe('date-format')
+-    expect(displayRequirement('date', { renderer: 'date' })).toBe('date-format')
+-    expect(displayRequirement('date', { format: 'date' })).toBeUndefined()
+-  })
+-
+-  it('requires an explicit display choice for structured schema values', () => {
+-    expect(displayRequirement('object', {})).toBe('text-or-renderer')
+-    expect(displayRequirement('array', {})).toBe('text-or-renderer')
+-    expect(displayRequirement('object', { read: () => 'Caption' })).toBeUndefined()
+-    expect(displayRequirement('array', { renderer: 'list' })).toBeUndefined()
+-    expect(displayRequirement('object', { format: 'json' })).toBeUndefined()
+-  })
+-
+   it('checks actual values after access and formatting', () => {
+     expect(displayValueRequirement(new Date('2026-01-01T00:00:00Z'), {})).toBe('date-format')
+     expect(displayValueRequirement(new Date('2026-01-01T00:00:00Z'), { renderer: 'date' })).toBe('date-format')
+diff --git a/packages/loom/src/display/requirements.policy.d.mts b/packages/loom/src/display/requirements.policy.d.mts
+deleted file mode 100644
+index 80ff4be..0000000
+--- a/packages/loom/src/display/requirements.policy.d.mts
++++ /dev/null
+@@ -1,12 +0,0 @@
+-type DisplaySchemaKind = 'string' | 'number' | 'boolean' | 'date' | 'enum' | 'object' | 'array' | 'unknown'
+-
+-export interface DisplayRequirementField {
+-  readonly format?: unknown
+-  readonly renderer?: unknown
+-  readonly read?: unknown
+-}
+-
+-export type DisplayRequirement = 'date-format' | 'text-or-renderer'
+-
+-export function displayRequirement(kind: DisplaySchemaKind, field: DisplayRequirementField): DisplayRequirement | undefined
+-export function displayValueRequirement(value: unknown, field: DisplayRequirementField): DisplayRequirement | undefined
+diff --git a/packages/loom/src/display/requirements.policy.mjs b/packages/loom/src/display/requirements.policy.mjs
+deleted file mode 100644
+index 1c1f88c..0000000
+--- a/packages/loom/src/display/requirements.policy.mjs
++++ /dev/null
+@@ -1,19 +0,0 @@
+-const hasValue = value => value !== undefined && value !== null && value !== ''
+-const isStructuredKind = kind => kind === 'object' || kind === 'array'
+-const hasRead = value => typeof value === 'function' || value === true
+-
+-export function displayRequirement(kind, field) {
+-  if (kind === 'date' && !hasValue(field.format)) return 'date-format'
+-  if (isStructuredKind(kind) && !(hasRead(field.read) || hasValue(field.renderer) || hasValue(field.format))) return 'text-or-renderer'
+-  return undefined
+-}
+-
+-export function displayValueRequirement(value, field) {
+-  if (value instanceof Date) {
+-    if (!hasValue(field.format)) return 'date-format'
+-    if (!hasValue(field.renderer)) return 'text-or-renderer'
+-    return undefined
+-  }
+-  if (value === null || value === undefined || ['string', 'number', 'boolean'].includes(typeof value)) return undefined
+-  return hasValue(field.renderer) ? undefined : 'text-or-renderer'
+-}
+diff --git a/packages/loom/src/display/requirements.ts b/packages/loom/src/display/requirements.ts
+index e4fd16b..165d3d2 100644
+--- a/packages/loom/src/display/requirements.ts
++++ b/packages/loom/src/display/requirements.ts
+@@ -1,4 +1,18 @@
+-import { displayRequirement, displayValueRequirement } from './requirements.policy.mjs'
++const hasValue = (value: unknown) => value !== undefined && value !== null && value !== ''
+ 
+-export type { DisplayRequirement, DisplayRequirementField } from './requirements.policy.mjs'
+-export { displayRequirement, displayValueRequirement }
++export interface DisplayRequirementField {
++  readonly format?: unknown
++  readonly renderer?: unknown
++}
++
++export type DisplayRequirement = 'date-format' | 'text-or-renderer'
++
++export function displayValueRequirement(value: unknown, field: DisplayRequirementField): DisplayRequirement | undefined {
++  if (value instanceof Date) {
++    if (!hasValue(field.format)) return 'date-format'
++    if (!hasValue(field.renderer)) return 'text-or-renderer'
++    return undefined
++  }
++  if (value === null || value === undefined || ['string', 'number', 'boolean'].includes(typeof value)) return undefined
++  return hasValue(field.renderer) ? undefined : 'text-or-renderer'
++}
+diff --git a/packages/sprindle/src/__tests__/declared-read-contract.spec.ts b/packages/sprindle/src/__tests__/declared-read-contract.spec.ts
+index b4333b9..976069f 100644
+--- a/packages/sprindle/src/__tests__/declared-read-contract.spec.ts
++++ b/packages/sprindle/src/__tests__/declared-read-contract.spec.ts
+@@ -68,7 +68,7 @@ describe('declarative read contract over HTTP', () => {
+     expect(await response.json()).toEqual({
+       data: [reportRows[0]],
+       page: 1,
+-      limit: 20,
++      limit: 10,
+       total: 1,
+     })
+   })
+@@ -90,7 +90,7 @@ describe('declarative read contract over HTTP', () => {
+     expect(await response.json()).toEqual({
+       data: [reportRows[1], reportRows[0]],
+       page: 1,
+-      limit: 20,
++      limit: 10,
+       total: 2,
+     })
+   })
+diff --git a/packages/sprindle/src/__tests__/module-bundles.spec.ts b/packages/sprindle/src/__tests__/module-bundles.spec.ts
+index dfd4899..ad4854e 100644
+--- a/packages/sprindle/src/__tests__/module-bundles.spec.ts
++++ b/packages/sprindle/src/__tests__/module-bundles.spec.ts
+@@ -84,7 +84,7 @@ describe('module bundles', () => {
+   it('serves canonical routes through the bundle path', async () => {
+     const response = await appFromBundles.request('/items/list')
+     expect(response.status).toBe(200)
+-    expect(await response.json()).toEqual({ data: [], page: 1, limit: 20, total: 0 })
++    expect(await response.json()).toEqual({ data: [], page: 1, limit: 10, total: 0 })
+     expect((await appFromBundles.request('/tools/list')).status).toBe(200)
+     expect((await appFromBundles.request('/items/detail/nope')).status).toBe(404)
+   })
+diff --git a/packages/sprindle/src/__tests__/readme-example.spec.ts b/packages/sprindle/src/__tests__/readme-example.spec.ts
+index 94c1f22..cede50d 100644
+--- a/packages/sprindle/src/__tests__/readme-example.spec.ts
++++ b/packages/sprindle/src/__tests__/readme-example.spec.ts
+@@ -52,6 +52,6 @@ describe('README example', () => {
+     const response = await app.request('/items/list')
+ 
+     expect(response.status).toBe(200)
+-    expect(await response.json()).toEqual({ data: [], page: 1, limit: 20, total: 0 })
++    expect(await response.json()).toEqual({ data: [], page: 1, limit: 10, total: 0 })
+   })
+ })
+diff --git a/packages/sprindle/src/openapi/__tests__/openapi.spec.ts b/packages/sprindle/src/openapi/__tests__/openapi.spec.ts
+index e850945..3f5026e 100644
+--- a/packages/sprindle/src/openapi/__tests__/openapi.spec.ts
++++ b/packages/sprindle/src/openapi/__tests__/openapi.spec.ts
+@@ -22,6 +22,7 @@ describe('file route OpenAPI', () => {
+   it('declares list query and path parameters', () => {
+     const listParameters = operation('/items/list', 'get').parameters as { name: string }[]
+     expect(listParameters.map((value) => value.name)).toEqual(['page','limit','search','sort','order'])
++    expect(listParameters.find((value) => value.name === 'limit')).toEqual({ name: 'limit', in: 'query', required: false, schema: { type: 'integer', minimum: 1, default: 10 } })
+     expect((operation('/items/detail/{id}', 'get').parameters as { name: string }[])[0]).toMatchObject({ name: 'id', in: 'path', required: true })
+   })
+   it('uses entity schemas and custom request bodies', () => {
+diff --git a/packages/sprindle/src/openapi/index.ts b/packages/sprindle/src/openapi/index.ts
+index 36231ae..e7c5033 100644
+--- a/packages/sprindle/src/openapi/index.ts
++++ b/packages/sprindle/src/openapi/index.ts
+@@ -17,7 +17,7 @@ const errors = {
+ }
+ const listParameters = [
+   { name: 'page', schema: { type: 'integer', minimum: 1, default: 1 } },
+-  { name: 'limit', schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 } },
++  { name: 'limit', schema: { type: 'integer', minimum: 1, default: 10 } },
+   { name: 'search', schema: { type: 'string' } }, { name: 'sort', schema: { type: 'string' } },
+   { name: 'order', schema: { type: 'string', enum: ['asc', 'desc'], default: 'asc' } },
+ ]
+diff --git a/packages/sprindle/src/testing/__tests__/memory-source.spec.ts b/packages/sprindle/src/testing/__tests__/memory-source.spec.ts
+index 0403b36..1cbb040 100644
+--- a/packages/sprindle/src/testing/__tests__/memory-source.spec.ts
++++ b/packages/sprindle/src/testing/__tests__/memory-source.spec.ts
+@@ -111,6 +111,9 @@ describe('testApp', () => {
+     const response = await testApp([{ sourcePath: 'items/list/+server.ts', httpPath: '/items/list', parameters: [], methods: ['GET'], scopes: [scope], handlers: { GET: route } }]).request('/items/list')
+ 
+     expect(response.status).toBe(200)
+-    expect(await response.json()).toEqual({ data: [], page: 1, limit: 20, total: 0 })
++    expect(await response.json()).toEqual({ data: [], page: 1, limit: 10, total: 0 })
++    const large = await testApp([{ sourcePath: 'items/list/+server.ts', httpPath: '/items/list', parameters: [], methods: ['GET'], scopes: [scope], handlers: { GET: route } }]).request('/items/list?limit=1000')
++    expect(large.status).toBe(200)
++    expect(await large.json()).toEqual({ data: [], page: 1, limit: 1000, total: 0 })
+   })
+ })
+diff --git a/packages/sprindle/src/tooling/manifest.spec.ts b/packages/sprindle/src/tooling/manifest.spec.ts
+index ba2db28..9b68e1b 100644
+--- a/packages/sprindle/src/tooling/manifest.spec.ts
++++ b/packages/sprindle/src/tooling/manifest.spec.ts
+@@ -343,7 +343,7 @@ test('bundled scope and resource helpers execute after route source is removed',
+   const script = `import {Hono} from ${JSON.stringify(honoPackage)};import {installSprindle} from ${JSON.stringify(honoImport)};(async()=>{const manifest=(await import(${JSON.stringify(pathToFileURL(artifact).href)})).default;const response=await installSprindle(new Hono(),manifest).request('/items/list');process.stdout.write(JSON.stringify({status:response.status,body:await response.json()}))})()`
+   const run = spawnSync(join(import.meta.dirname, '..', '..', '..', '..', 'apps', 'api', 'node_modules', '.bin', 'tsx'), ['--eval', script], { encoding: 'utf8' })
+   expect(run.stderr).toBe('')
+-  expect(JSON.parse(run.stdout)).toEqual({ status: 200, body: { data: [{ id: 'one' }], page: 1, limit: 20, total: 1 } })
++  expect(JSON.parse(run.stdout)).toEqual({ status: 200, body: { data: [{ id: 'one' }], page: 1, limit: 10, total: 1 } })
+ })
+ 
+ test('emits a self-contained contextual consumer contract through moves and deletion', { timeout: 120_000 }, async () => {
+diff --git a/packages/sprindle/src/validation/common-schemas.ts b/packages/sprindle/src/validation/common-schemas.ts
+index 898ac43..139d94b 100644
+--- a/packages/sprindle/src/validation/common-schemas.ts
++++ b/packages/sprindle/src/validation/common-schemas.ts
+@@ -4,7 +4,7 @@ import { validationError } from '../errors'
+ export const listQuerySchema = z
+   .object({
+     page: z.coerce.number().int().positive().default(1),
+-    limit: z.coerce.number().int().positive().max(100).default(20),
++    limit: z.coerce.number().int().positive().default(10),
+     search: z.string().optional(),
+     sort: z.string().optional(),
+     order: z.enum(['asc', 'desc']).default('asc'),
+diff --git a/scripts/module-ui-check.mjs b/scripts/module-ui-check.mjs
+deleted file mode 100644
+index b8e2338..0000000
+--- a/scripts/module-ui-check.mjs
++++ /dev/null
+@@ -1,801 +0,0 @@
+-#!/usr/bin/env node
+-// Check declared Vue surfaces. Semantic acceptance remains with the reviewer.
+-import { readFileSync, readdirSync, statSync } from 'node:fs'
+-import { createRequire } from 'node:module'
+-import { basename, dirname, join, resolve } from 'node:path'
+-import { fileURLToPath } from 'node:url'
+-import { displayRequirement } from '../packages/loom/src/display/requirements.policy.mjs'
+-
+-const require = createRequire(new URL('../apps/web/package.json', import.meta.url))
+-const { parse, compileScript } = require('vue/compiler-sfc')
+-const ts = require('typescript')
+-const routeKinds = { 'detail.route.vue': 'detail', 'create.route.vue': 'create', 'edit.route.vue': 'update' }
+-const views = { list: 'ListView', detail: 'DetailView', create: 'FormView', update: 'FormView' }
+-// Native elements that can replace a shared control. Other native elements
+-// (layout, text, option) add no item.
+-const nativeControls = new Set(['button', 'input', 'select', 'textarea'])
+-const normalize = name => name.replace(/-/g, '').toLowerCase()
+-const builtins = new Set(['component', 'slot', 'template', 'transition', 'transitiongroup', 'keepalive', 'teleport', 'suspense', 'routerlink', 'routerview'])
+-
+-// A literal type="hidden" input carries state, not an interaction, so it
+-// adds no item. Any other type source (absent, dynamic, spread) can render
+-// a visible control, so it needs review.
+-function hiddenInput(node) {
+-  const type = (node.props ?? []).find(prop =>
+-    (prop.type === 6 && prop.name?.toLowerCase() === 'type')
+-    || (prop.type === 7 && prop.name === 'bind' && prop.arg?.content === 'type'))
+-  if (!type) return false
+-  return type.type === 6
+-    && typeof type.value?.content === 'string'
+-    && type.value.content.toLowerCase() === 'hidden'
+-}
+-
+-function walk(node, visit) {
+-  visit(node)
+-  for (const child of node.children ?? []) walk(child, visit)
+-}
+-
+-function registered(source, tag) {
+-  const file = ts.createSourceFile('registration.ts', source, ts.ScriptTarget.Latest, true)
+-  let found = false
+-  function visit(node) {
+-    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)
+-      && node.expression.name.text === 'component' && node.arguments.length === 2
+-      && ts.isStringLiteral(node.arguments[0]) && node.arguments[0].text === tag) found = true
+-    ts.forEachChild(node, visit)
+-  }
+-  visit(file)
+-  return found
+-}
+-
+-export function checkUiContract(contract, options) {
+-  return checkSurfaces(contract, options)
+-}
+-
+-export function checkUiSources(paths, { root = process.cwd() } = {}) {
+-  function collect(path) {
+-    if (statSync(resolve(root, path)).isDirectory()) {
+-      return readdirSync(resolve(root, path)).sort().flatMap(name => collect(join(path, name)))
+-    }
+-    return path.endsWith('.vue') ? [path] : []
+-  }
+-  function collectResources(path) {
+-    if (statSync(resolve(root, path)).isDirectory()) {
+-      return readdirSync(resolve(root, path)).sort().flatMap(name => collectResources(join(path, name)))
+-    }
+-    return path.endsWith('.resource.ts') ? [path] : []
+-  }
+-  const surfaces = [...new Set(paths.flatMap(collect))].map(file => ({ file }))
+-  const result = checkSurfaces({ surfaces }, { root }, false)
+-  const resourceFiles = [...new Set(paths.flatMap(collectResources))]
+-  const displayResult = checkResourceDisplay(resourceFiles, { root })
+-  result.errors.push(...displayResult.errors)
+-  result.review.push(...displayResult.review)
+-  const vueContents = []
+-  for (const surface of surfaces) {
+-    try { vueContents.push(readFileSync(resolve(root, surface.file), 'utf8')) } catch { /* surface already reported */ }
+-  }
+-  for (const item of checkResourceRowOps(resourceFiles, { root, vueContents })) result.review.push(item)
+-  return result
+-}
+-
+-function checkSurfaces(contract, { root = process.cwd(), read = path => readFileSync(resolve(root, path), 'utf8') } = {}, declared = true) {
+-  const errors = [], review = []
+-  if (!Array.isArray(contract.surfaces) || !contract.surfaces.length) return { errors: ['Select at least one Vue surface.'], review }
+-  const globals = new Set()
+-  for (const global of contract.globals ?? []) {
+-    if (!global.tag || !global.registration || !registered(read(global.registration), global.tag)) errors.push(`Global ${global.tag}: no literal component registration in ${global.registration}`)
+-    else { globals.add(normalize(global.tag)); review.push(`Confirm registration is installed: ${global.tag} in ${global.registration}`) }
+-  }
+-  const files = new Set()
+-  for (const surface of contract.surfaces) {
+-    const label = surface.file
+-    if (!label || files.has(label)) { errors.push(`Missing or duplicate surface: ${label}`); continue }
+-    files.add(label)
+-    const routeKind = routeKinds[basename(label)]
+-    if (declared) {
+-      if (routeKind && surface.kind !== routeKind) errors.push(`${label}: route convention requires kind ${routeKind}; record composition exceptions in gap`)
+-      if (!(surface.kind in views) && surface.kind !== 'custom') errors.push(`${label}: kind must be list, detail, create, update or custom`)
+-      if (surface.kind === 'custom' && !surface.gap?.trim()) errors.push(`${label}: custom surface needs a specific framework gap`)
+-    }
+-    try {
+-      const { descriptor, errors: parseErrors } = parse(read(label), { filename: resolve(root, label) })
+-      if (parseErrors.length) throw new Error(parseErrors.map(String).join('; '))
+-      if (!descriptor.template?.ast) throw new Error('Missing template')
+-      const script = descriptor.script || descriptor.scriptSetup ? compileScript(descriptor, { id: label }) : { imports: {}, bindings: {} }
+-      const imports = script.imports ?? {}, bindings = script.bindings ?? {}
+-      const tags = new Set(), slots = new Set()
+-      walk(descriptor.template.ast, node => {
+-        if (node.type !== 1) return
+-        if (node.tagType === 0 && nativeControls.has(node.tag.toLowerCase())) {
+-          if (!(node.tag.toLowerCase() === 'input' && hiddenInput(node))) {
+-            review.push(`${label}:${node.loc.start.line}: native <${node.tag.toLowerCase()}> needs source review against the shared controls`)
+-          }
+-        }
+-        if (node.tagType === 1) {
+-          tags.add(node.tag)
+-          const name = normalize(node.tag)
+-          const bound = Object.keys(bindings).some(binding => normalize(binding) === name)
+-          const imported = Object.entries(imports).some(([local, item]) => !item.isType && item.isFromSetup && normalize(local) === name)
+-          if (!builtins.has(name) && !globals.has(name) && !bound && !imported) errors.push(`${label}:${node.loc.start.line}: unresolved component <${node.tag}>`)
+-        }
+-        for (const prop of node.props ?? []) if (prop.type === 7 && prop.name === 'slot' && prop.arg?.isStatic) slots.add(prop.arg.content)
+-      })
+-      if (!declared) {
+-        if (slots.has('create-action')) review.push(`${label}: Create override needs source review against the requested interaction`)
+-        continue
+-      }
+-      if (!Array.isArray(surface.components) || !surface.components.length) errors.push(`${label}: declare the selected framework components`)
+-      const expectedView = views[surface.kind]
+-      const selected = surface.components ?? []
+-      const hasView = selected.some(component => (component.name === expectedView && component.from === '@southneuhof/loom')
+-        || (component.name === 'default' && component.from === `@southneuhof/loom/components/views/${expectedView}.vue`))
+-      if (expectedView && !hasView && !surface.gap?.trim()) errors.push(`${label}: ${surface.kind} requires ${expectedView}; a lower-level surface needs a reviewed gap`)
+-      if (surface.kind === 'detail' && !hasView && !selected.some(component =>
+-        (component.name === 'Detail' && component.from === '@southneuhof/loom')
+-        || (component.name === 'default' && component.from === '@southneuhof/loom/components/core/Detail.vue')))
+-        errors.push(`${label}: custom record composition still requires Detail`)
+-      for (const component of selected) {
+-        if (Object.keys(component).some(key => !['name', 'from'].includes(key))) errors.push(`${label}: component accepts only name/from; record a gap on the surface`)
+-        const used = Object.entries(imports).some(([local, item]) => !item.isType && item.source === component.from
+-          && item.imported === component.name && [...tags].some(tag => normalize(tag) === normalize(local)))
+-        if (!used) errors.push(`${label}: template must use ${component.name} from ${component.from}`)
+-      }
+-      const extensions = surface.extensions ?? []
+-      for (const extension of extensions) {
+-        if (!extension.slot || !extension.reason?.trim() || !slots.has(extension.slot)) errors.push(`${label}: invalid or unused slot exception ${extension.slot}`)
+-        else review.push(`${label}: ${extension.slot}: ${extension.reason}`)
+-      }
+-      if (slots.has('create-action') && !extensions.some(item => item.slot === 'create-action' && item.reason?.trim())) errors.push(`${label}: Create override needs a requested interaction in extensions`)
+-      if (surface.gap?.trim()) review.push(`${label}: component gap: ${surface.gap}`)
+-    } catch (error) { errors.push(`${label}: ${error.message}`) }
+-  }
+-  return { errors, review }
+-}
+-
+-export function fieldNeedsDisplay(kindInfo, signals) {
+-  let kind = kindInfo?.kind ?? 'unknown'
+-  if (kind === 'string[]' || kind === 'number[]' || kind === 'boolean[]' || kind === 'object[]' || kind === 'selection[]') kind = 'array'
+-  if (kindInfo?.options && kind === 'string') kind = 'enum'
+-  return displayRequirement(kind, {
+-    read: signals.read ? true : undefined,
+-    renderer: signals.renderer ? 'configured' : undefined,
+-    format: signals.format ? 'configured' : undefined,
+-  }) !== undefined
+-}
+-
+-function displayKindLabel(kindInfo) {
+-  if (!kindInfo || kindInfo.kind === 'unknown') return 'unknown'
+-  if (kindInfo.kind === 'string' && kindInfo.options) return 'enum'
+-  return kindInfo.kind
+-}
+-
+-function parseTs(text, name) {
+-  return ts.createSourceFile(name, text, ts.ScriptTarget.Latest, true)
+-}
+-
+-function propInit(obj, key) {
+-  if (!obj || !ts.isObjectLiteralExpression(obj)) return undefined
+-  for (const prop of obj.properties) {
+-    if (!ts.isPropertyAssignment(prop)) continue
+-    const name = prop.name
+-    if ((ts.isIdentifier(name) || ts.isStringLiteral(name)) && name.text === key) return prop.initializer
+-  }
+-  return undefined
+-}
+-
+-function stringValue(node) {
+-  return node && ts.isStringLiteralLike(node) ? node.text : undefined
+-}
+-
+-// One-hop file index over resource, schema, and entity sources. Reads go
+-// through the injected reader so tests can use memory files.
+-function makeFileIndex(root, read) {
+-  const cache = new Map()
+-  function load(absPath) {
+-    if (cache.has(absPath)) return cache.get(absPath)
+-    let entry
+-    try {
+-      const source = parseTs(read(absPath), absPath)
+-      entry = { absPath, source, consts: new Map(), aliases: new Map(), imports: [] }
+-      for (const stmt of source.statements) {
+-        if (ts.isVariableStatement(stmt)) {
+-          for (const decl of stmt.declarationList.declarations) {
+-            if (ts.isIdentifier(decl.name) && decl.initializer) entry.consts.set(decl.name.text, decl.initializer)
+-          }
+-        } else if (ts.isFunctionDeclaration(stmt) && stmt.name) {
+-          entry.consts.set(stmt.name.text, stmt)
+-        } else if (ts.isTypeAliasDeclaration(stmt) && ts.isIdentifier(stmt.name)) {
+-          entry.aliases.set(stmt.name.text, stmt.type)
+-        } else if (ts.isImportDeclaration(stmt) && ts.isStringLiteral(stmt.moduleSpecifier)) {
+-          const names = []
+-          const clause = stmt.importClause
+-          if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings)) {
+-            for (const el of clause.namedBindings.elements) names.push({ alias: el.name.text, target: (el.propertyName ?? el.name).text, typeOnly: clause.isTypeOnly || el.isTypeOnly })
+-          }
+-          entry.imports.push({ spec: stmt.moduleSpecifier.text, names })
+-        }
+-      }
+-    } catch { entry = undefined }
+-    cache.set(absPath, entry)
+-    return entry
+-  }
+-  function resolveImport(spec, fromAbs) {
+-    const candidates = []
+-    if (spec.startsWith('.')) {
+-      const base = resolve(dirname(fromAbs), spec)
+-      candidates.push(`${base}.ts`, base)
+-    } else if (spec.startsWith('@southneuhof/api/')) {
+-      candidates.push(join(root, 'apps/api/src', `${spec.slice('@southneuhof/api/'.length)}.ts`))
+-    } else if (spec.startsWith('@/')) {
+-      candidates.push(join(root, 'apps/web/src', `${spec.slice(2)}.ts`))
+-    } else {
+-      return undefined
+-    }
+-    for (const candidate of candidates) if (load(candidate)) return load(candidate)
+-    return undefined
+-  }
+-  return { load, resolveImport }
+-}
+-
+-function importedBinding(name, entry, index) {
+-  for (const imp of entry.imports) {
+-    const binding = imp.names.find(item => item.alias === name && !item.typeOnly)
+-    if (!binding) continue
+-    const target = index.resolveImport(imp.spec, entry.absPath)
+-    return { entry: target, name: binding.target, spec: imp.spec }
+-  }
+-  return undefined
+-}
+-
+-function resolveValue(node, entry, index, seen = new Set()) {
+-  const target = unwrapExpr(node)
+-  if (!target) return undefined
+-  if (ts.isIdentifier(target)) {
+-    const key = `${entry.absPath}::${target.text}`
+-    if (seen.has(key)) return undefined
+-    seen.add(key)
+-    if (entry.consts.has(target.text)) return resolveValue(entry.consts.get(target.text), entry, index, seen)
+-    const binding = importedBinding(target.text, entry, index)
+-    return binding?.entry ? resolveValue(binding.entry.consts.get(binding.name), binding.entry, index, seen) : undefined
+-  }
+-  if (ts.isPropertyAccessExpression(target)) {
+-    const object = resolveObject(target.expression, entry, index, seen)
+-    const property = object?.get(target.name.text)
+-    return property ? { node: property.node, entry: property.entry } : undefined
+-  }
+-  return { node: target, entry }
+-}
+-
+-function resolveObject(node, entry, index, seen = new Set()) {
+-  const resolved = resolveValue(node, entry, index, seen)
+-  if (!resolved || !ts.isObjectLiteralExpression(resolved.node)) return undefined
+-  return objectEntries(resolved.node, resolved.entry, index, seen)
+-}
+-
+-function objectEntries(node, entry, index, seen = new Set()) {
+-  const result = new Map()
+-  const target = unwrapExpr(node)
+-  if (!target || !ts.isObjectLiteralExpression(target)) return result
+-  for (const property of target.properties) {
+-    if (ts.isSpreadAssignment(property)) {
+-      const spread = resolveObject(property.expression, entry, index, new Set(seen))
+-      for (const [key, value] of spread ?? []) result.set(key, value)
+-      continue
+-    }
+-    if (ts.isPropertyAssignment(property)) {
+-      const name = property.name
+-      if (ts.isIdentifier(name) || ts.isStringLiteral(name)) result.set(name.text, { node: property.initializer, entry })
+-      continue
+-    }
+-    if (ts.isShorthandPropertyAssignment(property)) result.set(property.name.text, { node: property.name, entry })
+-  }
+-  return result
+-}
+-
+-function resolvedProperties(node, entry, index) {
+-  const resolved = resolveValue(node, entry, index)
+-  if (!resolved || !ts.isObjectLiteralExpression(resolved.node)) return new Map()
+-  return objectEntries(resolved.node, resolved.entry, index)
+-}
+-
+-function resolvedProperty(node, name, entry, index) {
+-  return resolvedProperties(node, entry, index).get(name)
+-}
+-
+-function resolvedCalleeName(node, entry, index, seen = new Set()) {
+-  const target = unwrapExpr(node)
+-  if (!target || !ts.isIdentifier(target)) return undefined
+-  const key = `${entry.absPath}::${target.text}`
+-  if (seen.has(key)) return undefined
+-  seen.add(key)
+-  const binding = importedBinding(target.text, entry, index)
+-  if (binding) return binding.spec === '@southneuhof/loom' ? binding.name : undefined
+-  const init = entry.consts.get(target.text)
+-  return init ? resolvedCalleeName(init, entry, index, seen) : target.text
+-}
+-
+-const transparentWrappers = new Set(['optional', 'nullable', 'nullish', 'default', 'partial', 'min', 'max', 'int',
+-  'positive', 'nonnegative', 'trim', 'toLowerCase', 'toUpperCase', 'describe', 'meta', 'brand',
+-  'readonly', 'catch', 'prefault', 'transform', 'pipe', 'refine', 'overwrite'])
+-
+-function peelCalls(node) {
+-  const frames = []
+-  while (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+-    frames.push({ method: node.expression.name.text, args: [...node.arguments], typeArgs: node.typeArguments ? [...node.typeArguments] : [] })
+-    node = node.expression.expression
+-  }
+-  return { head: node, frames }
+-}
+-
+-function resolveNameKind(name, entry, index, seen) {
+-  const key = `${entry.absPath}::${name}`
+-  if (seen.has(key)) return { kind: 'unknown' }
+-  seen.add(key)
+-  if (entry.consts.has(name)) return zodKindOf(entry.consts.get(name), entry, index, seen)
+-  for (const imp of entry.imports) {
+-    const binding = imp.names.find(item => item.alias === name)
+-    if (!binding) continue
+-    const target = index.resolveImport(imp.spec, entry.absPath)
+-    if (target) return resolveNameKind(binding.target, target, index, seen)
+-  }
+-  return { kind: 'unknown' }
+-}
+-
+-// Follows `type X = z.infer<typeof Y>` to the enum behind a `$type<X>()` column.
+-function resolveEnumAlias(name, entry, index, seen) {
+-  const alias = entry.aliases.get(name)
+-  if (!alias || !ts.isTypeReferenceNode(alias)) return undefined
+-  const args = alias.typeArguments
+-  if (!args?.length || !ts.isTypeQueryNode(args[0])) return undefined
+-  const query = args[0].exprName
+-  if (!ts.isIdentifier(query)) return undefined
+-  const info = resolveNameKind(query.text, entry, index, seen)
+-  return info.options ? info : undefined
+-}
+-
+-const drizzleNumberColumns = new Set(['smallserial', 'serial', 'bigserial', 'smallint', 'integer', 'bigint', 'real', 'doublePrecision', 'numeric', 'decimal'])
+-const drizzleStringColumns = new Set(['text', 'varchar', 'char', 'uuid'])
+-
+-function columnKindOf(node, entry, index, seen) {
+-  const { head, frames } = peelCalls(node)
+-  const typed = frames.find(frame => frame.method === '$type' && frame.typeArgs.length === 1)
+-  if (typed) {
+-    const arg = typed.typeArgs[0]
+-    if (ts.isTypeReferenceNode(arg) && ts.isIdentifier(arg.typeName)
+-      && resolveEnumAlias(arg.typeName.text, entry, index, seen)) return { kind: 'string', options: true }
+-  }
+-  if (ts.isCallExpression(head) && ts.isIdentifier(head.expression)) {
+-    const name = head.expression.text
+-    if (drizzleNumberColumns.has(name)) return { kind: 'number' }
+-    if (drizzleStringColumns.has(name)) return { kind: 'string' }
+-    if (name === 'boolean') return { kind: 'boolean' }
+-    if (name === 'timestamp' || name === 'date') return { kind: 'date' }
+-    if (name === 'json' || name === 'jsonb') return { kind: 'object' }
+-    if (name === 'pgEnum') return { kind: 'string', options: true }
+-  }
+-  return { kind: 'unknown' }
+-}
+-
+-function unwrapExpr(node) {
+-  while (node && (ts.isAsExpression(node) || ts.isSatisfiesExpression(node) || ts.isParenthesizedExpression(node))) node = node.expression
+-  return node
+-}
+-
+-// Raw property initializers; callers apply zod or column kinds.
+-function shapeNodesOf(obj, entry, index) {
+-  return resolvedProperties(obj, entry, index)
+-}
+-
+-function shapeKindOf(obj, entry, index, seen) {
+-  const shape = new Map()
+-  for (const [key, value] of shapeNodesOf(obj, entry, index)) shape.set(key, zodKindOf(value.node, value.entry, index, seen))
+-  return shape
+-}
+-
+-// extend/omit accept object literals or names of const shapes.
+-function shapeArgOf(arg, entry, index, seen) {
+-  if (ts.isObjectLiteralExpression(unwrapExpr(arg))) return shapeKindOf(arg, entry, index, seen)
+-  const info = zodKindOf(arg, entry, index, seen)
+-  return info.kind === 'shape' ? new Map(info.shape) : undefined
+-}
+-
+-function applyShapeFrames(shape, frames, entry, index, seen) {
+-  // Frames run outermost-first; shape edits apply innermost-first.
+-  for (const frame of [...frames].reverse()) {
+-    if (frame.method === 'extend' && frame.args.length === 1) {
+-      const overlay = shapeArgOf(frame.args[0], entry, index, seen)
+-      if (!overlay) return undefined
+-      for (const [key, info] of overlay) shape.set(key, info)
+-    } else if (frame.method === 'omit' && frame.args.length === 1) {
+-      const keys = shapeArgOf(frame.args[0], entry, index, seen)
+-      if (!keys) return undefined
+-      for (const key of keys.keys()) shape.delete(key)
+-    } else if (transparentWrappers.has(frame.method)) {
+-      continue
+-    } else {
+-      return undefined
+-    }
+-  }
+-  return shape
+-}
+-
+-function entitySchemas(callNode, entry, index, seen) {
+-  const config = callNode.arguments[0]
+-  const schemas = propInit(config, 'schemas')
+-  if (!schemas) return undefined
+-  const result = {}
+-  for (const key of ['select', 'create', 'update']) {
+-    const init = propInit(schemas, key)
+-    if (init) result[key] = zodKindOf(init, entry, index, seen)
+-  }
+-  const tableInit = propInit(config, 'table')
+-  if (tableInit && ts.isIdentifier(tableInit)) {
+-    const table = resolveNameKind(tableInit.text, entry, index, seen)
+-    if (table.kind === 'shape') {
+-      for (const key of ['select', 'create', 'update']) {
+-        if (!result[key] || result[key].kind !== 'shape') result[key] = { kind: 'shape', shape: new Map(table.shape) }
+-      }
+-    }
+-  }
+-  return result
+-}
+-
+-function arrayKindOf(args, entry, index, seen) {
+-  if (!args.length) return { kind: 'array' }
+-  const element = zodKindOf(args[0], entry, index, seen)
+-  if (element.kind === 'shape') return { kind: 'object[]' }
+-  if (element.kind === 'string') return { kind: 'string[]' }
+-  if (element.kind === 'number') return { kind: 'number[]' }
+-  if (element.kind === 'boolean') return { kind: 'boolean[]' }
+-  return { kind: 'array' }
+-}
+-
+-function zodKindOf(node, entry, index, seen) {
+-  if (ts.isIdentifier(node)) return resolveNameKind(node.text, entry, index, seen)
+-  if (ts.isPropertyAccessExpression(node)) {
+-    // Handles `name.schemas.select` entity references.
+-    if (ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === 'schemas'
+-      && ts.isIdentifier(node.expression.expression)
+-      && ['select', 'create', 'update'].includes(node.name.text)) {
+-      const schemas = resolveNameKind(node.expression.expression.text, entry, index, seen)
+-      if (schemas?.entity && schemas.entity[node.name.text]) return schemas.entity[node.name.text]
+-    }
+-    return { kind: 'unknown' }
+-  }
+-  if (!ts.isCallExpression(node)) return { kind: 'unknown' }
+-  const { head, frames } = peelCalls(node)
+-  if (ts.isIdentifier(head) && head.text === 'z') {
+-    const inner = frames[frames.length - 1]
+-    if (!inner) return { kind: 'unknown' }
+-    if (inner.method === 'string') return { kind: 'string' }
+-    if (inner.method === 'number') return { kind: 'number' }
+-    if (inner.method === 'boolean') return { kind: 'boolean' }
+-    if (inner.method === 'date') return { kind: 'date' }
+-    if (inner.method === 'enum') return { kind: 'string', options: true }
+-    if (inner.method === 'object' && inner.args.length === 1) {
+-      return { kind: 'shape', shape: shapeKindOf(inner.args[0], entry, index, seen) }
+-    }
+-    if (inner.method === 'array') return arrayKindOf(inner.args, entry, index, seen)
+-    return { kind: 'unknown' }
+-  }
+-  if (ts.isCallExpression(head) && ts.isIdentifier(head.expression)) {
+-    const name = head.expression.text
+-    if (/^checkedHono(?:Record|Create|Update|Query)Schema$/.test(name) && head.arguments.length >= 2) {
+-      return zodKindOf(head.arguments[head.arguments.length - 1], entry, index, seen)
+-    }
+-    if ((name === 'createSelectSchema' || name === 'createInsertSchema' || name === 'createUpdateSchema')
+-      && head.arguments.length >= 1 && ts.isIdentifier(head.arguments[0])) {
+-      const table = resolveNameKind(head.arguments[0].text, entry, index, seen)
+-      if (!table || table.kind !== 'shape') return { kind: 'unknown' }
+-      const shape = applyShapeFrames(new Map(table.shape), frames, entry, index, seen)
+-      return shape ? { kind: 'shape', shape } : { kind: 'unknown' }
+-    }
+-    if (name === 'createEntity' && head.arguments.length >= 1) {
+-      const schemas = entitySchemas(head, entry, index, seen)
+-      return schemas ? { kind: 'entity', entity: schemas } : { kind: 'unknown' }
+-    }
+-    if (name === 'pgTable' && head.arguments.length >= 2) {
+-      const columns = new Map()
+-      for (const [key, value] of shapeNodesOf(head.arguments[1], entry, index)) columns.set(key, columnKindOf(value.node, value.entry, index, seen))
+-      const shape = applyShapeFrames(columns, frames, entry, index, seen)
+-      return shape ? { kind: 'shape', shape } : { kind: 'unknown' }
+-    }
+-  }
+-  if (head === node) return { kind: 'unknown' }
+-  const base = zodKindOf(head, entry, index, seen)
+-  if (base.kind === 'shape') {
+-    const shape = applyShapeFrames(new Map(base.shape), frames, entry, index, seen)
+-    return shape ? { kind: 'shape', shape } : { kind: 'unknown' }
+-  }
+-  if (frames.every(frame => transparentWrappers.has(frame.method))) return base
+-  return { kind: 'unknown' }
+-}
+-function eachCall(source, name, entry, index) {
+-  const found = []
+-  function visit(node) {
+-    if (ts.isCallExpression(node) && (entry && index
+-      ? resolvedCalleeName(node.expression, entry, index) === name
+-      : ts.isIdentifier(node.expression) && node.expression.text === name)) found.push(node)
+-    ts.forEachChild(node, visit)
+-  }
+-  visit(source)
+-  return found
+-}
+-
+-function schemaShapeOf(node, entry, index) {
+-  if (!node) return undefined
+-  const info = zodKindOf(node, entry, index, new Set())
+-  return info.kind === 'shape' ? info.shape : undefined
+-}
+-
+-function surfaceKind(kind, schemaKind) {
+-  if (schemaKind?.kind === 'shape') return { kind: 'object' }
+-  if (schemaKind?.kind === 'array' || /\[\]$/.test(schemaKind?.kind ?? '')) return { kind: 'array' }
+-  if (schemaKind?.kind === 'entity' || schemaKind?.kind === 'columns') return { kind: 'unknown' }
+-  if (schemaKind) return schemaKind
+-  if (kind === 'form') return { kind: 'unknown' }
+-  return { kind: 'unknown' }
+-}
+-
+-function displaySignals(node, entry, index) {
+-  const fields = resolvedProperties(node, entry, index)
+-  const configured = name => {
+-    const value = fields.get(name)?.node
+-    if (!value || value.kind === ts.SyntaxKind.UndefinedKeyword) return false
+-    return !(ts.isIdentifier(value) && value.text === 'undefined')
+-  }
+-  return { read: configured('read'), renderer: configured('renderer'), format: configured('format') }
+-}
+-
+-function readPaths(node, entry, index) {
+-  const read = resolvedProperty(node, 'read', entry, index)
+-  const value = read ? resolveValue(read.node, read.entry, index) : undefined
+-  const fn = value?.node
+-  if (!fn || !(ts.isArrowFunction(fn) || ts.isFunctionExpression(fn) || ts.isFunctionDeclaration(fn))) return []
+-  const parameter = fn.parameters[0]?.name
+-  if (!parameter) return []
+-  if (ts.isObjectBindingPattern(parameter)) {
+-    return parameter.elements.flatMap(element => {
+-      const key = element.propertyName ?? element.name
+-      return ts.isIdentifier(key) ? [[key.text]] : []
+-    })
+-  }
+-  if (!ts.isIdentifier(parameter)) return []
+-  const paths = new Map()
+-  function pathFrom(current) {
+-    const target = unwrapExpr(current)
+-    if (ts.isIdentifier(target) && target.text === parameter.text) return []
+-    if (ts.isPropertyAccessExpression(target)) {
+-      const parent = pathFrom(target.expression)
+-      return parent ? [...parent, target.name.text] : undefined
+-    }
+-    if (ts.isElementAccessExpression(target) && ts.isStringLiteralLike(target.argumentExpression)) {
+-      const parent = pathFrom(target.expression)
+-      return parent ? [...parent, target.argumentExpression.text] : undefined
+-    }
+-    return undefined
+-  }
+-  function visit(current) {
+-    if (ts.isPropertyAccessExpression(current) || ts.isElementAccessExpression(current)) {
+-      const path = pathFrom(current)
+-      if (path?.length) paths.set(path.join('.'), path)
+-    }
+-    ts.forEachChild(current, visit)
+-  }
+-  if (fn.body) visit(fn.body)
+-  return [...paths.values()]
+-}
+-
+-function missingReadPath(path, shape) {
+-  let current = shape
+-  for (const key of path) {
+-    const info = current?.get(key)
+-    if (!info) return key
+-    current = info.kind === 'shape' ? info.shape : undefined
+-  }
+-  return undefined
+-}
+-
+-function entryLine(item) {
+-  const entry = item?.entry
+-  const node = item?.node
+-  if (!entry || !node) return 1
+-  return ts.getLineAndCharacterOfPosition(entry.source, node.getStart(entry.source)).line + 1
+-}
+-
+-function surfaceDefinitions(entry, index) {
+-  const definitions = []
+-  for (const name of ['defineTable', 'defineDetail', 'defineForm']) {
+-    for (const call of eachCall(entry.source, name, entry, index)) {
+-      const config = call.arguments[0]
+-      const kind = name === 'defineTable' ? 'table' : name === 'defineDetail' ? 'detail' : 'form'
+-      const key = kind === 'table' ? 'columns' : 'fields'
+-      const schema = resolvedProperty(config, 'schema', entry, index)
+-      const map = resolvedProperty(config, key, entry, index)
+-      const schemaShape = schema ? schemaShapeOf(schema.node, schema.entry, index) : undefined
+-      const members = map ? resolvedProperties(map.node, map.entry, index) : new Map()
+-      definitions.push({ kind, schemaShape, members, map, call })
+-    }
+-  }
+-  return definitions
+-}
+-
+-export function checkResourceDisplay(files, { root = process.cwd(), read = absPath => readFileSync(absPath, 'utf8') } = {}) {
+-  const errors = []
+-  const review = []
+-  const index = makeFileIndex(root, read)
+-  for (const file of files) {
+-    const entry = index.load(resolve(root, file))
+-    if (!entry) {
+-      review.push(`${file}: cannot parse resource for surface check`)
+-      continue
+-    }
+-    for (const definition of surfaceDefinitions(entry, index)) {
+-      for (const [key, field] of definition.members) {
+-        const signals = displaySignals(field.node, field.entry, index)
+-        if (definition.kind === 'form') {
+-          if (definition.schemaShape && !definition.schemaShape.has(key)) {
+-            errors.push(`${file}:${entryLine(field)}: form surface field '${key}' is missing from its schema`)
+-          }
+-          continue
+-        }
+-        if (definition.schemaShape && !definition.schemaShape.has(key) && !signals.read) {
+-          errors.push(`${file}:${entryLine(field)}: ${definition.kind} surface field '${key}' is missing from its schema or a read accessor`)
+-          continue
+-        }
+-        if (definition.schemaShape && signals.read) {
+-          for (const path of readPaths(field.node, field.entry, index)) {
+-            const missing = missingReadPath(path, definition.schemaShape)
+-            if (missing) errors.push(`${file}:${entryLine(field)}: ${definition.kind} read accessor for '${key}' uses '${missing}', which is missing from its schema`)
+-          }
+-        }
+-        if (definition.kind === 'form') continue
+-        const schemaKind = definition.schemaShape?.get(key)
+-        const kindInfo = surfaceKind(definition.kind, schemaKind)
+-        if (fieldNeedsDisplay(kindInfo, signals)) {
+-          review.push(`${file}:${entryLine(field)}: ${key} (${displayKindLabel(kindInfo)}, ${definition.kind}) needs explicit display`)
+-        }
+-      }
+-    }
+-  }
+-  return { errors, review }
+-}
+-
+-const standardRowOps = new Set(['detail', 'update', 'delete'])
+-
+-function parseResourceActions(entry, index) {
+-  const found = []
+-  for (const call of eachCall(entry.source, 'defineResource', entry, index)) {
+-    const config = call.arguments[0]
+-    const props = resolvedProperties(config, entry, index)
+-    const keyValue = props.get('key')
+-    const key = stringValue(unwrapExpr(keyValue?.node)) ?? 'unknown'
+-    const add = (name, item) => {
+-      const operation = resolvedProperties(item.node, item.entry, index)
+-      const line = entryLine(item)
+-      found.push({ key, name, hasRoute: operation.has('route'), line, declared: operation.size > 0 })
+-    }
+-    for (const name of ['list', 'create', 'detail', 'update', 'delete']) {
+-      const operation = props.get(name)
+-      if (operation) add(name, operation)
+-    }
+-    const actions = props.get('actions')
+-    for (const [name, action] of resolvedProperties(actions?.node, actions?.entry, index)) add(name, action)
+-  }
+-  return found
+-}
+-
+-function enumStringsOf(node, out) {
+-  function visit(current) {
+-    if (ts.isCallExpression(current) && ts.isPropertyAccessExpression(current.expression)
+-      && current.expression.name.text === 'enum' && current.arguments.length >= 1
+-      && ts.isArrayLiteralExpression(unwrapExpr(current.arguments[0]))) {
+-      for (const el of unwrapExpr(current.arguments[0]).elements) {
+-        const text = stringValue(unwrapExpr(el))
+-        if (text !== undefined) out.add(text)
+-      }
+-    }
+-    ts.forEachChild(current, visit)
+-  }
+-  visit(node)
+-}
+-
+-function rowOpsIn(entry, index, seen) {
+-  const values = new Set()
+-  const stack = [entry]
+-  while (stack.length) {
+-    const current = stack.pop()
+-    if (!current || seen.has(current.absPath)) continue
+-    seen.add(current.absPath)
+-    function visit(node) {
+-      if (ts.isPropertyAssignment(node) && ((ts.isIdentifier(node.name) && node.name.text === 'allowedOperations')
+-        || (ts.isStringLiteral(node.name) && node.name.text === 'allowedOperations'))) {
+-        enumStringsOf(node.initializer, values)
+-      }
+-      ts.forEachChild(node, visit)
+-    }
+-    visit(current.source)
+-    for (const imp of current.imports) {
+-      const target = index.resolveImport(imp.spec, current.absPath)
+-      if (target && !seen.has(target.absPath)) stack.push(target)
+-      // Follow one more hop: schema files import the entity holding the enum.
+-      if (target) {
+-        for (const nested of target.imports) {
+-          const resolved = index.resolveImport(nested.spec, target.absPath)
+-          if (resolved && !seen.has(resolved.absPath)) stack.push(resolved)
+-        }
+-      }
+-    }
+-  }
+-  return values
+-}
+-
+-function rowUsedCustomNames(vueContents) {
+-  const used = new Set()
+-  for (const content of vueContents) {
+-    const pattern = /\.actions\.([A-Za-z_]\w*)\.withContext\s*\(\s*\{\s*record(?:\s*[:,}])/g
+-    let match
+-    while ((match = pattern.exec(content)) !== null) {
+-      used.add(match[1])
+-    }
+-  }
+-  return used
+-}
+-
+-export function checkResourceRowOps(files, { root = process.cwd(), read = absPath => readFileSync(absPath, 'utf8'), vueContents = [] } = {}) {
+-  const review = []
+-  const index = makeFileIndex(root, read)
+-  const rowUsed = rowUsedCustomNames(vueContents)
+-  for (const file of files) {
+-    const abs = resolve(root, file)
+-    const entry = index.load(abs)
+-    if (!entry) {
+-      review.push(`${file}: cannot parse resource for row-op check`)
+-      continue
+-    }
+-    const declared = parseResourceActions(entry, index)
+-    if (!declared.length) continue
+-    const key = declared[0].key
+-    const byName = new Map(declared.map(item => [item.name, item]))
+-    const wanted = []
+-    for (const name of ['detail', 'update']) {
+-      const item = byName.get(name)
+-      if (item && item.hasRoute) wanted.push(item)
+-    }
+-    const deleted = byName.get('delete')
+-    if (deleted && deleted.declared) wanted.push({ ...deleted, name: 'delete' })
+-    for (const item of declared) {
+-      if (standardRowOps.has(item.name)) continue
+-      if (rowUsed.has(item.name)) wanted.push(item)
+-    }
+-    if (!wanted.length) continue
+-    const values = rowOpsIn(entry, index, new Set())
+-    // No allowedOperations enum reachable: permission-only rows fall back to
+-    // permission per plan 047, so the sync check passes.
+-    if (!values.size) continue
+-    for (const item of wanted) {
+-      if (!values.has(item.name)) {
+-        review.push(`${file}:${item.line}: ${key} declares ${item.name} but row allowedOperations cannot carry '${item.name}' (add '${item.name}' to the row enum or mark list-only/collection-only)`)
+-      }
+-    }
+-  }
+-  return review
+-}
+-
+-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+-  if (!process.argv[2] || process.argv[2] === '--help') {
+-    console.log('Usage: node scripts/module-ui-check.mjs --sources <Vue/resource file or directory>...\n       node scripts/module-ui-check.mjs <ui-contract.json> [repository-root]\nSource mode checks bindings, surface membership, display requirements, and native controls. Contract mode also checks declared composition. Review design, fields, globals and dynamic components in source.')
+-    process.exitCode = process.argv[2] ? 0 : 1
+-  } else {
+-    try {
+-      const result = process.argv[2] === '--sources'
+-        ? checkUiSources(process.argv.slice(3))
+-        : checkUiContract(JSON.parse(readFileSync(process.argv[2], 'utf8')), { root: resolve(process.argv[3] ?? '.') })
+-      for (const error of result.errors) console.error(`FAIL: ${error}`)
+-      for (const item of result.review) console.log(`REVIEW: ${item}`)
+-      if (!result.errors.length) console.log(result.review.length ? 'REVIEW_REQUIRED: resolve each exception in the acceptance review' : 'PASS: selected template checks; design, runtime and acceptance NOT_REVIEWED')
+-      process.exitCode = result.errors.length ? 1 : result.review.length ? 2 : 0
+-    } catch (error) { console.error(`FAIL: ${error.message}`); process.exitCode = 1 }
+-  }
+-}
+diff --git a/scripts/module-ui-check.test.mjs b/scripts/module-ui-check.test.mjs
+deleted file mode 100644
+index 8d94dc0..0000000
+--- a/scripts/module-ui-check.test.mjs
++++ /dev/null
+@@ -1,322 +0,0 @@
+-import { strict as assert } from 'node:assert'
+-import { test } from 'node:test'
+-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
+-import { tmpdir } from 'node:os'
+-import { join } from 'node:path'
+-import { spawnSync } from 'node:child_process'
+-import { fileURLToPath } from 'node:url'
+-import { checkUiContract, checkResourceDisplay, checkResourceRowOps } from './module-ui-check.mjs'
+-
+-const contract = { surfaces: [{ file: 'page.vue', kind: 'detail', components: [{ name: 'DetailView', from: '@southneuhof/loom' }] }] }
+-const page = '<script setup lang="ts">import { DetailView as RecordView, Button } from "@southneuhof/loom"</script><template><RecordView><template #controls><Button>Close</Button></template></RecordView></template>'
+-const check = (source, selected = contract) => checkUiContract(selected, { read: () => source })
+-
+-test('requires rendered framework imports and resolves capitalized native names', () => {
+-  assert.deepEqual(check(page).errors, [])
+-  assert.deepEqual(check(page).review, [])
+-  for (const source of [
+-    page.replace(', Button', ''),
+-    page.replaceAll('<RecordView>', '<section>').replaceAll('</RecordView>', '</section>'),
+-    page.replace('@southneuhof/loom', './local-copy'),
+-    page.replace('import {', 'import type {'),
+-  ]) assert.ok(check(source).errors.length, source)
+-  assert.deepEqual(check(page.replace('<Button>Close</Button>', '<button>Close</button>')).errors, [])
+-  assert.deepEqual(check(page.replaceAll('RecordView>', 'record-view>')).errors, [])
+-})
+-
+-test('source CLI checks nested pages without a contract and detects missing imports', t => {
+-  const root = mkdtempSync(join(tmpdir(), 'carta-ui-sources-'))
+-  t.after(() => rmSync(root, { recursive: true, force: true }))
+-  mkdirSync(join(root, 'detail'))
+-  writeFileSync(join(root, 'detail.route.vue'), page)
+-  const child = join(root, 'detail', 'index.route.vue')
+-  const run = (...paths) => spawnSync(process.execPath,
+-    [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), '--sources', ...paths], { encoding: 'utf8' })
+-  writeFileSync(child, page)
+-  assert.equal(run(root).status, 0)
+-  writeFileSync(child, page.replace(', Button', ''))
+-  const broken = run(root)
+-  assert.equal(broken.status, 1)
+-  assert.match(broken.stderr, /detail\/index\.route\.vue:1: unresolved component <Button>/)
+-  writeFileSync(child, page.replace('<Button>Close</Button>', '<input type="file">'))
+-  const raw = run(root)
+-  assert.equal(raw.status, 2)
+-  assert.match(raw.stdout, /native <input>/)
+-  assert.equal(run(child).status, 2)
+-  assert.equal(run().status, 1)
+-  assert.equal(run(join(root, 'missing.vue')).status, 1)
+-})
+-
+-test('native interactive controls need source review with file and line', () => {
+-  const raw = {
+-    button: page.replace('<Button>Close</Button>', '<button>Close</button>'),
+-    input: page.replace('<Button>Close</Button>', '<input type="text" value="Close">'),
+-    select: page.replace('<Button>Close</Button>', '<select><option>Close</option></select>'),
+-    textarea: page.replace('<Button>Close</Button>', '<textarea>Close</textarea>'),
+-  }
+-  for (const [tag, source] of Object.entries(raw)) {
+-    const result = check(source)
+-    assert.deepEqual(result.errors, [], tag)
+-    assert.equal(result.review.length, 1, tag)
+-    assert.match(result.review[0], new RegExp(`^page\\.vue:1: native <${tag}> needs source review`))
+-  }
+-  // A gap explains the requirement but the reviewer still resolves the item.
+-  const selected = structuredClone(contract)
+-  selected.surfaces[0].gap = 'A requirement for review'
+-  const gapped = check(raw.button, selected)
+-  assert.deepEqual(gapped.errors, [])
+-  assert.equal(gapped.review.length, 2)
+-  assert.ok(gapped.review.some(item => item.includes('native <button> needs source review')))
+-})
+-
+-test('hidden inputs and layout elements stay silent', () => {
+-  const silent = [
+-    page,
+-    page.replace('<Button>Close</Button>', '<input type="hidden" value="token">'),
+-    page.replace('<Button>Close</Button>', '<INPUT TYPE="HIDDEN" value="token">'),
+-    page.replace('<Button>Close</Button>', '<section><div><span>Close</span></div></section>'),
+-  ]
+-  for (const source of silent) assert.deepEqual(check(source).review, [], source)
+-  const needsReview = [
+-    page.replace('<Button>Close</Button>', '<input value="Close">'),
+-    page.replace('<Button>Close</Button>', '<input :type="kind" value="Close">'),
+-    page.replace('<Button>Close</Button>', '<input v-bind="fields" value="Close">'),
+-  ]
+-  for (const source of needsReview) {
+-    const result = check(source)
+-    assert.deepEqual(result.errors, [], source)
+-    assert.equal(result.review.length, 1, source)
+-    assert.match(result.review[0], /^page\.vue:1: native <input> needs source review/)
+-  }
+-})
+-
+-test('requires a concrete Create override and rejects unused exceptions', () => {
+-  const source = page.replace('#controls', '#create-action')
+-  assert.ok(check(source).errors.some(error => error.includes('Create override')))
+-  const selected = structuredClone(contract)
+-  selected.surfaces[0].extensions = [{ slot: 'create-action', reason: 'Requested split Create menu' }]
+-  assert.deepEqual(check(source, selected).errors, [])
+-  assert.equal(check(source, selected).review.length, 1)
+-  assert.ok(check(page, selected).errors.length)
+-})
+-
+-test('global declarations require source registration, not a type or stub', () => {
+-  const selected = { ...contract, globals: [{ tag: 'SharedWidget', registration: 'main.ts' }] }
+-  const source = page.replace('<Button>', '<SharedWidget>').replace('</Button>', '</SharedWidget>')
+-  for (const registration of ['app.component("SharedWidget", Widget)', 'interface GlobalComponents { SharedWidget: Widget }']) {
+-    const result = checkUiContract(selected, { read: file => file === 'main.ts' ? registration : source })
+-    assert.equal(result.errors.length === 0, registration.startsWith('app.component'))
+-  }
+-})
+-
+-
+-test('resource display checks follow aliases, spreads, raw schemas, and independent surface maps', t => {
+-  const root = mkdtempSync(join(tmpdir(), 'carta-ui-display-'))
+-  t.after(() => rmSync(root, { recursive: true, force: true }))
+-  mkdirSync(join(root, 'apps/web/src/configs'), { recursive: true })
+-  mkdirSync(join(root, 'items'))
+-  writeFileSync(join(root, 'items', 'items.schema.ts'), [
+-    "import { z } from 'zod/v4'",
+-    'export const itemRecordSchema = z.object({',
+-    '  id: z.string(),',
+-    '  name: z.string(),',
+-    '  createdAt: z.date(),',
+-    '  metadata: z.object({ caption: z.string() }),',
+-    '  roles: z.array(z.object({ id: z.string() })),',
+-    '  payload: z.object({ parts: z.array(z.string()) }),',
+-    '  relOwner: z.object({ name: z.string() }),',
+-    '})',
+-    'export const itemCreateSchema = z.object({ name: z.string() })',
+-    '',
+-  ].join('\n'))
+-  writeFileSync(join(root, 'apps/web/src/configs/display.ts'), [
+-    'export const displayPresets = {',
+-    "  createdAt: { format: 'date' },",
+-    '  metadata: { read: record => record.metadata.caption },',
+-    "  roles: { renderer: 'table' },",
+-    '  ownerName: { read: record => record.relOwner.name },',
+-    '  brokenOwner: { read: record => record.missingRel.name },',
+-    '}',
+-  ].join('\n'))
+-  writeFileSync(join(root, 'items', 'items.resource.ts'), [
+-    "import { defineDetail as makeDetail, defineForm as makeForm, defineResource as bindResource, defineTable as makeTable } from '@southneuhof/loom'",
+-    "import { displayPresets as sharedDisplay } from '@/configs/display'",
+-    "import { itemCreateSchema, itemRecordSchema } from './items.schema'",
+-    'const tableColumns = {',
+-    '  name: {},',
+-    '  createdAt: {},',
+-    '  metadata: { ...sharedDisplay.metadata },',
+-    '  roles: sharedDisplay.roles,',
+-    '  payload: {},',
+-    '  ownerName: sharedDisplay.ownerName,',
+-    '  brokenOwner: sharedDisplay.brokenOwner,',
+-    '}',
+-    'const itemTable = makeTable({ schema: itemRecordSchema, columns: { ...tableColumns, createdAt: { ...sharedDisplay.createdAt } } })',
+-    'const itemDetail = makeDetail({ schema: itemRecordSchema, fields: { ...tableColumns, createdAt: sharedDisplay.createdAt } })',
+-    "const itemForm = makeForm({ schema: itemCreateSchema, fields: { name: { renderer: 'text' }, missing: { renderer: 'text' } } })",
+-    'export const items = bindResource({',
+-    "  key: 'items',",
+-    '  identity: record => record.id,',
+-    '  list: { permission: null, table: { ...itemTable, load: async () => [] } },',
+-    '  detail: { permission: null, detail: ({ id }) => ({ ...itemDetail, load: async () => ({ id }) }) },',
+-    '  create: { permission: null, form: itemForm },',
+-    '})',
+-    '',
+-  ].join('\n'))
+-  const result = checkResourceDisplay(['items/items.resource.ts'], { root })
+-  assert.match(result.review.join('\n'), /items\.resource\.ts:\d+: payload \(object, table\) needs explicit display/)
+-  assert.match(result.review.join('\n'), /items\.resource\.ts:\d+: payload \(object, detail\) needs explicit display/)
+-  assert.match(result.errors.join('\n'), /form surface field 'missing' is missing from its schema/)
+-  assert.match(result.errors.join('\n'), /table read accessor for 'brokenOwner' uses 'missingRel', which is missing from its schema/)
+-  assert.ok(!result.errors.some(line => line.includes("ownerName' is missing")), 'declared relation accessor is a valid display key')
+-  assert.ok(!result.review.some(line => line.includes('name (')), 'plain string stays silent')
+-  assert.ok(!result.review.some(line => line.includes('createdAt (')), 'format fragment satisfies date')
+-  assert.ok(!result.review.some(line => line.includes('metadata (object, detail)')), 'read accessor satisfies detail')
+-  assert.ok(!result.review.some(line => line.includes('roles (array, detail)')), 'renderer reference satisfies detail')
+-
+-  const cliRoot = mkdtempSync(join(tmpdir(), 'carta-ui-display-cli-'))
+-  t.after(() => rmSync(cliRoot, { recursive: true, force: true }))
+-  mkdirSync(join(cliRoot, 'items'))
+-  writeFileSync(join(cliRoot, 'items', 'items.schema.ts'), [
+-    "import { z } from 'zod/v4'",
+-    'export const itemRecordSchema = z.object({ payload: z.object({ parts: z.array(z.string()) }) })',
+-  ].join('\n'))
+-  writeFileSync(join(cliRoot, 'items', 'items.resource.ts'), [
+-    "import { defineResource, defineTable } from '@southneuhof/loom'",
+-    "import { itemRecordSchema } from './items.schema'",
+-    'const table = defineTable({ schema: itemRecordSchema, columns: { payload: {} } })',
+-    "export const items = defineResource({ key: 'items', identity: record => record.id, list: { permission: null, table: { ...table, load: async () => ({ data: [] }) } } })",
+-  ].join('\n'))
+-  writeFileSync(join(cliRoot, 'index.route.vue'), [
+-    '<script setup lang="ts">',
+-    "import { ListView } from '@southneuhof/loom'",
+-    "import { items } from './items/items.resource'",
+-    '</script>',
+-    '<template><ListView v-bind="items.list" /></template>',
+-  ].join('\n'))
+-  const cli = spawnSync(process.execPath,
+-    [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), '--sources', cliRoot], { encoding: 'utf8' })
+-  assert.equal(cli.status, 2)
+-  assert.match(cli.stdout, /REVIEW: .*items\/items\.resource\.ts:\d+: payload \(object, table\) needs explicit display/)
+-})
+-
+-test('surface kind prevents declaring only the hand-written replacement', () => {
+-  const source = '<script setup>import { NavigationHeader } from "@southneuhof/loom"</script><template><NavigationHeader/><dl>Fields</dl></template>'
+-  const selected = { surfaces: [{ file: 'page.vue', kind: 'detail', components: [{ name: 'NavigationHeader', from: '@southneuhof/loom' }] }] }
+-  assert.ok(check(source, selected).errors.some(error => error.includes('requires DetailView')))
+-  selected.surfaces[0].gap = 'A requirement for review'
+-  assert.ok(check(source, selected).errors.some(error => error.includes('still requires Detail')))
+-  assert.equal(check(source, selected).review.length, 1)
+-  selected.surfaces[0].components[0].gap = 'A misplaced exception'
+-  assert.ok(check(source, selected).errors.length)
+-})
+-
+-
+-test('CLI keeps an exception separate from a passing check', t => {
+-  const root = mkdtempSync(join(tmpdir(), 'carta-ui-check-'))
+-  t.after(() => rmSync(root, { recursive: true, force: true }))
+-  const manifest = join(root, 'ui-contract.json')
+-  const selected = structuredClone(contract)
+-  writeFileSync(join(root, 'page.vue'), page)
+-  const run = () => {
+-    writeFileSync(manifest, JSON.stringify(selected))
+-    return spawnSync(process.execPath, [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), manifest, root], { encoding: 'utf8' })
+-  }
+-  assert.equal(run().status, 0)
+-  selected.surfaces[0].gap = 'A requirement for independent review'
+-  assert.equal(run().status, 2)
+-  selected.surfaces[0].components[0].name = 'MissingView'
+-  assert.equal(run().status, 1)
+-})
+-
+-test('CLI reports exit 2 for a raw control and keeps 0/1 meanings', t => {
+-  const root = mkdtempSync(join(tmpdir(), 'carta-ui-check-cli-'))
+-  t.after(() => rmSync(root, { recursive: true, force: true }))
+-  const manifest = join(root, 'ui-contract.json')
+-  writeFileSync(manifest, JSON.stringify(contract))
+-  const run = (source) => {
+-    writeFileSync(join(root, 'page.vue'), source)
+-    return spawnSync(process.execPath, [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), manifest, root], { encoding: 'utf8' })
+-  }
+-  const clean = run(page)
+-  assert.equal(clean.status, 0)
+-  assert.match(clean.stdout, /PASS/)
+-  const raw = run(page.replace('<Button>Close</Button>', '<button>Close</button>'))
+-  assert.equal(raw.status, 2)
+-  assert.match(raw.stdout, /REVIEW: page\.vue:1: native <button> needs source review/)
+-  const broken = run(page.replace(', Button', ''))
+-  assert.equal(broken.status, 1)
+-  assert.match(broken.stderr, /FAIL/)
+-})
+-
+-
+-test('record routes cannot bypass the View check by declaring a custom kind', () => {
+-  const selected = structuredClone(contract)
+-  selected.surfaces[0].file = 'detail.route.vue'
+-  selected.surfaces[0].kind = 'custom'
+-  selected.surfaces[0].gap = 'Several record sections'
+-  assert.ok(check(page, selected).errors.some(error => error.includes('requires kind detail')))
+-})
+-
+-
+-test('accepts the public default View import', () => {
+-  const source = '<script setup>import RecordView from "@southneuhof/loom/components/views/DetailView.vue"</script><template><RecordView/></template>'
+-  const selected = structuredClone(contract)
+-  selected.surfaces[0].components = [{ name: 'default', from: '@southneuhof/loom/components/views/DetailView.vue' }]
+-  assert.deepEqual(check(source, selected).errors, [])
+-})
+-
+-
+-test('a justified record layout retains the Detail primitive and requires review', () => {
+-  const source = '<script setup>import { Detail } from "@southneuhof/loom"</script><template><Detail/></template>'
+-  const selected = { surfaces: [{ file: 'detail.route.vue', kind: 'detail', gap: 'A requirement for review', components: [{ name: 'Detail', from: '@southneuhof/loom' }] }] }
+-  const result = check(source, selected)
+-  assert.deepEqual(result.errors, [])
+-  assert.equal(result.review.length, 1)
+-})
+-
+-test('resource row-op sync warns when a declared route or row control misses the row enum', t => {
+-  const root = mkdtempSync(join(tmpdir(), 'carta-ui-rowops-'))
+-  t.after(() => rmSync(root, { recursive: true, force: true }))
+-  const write = (name, content) => writeFileSync(join(root, name), content)
+-  // Detail declared with a route, but the row enum omits 'detail'.
+-  write('detail-missing.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['update'])) })\n")
+-  write('detail-missing.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './detail-missing.entity'\nexport const r = defineResource({ key: 'detail-missing', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, detail: { permission: 'view', route: { name: 'd' }, detail: () => ({}) } })\n")
+-  // Update declared with a route, but the row enum omits 'update'.
+-  write('update-missing.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
+-  write('update-missing.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './update-missing.entity'\nexport const r = defineResource({ key: 'update-missing', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, update: { permission: 'edit', route: { name: 'e' }, form: () => ({}) } })\n")
+-  // Custom pay consumed as a row control, but the row enum omits 'pay'.
+-  write('pay-row.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
+-  write('pay-row.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './pay-row.entity'\nexport const r = defineResource({ key: 'pay-row', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, actions: { pay: { run: async () => ({}), permission: 'pay' } } })\n")
+-  write('pay-row.vue', "<script>const ok = r.actions.pay.withContext({ record }).can(id, input)</script><template><div>x</div></template>\n")
+-  // List-only: no detail declaration, so the enum gap passes.
+-  write('list-only.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['update'])) })\n")
+-  write('list-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './list-only.entity'\nexport const r = defineResource({ key: 'list-only', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} } })\n")
+-  // Collection-only: custom action never called with a row, so it passes.
+-  write('export-collection.entity.ts', "import { z } from 'zod/v4'\nexport const s = z.object({ allowedOperations: z.array(z.enum(['detail'])) })\n")
+-  write('export-collection.resource.ts', "import { defineResource } from '@southneuhof/loom'\nimport './export-collection.entity'\nexport const r = defineResource({ key: 'export-collection', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, actions: { exportAll: { run: async () => ({}), permission: 'export' } } })\n")
+-  write('export-collection.vue', "<script>const ok = r.actions.exportAll.can({ format: 'csv' })</script><template><div>x</div></template>\n")
+-  // Permission-only rows carry no enum, so a declared detail route passes.
+-  write('permission-only.resource.ts', "import { defineResource } from '@southneuhof/loom'\nexport const r = defineResource({ key: 'permission-only', identity: record => record.id, list: { permission: null, route: { name: 'l' }, table: {} }, detail: { permission: 'view', route: { name: 'd' }, detail: () => ({}) } })\n")
+-  const files = ['detail-missing.resource.ts', 'update-missing.resource.ts', 'pay-row.resource.ts', 'list-only.resource.ts', 'export-collection.resource.ts', 'permission-only.resource.ts']
+-  const vueContents = [
+-    "<script>const ok = r.actions.pay.withContext({ record }).can(id, input)</script>",
+-    "<script>const ok = r.actions.exportAll.can({ format: 'csv' })</script>",
+-  ]
+-  const result = checkResourceRowOps(files, { root, vueContents })
+-  assert.equal(result.length, 3)
+-  assert.ok(result.some(item => item.includes('detail-missing') && item.includes("cannot carry 'detail'")), result.join('\n'))
+-  assert.ok(result.some(item => item.includes('update-missing') && item.includes("cannot carry 'update'")), result.join('\n'))
+-  assert.ok(result.some(item => item.includes('pay-row') && item.includes("cannot carry 'pay'")), result.join('\n'))
+-  assert.ok(!result.some(item => item.includes('list-only declares')), result.join('\n'))
+-  assert.ok(!result.some(item => item.includes('export-collection declares')), result.join('\n'))
+-  assert.ok(!result.some(item => item.includes('permission-only declares')), result.join('\n'))
+-  assert.ok(result.every(item => /^.+\.resource\.ts:\d+: /.test(item)), result.join('\n'))
+-  // The sources CLI wires the same rule alongside template checks.
+-  const run = (...paths) => spawnSync(process.execPath,
+-    [fileURLToPath(new URL('./module-ui-check.mjs', import.meta.url)), '--sources', ...paths], { encoding: 'utf8' })
+-  const cli = run(root)
+-  assert.equal(cli.status, 2)
+-  assert.match(cli.stdout, /detail-missing.*cannot carry 'detail'/)
+-  assert.match(cli.stdout, /pay-row.*cannot carry 'pay'/)
+-})
