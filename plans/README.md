@@ -1,5 +1,98 @@
 # File-routing plans
 
+## Automatic development workflow — 2026-10-04
+
+Planned with `improve` at `206768c`. The user selected the recommended
+workflow automation for plans and asked to record the deferred RPC type work.
+This pass changes plan files only. It does not authorize implementation.
+Continuous API development declarations stay disabled.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [082](082-prepare-current-sprindle-tooling.md) | Prepare current compiled tools/public types and replace the active compiler after framework edits | P1 | L | MED | None | TODO |
+| [083](083-restart-api-for-runtime-changes.md) | Restart for API startup source and `.env` changes without compiling routes for those changes | P1 | M | MED | 082 | TODO |
+| [084](084-refresh-rpc-types-before-web-checks.md) | Refresh the actual SDK contract before normal frontend checks/builds | P1 | M | LOW | 082 | TODO |
+| [085](085-detect-stale-sprindle-editor.md) | Detect an old/incomplete installed editor extension through a read-only development check | P2 | M | LOW | 082 | TODO |
+| [086](086-optimize-automatic-dev-rpc-types.md) | Optimize independent type generation, fix watch/publication gaps, then enable live RPC types | P2 | L | HIGH | 082–084 | TODO — DEFERRED by the user |
+
+Recommended immediate order: **082 → 083 → 084 → 085**. Plans 083–085
+share the preparation prerequisite; run changes to shared scripts and
+documentation in that order. Plan 086 is a separate later task. Do not
+include it when executing the immediate workflow work.
+
+Dependencies:
+
+```text
+082 -> 083
+082 -> 084
+082 -> 085
+082 + 083 + 084 -> 086 [deferred]
+```
+
+The deferred plan records the issues that block safe enablement: the SDK
+output path differs from the development manifest path; synchronous compiler
+work sits before runtime publication; type-only dependencies outside routes
+are not watched; and an independent worker will need correct revision,
+publication, and shutdown rules. It includes a compiler feasibility check,
+real SDK consumer proofs, and a baseline/candidate speed gate. Keep the
+default off if those gates fail. Its proposed timing limits are acceptance
+targets, not measured results.
+
+### Vetted findings
+
+| Finding | Category | Impact | Effort | Risk | Confidence | Evidence |
+|---|---|---|---|---|---|---|
+| Preparation treats one existing tool file as proof of freshness | Correctness / DX | Framework edits can leave old commands and public declarations active | L | MED | HIGH | `apps/api/scripts/ensure-tooling.mjs:11–15`; compiled import at `apps/api/scripts/dev.ts:3` |
+| Startup source and environment changes are outside runtime route inputs | Correctness / DX | Server behavior stays old until a manual restart | M | MED | HIGH | `apps/api/scripts/dev.ts:18,37–43`; `apps/api/src/server.ts:22–24`; inspected runtime graph excludes server/application setup |
+| Frontend guard accepts an existing stale contract | Correctness / DX | SDK checks can describe routes/types that no longer exist | M | LOW | HIGH | `apps/web/scripts/ensure-routes-contract.mjs:16–30`; `packages/sdk/src/client.ts:4` |
+| Installed editor copies have no source freshness check | DX | Workspace and editor compiler/types can disagree after updates | M | LOW | HIGH | `packages/sprindle/editor/build.mjs:12–37`; `editor/install.mjs:10–15`; fixed version at `editor/package.json:5` |
+| Directly enabling declarations adds work to runtime publication and misses type-only watch events | Performance / correctness | Automatic RPC types can be slow or remain stale | L | HIGH | HIGH for source/watch gaps; executor speed unverified | `manifest.ts:83–88,178,215,221,323–332,506–590`; same-session type-only fixture in Plan 086 |
+
+Scope: Carta API development scripts, Sprindle tooling/public declaration
+preparation and editor packaging, the SDK type import, frontend contract guard,
+and related validation/docs. This is a focused development-workflow review.
+Business modules, Loom behavior, frontend page design, production security,
+and deployment were not audited. Dependency versions were read to specify
+supported commands; no dependency upgrade or general vulnerability audit is
+part of this work.
+
+No builds, tests, servers, migrations, installations, or benchmarks ran during
+this planning pass. Earlier same-session evidence is identified in the plans.
+In particular, the API development proof's whole duration is not evidence
+of route compilation speed. Plan 086 requires a new measured baseline.
+
+### Reconciliation with existing plans
+
+- [005](005-skip-dev-declarations.md) and
+  [006](006-single-dev-compile.md) remain valid: preserve disabled inline
+  declarations and one startup runtime compile.
+- [007](007-narrow-route-watcher.md) remains valid: Plan 083 adds a local
+  application restart watcher, not a broader route compilation watcher.
+- [009](009-limit-route-declaration-inputs.md),
+  [010](010-reuse-route-declarations.md), and
+  [011](011-build-route-bundle-once.md) remain completed foundations.
+  Preserve narrow roots, complete cache proofs, and one runtime bundle analysis.
+- [042](042-gate-type-check-on-route-contract.md) remains historical DONE
+  work for a missing contract. Plan 084 extends that guard to current inputs;
+  it does not repeat the original existence check.
+- [078–081](078-make-entity-declarations-portable.md) remain the current
+  schema ownership/import architecture. Generated RPC declarations do not
+  replace physical backend schema imports or require another contract package.
+
+### Considered and rejected
+
+| Proposal | Decision and evidence |
+|---|---|
+| Enable the current declaration flag now | Deferred by the user. The wrong output path and inline synchronous work are documented in Plan 086. |
+| Watch the whole API project with the route compiler | Keep Plan 007's narrow contract. Startup changes need a separate restart path. |
+| Add another schema/contract package or virtual import aliases | Keep the completed Plans 078–081 architecture and existing SDK contract export. |
+| Automate frontend file-route generation again | Already handled by Vue Router in `apps/web/vite.config.ts` and the existing `routes:generate` check step. |
+| Install or replace the editor extension automatically | External installation remains explicit. Plan 085 only detects an existing stale installation. |
+| Automatically discover/register database domains | `apps/api/src/domains.ts:1–6` is deliberate application configuration. Preserve explicit registration. |
+| Automatically generate/apply migrations or seed permissions | These are database writes with review/target requirements. Preserve explicit commands in `apps/api/package.json:23–37`. |
+| Add another database readiness command | Existing `setup:local` and `module:preflight` own that workflow. An extra read-only pending-state notice is optional and not selected here. |
+| Treat marker-only guard tests as workflow proof | Plan 084 replaces only the scoped tests with actual CLI and SDK consumer outcomes. No general test rewrite is selected. |
+
 ## Colocated portable schemas — 2026-10-01
 
 Planned with `improve` at `8046201`. The user approved backend module
