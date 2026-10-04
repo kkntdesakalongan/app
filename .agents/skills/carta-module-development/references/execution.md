@@ -40,9 +40,10 @@ credentials do not imply reset authority. Demo data and account changes need
 scope beyond the required system seed.
 
 For entity changes, inspect connected-entity and audit references before
-migration generation. Keep required constraints and SQL consistent. After route
-changes, run the current supported route/type generation before diagnosing
-stale route names as application errors.
+migration generation. Keep required constraints and SQL consistent.
+
+For stale tooling, route types, or reload errors, read the
+[API development guidance](../../../../apps/api/README.md#development).
 
 ## Boundary checks
 

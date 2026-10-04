@@ -26,9 +26,10 @@ as unverified.
 | Migration | SQL review and relevant existing-data checks on an authorized target |
 | Resource declarations | Current surface architecture check plus affected type checks |
 
-Use current package scripts for focused tests, type checks, and lint. Broaden
-checks when impact crosses owners. An aggregate count, zero selected tests,
-or skipped cases do not prove a required outcome.
+Use current package scripts for focused tests, type checks, and lint. Use the
+normal web `type-check` or `build` command to refresh RPC types before checking
+consumers. Broaden checks when impact crosses owners. An aggregate count, zero
+selected tests, or skipped cases do not prove a required outcome.
 
 ## Test ownership
 
