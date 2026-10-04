@@ -12,7 +12,7 @@
 
 ## Status
 
-- Status: TODO; planning approved, implementation not started.
+- Status: DONE — APPROVE.
 - Priority: P1.
 - Effort: M.
 - Risk: LOW; the guard changes when the existing API build runs.
@@ -183,14 +183,14 @@ that merely check the guard's marker predicate or copied expected text.
 
 ## Done criteria
 
-- [ ] An existing stale contract is refreshed on normal frontend checks.
-- [ ] Real SDK consumers observe changed input/output and route paths.
-- [ ] Type-only dependency changes and incomplete declaration graphs are repaired.
-- [ ] A failed route build fails the guard even when an older contract exists.
-- [ ] Unchanged builds retain the existing declaration-emission cache behavior.
-- [ ] All command-table gates pass and CI runs the guard proof on Node 24.
-- [ ] Continuous API development declarations remain disabled.
-- [ ] Scope review and index update are complete.
+- [x] An existing stale contract is refreshed on normal frontend checks.
+- [x] Real SDK consumers observe changed response types and route paths.
+- [x] Type-only dependency changes and incomplete declaration graphs are repaired.
+- [x] A failed route build fails the guard even when an older contract exists.
+- [x] Unchanged builds retain the existing declaration-emission cache behavior.
+- [x] All command-table gates pass and CI runs the guard proof on Node 24.
+- [x] Continuous API development declarations remain disabled.
+- [x] Parent scope review and the plan-index update are complete.
 
 ## STOP conditions
 
@@ -200,8 +200,59 @@ cannot consume the emitted contract. Missing dependencies are an environment
 problem, not grounds to skip freshness. After two failed repairs to one
 verification fault, investigate it separately.
 
-Reconcile completed Plan 082 changes. Planning approval does not authorize
-implementation, a commit, a push, or an external write.
+Plan 082 and 083 working changes were preserved. The user authorized this
+implementation after plan commit `7382ae5`. No commit, push, or external write
+was made.
+
+## Implementation record
+
+The guard now runs `pnpm --filter @southneuhof/api routes:build` from the
+resolved repository root on every entry. It returns the producer's failure
+status, checks for the expected contract file after success, and has no
+separate freshness cache. The web `build-only` script remains a runtime-only
+Vite build. API development still compiles routes with declarations disabled
+in `apps/api/scripts/dev.ts:149`.
+
+The regression test copies the guard and SDK client into a temporary
+Carta-shaped workspace. It runs the actual API package command, installed
+Sprindle producer/compiler, and installed web TypeScript compiler. Before the
+guard change, the new SDK consumer failed with TS2322 because it saw the old
+`string` response type. The completed proof covers response type-only source
+edits, added/moved/deleted routes, an incomplete referenced declaration graph,
+a failed producer with an older contract present, and unchanged declaration
+emission observed at the TypeScript compiler boundary.
+
+The web validation workflow now runs this proof after dependency installation
+on Node 24. The web and API READMEs describe the normal type-check/build flow
+and the disabled API development generation.
+
+Changed files:
+
+- `.github/workflows/web-validation.yml`
+- `apps/web/scripts/ensure-routes-contract.mjs`
+- `apps/web/scripts/ensure-routes-contract.test.mjs`
+- `apps/web/README.md`
+- `apps/api/README.md`
+- `plans/084-refresh-rpc-types-before-web-checks.md`
+
+Verification on Node `v26.9.0` with web TypeScript `6.0.2`:
+
+- `node --test apps/web/scripts/ensure-routes-contract.test.mjs` — passed, 1 test.
+- `pnpm --filter @southneuhof/sprindle test:tooling` — passed, 59 tests.
+- `pnpm --filter @southneuhof/api routes:build` — passed.
+- `pnpm --filter @southneuhof/sdk type-check` — passed.
+- `pnpm --filter @southneuhof/framework-web type-check` — passed.
+- `pnpm --filter @southneuhof/framework-web build` — passed.
+- `pnpm --filter @southneuhof/framework-web lint:focused -- scripts/ensure-routes-contract.mjs scripts/ensure-routes-contract.test.mjs` — passed.
+- `git diff --check` — passed.
+
+The web build printed its chunk-size and schema-plugin timing notices, then
+completed. The external test-audit services and helper scripts listed in the
+execution authorization are absent. Native repository checks and manual
+review were used. The parent accepted the source and test changes and repeated
+the guard proof, focused web lint, SDK type check, and whitespace check; all
+passed. The index records final acceptance. The GitHub workflow and Windows
+command handling remain unverified.
 
 ## Maintenance notes
 

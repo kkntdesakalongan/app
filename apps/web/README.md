@@ -47,7 +47,7 @@ local query state that never touches the URL, and exceptional `read` and
 
 ## Requirements
 
-- Node.js 18+ (recommended)
+- Node.js 24+
 - pnpm at the monorepo root
 
 ## Getting Started
@@ -63,15 +63,21 @@ Or run the web app directly from `apps/web` with the package scripts defined in 
 ## Available Scripts
 
 - `dev` - start Vite dev server
-- `build` - build for production
+- `build` - refresh API RPC types, run the type check, and build for production
+- `build-only` - build the Vite bundle without type checking or RPC type refresh
 - `preview` - preview production build with the port from `apps/web/.env`
 - `test` - run unit tests with Vitest (`jsdom`)
 - `test:unit` - same as `test`
 - `test:browser` - run the registered surface parity tests in a browser
-- `type-check` - run type checking via `vue-tsc`
+- `type-check` - refresh API RPC types, generate file-route types, and run `vue-tsc`
 - `lint` - run Oxlint, the ESLint fallback, and Oxfmt
 - `format` - format supported files with Oxfmt
 - `format:check` - check formatting with Oxfmt
+
+Normal `type-check` and `build` run `pnpm --filter @southneuhof/api routes:build`
+before web validation. The API route builder owns declaration freshness and
+reuses its cache when route inputs do not change. API development keeps
+continuous RPC declaration generation disabled.
 
 ## Environment Variables
 

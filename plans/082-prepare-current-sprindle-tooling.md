@@ -12,7 +12,7 @@
 
 ## Status
 
-- Status: TODO; planning approved, implementation not started.
+- Status: DONE — APPROVE after parent review.
 - Priority: P1; prerequisite for Plans 083–085.
 - Effort: L.
 - Risk: MED; output publication and process shutdown affect all API commands.
@@ -20,6 +20,7 @@
 - Confidence: HIGH for the stale-output gap; the receipt and launcher are proposed work.
 - Depends on: none.
 - Planned at: commit `206768c`, 2026-10-04.
+- Parent review accepted the source and tests after two focused revision rounds.
 
 ## Why this matters
 
@@ -233,15 +234,90 @@ It may not supply the outputs the producer is meant to build.
 
 ## Done criteria
 
-- [ ] Stale source plus an existing `index.js` produces current usable tools.
-- [ ] Missing or damaged outputs are repaired; unchanged outputs avoid a build.
-- [ ] Failed preparation retains the prior working worker and never certifies partial output.
-- [ ] Active framework edits replace the compiler process after successful preparation.
-- [ ] New Node proofs, existing development proof, package/API/SDK checks and lint pass.
-- [ ] Full API suite passes on its guarded isolated target, or the plan remains open with the exact missing evidence.
-- [ ] CI runs the new proofs.
-- [ ] API development still uses `.sprindle-dev/routes.mjs` with declarations disabled.
-- [ ] Scope and whitespace checks pass; index status records the final review.
+- [x] Stale source plus an existing `index.js` produces current usable tools.
+- [x] Missing or damaged outputs are repaired; unchanged outputs avoid a build.
+- [x] Failed preparation retains the prior working worker and never certifies partial output.
+- [x] Active framework edits replace the compiler process after successful preparation.
+- [x] New Node proofs, existing development proof, package/API/SDK checks and lint pass.
+- [x] Full API suite passes on its guarded isolated target.
+- [x] CI runs the new proofs.
+- [x] API development still uses `.sprindle-dev/routes.mjs` with declarations disabled.
+- [x] Scope and whitespace checks pass. Parent review and index update are complete.
+
+## Execution evidence
+
+Parent verification passed the 7 real CLI/lifecycle proofs, Sprindle package
+type check, API lint, and whitespace check on the final source. Parent review
+checked the output receipt, publication recovery, process-tree termination,
+and worker replacement. The source remains uncommitted after the planning
+commit. Windows shutdown and remote CI remain unverified.
+
+The pre-fix preparation proof failed for the intended reason: after the fixture
+changed Sprindle source, the public tooling import still returned `before`
+instead of `after` because the old guard accepted the existing `index.js`.
+
+The first lifecycle review also produced two failing real-boundary regressions.
+With the old shutdown and replacement branches, the delayed-build proof found
+published output after the launcher had closed. The worker-shutdown proof
+timed out waiting for HTTP after the pending edit failed preparation; the log
+claimed the active worker remained, but the worker had already stopped. Both
+proofs pass after the lifecycle repair.
+
+The final producer and lifecycle proofs passed:
+
+- `node --test apps/api/scripts/ensure-tooling.test.mjs apps/api/scripts/dev-launcher.test.mjs` — 7 passed. These use the real producer, public package consumer, HTTP worker, route watcher, and child-process shutdown in temporary Carta-shaped workspaces. The shutdown proof delays the real compiler, verifies the producer process group exits, checks lock/stage cleanup and no late receipt, and checks the port is free. The replacement proof edits during delayed server shutdown, fails the next preparation, reads the last prepared HTTP response, then proves recovery.
+- `pnpm --filter @southneuhof/sprindle type-check` — passed.
+- `pnpm --filter @southneuhof/sprindle test:tooling` — 5 files and 59 tests passed.
+- `pnpm --filter @southneuhof/api type-check` and `pnpm --filter @southneuhof/sdk type-check` — passed.
+- `pnpm --filter @southneuhof/sprindle exec oxlint src tooling` and `pnpm --filter @southneuhof/api lint` — passed.
+- `pnpm --filter @southneuhof/api test:dev-routes` — 1 proof passed.
+- `pnpm module:preflight -- --needs test` — passed for the isolated `carta_api_test` target at `10.8.69.67:54432`.
+- `pnpm --filter @southneuhof/api test` — migrations and all 16 files / 82 tests passed on that guarded target.
+- `git diff --check` — passed.
+
+After the final Windows shutdown import correction, `pnpm --filter @southneuhof/api lint`, `node --test apps/api/scripts/dev-launcher.test.mjs` (3 passed), and `git diff --check` passed. The Windows branch remains unverified on this host.
+
+The receipt records installed identities from TypeScript's selected external
+compiler inputs, plus the direct build tools. This includes `@types/node`
+24.13.3, Drizzle 1.0.0-rc.4, Hono 4.12.27, and Zod 4.5.1 in the current
+workspace. The workspace lockfile content is also fingerprinted, so a change
+to the resolved package graph invalidates the receipt. The inventory reads the
+selected compiler file list; it does not enumerate all of `node_modules`.
+It does not detect manual edits to installed package files that leave their
+version and lockfile unchanged.
+
+The drift check was clean before implementation. The API Vitest script now
+excludes the two `node:test` proof files because Vitest reported “No test suite
+found” when it collected them. Backend CI runs both files directly with Node.
+The test-audit references `openclaw-testing`, `crabbox`, `autoreview`,
+`scripts/run-vitest.mjs`, and `scripts/check-changed.mjs`; those tools or skills
+are not present here. Native repository commands and manual diff review were
+used instead. The shared `plans/README.md` index is owned by the parent and
+awaits its final review.
+
+The preparation tree uses a detached process group and bounded TERM/KILL
+cleanup on POSIX. Windows uses `taskkill.exe /PID <pid> /T /F`, scoped to the
+owned preparation tree. The lifecycle proof ran on macOS; the Windows branch
+was not executed here. Forced Windows termination can leave a staging
+directory and an abandoned lock record; no process holds that lock, and the
+next producer recovers it. Backend CI currently runs these proofs on Ubuntu,
+so there is no Windows lifecycle result to claim.
+
+Files changed by this execution:
+
+- `.github/workflows/backend-validation.yml`
+- `apps/api/README.md`
+- `apps/api/package.json`
+- `apps/api/scripts/dev.ts`
+- `apps/api/scripts/dev-launcher.mjs`
+- `apps/api/scripts/dev-launcher.test.mjs`
+- `apps/api/scripts/ensure-tooling.mjs`
+- `apps/api/scripts/ensure-tooling.test.mjs`
+- `packages/sprindle/package.json`
+- `packages/sprindle/tooling/package-state.mjs`
+- `packages/sprindle/tooling/package.mjs`
+- `pnpm-lock.yaml`
+- `plans/082-prepare-current-sprindle-tooling.md`
 
 ## STOP conditions
 

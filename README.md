@@ -178,11 +178,15 @@ Run web browser tests with:
 pnpm --filter @southneuhof/framework-web test:e2e
 ```
 
-Sprindle also includes a VS Code language extension for its route system. Install the matching version after checkout with:
+Sprindle also includes a VS Code language extension for its route system. Install it after checkout with:
 
 ```sh
 pnpm setup:editor
 ```
+
+API development checks an existing installation and prints this command when
+its files are old or incomplete. The check cannot tell if an open VS Code
+window has reloaded the extension.
 
 ## What you get
 

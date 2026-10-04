@@ -12,7 +12,7 @@
 
 ## Status
 
-- Status: TODO; planning approved, implementation not started.
+- Status: DONE — APPROVE.
 - Priority: P2.
 - Effort: M.
 - Risk: LOW; normal development only reads the installed extension.
@@ -77,12 +77,16 @@ In scope:
 - `packages/sprindle/editor/state.mjs` — create the private editor
   input/receipt logic.
 - `packages/sprindle/editor/build.mjs` — publish a receipt after a valid build.
+- `packages/sprindle/editor/install.mjs` — keep private check/build files out
+  of the installed extension while preserving the existing target and override.
 - `packages/sprindle/editor/test/install.mjs` — cover receipt delivery
   through the actual installer.
 - `scripts/check-editor.mjs` — create the read-only CLI check.
 - `scripts/check-editor.test.mjs` — create installed-state/notice proofs.
 - `apps/api/scripts/dev-launcher.mjs` — invoke the check after preparation.
 - `apps/api/scripts/dev-launcher.test.mjs` — cover nonblocking startup.
+- `apps/api/scripts/dev-runtime-reload.proof.mjs` — copy the actual editor
+  check inputs into the isolated Plan 082 launcher fixture.
 - `.github/workflows/module-tooling-validation.yml` — trigger the check's
   tests for changes to its framework owners.
 - `.github/workflows/backend-validation.yml` — run the focused check proof.
@@ -102,11 +106,11 @@ Run from the repository root with Node 24 or newer.
 | Drift | `git diff --stat 206768c..HEAD -- packages/sprindle/editor scripts/check-editor.mjs scripts/check-editor.test.mjs apps/api/scripts/dev-launcher.mjs apps/api/scripts/dev-launcher.test.mjs .github/workflows/module-tooling-validation.yml .github/workflows/backend-validation.yml README.md apps/api/README.md` | Reconcile Plan 082 and later changes first |
 | Read-only check proof | `node --test scripts/check-editor.test.mjs` | Correct notices, no installation mutations |
 | Installation proof | `pnpm --filter @southneuhof/sprindle test:editor-install` | Actual installer delivers valid state in its owned temporary directory |
-| Launcher proof | `node --test apps/api/scripts/dev-launcher.test.mjs` | Editor check does not block API development |
+| Launcher and Plan 082 proofs | `node --test apps/api/scripts/ensure-tooling.test.mjs apps/api/scripts/dev-launcher.test.mjs` | Editor check does not block API development; all seven Plan 082 proofs pass |
+| API route proof | `pnpm --filter @southneuhof/api test:dev-routes` | Runtime reload proof passes with the reconciled fixture |
 | Root helper suite | `pnpm test:module-tooling` | Root helpers and skill validators pass |
 | Package types | `pnpm --filter @southneuhof/sprindle type-check` | Exit 0 |
-| Editor helper lint | `pnpm --filter @southneuhof/sprindle exec oxlint editor/build.mjs editor/state.mjs` | Exit 0 |
-| Check helper lint | `pnpm --filter @southneuhof/sprindle exec oxlint ../../scripts/check-editor.mjs ../../scripts/check-editor.test.mjs` | Exit 0 |
+| Editor and check helper lint | `node packages/sprindle/node_modules/oxlint/bin/oxlint packages/sprindle/editor/build.mjs packages/sprindle/editor/state.mjs packages/sprindle/editor/install.mjs packages/sprindle/editor/test/install.mjs scripts/check-editor.mjs scripts/check-editor.test.mjs` | Exit 0 |
 | API lint | `pnpm --filter @southneuhof/api lint` | Exit 0 |
 | Scope | `git diff --check` and `git status --short` | Only listed changes; no whitespace errors |
 
@@ -210,14 +214,14 @@ that merely repeat receipt predicates.
 
 ## Done criteria
 
-- [ ] Normal API development detects a stale or incomplete existing installation.
-- [ ] Current installations produce no stale notice.
-- [ ] The check changes no installation contents and creates no absent directory.
-- [ ] The receipt identifies source and compiler/type payload, not only version `0.0.0`.
-- [ ] A check failure does not stop development or trigger a server restart.
-- [ ] Repeated identical state produces at most one reminder per launcher session.
-- [ ] All command-table gates pass and CI runs the new proof.
-- [ ] Documentation keeps installation explicit; scope and index reviews pass.
+- [x] Normal API development detects a stale or incomplete existing installation.
+- [x] Current installations produce no stale notice.
+- [x] The check changes no installation contents and creates no absent directory.
+- [x] The receipt identifies source and compiler/type payload, not only version `0.0.0`.
+- [x] A check failure does not stop development or trigger a server restart.
+- [x] Repeated identical state produces at most one reminder per launcher session.
+- [x] All command-table gates pass and CI runs the new proof.
+- [x] Documentation keeps installation explicit; parent scope and index reviews pass.
 
 ## STOP conditions
 
@@ -227,8 +231,79 @@ payload hashing prevents practical startup; or the plan requires extension
 activation changes. Reconcile Plan 082 first. After two failed repairs to one
 fault, investigate it separately.
 
-Planning approval does not authorize implementation, editor installation,
-a commit, a push, or another external write.
+## Execution record
+
+The producer now records an editor receipt only after it builds the package,
+copies the shipped compiler/type inputs, verifies required output, and confirms
+that the source identity stayed stable. Schema 2 records payload hashes and
+file modes, including executable bits. The private state helper is filtered
+from the installed extension.
+The existing extension ID, install path, and environment override remain the
+same.
+
+The CLI checks current source and the installed receipt without writing files.
+An absent installation is silent. A stale or unverifiable installation gets
+one `pnpm setup:editor` reminder. API development checks after successful
+preparation and before it starts or replaces its worker. The check does not
+stop startup when it cannot compare state. It suppresses repeated reminders
+for the same state and message during one launcher session. The README says
+that a matching install does not prove that VS Code has reloaded the extension;
+the reminder itself only gives the setup command.
+
+Scope reconciliation was required because the private `editor/state.mjs`
+helper must stay out of the installed extension. The authorized change to
+`editor/install.mjs` uses that helper to preserve the existing target name,
+target path, and `SPRINDLE_VSCODE_EXTENSIONS_DIR` override while excluding
+private build/check files. Plan 082's runtime-reload proof also copies the
+actual editor input files into its isolated fixture because the launcher now
+imports the real checker; the fixture still runs the real producer and keeps
+its HTTP, artifact, and lifecycle assertions. The launcher fixture copies the
+same actual owners. No fake checker or fallback module path was added.
+
+The PR and push path filters now include the editor files and shared
+`package-state.mjs` owner. Backend CI runs the CLI proof, the real installer
+proof, and focused Oxlint. Both READMEs keep first-time installation explicit
+and document automatic stale detection.
+
+Verification passed:
+
+- `node --test scripts/check-editor.test.mjs` — current, source-stale,
+  no-receipt, missing-server, changed-payload, malformed-receipt, denied-read,
+  absent-install, lost native compiler execute permissions, and no-write proofs.
+- `pnpm --filter @southneuhof/sprindle test:editor-install` — actual producer
+  and installer delivered a valid receipt to their temporary override.
+- `node --test apps/api/scripts/ensure-tooling.test.mjs apps/api/scripts/dev-launcher.test.mjs`
+  — all seven Plan 082 proofs and the stale/absent/unreadable API startup
+  proofs passed.
+- `pnpm --filter @southneuhof/api test:dev-routes` — both API route proofs
+  passed, including the reconciled runtime-reload fixture.
+- `pnpm test:module-tooling` — 73 Node tests and both Python validators passed.
+- `pnpm --filter @southneuhof/sprindle type-check` and
+  `pnpm --filter @southneuhof/api lint` passed.
+- Focused Oxlint passed for the editor producer, installer, CLI, and tests.
+  The package wrapper rejects file paths containing `..`; the equivalent
+  direct repository-root Oxlint command in the command table passed.
+- `git diff --check` passed. The API development command still disables
+  route declarations; Plan 086 remains excluded.
+- A pre-hook launcher proof failed as expected: the API started, but no stale
+  reminder appeared before the hook was added.
+- With a valid temporary installation of about 43 MB, the checker took
+  699 ms and printed no notice. The timing includes process startup and
+  receipt, payload, and mode checks.
+
+The external test-audit services and repository test wrapper/check-changed
+scripts were unavailable. Native project checks and manual review were used
+as the authorized fallback. No check used the default editor directory.
+The executable-mode proof runs on non-root POSIX systems. It is skipped on
+Windows because Windows does not use POSIX execute bits, and as root because
+root can bypass those permission checks. The API runtime-reload fixture now
+creates its editor directory before copying files into it.
+The parent accepted the changes after the permission and fixture-order revision.
+The parent repeated all four read-only editor proofs, all five launcher proofs,
+and both API development proofs; all eleven passed. Focused helper lint and
+the whitespace check also passed. The index records final acceptance. Windows
+runtime behavior and the GitHub workflows remain unverified. Changes are
+uncommitted.
 
 ## Maintenance notes
 

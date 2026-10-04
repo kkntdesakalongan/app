@@ -8,6 +8,24 @@ and auth settings in the created files. `apps/api/.env` holds development,
 holds E2E database and bucket overrides. Check readiness with
 `pnpm module:preflight -- --needs api,test,browser,storage`. The API trusts `APP_ORIGIN` only. Change `API_PORT` and the related API URLs only in `apps/api/.env`; the sample values in `.env.example` are templates. The database is `carta`, admin seed via `CARTA_ADMIN_EMAIL` and `CARTA_ADMIN_PASSWORD`.
 
+## Development
+
+API route commands prepare current Sprindle tools and public declarations before
+they run. The API development command also watches Sprindle source and build
+inputs. A valid framework edit rebuilds the package, closes the active
+development worker, and starts a new one. A failed preparation keeps the
+working worker active until a later edit succeeds. Route development continues
+to use `.sprindle-dev/routes.mjs` in source mode with declarations disabled.
+The worker also watches runtime source under `src` and `.env`. A change to
+startup code or environment restarts the API without compiling routes. Route
+inputs remain owned by the route compiler. RPC type generation stays disabled;
+Plan 086 records the separate work for safe automatic type generation.
+
+Normal web type-check and build run
+`pnpm --filter @southneuhof/api routes:build` before frontend checks. This
+command refreshes the SDK contract at `apps/api/.sprindle/routes.d.ts` and uses
+the existing declaration cache when route inputs do not change.
+
 Auth is served at `/api/auth/*`. All routes except `/health`, `/openapi.json`, and `/api/auth/*` require a valid Better Auth session cookie.
 
 `src/routes/` is the public API surface. Group related route files in folders.
@@ -86,6 +104,8 @@ Normal build, type-check, test, and development commands maintain the private
 route artifact. Developers do not register routes or import generated files.
 Database domains are registered separately in `src/domains.ts`.
 
-Run `pnpm setup:editor` once after checkout to build and install the matching
-Sprindle language extension for VS Code. Route changes then update editor types
-without a development server or a route generation command.
+Run `pnpm setup:editor` after checkout to install the Sprindle language
+extension for VS Code. API development checks an existing installation and
+prints this command when its files are old or incomplete. The check cannot tell
+if an open VS Code window has reloaded the extension. Route changes then update
+editor types without a route generation command.

@@ -4,15 +4,21 @@
 
 Planned with `improve` at `206768c`. The user selected the recommended
 workflow automation for plans and asked to record the deferred RPC type work.
-This pass changes plan files only. It does not authorize implementation.
+The planning pass changed plan files only. It did not authorize implementation.
 Continuous API development declarations stay disabled.
+
+Execution authorized on 2026-10-04: commit the plans, then implement
+Plans 082–085 with GPT-6 Luna at maximum reasoning effort through
+`task-subagent-delegation`. The plans were committed as `7382ae5`.
+Run one plan at a time and review the actual code and verification evidence
+before acceptance. Plan 086 is excluded. No push or merge is authorized.
 
 | Plan | Result | Priority | Effort | Risk | Depends on | Status |
 |---|---|---|---|---|---|---|
-| [082](082-prepare-current-sprindle-tooling.md) | Prepare current compiled tools/public types and replace the active compiler after framework edits | P1 | L | MED | None | TODO |
-| [083](083-restart-api-for-runtime-changes.md) | Restart for API startup source and `.env` changes without compiling routes for those changes | P1 | M | MED | 082 | TODO |
-| [084](084-refresh-rpc-types-before-web-checks.md) | Refresh the actual SDK contract before normal frontend checks/builds | P1 | M | LOW | 082 | TODO |
-| [085](085-detect-stale-sprindle-editor.md) | Detect an old/incomplete installed editor extension through a read-only development check | P2 | M | LOW | 082 | TODO |
+| [082](082-prepare-current-sprindle-tooling.md) | Prepare current compiled tools/public types and replace the active compiler after framework edits | P1 | L | MED | None | DONE — APPROVE; 7 CLI/lifecycle proofs, 59 tooling tests, API 82 tests, types/lint pass; parent proof rerun passed; Windows shutdown unverified |
+| [083](083-restart-api-for-runtime-changes.md) | Restart for API startup source and `.env` changes without compiling routes for those changes | P1 | M | MED | 082 | DONE — APPROVE; HTTP proofs, tooling 59, API 82, types/lint pass; parent reran both HTTP and all three launcher proofs; Windows/remote CI unverified |
+| [084](084-refresh-rpc-types-before-web-checks.md) | Refresh the actual SDK contract before normal frontend checks/builds | P1 | M | LOW | 082 | DONE — APPROVE; real SDK proof, tooling 59, API/SDK/web types and web build/lint pass; parent rerun passed; Windows/remote CI unverified |
+| [085](085-detect-stale-sprindle-editor.md) | Detect an old/incomplete installed editor extension through a read-only development check | P2 | M | LOW | 082 | DONE — APPROVE; CLI/installer, launcher, module-tooling, types/lint pass; parent reran 11 editor/process proofs; Windows/remote CI unverified |
 | [086](086-optimize-automatic-dev-rpc-types.md) | Optimize independent type generation, fix watch/publication gaps, then enable live RPC types | P2 | L | HIGH | 082–084 | TODO — DEFERRED by the user |
 
 Recommended immediate order: **082 → 083 → 084 → 085**. Plans 083–085

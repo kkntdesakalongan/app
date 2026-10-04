@@ -12,7 +12,7 @@
 
 ## Status
 
-- Status: TODO; planning approved, implementation not started.
+- Status: DONE — APPROVE.
 - Priority: P1.
 - Effort: M.
 - Risk: MED; two file watchers must not compete over one restart.
@@ -77,13 +77,17 @@ In scope:
 - `apps/api/scripts/watch-runtime.ts` — create a local runtime file watcher.
 - `apps/api/scripts/dev-runtime-reload.proof.mjs` — create lifecycle proof.
 - `apps/api/scripts/dev-route-reload.proof.mjs` — extend only overlapping lifecycle coverage.
+- `apps/api/scripts/dev-launcher.test.mjs` — copy the runtime watcher into the
+  accepted Plan 082 fixture and remove its stale readiness-log assertion.
 - `apps/api/package.json` — run both proofs through `test:dev-routes`.
 - `packages/sprindle/src/tooling/manifest.ts` — add one input-ownership query
   to the existing watcher handle.
 - `packages/sprindle/src/tooling/manifest.spec.ts` — focused query/watch coverage.
 - `packages/sprindle/docs/reference.md` — document the watcher handle contract.
 - `.github/workflows/backend-validation.yml` — run development proofs.
-- `apps/api/README.md`, this plan, and `plans/README.md`.
+- `apps/api/README.md` and this plan.
+
+The parent owns `plans/README.md` and its status row. Leave it unchanged.
 
 Out of scope: widening Sprindle's compile watch scope; a second route compiler;
 changes to real routes, middleware behavior, domains, schemas, migrations,
@@ -197,14 +201,90 @@ in a unit test or add a production injection flag used only by tests.
 
 ## Done criteria
 
-- [ ] Startup-only source and `.env` edits change HTTP results automatically.
-- [ ] Startup-only edits do not compile a route manifest.
-- [ ] Route-owned events remain compiler-gated and do not cause duplicate restarts.
-- [ ] Startup errors keep the session available for recovery.
-- [ ] Edits during restart reach the final running server.
-- [ ] All command-table checks pass; CI runs both development proofs.
-- [ ] One initial route compile, source mode and disabled declarations remain.
-- [ ] Scope review passes; plan and index record final evidence.
+- [x] Startup-only source and `.env` edits change HTTP results automatically.
+- [x] Startup-only edits do not compile a route manifest.
+- [x] Route-owned events remain compiler-gated and do not cause duplicate restarts.
+- [x] Startup errors keep the session available for recovery.
+- [x] Edits during restart reach the final running server.
+- [x] All command-table checks pass; CI runs both development proofs.
+- [x] One initial route compile, source mode and disabled declarations remain.
+- [x] Scope review passes; plan and index record final evidence.
+
+## Executor report
+
+STATUS: DONE — APPROVE
+
+STEPS:
+
+- Step 1: done. Before the fix, the real development worker kept returning
+  `module-one` after the fixture changed its startup module to `module-two`.
+  After the fix, the HTTP proof passes and the route artifact keeps the same
+  file identity, timestamp, and content hash for startup-only edits.
+- Step 2: done. The watcher handle reports route and current compiler input
+  ownership. Focused tests cover a new import, both symlink paths, deletion,
+  recovery, and ignored paths.
+- Step 3: done. One revision-based coordinator handles both watchers. The HTTP
+  proof covers source creation, replacement, move, deletion and recreation,
+  `.env` reread and recreation, edits during startup, route restart deduplication,
+  invalid startup recovery without a retry loop, and process shutdown.
+- Step 4: done. The package command runs both proofs, CI runs that command after
+  Sprindle preparation, and the API README records runtime and deferred type work.
+- Revision 1: done. The runtime watcher now ignores every `.sprindle*` directory,
+  matching the route watcher's generated-path rule. The existing HTTP ignored-path
+  case covers `src/.sprindle-contract-generated/generated.ts`. The Plan 082 launcher
+  fixture now copies `watch-runtime.ts`; its stale exact readiness-log assertion was
+  removed because its HTTP, artifact, and owned-process checks prove readiness.
+
+VERIFICATION:
+
+- `node --test apps/api/scripts/dev-runtime-reload.proof.mjs`: pass.
+- `node --test --test-name-pattern='framework edits replace' apps/api/scripts/dev-launcher.test.mjs`: 1 proof passes after the fixture repair.
+- `node --test apps/api/scripts/ensure-tooling.test.mjs apps/api/scripts/dev-launcher.test.mjs`: 7 Plan 082 producer/lifecycle proofs pass.
+- `pnpm --filter @southneuhof/api test:dev-routes`: 2 proofs pass after the ignored-path change.
+- Focused `manifest.spec.ts`: 31 tests pass; Sprindle tooling suite: 59 tests
+  pass.
+- Sprindle type-check and lint; API type-check and lint: pass.
+- API type-check and lint pass after revision 1; the Sprindle checks passed in
+  the original implementation run.
+- `pnpm module:preflight -- --needs test`: pass on the guarded test target.
+- API suite: 82 tests pass; the preflight and test migrations use the guarded test target.
+- `git diff --check`: pass. The implementation diff stays within this plan's
+  scope. Existing uncommitted Plan 082 files remain intact.
+
+FILES CHANGED:
+
+- `.github/workflows/backend-validation.yml`
+- `apps/api/README.md`
+- `apps/api/package.json`
+- `apps/api/scripts/dev.ts`
+- `apps/api/scripts/dev-runtime-reload.proof.mjs`
+- `apps/api/scripts/dev-launcher.test.mjs`
+- `apps/api/scripts/watch-runtime.ts`
+- `packages/sprindle/docs/reference.md`
+- `packages/sprindle/src/tooling/manifest.ts`
+- `packages/sprindle/src/tooling/manifest.spec.ts`
+- `plans/083-restart-api-for-runtime-changes.md`
+
+NOTES:
+
+- The external test-audit tools and `scripts/run-vitest.mjs` and
+  `scripts/check-changed.mjs` are absent. Native repository commands and manual
+  review were used as authorized.
+- The runtime process proof ran on macOS. The updated CI workflow was not run on
+  GitHub.
+- Parent review accepted the source and test changes after revision 1. The parent
+  ran both development HTTP proofs and all three launcher lifecycle proofs again;
+  all five passed. API lint and the whitespace check also passed. The index records
+  final acceptance. Windows process behavior remains unverified.
+- Parent reproduced the accepted launcher fixture failure before revision 1:
+  `dev.ts` could not import the uncopied `watch-runtime.ts` and the focused test
+  timed out after 30 seconds. The exact `/Route watcher ready\./` assertion was
+  also stale because the worker logs `Route and runtime watchers ready.`. After
+  copying the runtime watcher and removing that redundant assertion, the focused
+  test passed in 22.3 seconds, all seven Plan 082 producer/lifecycle proofs passed,
+  and `test:dev-routes` passed.
+- Revision 1 adds one in-scope generated-path ignore rule and one ignored path to
+  the existing HTTP case; it adds no predicate-only test or compatibility log.
 
 ## STOP conditions
 

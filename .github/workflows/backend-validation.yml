@@ -144,11 +144,26 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Prove editor receipt delivery through the installer
+        run: pnpm --filter @southneuhof/sprindle test:editor-install
+
+      - name: Prove installed editor state checks
+        run: node --test scripts/check-editor.test.mjs
+
+      - name: Prove tooling preparation and framework reload
+        run: node --test apps/api/scripts/ensure-tooling.test.mjs apps/api/scripts/dev-launcher.test.mjs
+
       - name: Lint sprindle
         run: pnpm --filter @southneuhof/sprindle lint
 
+      - name: Lint editor and installed-state helpers
+        run: node packages/sprindle/node_modules/oxlint/bin/oxlint packages/sprindle/editor/build.mjs packages/sprindle/editor/state.mjs packages/sprindle/editor/install.mjs packages/sprindle/editor/test/install.mjs scripts/check-editor.mjs scripts/check-editor.test.mjs
+
       - name: Type-check sprindle
         run: pnpm --filter @southneuhof/sprindle type-check
+
+      - name: Prove API runtime and route reload
+        run: pnpm --filter @southneuhof/api test:dev-routes
 
       - name: Test sprindle
         run: pnpm --filter @southneuhof/sprindle test
