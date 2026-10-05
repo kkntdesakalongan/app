@@ -282,6 +282,30 @@ function hotUpdateObserver(path) {
   }
 }
 
+function waitForWatchedFile(server, path) {
+  const watchedPath = resolve(path)
+  const isWatched = () => Object.entries(server.watcher.getWatched()).some(([directory, files]) =>
+    files.some((file) => resolve(directory, file) === watchedPath)
+  )
+  if (isWatched()) return Promise.resolve()
+  server.watcher.add(path)
+  return new Promise((resolveAdded, rejectAdded) => {
+    const startedAt = Date.now()
+    const check = () => {
+      if (isWatched()) {
+        resolveAdded()
+        return
+      }
+      if (Date.now() - startedAt >= 5000) {
+        rejectAdded(new Error('Vite did not add the file to its watcher.'))
+        return
+      }
+      setTimeout(check, 25)
+    }
+    check()
+  })
+}
+
 test('build resolves physical user and role schemas and executes their parsers', async (t) => {
   const fixture = createFixture(t)
   const userSchema = '@southneuhof/api/src/routes/(authenticated)/users/schema.ts'
@@ -475,7 +499,7 @@ test('dev removes stale graph edges after a schema changes from safe to unsafe a
   try {
     await server.listen()
     const schemaUrl = `/@fs${fixture.schemaPath}`
-    await server.watcher.add(fixture.schemaPath)
+    await waitForWatchedFile(server, fixture.schemaPath)
     assert.ok(await server.transformRequest('/main.ts'))
     assert.ok(await server.transformRequest(schemaUrl))
     const unsafeUpdate = observer.next()

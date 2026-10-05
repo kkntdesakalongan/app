@@ -54,7 +54,7 @@ function fixture(conflictingAlias = false, typeOnlyAliasConflict = false) {
   }
   mkdirSync(join(apiRoot, 'scripts'), { recursive: true })
   copyFileSync(join(repoRoot, 'apps/api/scripts/ensure-tooling.mjs'), join(apiRoot, 'scripts/ensure-tooling.mjs'))
-  symlinkSync(join(repoRoot, 'apps/api/node_modules'), join(apiRoot, 'node_modules'), 'dir')
+  cpSync(join(repoRoot, 'apps/api/node_modules'), join(apiRoot, 'node_modules'), { recursive: true })
 
   for (const name of ['web']) {
     const packageRoot = join(root, 'apps', name)
@@ -351,7 +351,10 @@ test('checks a projected route import from its generated source location', { tim
   const current = fixture()
   const rootPackage = join(current.root, 'node_modules/@fixture/dual')
   const nestedPackage = join(current.apiRoot, 'src/routes/records/node_modules/@fixture/dual')
-  for (const [packageRoot, value] of [[rootPackage, 'root'], [nestedPackage, 'nested']]) {
+  for (const [packageRoot, value] of [
+    [rootPackage, 'root'],
+    [nestedPackage, 'nested'],
+  ]) {
     put(join(packageRoot, 'package.json'), JSON.stringify({ name: '@fixture/dual', type: 'module', exports: { '.': { types: './types/index.d.ts', default: './runtime/index.js' } } }))
     put(join(packageRoot, 'types/index.d.ts'), `export type Payload = { value: string }; export declare const payload: Payload\n`)
     put(join(packageRoot, 'runtime/index.js'), `export const payload = { value: ${JSON.stringify(value)} }\n`)
@@ -361,7 +364,10 @@ test('checks a projected route import from its generated source location', { tim
   apiConfig.compilerOptions.paths['@fixture/dual'] = [join(rootPackage, 'types/index.d.ts')]
   writeFileSync(apiConfigPath, JSON.stringify(apiConfig))
   put(join(current.apiRoot, 'src/routes/records/tax.ts'), `import { defineRoute } from '@southneuhof/sprindle';export const tax = 'current'\n`)
-  put(join(current.apiRoot, 'src/routes/records/+server.ts'), `import { defineRoute } from '@southneuhof/sprindle';import { payload } from '@fixture/dual';import { tax } from './tax';export const GET=defineRoute({action:()=>({payload,tax})})\n`)
+  put(
+    join(current.apiRoot, 'src/routes/records/+server.ts'),
+    `import { defineRoute } from '@southneuhof/sprindle';import { payload } from '@fixture/dual';import { tax } from './tax';export const GET=defineRoute({action:()=>({payload,tax})})\n`
+  )
   const guarded = runGuard(current)
   assert.equal(guarded.status, 0, outputOf(guarded))
   const edge = routeReceipt(current).edges.find((item) => item.importer.endsWith('/src/routes/records/+server.ts') && item.specifier === '@fixture/dual')
@@ -372,22 +378,31 @@ test('checks a projected route import from its generated source location', { tim
   const local = routeReceipt(current).edges.find((item) => item.importer.endsWith('/src/routes/records/+server.ts') && item.specifier === './tax')
   assert.equal(local.consumerSource, 'routes/records/+server.ts')
   assert.equal(local.consumerSpecifier, './tax')
-  assert.equal(routeReceipt(current).sourceOrigins.some((item) => item.source === 'routes/records/tax.ts' && item.origin.endsWith('/src/routes/records/tax.ts')), true)
+  assert.equal(
+    routeReceipt(current).sourceOrigins.some((item) => item.source === 'routes/records/tax.ts' && item.origin.endsWith('/src/routes/records/tax.ts')),
+    true
+  )
 })
 
 test('rejects a consumer conditional branch that differs from the producer branch', { timeout: 180_000 }, () => {
   const current = fixture()
   const packageRoot = join(current.root, 'node_modules/@fixture/branch')
-  put(join(packageRoot, 'package.json'), JSON.stringify({
-    name: '@fixture/branch',
-    type: 'module',
-    exports: { '.': { browser: { types: './browser/index.d.ts', default: './browser/index.js' }, types: './types/index.d.ts', default: './runtime/index.js' } },
-  }))
+  put(
+    join(packageRoot, 'package.json'),
+    JSON.stringify({
+      name: '@fixture/branch',
+      type: 'module',
+      exports: { '.': { browser: { types: './browser/index.d.ts', default: './browser/index.js' }, types: './types/index.d.ts', default: './runtime/index.js' } },
+    })
+  )
   put(join(packageRoot, 'browser/index.d.ts'), `export type Payload = { value: string }; export declare const payload: Payload\n`)
   put(join(packageRoot, 'browser/index.js'), `export const payload = { value: 'browser' }\n`)
   put(join(packageRoot, 'types/index.d.ts'), `export type Payload = { value: string }; export declare const payload: Payload\n`)
   put(join(packageRoot, 'runtime/index.js'), `export const payload = { value: 'runtime' }\n`)
-  put(join(current.apiRoot, 'src/routes/records/+server.ts'), `import { defineRoute } from '@southneuhof/sprindle';import { payload } from '@fixture/branch';export const GET=defineRoute({action:()=>({value:payload.value})})\n`)
+  put(
+    join(current.apiRoot, 'src/routes/records/+server.ts'),
+    `import { defineRoute } from '@southneuhof/sprindle';import { payload } from '@fixture/branch';export const GET=defineRoute({action:()=>({value:payload.value})})\n`
+  )
   const configPath = join(current.webRoot, 'tsconfig.app.json')
   const config = parseJsonc(readFileSync(configPath, 'utf8'))
   config.compilerOptions.customConditions = ['browser']
