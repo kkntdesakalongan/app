@@ -129,7 +129,7 @@ function writeFixtureValue(workspace, value) {
 }
 
 function launch(workspace) {
-  const child = spawn(process.execPath, ['scripts/dev-launcher.mjs'], { cwd: workspace.apiRoot, env: workspace.env, stdio: ['ignore', 'pipe', 'pipe'] })
+  const child = spawn(process.execPath, ['scripts/dev-launcher.mjs'], { cwd: workspace.apiRoot, detached: process.platform !== 'win32', env: workspace.env, stdio: ['ignore', 'pipe', 'pipe'] })
   let output = ''
   child.stdout.setEncoding('utf8').on('data', (value) => output += value)
   child.stderr.setEncoding('utf8').on('data', (value) => output += value)
@@ -237,6 +237,19 @@ function killOwnedFixtureProcesses(workspace) {
   }
 }
 
+function killLauncherTree(child) {
+  if (!child.pid) return
+  if (process.platform === 'win32') {
+    spawnSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore', windowsHide: true, timeout: 5000 })
+    return
+  }
+  try {
+    process.kill(-child.pid, 'SIGKILL')
+  } catch (error) {
+    if (error?.code !== 'ESRCH') throw error
+  }
+}
+
 function startFixtureLauncher(t, workspace) {
   const launcher = launch(workspace)
   t.after(async () => {
@@ -244,6 +257,7 @@ function startFixtureLauncher(t, workspace) {
       await stopLauncher(launcher.child)
     } catch (error) {
       process.stderr.write(`Fixture launcher cleanup failed: ${error.stack ?? error}\n${launcher.output()}`)
+      killLauncherTree(launcher.child)
       throw error
     } finally {
       if (launcher.child.exitCode === null && launcher.child.signalCode === null) launcher.child.kill('SIGKILL')
