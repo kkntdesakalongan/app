@@ -242,6 +242,9 @@ function startFixtureLauncher(t, workspace) {
   t.after(async () => {
     try {
       await stopLauncher(launcher.child)
+    } catch (error) {
+      process.stderr.write(`Fixture launcher cleanup failed: ${error.stack ?? error}\n${launcher.output()}`)
+      throw error
     } finally {
       if (launcher.child.exitCode === null && launcher.child.signalCode === null) launcher.child.kill('SIGKILL')
       killOwnedFixtureProcesses(workspace)
@@ -360,6 +363,9 @@ test('a denied editor installation read advises and leaves the API running', { s
     await waitForHttp(port, 'before', launcher.output)
     await waitForLog(launcher.output, 'EACCES')
     await waitForLog(launcher.output, 'pnpm setup:editor')
+  } catch (error) {
+    process.stderr.write(`Denied editor fixture failed: ${error.stack ?? error}\n${launcher.output()}`)
+    throw error
   } finally {
     chmodSync(workspace.installedEditor, 0o755)
   }
