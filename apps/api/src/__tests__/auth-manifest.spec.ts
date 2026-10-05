@@ -18,7 +18,7 @@ test.each([
   const output = `${directory}/routes.mjs`
   try {
     const compile = bundle
-      ? spawnSync(process.execPath, [tsx, '--eval', `import {compileRouteManifest} from '@southneuhof/sprindle/tooling';void (async()=>{await compileRouteManifest(${JSON.stringify(root)},'src/routes',${JSON.stringify(output)},true,{declarations:false})})()`], { cwd: root, env: process.env, encoding: 'utf8', timeout: 30_000 })
+      ? spawnSync(process.execPath, [tsx, '--eval', `import {compileRouteManifest} from '@southneuhof/sprindle/tooling';void (async()=>{await compileRouteManifest(${JSON.stringify(root)},'src/routes',${JSON.stringify(output)},true)})()`], { cwd: root, env: process.env, encoding: 'utf8', timeout: 30_000 })
       : spawnSync(process.execPath, [tsx, 'scripts/compile-routes.ts', output], { cwd: root, env: process.env, encoding: 'utf8', timeout: 30_000 })
     expect(compile.status, compile.stderr).toBe(0)
     const artifact = join(root, output)

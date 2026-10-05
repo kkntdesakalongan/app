@@ -1,5 +1,56 @@
 # File-routing plans
 
+## Unified server generator — 2026-10-04
+
+The user selected a generated TypeScript server source graph as the shared
+input for runtime compilation and SDK inference. Planning uses `improve` on
+branch `sprindle_unified_generator` at `dc1bc1d`. Implementation after planning
+is authorized through `task-subagent-delegation` with GPT-6 Luna at maximum
+reasoning effort. Run one plan at a time and wait for the agent's completion
+with the collaboration wait tool. The parent reviews actual code and checks
+before accepting a plan and starting its dependent plan. No commit, push,
+merge, database write, external installation, dependency upgrade, or language
+migration is authorized.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [087](087-generate-typed-server-source.md) | Generate precise scope-bound TypeScript source and compile runtime output from it | P1 | L | HIGH | None | DONE — parent APPROVE; 66 tooling tests, separate TS6 consumers, runtime and publication checks pass |
+| [088](088-use-source-inferred-rpc-contract.md) | Use that source through normal API dev, SDK imports, and frontend checks | P1 | L | HIGH | 087 | DONE — parent APPROVE; real launcher/SDK proof, full Vue types/build, production and browser checks pass |
+| [089](089-retire-rpc-declarations-and-verify-generator.md) | Remove separate RPC emission, measure frontend/editor/runtime cost, and close docs/checks | P1 | L | HIGH | 087, 088 | DONE — parent APPROVE; 220 framework and 60 tooling tests pass; normal dev limits pass, isolated median exception recorded |
+
+Execution order: **087 → parent review → 088 → parent review → 089 → final review**.
+Plan 086 is superseded. The generator remains JavaScript/TypeScript, with a
+file artifact contract that a future native producer can implement. Public
+framework package declarations remain separate from application RPC emission.
+Source-tree pruning, standalone published SDK distribution, compiler package
+extraction, and a native implementation remain outside this migration.
+
+Vetted migration constraints from direct source reads:
+
+| Finding | Category | Impact | Effort | Risk | Confidence | Evidence |
+|---|---|---|---|---|---|---|
+| Scope types exist only in a private checker overlay | Correctness / architecture | Literal server manifests alone cannot give ordinary frontend checkers precise CRUD/context types | L | HIGH | HIGH | `language.ts:101–123,193–219`; real consumer proof in the findings |
+| Runtime output and SDK declarations have separate producers and paths | DX / correctness | API dev can update behavior while client types stay stale | L | HIGH | HIGH | `manifest.ts:50–87`; `apps/api/scripts/dev.ts:143–149`; `apps/api/package.json:44` |
+| Direct source inference checks more backend source | Performance | Removing the type worker moves work into normal frontend checking | M | MED | HIGH for source graph size; editor cost unverified | Existing proof: 613 versus 1,746 compiler files, about 120 versus 250 MiB |
+| Copying ordinary dependencies changes runtime identity | Architecture | Separate table/entity/service instances can disagree with registered runtime objects | M | HIGH | HIGH for duplicate module identity; application failure not claimed | `bindRouteEntities` and application domain/schema imports; prototype copies route dependencies |
+| Old emission tests mix durable and retired contracts | Tests | Removing an emitter must retain consumer precision, reader safety, and failure recovery | M | MED | HIGH | `manifest.spec.ts`, `tooling.spec.ts`, frontend guard test |
+
+This is a focused architecture migration, not a general framework audit.
+Business behavior, permission design, Loom surfaces, production security,
+database operations, and dependency upgrades were not audited. Planning read
+source only and wrote these plans. Pre-existing research files are preserved.
+
+Considered and rejected for this migration:
+
+- A separate type worker or a second endpoint declaration ledger: superseded by
+  the selected source inference architecture.
+- A typed manifest that imports unbound original routes: the existing fixture
+  showed widened CRUD input and missing inherited context.
+- Shipping the research prototype's broad copies and regex import rewrite:
+  preserve ordinary module identity and use parsed import edits instead.
+- Removing all framework declarations, changing SDK transport, adding a new
+  contract package, or porting the generator now: outside the selected scope.
+
 ## Automatic development workflow — 2026-10-04
 
 Planned with `improve` at `206768c`. The user selected the recommended
@@ -19,7 +70,7 @@ before acceptance. Plan 086 is excluded. No push or merge is authorized.
 | [083](083-restart-api-for-runtime-changes.md) | Restart for API startup source and `.env` changes without compiling routes for those changes | P1 | M | MED | 082 | DONE — APPROVE; HTTP proofs, tooling 59, API 82, types/lint pass; parent reran both HTTP and all three launcher proofs; Windows/remote CI unverified |
 | [084](084-refresh-rpc-types-before-web-checks.md) | Refresh the actual SDK contract before normal frontend checks/builds | P1 | M | LOW | 082 | DONE — APPROVE; real SDK proof, tooling 59, API/SDK/web types and web build/lint pass; parent rerun passed; Windows/remote CI unverified |
 | [085](085-detect-stale-sprindle-editor.md) | Detect an old/incomplete installed editor extension through a read-only development check | P2 | M | LOW | 082 | DONE — APPROVE; CLI/installer, launcher, module-tooling, types/lint pass; parent reran 11 editor/process proofs; Windows/remote CI unverified |
-| [086](086-optimize-automatic-dev-rpc-types.md) | Optimize independent type generation, fix watch/publication gaps, then enable live RPC types | P2 | L | HIGH | 082–084 | TODO — DEFERRED by the user |
+| [086](086-optimize-automatic-dev-rpc-types.md) | Optimize independent type generation, fix watch/publication gaps, then enable live RPC types | P2 | L | HIGH | 082–084 | SUPERSEDED — user selected unified source inference in 087–089 |
 
 Recommended immediate order: **082 → 083 → 084 → 085**. Plans 083–085
 share the preparation prerequisite; run changes to shared scripts and

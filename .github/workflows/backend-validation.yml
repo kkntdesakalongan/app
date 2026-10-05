@@ -55,10 +55,10 @@ jobs:
       - name: Build Sprindle tooling from a clean checkout
         run: pnpm --filter @southneuhof/api tooling:ensure
 
-      - name: Test bundled and unbundled manifests
-        run: pnpm --filter @southneuhof/sprindle exec vitest run src/tooling/manifest.spec.ts -t "plan011 builds each manifest once"
+      - name: Test one-pass bundled and unbundled runtime outputs
+        run: pnpm --filter @southneuhof/sprindle exec vitest run src/tooling/manifest.spec.ts -t "builds both runtime modes with one bundler pass"
 
-      - name: Compile api routes without declarations
+      - name: Compile API routes
         run: pnpm --filter @southneuhof/api routes:compile
 
       - name: Build the production api bundle
@@ -162,7 +162,7 @@ jobs:
       - name: Type-check sprindle
         run: pnpm --filter @southneuhof/sprindle type-check
 
-      - name: Prove API runtime and route reload
+      - name: Prove API runtime, route, and source contract reload
         run: pnpm --filter @southneuhof/api test:dev-routes
 
       - name: Test sprindle

@@ -55,7 +55,7 @@ function fixture() {
     const packageRoot = join(root, 'packages', name)
     mkdirSync(packageRoot, { recursive: true })
     copyFileSync(join(repoRoot, 'packages', name, 'package.json'), join(packageRoot, 'package.json'))
-    symlinkSync(join(repoRoot, 'packages', name, 'node_modules'), join(packageRoot, 'node_modules'), 'dir')
+    if (name !== 'sdk') symlinkSync(join(repoRoot, 'packages', name, 'node_modules'), join(packageRoot, 'node_modules'), 'dir')
   }
 
   const workspaceModules = join(root, 'node_modules')
@@ -69,60 +69,64 @@ function fixture() {
   writeFileSync(join(workspaceModules, '.pnpm-workspace-state-v1.json'), JSON.stringify(workspaceState))
   mkdirSync(join(workspaceModules, '@southneuhof'), { recursive: true })
   symlinkSync(apiRoot, join(workspaceModules, '@southneuhof/api'), 'dir')
+  symlinkSync(join(root, 'packages/sdk'), join(workspaceModules, '@southneuhof/sdk'), 'dir')
   symlinkSync(sprindleRoot, join(workspaceModules, '@southneuhof/sprindle'), 'dir')
   symlinkSync(join(repoRoot, 'apps/api/node_modules/hono'), join(workspaceModules, 'hono'), 'dir')
 
   const guardPath = join(root, 'apps/web/scripts/ensure-routes-contract.mjs')
   mkdirSync(dirname(guardPath), { recursive: true })
   copyFileSync(join(webRoot, 'scripts/ensure-routes-contract.mjs'), guardPath)
-  const sdkPath = join(root, 'sdk/client.ts')
+  const sdkPath = join(root, 'packages/sdk/src/client.ts')
   mkdirSync(dirname(sdkPath), { recursive: true })
   copyFileSync(join(repoRoot, 'packages/sdk/src/client.ts'), sdkPath)
-  const compilerLog = join(root, 'compiler-emits.log')
-  const preloadPath = join(root, 'count-emits.mjs')
-  put(
-    preloadPath,
-    `import childProcess from 'node:child_process';import {appendFileSync} from 'node:fs';import {syncBuiltinESMExports} from 'node:module';const original=childProcess.spawnSync;childProcess.spawnSync=function(command,args,...rest){if(args?.includes('--listFiles')&&!args.includes('--listFilesOnly'))appendFileSync(process.env.CARTA_ROUTE_CONTRACT_COMPILER_LOG,'emit\\n');return original.call(this,command,args,...rest)};syncBuiltinESMExports()`
-  )
-
   put(join(apiRoot, 'src/shared/result.ts'), `export type Result = { state: string }\n`)
   put(
     join(apiRoot, 'src/routes/records/+server.ts'),
     `import { defineRoute } from '@southneuhof/sprindle'\nimport type { Result } from '../../shared/result'\nexport const GET = defineRoute({ action: (): Result => ({ state: 'current' }) })\n`
   )
 
-  return { root, apiRoot, guardPath, compilerLog, preloadPath }
+  return { root, apiRoot, guardPath }
 }
 
 function runGuard(current) {
-  const nodeOptions = [process.env.NODE_OPTIONS, `--import=${current.preloadPath}`].filter(Boolean).join(' ')
   return spawnSync(process.execPath, [current.guardPath], {
     cwd: join(current.root, 'apps/web'),
     encoding: 'utf8',
-    env: { ...process.env, NODE_OPTIONS: nodeOptions, CARTA_ROUTE_CONTRACT_COMPILER_LOG: current.compilerLog },
+    env: { ...process.env },
   })
 }
 
-function compileConsumer(current, name, source, skipLibraryCheck = true) {
+function compileConsumer(current, name, source) {
   const path = join(current.root, 'consumers', `${name}.ts`)
   put(path, source)
-  const arguments_ = [typescriptCompiler, '--pretty', 'false', '--strict', '--noEmit', '--module', 'ESNext', '--moduleResolution', 'Bundler', '--target', 'ES2022', path]
-  if (skipLibraryCheck) arguments_.splice(3, 0, '--skipLibCheck')
-  return spawnSync(process.execPath, arguments_, { cwd: current.root, encoding: 'utf8' })
+  const config = join(current.root, 'consumers/tsconfig.json')
+  put(
+    config,
+    JSON.stringify({
+      compilerOptions: {
+        strict: true,
+        noEmit: true,
+        skipLibCheck: true,
+        module: 'ESNext',
+        moduleResolution: 'Bundler',
+        target: 'ES2022',
+        moduleSuffixes: ['.web', ''],
+        types: ['node'],
+        typeRoots: [join(current.root, 'apps/web/node_modules/@types')],
+      },
+      files: [path],
+    })
+  )
+  return spawnSync(process.execPath, [typescriptCompiler, '--pretty', 'false', '-p', config], { cwd: current.root, encoding: 'utf8' })
 }
 
 function responseConsumer(state, compare = false) {
   const proof = compare ? `if (output.state === ${JSON.stringify(state)}) throw new Error('unexpected response state')` : `const state: ${JSON.stringify(state)} = output.state\nvoid state`
-  return `import type { InferResponseType } from 'hono/client'\nimport type { RpcClient } from '../sdk/client'\ntype Output = InferResponseType<RpcClient['records']['$get'], 200>\ndeclare const output: Output\n${proof}\n`
+  return `import type { InferResponseType } from 'hono/client'\nimport type { RpcClient } from '@southneuhof/sdk/client'\ntype Output = InferResponseType<RpcClient['records']['$get'], 200>\ndeclare const output: Output\n${proof}\n`
 }
 
 function routeConsumer(path) {
-  return `import type { RpcClient } from '../sdk/client'\ndeclare const client: RpcClient\nvoid client${path}.$get\n`
-}
-
-function compilerEmits(current) {
-  if (!existsSync(current.compilerLog)) return 0
-  return readFileSync(current.compilerLog, 'utf8').trim().split(/\r?\n/).filter(Boolean).length
+  return `import type { RpcClient } from '@southneuhof/sdk/client'\ndeclare const client: RpcClient\nvoid client${path}.$get\n`
 }
 
 function outputOf(result) {
@@ -134,22 +138,23 @@ function expectTypeError(result, code) {
   assert.match(outputOf(result), new RegExp(`error TS${code}:`))
 }
 
-test('refreshes the real SDK contract from current API routes on each guard entry', { timeout: 180_000 }, () => {
+test('refreshes the real SDK contract and follows live API source types', { timeout: 180_000 }, () => {
   const current = fixture()
   const first = runGuard(current)
   assert.equal(first.status, 0, `${outputOf(first)}\n${first.error?.stack ?? ''}`)
   const initialResponse = compileConsumer(current, 'initial-response', responseConsumer('other', true))
   assert.equal(initialResponse.status, 0, outputOf(initialResponse))
 
-  const emitsAfterFirstBuild = compilerEmits(current)
-  assert.ok(emitsAfterFirstBuild > 0)
+  const contractPath = join(current.apiRoot, '.sprindle/routes.ts')
+  const firstSource = readFileSync(contractPath, 'utf8')
   const unchanged = runGuard(current)
   assert.equal(unchanged.status, 0, outputOf(unchanged))
-  assert.equal(compilerEmits(current), emitsAfterFirstBuild)
+  assert.equal(readFileSync(contractPath, 'utf8'), firstSource)
 
   put(join(current.apiRoot, 'src/shared/result.ts'), `export type Result = { state: 'current' }\n`)
-  expectTypeError(compileConsumer(current, 'stale-new-response', responseConsumer('current')), '2322')
-  assert.equal(compileConsumer(current, 'stale-old-response', responseConsumer('other', true)).status, 0)
+  assert.equal(compileConsumer(current, 'live-new-response', responseConsumer('current')).status, 0)
+  expectTypeError(compileConsumer(current, 'live-old-response', responseConsumer('other', true)), '2367')
+  assert.equal(readFileSync(contractPath, 'utf8'), firstSource)
 
   const refreshed = runGuard(current)
   assert.equal(refreshed.status, 0, outputOf(refreshed))
@@ -171,28 +176,19 @@ test('refreshes the real SDK contract from current API routes on each guard entr
   expectTypeError(compileConsumer(current, 'old-route-path', routeConsumer("['records']")), '7053')
   expectTypeError(compileConsumer(current, 'deleted-route', routeConsumer("['added']")), '7053')
 
-  const contractPath = join(current.apiRoot, '.sprindle/routes.d.ts')
-  const contractBeforeRepair = readFileSync(contractPath, 'utf8')
-  const modulePath = contractBeforeRepair.match(/typeof import\(["'](\.\/contracts\/[^"']+\/apps\/api\/src\/routes\/archive\/\+server)["']\)/)?.[1]
-  assert.ok(modulePath)
-  const referencedDeclaration = resolve(current.apiRoot, '.sprindle', `${modulePath}.d.ts`)
-  assert.equal(existsSync(referencedDeclaration), true)
-  rmSync(referencedDeclaration)
-  assert.equal(readFileSync(contractPath, 'utf8'), contractBeforeRepair)
-  expectTypeError(compileConsumer(current, 'incomplete-contract', routeConsumer("['archive']"), false), '2307')
-
-  const repaired = runGuard(current)
-  assert.equal(repaired.status, 0, outputOf(repaired))
-  assert.equal(compileConsumer(current, 'complete-contract', routeConsumer("['archive']")).status, 0)
-
   const routePath = join(current.apiRoot, 'src/routes/archive/+server.ts')
   const routeSource = readFileSync(routePath, 'utf8')
+  const sourceBeforeFailure = readFileSync(contractPath, 'utf8')
   put(routePath, `import { defineRoute } from '@southneuhof/sprindle'\nexport const GET = defineRoute({ action: () => {\n`)
   const failedBuild = runGuard(current)
   assert.notEqual(failedBuild.status, 0, outputOf(failedBuild))
   assert.match(outputOf(failedBuild), /routes:build/)
   assert.equal(existsSync(contractPath), true)
+  assert.equal(readFileSync(contractPath, 'utf8'), sourceBeforeFailure)
   put(routePath, routeSource)
+  const recovered = runGuard(current)
+  assert.equal(recovered.status, 0, outputOf(recovered))
+  assert.equal(compileConsumer(current, 'recovered-route', routeConsumer("['archive']")).status, 0)
 })
 
 after(() => {

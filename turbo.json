@@ -1,8 +1,5 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  // Sprindle type-check prepares its command and declaration files. API
-  // type-check prepares the private route artifact. Declared outputs let a
-  // cache hit restore the tools and types needed by dependent packages.
   "futureFlags": {
     // Lets --affected resolve the PR base ref from origin/ on GitHub
     // Actions checkouts where the base branch has no local ref.

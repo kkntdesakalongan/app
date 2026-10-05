@@ -132,6 +132,16 @@ export const invalid = [z.string().safeParse(42), v4.string().safeParse(42)]
   }
 })
 
+test('bundled SDK consumers do not include the generated route source or server runtime', async (t) => {
+  const fixture = createFixture(t)
+  writeMain(fixture, `import { createRpcClient } from '@southneuhof/sdk/client'\nexport const client = createRpcClient('/api')\n`)
+  const result = await build(buildConfig(fixture))
+  const outputs = Array.isArray(result) ? result.flatMap((item) => item.output) : result.output
+  const entry = outputs.find((item) => item.type === 'chunk' && item.isEntry)
+  assert.ok(entry)
+  assert.doesNotMatch(entry.code, /\.sprindle\/routes\.ts|apps\/api\/src\/routes|apps\/api\/src\/db\.ts|@hono\/node-server|from ["']pg["']/)
+})
+
 test('worker builds reject schema dependencies on backend execution', async (t) => {
   const fixture = createFixture(t)
   writeFileSync(join(fixture.webRoot, 'worker.ts'), `import '@southneuhof/api'\n`)

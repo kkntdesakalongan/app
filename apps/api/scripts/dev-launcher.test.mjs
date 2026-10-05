@@ -269,7 +269,7 @@ test('framework edits replace the compiler, retain the worker after failure, and
   assert.equal(launcher.output().split('pnpm setup:editor').length - 1, 1)
   assert.equal(buildCount(workspace), 1)
   await waitFor(() => existsSync(join(workspace.apiRoot, '.sprindle-dev/routes.mjs')), 'source route manifest', launcher.output)
-  assert.equal(existsSync(join(workspace.apiRoot, '.sprindle/routes.d.ts')), false)
+  assert.equal(existsSync(join(workspace.apiRoot, '.sprindle/routes.ts')), true)
 
   const unchangedInput = readFileSync(join(workspace.packageRoot, 'src/tooling/index.ts'), 'utf8')
   writeFileSync(join(workspace.packageRoot, 'src/tooling/index.ts'), unchangedInput)

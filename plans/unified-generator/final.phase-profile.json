@@ -1,0 +1,821 @@
+{
+  "generatedAt": "2026-10-04T23:30:41Z",
+  "command": "temporary instrumented copies of current source and immutable dc1bc1d manifest; five 24-route source-mode generations per variant; declarations disabled in baseline to match runtime-only baseline",
+  "host": {
+    "platform": "darwin",
+    "node": "v26.9.0"
+  },
+  "routeCount": 24,
+  "instrumentation": "Copied package source under node_modules temporary profile directory; no production instrumentation hooks or source edits.",
+  "samples": [
+    {
+      "iteration": 1,
+      "mode": "current",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 29.569458,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "resolverSettings",
+          "durationMs": 0.7565,
+          "configFiles": 1
+        },
+        {
+          "name": "ambientDiscoveryAndParsing",
+          "durationMs": 3.619958,
+          "ambientSources": 0
+        },
+        {
+          "name": "routeDependencyResolutionAndParsing",
+          "durationMs": 3.215792,
+          "modules": 24,
+          "parsedModules": 24
+        },
+        {
+          "name": "routeSourceGraphTotal",
+          "durationMs": 7.703291,
+          "modules": 24,
+          "runtimeInputs": 24
+        },
+        {
+          "name": "projectionAndSourceMapConstruction",
+          "durationMs": 5.963291,
+          "generatedFiles": 48,
+          "projectedModules": 24,
+          "bytes": 40582
+        },
+        {
+          "name": "serialStageFileWrites",
+          "durationMs": 10.926333,
+          "files": 49,
+          "bytes": 45982
+        },
+        {
+          "name": "inputSnapshotsHashAndCycleValidation",
+          "durationMs": 0.700625,
+          "sourceInputs": 24
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 73.783708,
+          "bundle": false,
+          "generatedEntries": 49
+        },
+        {
+          "name": "runtimeInputOwnershipValidation",
+          "durationMs": 2.865125,
+          "metafileInputs": 49
+        },
+        {
+          "name": "bundleFinalizationAndRuntimeStage",
+          "durationMs": 9.34775,
+          "outputBytes": 121694
+        },
+        {
+          "name": "immutableSourcePublish",
+          "durationMs": 0.238542,
+          "files": 50
+        },
+        {
+          "name": "identityCheckAndPointerPublish",
+          "durationMs": 6.036666
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 152.213625
+        }
+      ]
+    },
+    {
+      "iteration": 1,
+      "mode": "baseline",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 20.011708,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 14.283333,
+          "bundle": false,
+          "generatedEntries": 25
+        },
+        {
+          "name": "runtimeInputSnapshotAndHash",
+          "durationMs": 1.542375,
+          "runtimeInputs": 25
+        },
+        {
+          "name": "runtimePublish",
+          "durationMs": 0.353209
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 38.2785
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "mode": "baseline",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 18.260334,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 13.770625,
+          "bundle": false,
+          "generatedEntries": 25
+        },
+        {
+          "name": "runtimeInputSnapshotAndHash",
+          "durationMs": 1.545292,
+          "runtimeInputs": 25
+        },
+        {
+          "name": "runtimePublish",
+          "durationMs": 0.463625
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 37.300167
+        }
+      ]
+    },
+    {
+      "iteration": 2,
+      "mode": "current",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 17.8095,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "resolverSettings",
+          "durationMs": 0.717208,
+          "configFiles": 1
+        },
+        {
+          "name": "ambientDiscoveryAndParsing",
+          "durationMs": 3.427958,
+          "ambientSources": 0
+        },
+        {
+          "name": "routeDependencyResolutionAndParsing",
+          "durationMs": 3.169875,
+          "modules": 24,
+          "parsedModules": 24
+        },
+        {
+          "name": "routeSourceGraphTotal",
+          "durationMs": 7.421667,
+          "modules": 24,
+          "runtimeInputs": 24
+        },
+        {
+          "name": "projectionAndSourceMapConstruction",
+          "durationMs": 4.93475,
+          "generatedFiles": 48,
+          "projectedModules": 24,
+          "bytes": 40582
+        },
+        {
+          "name": "serialStageFileWrites",
+          "durationMs": 10.794542,
+          "files": 49,
+          "bytes": 45982
+        },
+        {
+          "name": "inputSnapshotsHashAndCycleValidation",
+          "durationMs": 0.533458,
+          "sourceInputs": 24
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 25.043958,
+          "bundle": false,
+          "generatedEntries": 49
+        },
+        {
+          "name": "runtimeInputOwnershipValidation",
+          "durationMs": 2.91175,
+          "metafileInputs": 49
+        },
+        {
+          "name": "bundleFinalizationAndRuntimeStage",
+          "durationMs": 9.893417,
+          "outputBytes": 121694
+        },
+        {
+          "name": "immutableSourcePublish",
+          "durationMs": 0.226625,
+          "files": 50
+        },
+        {
+          "name": "identityCheckAndPointerPublish",
+          "durationMs": 6.138625
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 88.799375
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "mode": "current",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 17.741708,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "resolverSettings",
+          "durationMs": 0.721041,
+          "configFiles": 1
+        },
+        {
+          "name": "ambientDiscoveryAndParsing",
+          "durationMs": 3.348541,
+          "ambientSources": 0
+        },
+        {
+          "name": "routeDependencyResolutionAndParsing",
+          "durationMs": 3.239375,
+          "modules": 24,
+          "parsedModules": 24
+        },
+        {
+          "name": "routeSourceGraphTotal",
+          "durationMs": 7.428542,
+          "modules": 24,
+          "runtimeInputs": 24
+        },
+        {
+          "name": "projectionAndSourceMapConstruction",
+          "durationMs": 4.913292,
+          "generatedFiles": 48,
+          "projectedModules": 24,
+          "bytes": 40582
+        },
+        {
+          "name": "serialStageFileWrites",
+          "durationMs": 9.621333,
+          "files": 49,
+          "bytes": 45982
+        },
+        {
+          "name": "inputSnapshotsHashAndCycleValidation",
+          "durationMs": 0.516667,
+          "sourceInputs": 24
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 24.630208,
+          "bundle": false,
+          "generatedEntries": 49
+        },
+        {
+          "name": "runtimeInputOwnershipValidation",
+          "durationMs": 2.727792,
+          "metafileInputs": 49
+        },
+        {
+          "name": "bundleFinalizationAndRuntimeStage",
+          "durationMs": 8.934583,
+          "outputBytes": 121694
+        },
+        {
+          "name": "immutableSourcePublish",
+          "durationMs": 0.242583,
+          "files": 50
+        },
+        {
+          "name": "identityCheckAndPointerPublish",
+          "durationMs": 5.845542
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 85.689916
+        }
+      ]
+    },
+    {
+      "iteration": 3,
+      "mode": "baseline",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 20.227625,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 13.45525,
+          "bundle": false,
+          "generatedEntries": 25
+        },
+        {
+          "name": "runtimeInputSnapshotAndHash",
+          "durationMs": 1.534042,
+          "runtimeInputs": 25
+        },
+        {
+          "name": "runtimePublish",
+          "durationMs": 0.452541
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 37.873208
+        }
+      ]
+    },
+    {
+      "iteration": 4,
+      "mode": "baseline",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 19.440417,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 12.610042,
+          "bundle": false,
+          "generatedEntries": 25
+        },
+        {
+          "name": "runtimeInputSnapshotAndHash",
+          "durationMs": 1.633334,
+          "runtimeInputs": 25
+        },
+        {
+          "name": "runtimePublish",
+          "durationMs": 0.4325
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 36.245208
+        }
+      ]
+    },
+    {
+      "iteration": 4,
+      "mode": "current",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 17.480417,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "resolverSettings",
+          "durationMs": 0.742833,
+          "configFiles": 1
+        },
+        {
+          "name": "ambientDiscoveryAndParsing",
+          "durationMs": 3.339667,
+          "ambientSources": 0
+        },
+        {
+          "name": "routeDependencyResolutionAndParsing",
+          "durationMs": 3.440833,
+          "modules": 24,
+          "parsedModules": 24
+        },
+        {
+          "name": "routeSourceGraphTotal",
+          "durationMs": 7.632666,
+          "modules": 24,
+          "runtimeInputs": 24
+        },
+        {
+          "name": "projectionAndSourceMapConstruction",
+          "durationMs": 4.95575,
+          "generatedFiles": 48,
+          "projectedModules": 24,
+          "bytes": 40582
+        },
+        {
+          "name": "serialStageFileWrites",
+          "durationMs": 10.77425,
+          "files": 49,
+          "bytes": 45982
+        },
+        {
+          "name": "inputSnapshotsHashAndCycleValidation",
+          "durationMs": 0.535666,
+          "sourceInputs": 24
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 24.714208,
+          "bundle": false,
+          "generatedEntries": 49
+        },
+        {
+          "name": "runtimeInputOwnershipValidation",
+          "durationMs": 2.651583,
+          "metafileInputs": 49
+        },
+        {
+          "name": "bundleFinalizationAndRuntimeStage",
+          "durationMs": 9.143917,
+          "outputBytes": 121694
+        },
+        {
+          "name": "immutableSourcePublish",
+          "durationMs": 0.243291,
+          "files": 50
+        },
+        {
+          "name": "identityCheckAndPointerPublish",
+          "durationMs": 5.792416
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 87.049083
+        }
+      ]
+    },
+    {
+      "iteration": 5,
+      "mode": "current",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 17.9905,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "resolverSettings",
+          "durationMs": 0.716916,
+          "configFiles": 1
+        },
+        {
+          "name": "ambientDiscoveryAndParsing",
+          "durationMs": 3.249541,
+          "ambientSources": 0
+        },
+        {
+          "name": "routeDependencyResolutionAndParsing",
+          "durationMs": 3.318375,
+          "modules": 24,
+          "parsedModules": 24
+        },
+        {
+          "name": "routeSourceGraphTotal",
+          "durationMs": 7.387792,
+          "modules": 24,
+          "runtimeInputs": 24
+        },
+        {
+          "name": "projectionAndSourceMapConstruction",
+          "durationMs": 5.085416,
+          "generatedFiles": 48,
+          "projectedModules": 24,
+          "bytes": 40582
+        },
+        {
+          "name": "serialStageFileWrites",
+          "durationMs": 10.634708,
+          "files": 49,
+          "bytes": 45982
+        },
+        {
+          "name": "inputSnapshotsHashAndCycleValidation",
+          "durationMs": 0.535584,
+          "sourceInputs": 24
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 25.399834,
+          "bundle": false,
+          "generatedEntries": 49
+        },
+        {
+          "name": "runtimeInputOwnershipValidation",
+          "durationMs": 2.736792,
+          "metafileInputs": 49
+        },
+        {
+          "name": "bundleFinalizationAndRuntimeStage",
+          "durationMs": 9.213042,
+          "outputBytes": 121694
+        },
+        {
+          "name": "immutableSourcePublish",
+          "durationMs": 0.241667,
+          "files": 50
+        },
+        {
+          "name": "identityCheckAndPointerPublish",
+          "durationMs": 5.761042
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 88.065834
+        }
+      ]
+    },
+    {
+      "iteration": 5,
+      "mode": "baseline",
+      "events": [
+        {
+          "name": "routeDirectoryRead",
+          "durationMs": 20.077958,
+          "routes": 24,
+          "scopes": 0
+        },
+        {
+          "name": "esbuildRuntimeBuildAndSourceMaps",
+          "durationMs": 13.670083,
+          "bundle": false,
+          "generatedEntries": 25
+        },
+        {
+          "name": "runtimeInputSnapshotAndHash",
+          "durationMs": 1.569125,
+          "runtimeInputs": 25
+        },
+        {
+          "name": "runtimePublish",
+          "durationMs": 0.461083
+        },
+        {
+          "name": "compileRouteManifestTotal",
+          "durationMs": 37.821625
+        }
+      ]
+    }
+  ],
+  "summaries": {
+    "baseline": {
+      "compileRouteManifestTotal": {
+        "count": 5,
+        "medianMs": 37.82,
+        "p95Ms": 38.2,
+        "samplesMs": [
+          38.28,
+          37.3,
+          37.87,
+          36.25,
+          37.82
+        ]
+      },
+      "esbuildRuntimeBuildAndSourceMaps": {
+        "count": 5,
+        "medianMs": 13.67,
+        "p95Ms": 14.18,
+        "samplesMs": [
+          14.28,
+          13.77,
+          13.46,
+          12.61,
+          13.67
+        ]
+      },
+      "routeDirectoryRead": {
+        "count": 5,
+        "medianMs": 20.01,
+        "p95Ms": 20.2,
+        "samplesMs": [
+          20.01,
+          18.26,
+          20.23,
+          19.44,
+          20.08
+        ]
+      },
+      "runtimeInputSnapshotAndHash": {
+        "count": 5,
+        "medianMs": 1.55,
+        "p95Ms": 1.62,
+        "samplesMs": [
+          1.54,
+          1.55,
+          1.53,
+          1.63,
+          1.57
+        ]
+      },
+      "runtimePublish": {
+        "count": 5,
+        "medianMs": 0.45,
+        "p95Ms": 0.46,
+        "samplesMs": [
+          0.35,
+          0.46,
+          0.45,
+          0.43,
+          0.46
+        ]
+      }
+    },
+    "current": {
+      "ambientDiscoveryAndParsing": {
+        "count": 5,
+        "medianMs": 3.35,
+        "p95Ms": 3.58,
+        "samplesMs": [
+          3.62,
+          3.43,
+          3.35,
+          3.34,
+          3.25
+        ]
+      },
+      "bundleFinalizationAndRuntimeStage": {
+        "count": 5,
+        "medianMs": 9.21,
+        "p95Ms": 9.78,
+        "samplesMs": [
+          9.35,
+          9.89,
+          8.93,
+          9.14,
+          9.21
+        ]
+      },
+      "compileRouteManifestTotal": {
+        "count": 5,
+        "medianMs": 88.07,
+        "p95Ms": 139.53,
+        "samplesMs": [
+          152.21,
+          88.8,
+          85.69,
+          87.05,
+          88.07
+        ]
+      },
+      "esbuildRuntimeBuildAndSourceMaps": {
+        "count": 5,
+        "medianMs": 25.04,
+        "p95Ms": 64.11,
+        "samplesMs": [
+          73.78,
+          25.04,
+          24.63,
+          24.71,
+          25.4
+        ]
+      },
+      "identityCheckAndPointerPublish": {
+        "count": 5,
+        "medianMs": 5.85,
+        "p95Ms": 6.12,
+        "samplesMs": [
+          6.04,
+          6.14,
+          5.85,
+          5.79,
+          5.76
+        ]
+      },
+      "immutableSourcePublish": {
+        "count": 5,
+        "medianMs": 0.24,
+        "p95Ms": 0.24,
+        "samplesMs": [
+          0.24,
+          0.23,
+          0.24,
+          0.24,
+          0.24
+        ]
+      },
+      "inputSnapshotsHashAndCycleValidation": {
+        "count": 5,
+        "medianMs": 0.54,
+        "p95Ms": 0.67,
+        "samplesMs": [
+          0.7,
+          0.53,
+          0.52,
+          0.54,
+          0.54
+        ]
+      },
+      "projectionAndSourceMapConstruction": {
+        "count": 5,
+        "medianMs": 4.96,
+        "p95Ms": 5.79,
+        "samplesMs": [
+          5.96,
+          4.93,
+          4.91,
+          4.96,
+          5.09
+        ]
+      },
+      "resolverSettings": {
+        "count": 5,
+        "medianMs": 0.72,
+        "p95Ms": 0.75,
+        "samplesMs": [
+          0.76,
+          0.72,
+          0.72,
+          0.74,
+          0.72
+        ]
+      },
+      "routeDependencyResolutionAndParsing": {
+        "count": 5,
+        "medianMs": 3.24,
+        "p95Ms": 3.42,
+        "samplesMs": [
+          3.22,
+          3.17,
+          3.24,
+          3.44,
+          3.32
+        ]
+      },
+      "routeDirectoryRead": {
+        "count": 5,
+        "medianMs": 17.81,
+        "p95Ms": 27.25,
+        "samplesMs": [
+          29.57,
+          17.81,
+          17.74,
+          17.48,
+          17.99
+        ]
+      },
+      "routeSourceGraphTotal": {
+        "count": 5,
+        "medianMs": 7.43,
+        "p95Ms": 7.69,
+        "samplesMs": [
+          7.7,
+          7.42,
+          7.43,
+          7.63,
+          7.39
+        ]
+      },
+      "runtimeInputOwnershipValidation": {
+        "count": 5,
+        "medianMs": 2.74,
+        "p95Ms": 2.9,
+        "samplesMs": [
+          2.87,
+          2.91,
+          2.73,
+          2.65,
+          2.74
+        ]
+      },
+      "serialStageFileWrites": {
+        "count": 5,
+        "medianMs": 10.77,
+        "p95Ms": 10.9,
+        "samplesMs": [
+          10.93,
+          10.79,
+          9.62,
+          10.77,
+          10.63
+        ]
+      }
+    }
+  },
+  "baselineCommit": "dc1bc1db2ad7dad2922d49fe60d7e069384555f6",
+  "compilers": {
+    "sprindleTypeScript": "7.0.2",
+    "frontendTypeScript": "6.0.2",
+    "esbuild": "0.25.12"
+  },
+  "profileDetails": {
+    "variants": {
+      "baseline": "immutable dc1bc1d source, declarations disabled to measure runtime only",
+      "current": "current selective source-runtime implementation"
+    },
+    "routeMode": "24-route source runtime, bundle=false",
+    "repetitions": 5,
+    "phases": "Marks were inserted in temporary source copies and removed with those copies after measurement."
+  }
+}
