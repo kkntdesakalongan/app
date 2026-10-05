@@ -126,7 +126,7 @@ function settlePendingChanges() {
 }
 
 watcher.on('all', (event, path) => {
-  if (!['add', 'addDir', 'change', 'unlink', 'unlinkDir'].includes(event)) return
+  if (!['add', 'change', 'unlink'].includes(event)) return
   if (isGeneratedPackagePath(sprindleRoot, path)) return
   log(`Framework input changed: ${path}`)
   settlePendingChanges()
