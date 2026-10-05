@@ -1,5 +1,41 @@
 # File-routing plans
 
+## Enforce route import agreement — 2026-10-05
+
+The user selected a shared check that makes route import agreement part of
+normal API generation and SDK/web type checks. Planning uses `improve` at
+`d47f8bf`. Implementation and parent review are authorized through
+`task-subagent-delegation` with GPT-6 Luna at max reasoning effort. The
+implementation agent owns Plan 091's source edits and checks. The parent
+waits for completion, reviews the actual result, and owns final approval.
+No commit, push, merge, database write, or dependency upgrade is authorized
+for this plan.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [091](091-enforce-route-import-agreement.md) | Record actual route import targets and reject consumer disagreement through normal commands | P1 | L | HIGH | 090 | DONE — parent APPROVE; 70 tooling, 8 web, 1 API, and 34 architecture tests, all types/lint/builds pass; uncommitted |
+
+Order: **091 implementation → two focused revisions → parent APPROVE**.
+
+| Finding | Category | Impact | Effort | Risk | Confidence | Evidence |
+|---|---|---|---|---|---|---|
+| Ordinary helper imports use each consumer's resolver without an agreement check | Correctness / architecture | The SDK can accept types from a different implementation, even with equal type shapes | L | HIGH | HIGH | `packages/sprindle/src/tooling/source.ts:276`; `packages/sprindle/src/tooling/manifest.ts:46` |
+| Web checks only graph freshness; standalone SDK checks only types | DX / correctness | Normal commands can accept a future import disagreement | M | MED | HIGH | `apps/web/scripts/ensure-routes-contract.mjs:12`; `packages/sdk/package.json` |
+
+Scope: route generation, shared resolution verification, real SDK/web command
+integration, focused proof, and current guidance. Current Carta imports have
+no known disagreement. This is prevention, not a reported application bug.
+
+Considered and rejected:
+
+- Compare exported type shapes: equal shapes can hide different implementations.
+- Require identical runtime/declaration package paths: valid packages use
+  separate runtime and declaration files.
+- Add per-route helpers or optional checks: correct behavior must follow from
+  the normal commands.
+- Restore RPC declaration emission or copy ordinary dependencies: retain the
+  current source inference and module identity.
+
 ## Remove legacy platform resolution — 2026-10-05
 
 The user selected full cleanup of the retired shared server/web/mobile

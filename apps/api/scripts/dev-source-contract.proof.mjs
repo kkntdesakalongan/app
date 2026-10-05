@@ -213,6 +213,21 @@ async function artifactState(path) {
   return `${metadata.ino}:${metadata.mtimeNs}:${createHash('sha256').update(contents).digest('hex')}`
 }
 
+async function eventuallyArtifactChange(path, previousState, timeout = 15_000) {
+  const deadline = Date.now() + timeout
+  let lastState = previousState
+  do {
+    try {
+      lastState = await artifactState(path)
+      if (lastState !== previousState) return
+    } catch (error) {
+      lastState = error instanceof Error ? error.message : String(error)
+    }
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 100))
+  } while (Date.now() < deadline)
+  assert.fail(`The generated artifact did not change at ${path}; last state: ${lastState}`)
+}
+
 async function eventuallyJson(base, path, expected, timeout = 15_000) {
   const deadline = Date.now() + timeout
   let last = 'no response'
@@ -411,8 +426,10 @@ test('actual development launcher keeps the SDK source contract current', { time
     assert.notEqual(staleScope.status, 0, outputOf(staleScope))
     assert.match(outputOf(staleScope), /error TS2322:/)
 
+    const previousInputContract = await artifactState(fixture.sourceManifest)
     await replaceFile(join(fixture.routeRoot, 'status/+server.ts'), routeSource(['green', 'yellow']))
     await eventuallyJson(base, '/status', { tenant: 'beta', revision: 'one' })
+    await eventuallyArtifactChange(fixture.sourceManifest, previousInputContract)
     const updatedInput = await compileConsumer(fixture, (name) => consumerSource({ tenant: 'beta', revision: 'two', mode: 'yellow' }))('input-update')
     assert.equal(updatedInput.status, 0, outputOf(updatedInput))
     const staleInput = await compileConsumer(fixture, () => invalidInputSource('status', 'blue'))('stale-input')

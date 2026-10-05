@@ -78,7 +78,10 @@ Normal type-check and build run
 `pnpm --filter @southneuhof/api routes:build` before web validation. The API
 route producer writes `apps/api/.sprindle/routes.ts`, which is the SDK contract
 and shares its inferred handler types with runtime generation. API development
-keeps this source current through its normal route watcher.
+keeps this source current through its normal route watcher. The web type-check
+also compares route imports with the actual TypeScript 6 resolution from
+`tsconfig.vitest.json`. On disagreement it reports the importer, import text,
+API target, web target, and config.
 ## Environment Variables
 
 - `GOOGLE_MAP_API_KEY`: used by map components

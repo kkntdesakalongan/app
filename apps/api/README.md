@@ -29,6 +29,23 @@ command refreshes the SDK contract at `apps/api/.sprindle/routes.ts`. The
 frontend checker reads the generated source graph and its live ordinary
 imports.
 
+## Route import agreement
+
+Route generation records the API compiler and runtime target for each
+supported route import in the immutable source graph. Generation fails if
+those selections disagree. The standalone SDK `type-check` refreshes the API
+contract, then checks imports with its TypeScript 7 `tsconfig.json`. The web
+`type-check` checks imports with TypeScript 6 and `tsconfig.vitest.json`.
+
+A disagreement reports the importer, import text, API target, consumer target,
+and consumer config. A package can use separate runtime and declaration files
+when its `exports` or `main` and `types`/`typings` fields, or its `@types`
+package, declare that relationship. The check validates package identity and
+the selected conditional export branch against the API runtime and compiler.
+It does not prove that a third-party declaration matches its runtime. It
+checks route imports with literal specifiers; computed imports and direct
+compiler or editor checks bypass this command gate.
+
 Auth is served at `/api/auth/*`. All routes except `/health`, `/openapi.json`, and
 `/api/auth/*` require a valid Better Auth session cookie.
 
