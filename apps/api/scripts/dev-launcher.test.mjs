@@ -222,14 +222,14 @@ function waitForClose(child, message) {
 }
 
 function killOwnedFixtureProcesses(workspace) {
-  const pids = [...new Set(ownedProcesses(workspace).map((entry) => entry.pid))].reverse()
-  for (const pid of pids) {
-    if (!processIsAlive(pid)) continue
+  const processes = ownedProcesses(workspace).reverse()
+  for (const { pid, role } of processes) {
+    if (role !== 'ensure' && !processIsAlive(pid)) continue
     if (process.platform === 'win32') {
       spawnSync('taskkill.exe', ['/PID', String(pid), '/F'], { stdio: 'ignore', windowsHide: true, timeout: 5000 })
     } else {
       try {
-        process.kill(pid, 'SIGKILL')
+        process.kill(role === 'ensure' ? -pid : pid, 'SIGKILL')
       } catch (error) {
         if (error?.code !== 'ESRCH') throw error
       }
