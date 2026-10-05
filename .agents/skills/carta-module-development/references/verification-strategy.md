@@ -26,10 +26,15 @@ as unverified.
 | Migration | SQL review and relevant existing-data checks on an authorized target |
 | Resource declarations | Current surface architecture check plus affected type checks |
 
-Use current package scripts for focused tests, type checks, and lint. Use the
-normal web `type-check` or `build` command to refresh RPC types before checking
-consumers. Broaden checks when impact crosses owners. An aggregate count, zero
-selected tests, or skipped cases do not prove a required outcome.
+Use current package scripts for focused tests, type checks, and lint. For route
+contract, dependency, or resolution changes, run the normal SDK and web
+`type-check` commands. They refresh the source contract and check route import
+agreement. Raw compiler and editor checks bypass that gate. For an import
+disagreement, read [route import agreement](../../../../apps/api/README.md#route-import-agreement)
+and repair the reported import or resolution configuration.
+
+Broaden checks when impact crosses owners. An aggregate count, zero selected
+tests, or skipped cases do not prove a required outcome.
 
 ## Test ownership
 
