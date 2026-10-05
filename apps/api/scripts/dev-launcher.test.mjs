@@ -63,6 +63,7 @@ function createWorkspace(t, port, serverCloseDelayMs = 0) {
     "import { appendFileSync } from 'node:fs'",
     "import { fixtureValue } from '@southneuhof/sprindle/tooling'",
     "const server = createServer((_request, response) => { response.setHeader('x-worker-pid', String(process.pid)); response.end(fixtureValue) })",
+    "appendFileSync(process.env.CARTA_DEV_PROCESS_LOG, JSON.stringify({ role: 'worker', pid: process.pid }) + '\\n')",
     "server.listen(Number(process.env.API_PORT), '127.0.0.1')",
     "for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { appendFileSync(process.env.CARTA_DEV_SHUTDOWN_LOG, `${process.pid}\\n`); setTimeout(() => server.close(), Number(process.env.CARTA_DEV_SERVER_CLOSE_DELAY_MS)) })",
     '',
@@ -239,8 +240,12 @@ function killOwnedFixtureProcesses(workspace) {
 function startFixtureLauncher(t, workspace) {
   const launcher = launch(workspace)
   t.after(async () => {
-    await stopLauncher(launcher.child)
-    killOwnedFixtureProcesses(workspace)
+    try {
+      await stopLauncher(launcher.child)
+    } finally {
+      if (launcher.child.exitCode === null && launcher.child.signalCode === null) launcher.child.kill('SIGKILL')
+      killOwnedFixtureProcesses(workspace)
+    }
   })
   return launcher
 }
