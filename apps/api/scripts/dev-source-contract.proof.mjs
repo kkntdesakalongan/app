@@ -149,7 +149,6 @@ async function createFixture(root, port) {
         module: 'ESNext',
         moduleResolution: 'Bundler',
         target: 'ES2022',
-        moduleSuffixes: ['.web', ''],
         types: ['node'],
         typeRoots: [join(root, 'apps/web/node_modules/@types')],
       },

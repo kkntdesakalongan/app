@@ -47,7 +47,6 @@ export default defineConfig(({ command, mode }) => {
     },
     resolve: {
       dedupe: ['vue', 'vue-router'],
-      extensions: ['.web.ts', '.web.tsx', '.web.mts', '.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
       alias: [
         {
           find: '@',

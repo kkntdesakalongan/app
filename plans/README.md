@@ -1,5 +1,40 @@
 # File-routing plans
 
+## Remove legacy platform resolution — 2026-10-05
+
+The user selected full cleanup of the retired shared server/web/mobile
+data-model resolution mechanism. Planning uses `improve` at `39a0768`.
+Implementation, parent review, and one local commit are authorized. Use
+`task-subagent-delegation` with GPT-6 Luna at max reasoning effort. The
+implementation agent owns Plan 090's source edits and checks; the parent owns
+final approval and the commit. No push or merge is authorized.
+
+| Plan | Result | Priority | Effort | Risk | Depends on | Status |
+|---|---|---|---|---|---|---|
+| [090](090-remove-legacy-platform-resolution.md) | Remove platform suffix preferences, obsolete mobile exclusion, app fixture settings, and stale current guidance; reject their return | P1 | M | LOW | None | DONE — parent APPROVE; 34 architecture tests, 60 tooling tests, both real source proofs, API/SDK/web types, web build, and focused lint pass |
+
+Order: **090 implementation → parent review → local commit**.
+
+| Finding | Category | Impact | Effort | Risk | Confidence | Evidence |
+|---|---|---|---|---|---|---|
+| API and web prefer different platform files without current callers | Architecture / correctness | A new source variant can change SDK types independently of API runtime | S | LOW | HIGH | `apps/api/tsconfig.json:7`; `apps/web/tsconfig.app.json:20`; `apps/web/vite.config.ts:50` |
+| App proofs retain retired web selection | Tests / DX | Proof fixtures teach a different resolution policy from the current application | S | LOW | HIGH | `apps/api/scripts/dev-source-contract.proof.mjs:152`; `apps/web/scripts/ensure-routes-contract.test.mjs:113` |
+| Workspace excludes a removed mobile application | Tech debt | Configuration retains an unused old application boundary | S | LOW | HIGH | `pnpm-workspace.yaml:3` |
+
+Scope: current app configuration, source-policy enforcement, affected source
+proofs, and current guidance. Product behavior, database work, dependency
+upgrades, and a general security or performance audit are excluded.
+
+Considered and rejected:
+
+- Remove Sprindle's generic compiler suffix support: it still implements
+  current TypeScript configuration. Retain meaningful coverage with neutral
+  producer/consumer examples.
+- Delete historical plans, measurements, or changelog dependency records:
+  they record prior source states and are not current application behavior.
+- Build a complete runtime/consumer resolution comparison engine now: remove
+  and reject the unused application mechanism first.
+
 ## Unified server generator — 2026-10-04
 
 The user selected a generated TypeScript server source graph as the shared

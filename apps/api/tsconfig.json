@@ -4,7 +4,6 @@
     "strict": true,
     "types": ["node"],
     "module": "esnext",
-    "moduleSuffixes": [".server", ""],
     "paths": {
       "@southneuhof/sdk": ["../../packages/sdk/src/index.ts"],
       "@southneuhof/sdk/*": ["../../packages/sdk/src/*"],

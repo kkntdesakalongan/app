@@ -110,7 +110,6 @@ function compileConsumer(current, name, source) {
         module: 'ESNext',
         moduleResolution: 'Bundler',
         target: 'ES2022',
-        moduleSuffixes: ['.web', ''],
         types: ['node'],
         typeRoots: [join(current.root, 'apps/web/node_modules/@types')],
       },
