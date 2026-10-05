@@ -349,8 +349,11 @@ test('an absent editor installation stays silent while the API starts', { timeou
   const launcher = startFixtureLauncher(t, workspace)
 
   await waitForHttp(port, 'before', launcher.output)
+  await new Promise((resolveDelay) => setTimeout(resolveDelay, 500))
   assert.equal(existsSync(workspace.extensionRoot), false)
   assert.equal(launcher.output().includes('pnpm setup:editor'), false)
+  assert.equal(launcher.output().split('Framework input changed:').length - 1, 0)
+  assert.equal(launcher.output().split('Starting TypeScript development worker...').length - 1, 1)
 })
 
 test('a denied editor installation read advises and leaves the API running', { skip: process.platform === 'win32' || process.getuid?.() === 0, timeout: 60_000 }, async (t) => {

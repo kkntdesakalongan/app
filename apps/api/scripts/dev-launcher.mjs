@@ -159,7 +159,10 @@ function runPreparation() {
 
 async function refreshWatchPaths() {
   const state = packageInputState(sprindleRoot)
-  await watcher.add(state.watchPaths)
+  const addedPaths = state.watchPaths.filter((path) => !frameworkInputState.watchPaths.includes(path))
+  const removedPaths = frameworkInputState.watchPaths.filter((path) => !state.watchPaths.includes(path))
+  if (removedPaths.length > 0) await watcher.unwatch(removedPaths)
+  if (addedPaths.length > 0) await watcher.add(addedPaths)
   frameworkInputState = state
 }
 
