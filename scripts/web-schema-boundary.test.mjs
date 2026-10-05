@@ -282,28 +282,9 @@ function hotUpdateObserver(path) {
   }
 }
 
-function waitForWatchedFile(server, path) {
-  const watchedPath = resolve(path)
-  const isWatched = () => Object.entries(server.watcher.getWatched()).some(([directory, files]) =>
-    files.some((file) => resolve(directory, file) === watchedPath)
-  )
-  if (isWatched()) return Promise.resolve()
-  server.watcher.add(path)
-  return new Promise((resolveAdded, rejectAdded) => {
-    const startedAt = Date.now()
-    const check = () => {
-      if (isWatched()) {
-        resolveAdded()
-        return
-      }
-      if (Date.now() - startedAt >= 5000) {
-        rejectAdded(new Error('Vite did not add the file to its watcher.'))
-        return
-      }
-      setTimeout(check, 25)
-    }
-    check()
-  })
+async function writeAndNotifyChange(server, path, source) {
+  await writeFile(path, source)
+  server.watcher.emit('change', path)
 }
 
 test('build resolves physical user and role schemas and executes their parsers', async (t) => {
@@ -499,18 +480,17 @@ test('dev removes stale graph edges after a schema changes from safe to unsafe a
   try {
     await server.listen()
     const schemaUrl = `/@fs${fixture.schemaPath}`
-    await waitForWatchedFile(server, fixture.schemaPath)
     assert.ok(await server.transformRequest('/main.ts'))
     assert.ok(await server.transformRequest(schemaUrl))
     const unsafeUpdate = observer.next()
-    await writeFile(fixture.schemaPath, "export { operation } from './operation.ts'\n")
+    await writeAndNotifyChange(server, fixture.schemaPath, "export { operation } from './operation.ts'\n")
     await unsafeUpdate
     await assert.rejects(server.transformRequest(schemaUrl), (error) => {
       assertBoundaryFailure(error, ['schema.ts', 'operation.ts'])
       return true
     })
     const safeUpdate = observer.next()
-    await writeFile(fixture.schemaPath, 'export const value = false\n')
+    await writeAndNotifyChange(server, fixture.schemaPath, 'export const value = false\n')
     await safeUpdate
     const safe = await server.transformRequest(schemaUrl)
     assert.ok(safe)
