@@ -55,5 +55,5 @@ at their boundary. Each case owns its fixtures and cleanup. Read
 
 Read `apps/api/package.json` for check commands. API tests migrate their configured
 target: inspect the target guard and `.env.test.example` before running them.
-Run type-check, lint, and affected tests; check consumers when the wire contract
-changes. Report failed or unrun checks.
+Run type-check, lint, and affected tests; check SDK and web consumers when route
+contracts, dependencies, or resolution change. Report failed or unrun checks.

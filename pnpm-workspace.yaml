@@ -1,6 +1,5 @@
 packages:
   - apps/*
-  - '!apps/base-mobile'
   - packages/*
 allowBuilds:
   core-js: true

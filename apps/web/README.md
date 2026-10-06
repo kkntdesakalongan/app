@@ -63,22 +63,25 @@ Or run the web app directly from `apps/web` with the package scripts defined in 
 ## Available Scripts
 
 - `dev` - start Vite dev server
-- `build` - refresh API RPC types, run the type check, and build for production
-- `build-only` - build the Vite bundle without type checking or RPC type refresh
+- `build` - refresh the API route source, run the type check, and build for production
+- `build-only` - build the Vite bundle without type checking or API route source refresh
 - `preview` - preview production build with the port from `apps/web/.env`
 - `test` - run unit tests with Vitest (`jsdom`)
 - `test:unit` - same as `test`
 - `test:browser` - run the registered surface parity tests in a browser
-- `type-check` - refresh API RPC types, generate file-route types, and run `vue-tsc`
+- `type-check` - refresh API route source, generate file-route types, and run `vue-tsc`
 - `lint` - run Oxlint, the ESLint fallback, and Oxfmt
 - `format` - format supported files with Oxfmt
 - `format:check` - check formatting with Oxfmt
 
-Normal `type-check` and `build` run `pnpm --filter @southneuhof/api routes:build`
-before web validation. The API route builder owns declaration freshness and
-reuses its cache when route inputs do not change. API development keeps
-continuous RPC declaration generation disabled.
-
+Normal type-check and build run
+`pnpm --filter @southneuhof/api routes:build` before web validation. The API
+route producer writes `apps/api/.sprindle/routes.ts`, which is the SDK contract
+and shares its inferred handler types with runtime generation. API development
+keeps this source current through its normal route watcher. The web type-check
+also compares route imports with the actual TypeScript 6 resolution from
+`tsconfig.vitest.json`. On disagreement it reports the importer, import text,
+API target, web target, and config.
 ## Environment Variables
 
 - `GOOGLE_MAP_API_KEY`: used by map components

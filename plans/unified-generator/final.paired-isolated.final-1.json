@@ -1,0 +1,1044 @@
+{
+  "generatedAt": "2026-10-04T23:17:17.929Z",
+  "command": "node packages/sprindle/test/generator-performance.proof.mjs --paired-isolated-profile --output plans/unified-generator/final.paired-isolated.final-1.json",
+  "routeCount": 24,
+  "mode": "same isolated 24-route fixture and worker; baseline framework source is archived from the immutable commit; candidate framework source is copied from the current worktree; both use the same installed dependencies and HTTP server harness",
+  "host": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "hostname": "gamers-MacBook-Air.local",
+    "operatingSystemRelease": "27.0.0",
+    "cpuModel": "Apple M1"
+  },
+  "compilers": {
+    "node": "v26.9.0",
+    "sprindleTypeScript": "7.0.2",
+    "tsx": "4.22.4",
+    "esbuild": "0.25.12"
+  },
+  "baseline": {
+    "commit": "dc1bc1db2ad7dad2922d49fe60d7e069384555f6",
+    "frameworkDirectory": "../../../../../private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle",
+    "coldCompile": [
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-rvbN86\",'src/routes','.sprindle-dev/routes.mjs',false,{declarations:false})"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-rvbN86",
+        "elapsedMs": 294.3,
+        "maximumResidentSetSizeBytes": 102629376,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "baseline",
+        "declarations": false,
+        "routeCount": 24
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-5IJggW\",'src/routes','.sprindle-dev/routes.mjs',false,{declarations:false})"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-5IJggW",
+        "elapsedMs": 225.1,
+        "maximumResidentSetSizeBytes": 103104512,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "baseline",
+        "declarations": false,
+        "routeCount": 24
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-MSQDZV\",'src/routes','.sprindle-dev/routes.mjs',false,{declarations:false})"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-MSQDZV",
+        "elapsedMs": 220.88,
+        "maximumResidentSetSizeBytes": 102858752,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "baseline",
+        "declarations": false,
+        "routeCount": 24
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-EoFMCf\",'src/routes','.sprindle-dev/routes.mjs',false,{declarations:false})"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-EoFMCf",
+        "elapsedMs": 227.53,
+        "maximumResidentSetSizeBytes": 101990400,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "baseline",
+        "declarations": false,
+        "routeCount": 24
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-QexbMS\",'src/routes','.sprindle-dev/routes.mjs',false,{declarations:false})"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-QexbMS",
+        "elapsedMs": 224.91,
+        "maximumResidentSetSizeBytes": 104235008,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "baseline",
+        "declarations": false,
+        "routeCount": 24
+      }
+    ],
+    "coldHttpReadiness": [
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-oDyvrQ",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle",
+          "baseline"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1222.94,
+        "maximumResidentSetSizeBytes": 283787264,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1222.94,\"workerMaxRssReported\":110240}",
+        "processElapsedMs": 1496.97,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1222.94,
+        "workerMaxRssReported": 110240,
+        "routeCount": 24,
+        "mode": "baseline"
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-rtSGAT",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle",
+          "baseline"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1042.68,
+        "maximumResidentSetSizeBytes": 281362432,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1042.68,\"workerMaxRssReported\":102704}",
+        "processElapsedMs": 1240.15,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1042.68,
+        "workerMaxRssReported": 102704,
+        "routeCount": 24,
+        "mode": "baseline"
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-edauQS",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle",
+          "baseline"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1055.53,
+        "maximumResidentSetSizeBytes": 283230208,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1055.53,\"workerMaxRssReported\":101856}",
+        "processElapsedMs": 1247.27,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1055.53,
+        "workerMaxRssReported": 101856,
+        "routeCount": 24,
+        "mode": "baseline"
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-IeWv3T",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle",
+          "baseline"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1064.21,
+        "maximumResidentSetSizeBytes": 281690112,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1064.21,\"workerMaxRssReported\":102496}",
+        "processElapsedMs": 1263.23,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1064.21,
+        "workerMaxRssReported": 102496,
+        "routeCount": 24,
+        "mode": "baseline"
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-cBgyfS",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-baseline-8TlZRQ/packages/sprindle",
+          "baseline"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1055.54,
+        "maximumResidentSetSizeBytes": 280936448,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1055.54,\"workerMaxRssReported\":102096}",
+        "processElapsedMs": 1258.26,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1055.54,
+        "workerMaxRssReported": 102096,
+        "routeCount": 24,
+        "mode": "baseline"
+      }
+    ],
+    "warmHttpUpdate": [
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 859.2,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-0",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155810412,
+          "sourceGraphCompileCompleteAt": 1791155810544,
+          "routeWatchAndCompileMs": 132,
+          "serverStopStartedAt": 1791155810544,
+          "serverStopCompletedAt": 1791155810551,
+          "serverCloseMs": 7,
+          "serverStartAt": 1791155810551,
+          "serverReadyAt": 1791155811255,
+          "serverModuleLoadAndListenMs": 704,
+          "httpValidationAt": 1791155811271,
+          "httpValidationAfterListenMs": 16
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 879.84,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-1",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155811272,
+          "sourceGraphCompileCompleteAt": 1791155811409,
+          "routeWatchAndCompileMs": 137,
+          "serverStopStartedAt": 1791155811409,
+          "serverStopCompletedAt": 1791155811416,
+          "serverCloseMs": 7,
+          "serverStartAt": 1791155811416,
+          "serverReadyAt": 1791155812134,
+          "serverModuleLoadAndListenMs": 718,
+          "httpValidationAt": 1791155812151,
+          "httpValidationAfterListenMs": 17
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 868.08,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-2",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155812151,
+          "sourceGraphCompileCompleteAt": 1791155812290,
+          "routeWatchAndCompileMs": 139,
+          "serverStopStartedAt": 1791155812290,
+          "serverStopCompletedAt": 1791155812298,
+          "serverCloseMs": 8,
+          "serverStartAt": 1791155812298,
+          "serverReadyAt": 1791155813003,
+          "serverModuleLoadAndListenMs": 705,
+          "httpValidationAt": 1791155813019,
+          "httpValidationAfterListenMs": 16
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 866.85,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-3",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155813019,
+          "sourceGraphCompileCompleteAt": 1791155813155,
+          "routeWatchAndCompileMs": 136,
+          "serverStopStartedAt": 1791155813155,
+          "serverStopCompletedAt": 1791155813162,
+          "serverCloseMs": 7,
+          "serverStartAt": 1791155813162,
+          "serverReadyAt": 1791155813875,
+          "serverModuleLoadAndListenMs": 713,
+          "httpValidationAt": 1791155813886,
+          "httpValidationAfterListenMs": 11
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 977.9,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-4",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155813886,
+          "sourceGraphCompileCompleteAt": 1791155814133,
+          "routeWatchAndCompileMs": 247,
+          "serverStopStartedAt": 1791155814133,
+          "serverStopCompletedAt": 1791155814142,
+          "serverCloseMs": 9,
+          "serverStartAt": 1791155814142,
+          "serverReadyAt": 1791155814856,
+          "serverModuleLoadAndListenMs": 714,
+          "httpValidationAt": 1791155814864,
+          "httpValidationAfterListenMs": 8
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 868.94,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-5",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155814864,
+          "sourceGraphCompileCompleteAt": 1791155815001,
+          "routeWatchAndCompileMs": 137,
+          "serverStopStartedAt": 1791155815001,
+          "serverStopCompletedAt": 1791155815008,
+          "serverCloseMs": 7,
+          "serverStartAt": 1791155815008,
+          "serverReadyAt": 1791155815715,
+          "serverModuleLoadAndListenMs": 707,
+          "httpValidationAt": 1791155815733,
+          "httpValidationAfterListenMs": 18
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 860.6,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-6",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155815733,
+          "sourceGraphCompileCompleteAt": 1791155815869,
+          "routeWatchAndCompileMs": 136,
+          "serverStopStartedAt": 1791155815869,
+          "serverStopCompletedAt": 1791155815876,
+          "serverCloseMs": 7,
+          "serverStartAt": 1791155815876,
+          "serverReadyAt": 1791155816582,
+          "serverModuleLoadAndListenMs": 706,
+          "httpValidationAt": 1791155816594,
+          "httpValidationAfterListenMs": 12
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 979.29,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-7",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155816594,
+          "sourceGraphCompileCompleteAt": 1791155816841,
+          "routeWatchAndCompileMs": 247,
+          "serverStopStartedAt": 1791155816841,
+          "serverStopCompletedAt": 1791155816850,
+          "serverCloseMs": 9,
+          "serverStartAt": 1791155816850,
+          "serverReadyAt": 1791155817560,
+          "serverModuleLoadAndListenMs": 710,
+          "httpValidationAt": 1791155817573,
+          "httpValidationAfterListenMs": 13
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 855.86,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-8",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155817573,
+          "sourceGraphCompileCompleteAt": 1791155817705,
+          "routeWatchAndCompileMs": 132,
+          "serverStopStartedAt": 1791155817705,
+          "serverStopCompletedAt": 1791155817713,
+          "serverCloseMs": 8,
+          "serverStartAt": 1791155817713,
+          "serverReadyAt": 1791155818416,
+          "serverModuleLoadAndListenMs": 703,
+          "httpValidationAt": 1791155818429,
+          "httpValidationAfterListenMs": 13
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 934.56,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-9",
+        "workerMaxRssReported": 102144,
+        "phases": {
+          "editStartAt": 1791155818429,
+          "sourceGraphCompileCompleteAt": 1791155818641,
+          "routeWatchAndCompileMs": 212,
+          "serverStopStartedAt": 1791155818641,
+          "serverStopCompletedAt": 1791155818649,
+          "serverCloseMs": 8,
+          "serverStartAt": 1791155818649,
+          "serverReadyAt": 1791155819355,
+          "serverModuleLoadAndListenMs": 706,
+          "httpValidationAt": 1791155819363,
+          "httpValidationAfterListenMs": 8
+        }
+      }
+    ]
+  },
+  "candidate": {
+    "frameworkDirectory": "../../../../../private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle",
+    "coldCompile": [
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-6xDBJ7\",'src/routes','.sprindle-dev/routes.mjs',false)"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-6xDBJ7",
+        "elapsedMs": 260.2,
+        "maximumResidentSetSizeBytes": 104742912,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "candidate",
+        "declarations": false,
+        "routeCount": 24
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-efqnR9\",'src/routes','.sprindle-dev/routes.mjs',false)"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-efqnR9",
+        "elapsedMs": 257.93,
+        "maximumResidentSetSizeBytes": 104415232,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "candidate",
+        "declarations": false,
+        "routeCount": 24
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-MKClVL\",'src/routes','.sprindle-dev/routes.mjs',false)"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-MKClVL",
+        "elapsedMs": 261.61,
+        "maximumResidentSetSizeBytes": 103399424,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "candidate",
+        "declarations": false,
+        "routeCount": 24
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-4YwN0T\",'src/routes','.sprindle-dev/routes.mjs',false)"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-4YwN0T",
+        "elapsedMs": 264.07,
+        "maximumResidentSetSizeBytes": 104136704,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "candidate",
+        "declarations": false,
+        "routeCount": 24
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--input-type=module",
+          "--eval",
+          "import { compileRouteManifest } from \"file:///private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle/src/tooling/manifest.ts\";await compileRouteManifest(\"/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-yfI4gT\",'src/routes','.sprindle-dev/routes.mjs',false)"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-yfI4gT",
+        "elapsedMs": 257.81,
+        "maximumResidentSetSizeBytes": 103825408,
+        "exitCode": 0,
+        "signal": null,
+        "mode": "candidate",
+        "declarations": false,
+        "routeCount": 24
+      }
+    ],
+    "coldHttpReadiness": [
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-pzihOZ",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle",
+          "candidate"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1129.03,
+        "maximumResidentSetSizeBytes": 283672576,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1129.03,\"workerMaxRssReported\":111632}",
+        "processElapsedMs": 1324.16,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1129.03,
+        "workerMaxRssReported": 111632,
+        "routeCount": 24,
+        "mode": "candidate"
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-OPx93V",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle",
+          "candidate"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1037.62,
+        "maximumResidentSetSizeBytes": 273629184,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1037.62,\"workerMaxRssReported\":101552}",
+        "processElapsedMs": 1234.93,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1037.62,
+        "workerMaxRssReported": 101552,
+        "routeCount": 24,
+        "mode": "candidate"
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-wi0uFd",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle",
+          "candidate"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1029.39,
+        "maximumResidentSetSizeBytes": 273448960,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1029.39,\"workerMaxRssReported\":101904}",
+        "processElapsedMs": 1221.02,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1029.39,
+        "workerMaxRssReported": 101904,
+        "routeCount": 24,
+        "mode": "candidate"
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-OxUvW5",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle",
+          "candidate"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1031.5,
+        "maximumResidentSetSizeBytes": 272859136,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1031.5,\"workerMaxRssReported\":101760}",
+        "processElapsedMs": 1232.57,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1031.5,
+        "workerMaxRssReported": 101760,
+        "routeCount": 24,
+        "mode": "candidate"
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--http-readiness-worker",
+          "/Users/gamer/Documents/projects/carta/node_modules/.sprindle-generator-proof-xNXhgo",
+          "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-isolated-candidate-nFa5jt/packages/sprindle",
+          "candidate"
+        ],
+        "cwd": "/Users/gamer/Documents/projects/carta/apps/api",
+        "elapsedMs": 1052.93,
+        "maximumResidentSetSizeBytes": 272875520,
+        "exitCode": 0,
+        "signal": null,
+        "stdout": "{\"expectedRevision\":\"initial-0\",\"readinessElapsedMs\":1052.93,\"workerMaxRssReported\":101632}",
+        "processElapsedMs": 1250.79,
+        "expectedRevision": "initial-0",
+        "readinessElapsedMs": 1052.93,
+        "workerMaxRssReported": 101632,
+        "routeCount": 24,
+        "mode": "candidate"
+      }
+    ],
+    "warmHttpUpdate": [
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 1037.99,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-0",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155828200,
+          "sourceGraphCompileCompleteAt": 1791155828552,
+          "routeWatchAndCompileMs": 352,
+          "serverStopStartedAt": 1791155828552,
+          "serverStopCompletedAt": 1791155828558,
+          "serverCloseMs": 6,
+          "serverStartAt": 1791155828558,
+          "serverReadyAt": 1791155829229,
+          "serverModuleLoadAndListenMs": 671,
+          "httpValidationAt": 1791155829238,
+          "httpValidationAfterListenMs": 9
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 982.06,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-1",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155829238,
+          "sourceGraphCompileCompleteAt": 1791155829532,
+          "routeWatchAndCompileMs": 294,
+          "serverStopStartedAt": 1791155829532,
+          "serverStopCompletedAt": 1791155829537,
+          "serverCloseMs": 5,
+          "serverStartAt": 1791155829537,
+          "serverReadyAt": 1791155830212,
+          "serverModuleLoadAndListenMs": 675,
+          "httpValidationAt": 1791155830220,
+          "httpValidationAfterListenMs": 8
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 912.72,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-2",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155830220,
+          "sourceGraphCompileCompleteAt": 1791155830427,
+          "routeWatchAndCompileMs": 207,
+          "serverStopStartedAt": 1791155830427,
+          "serverStopCompletedAt": 1791155830433,
+          "serverCloseMs": 6,
+          "serverStartAt": 1791155830433,
+          "serverReadyAt": 1791155831117,
+          "serverModuleLoadAndListenMs": 684,
+          "httpValidationAt": 1791155831133,
+          "httpValidationAfterListenMs": 16
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 1024.04,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-3",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155831133,
+          "sourceGraphCompileCompleteAt": 1791155831453,
+          "routeWatchAndCompileMs": 320,
+          "serverStopStartedAt": 1791155831453,
+          "serverStopCompletedAt": 1791155831459,
+          "serverCloseMs": 6,
+          "serverStartAt": 1791155831459,
+          "serverReadyAt": 1791155832138,
+          "serverModuleLoadAndListenMs": 679,
+          "httpValidationAt": 1791155832157,
+          "httpValidationAfterListenMs": 19
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 999.2,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-4",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155832157,
+          "sourceGraphCompileCompleteAt": 1791155832468,
+          "routeWatchAndCompileMs": 311,
+          "serverStopStartedAt": 1791155832468,
+          "serverStopCompletedAt": 1791155832473,
+          "serverCloseMs": 5,
+          "serverStartAt": 1791155832473,
+          "serverReadyAt": 1791155833144,
+          "serverModuleLoadAndListenMs": 671,
+          "httpValidationAt": 1791155833156,
+          "httpValidationAfterListenMs": 12
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 931.8,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-5",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155833156,
+          "sourceGraphCompileCompleteAt": 1791155833402,
+          "routeWatchAndCompileMs": 246,
+          "serverStopStartedAt": 1791155833402,
+          "serverStopCompletedAt": 1791155833407,
+          "serverCloseMs": 5,
+          "serverStartAt": 1791155833407,
+          "serverReadyAt": 1791155834080,
+          "serverModuleLoadAndListenMs": 673,
+          "httpValidationAt": 1791155834088,
+          "httpValidationAfterListenMs": 8
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 949.36,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-6",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155834088,
+          "sourceGraphCompileCompleteAt": 1791155834351,
+          "routeWatchAndCompileMs": 263,
+          "serverStopStartedAt": 1791155834351,
+          "serverStopCompletedAt": 1791155834356,
+          "serverCloseMs": 5,
+          "serverStartAt": 1791155834356,
+          "serverReadyAt": 1791155835028,
+          "serverModuleLoadAndListenMs": 672,
+          "httpValidationAt": 1791155835037,
+          "httpValidationAfterListenMs": 9
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 1012.86,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-7",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155835037,
+          "sourceGraphCompileCompleteAt": 1791155835358,
+          "routeWatchAndCompileMs": 321,
+          "serverStopStartedAt": 1791155835358,
+          "serverStopCompletedAt": 1791155835364,
+          "serverCloseMs": 6,
+          "serverStartAt": 1791155835364,
+          "serverReadyAt": 1791155836038,
+          "serverModuleLoadAndListenMs": 674,
+          "httpValidationAt": 1791155836050,
+          "httpValidationAfterListenMs": 12
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 889.99,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-8",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155836050,
+          "sourceGraphCompileCompleteAt": 1791155836246,
+          "routeWatchAndCompileMs": 196,
+          "serverStopStartedAt": 1791155836246,
+          "serverStopCompletedAt": 1791155836251,
+          "serverCloseMs": 5,
+          "serverStartAt": 1791155836251,
+          "serverReadyAt": 1791155836933,
+          "serverModuleLoadAndListenMs": 682,
+          "httpValidationAt": 1791155836940,
+          "httpValidationAfterListenMs": 7
+        }
+      },
+      {
+        "command": [
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "--import",
+          "tsx",
+          "/Users/gamer/Documents/projects/carta/packages/sprindle/test/generator-performance.proof.mjs",
+          "--runtime-worker",
+          "<fixture>"
+        ],
+        "elapsedMs": 897.72,
+        "routeCount": 24,
+        "mode": "source",
+        "expectedRevision": "warm-9",
+        "workerMaxRssReported": 118992,
+        "phases": {
+          "editStartAt": 1791155836940,
+          "sourceGraphCompileCompleteAt": 1791155837146,
+          "routeWatchAndCompileMs": 206,
+          "serverStopStartedAt": 1791155837146,
+          "serverStopCompletedAt": 1791155837151,
+          "serverCloseMs": 5,
+          "serverStartAt": 1791155837151,
+          "serverReadyAt": 1791155837826,
+          "serverModuleLoadAndListenMs": 675,
+          "httpValidationAt": 1791155837838,
+          "httpValidationAfterListenMs": 12
+        }
+      }
+    ]
+  },
+  "summaries": {
+    "coldCompile": {
+      "baseline": {
+        "medianMs": 225.1,
+        "p95Ms": 294.3
+      },
+      "candidate": {
+        "medianMs": 260.2,
+        "p95Ms": 264.07
+      }
+    },
+    "coldHttpReadiness": {
+      "baseline": {
+        "medianMs": 1055.54,
+        "p95Ms": 1222.94
+      },
+      "candidate": {
+        "medianMs": 1037.62,
+        "p95Ms": 1129.03
+      }
+    },
+    "warmHttpUpdate": {
+      "baseline": {
+        "medianMs": 868.08,
+        "p95Ms": 979.29
+      },
+      "candidate": {
+        "medianMs": 949.36,
+        "p95Ms": 1037.99
+      }
+    }
+  },
+  "deltas": {
+    "coldCompile": {
+      "medianMs": 35.1,
+      "p95Ms": -30.23
+    },
+    "coldHttpReadiness": {
+      "medianMs": -17.92,
+      "p95Ms": -93.91
+    },
+    "warmHttpUpdate": {
+      "medianMs": 81.28,
+      "p95Ms": 58.7
+    }
+  }
+}

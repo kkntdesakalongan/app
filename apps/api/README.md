@@ -10,26 +10,46 @@ holds E2E database and bucket overrides. Check readiness with
 
 ## Development
 
-API route commands prepare current Sprindle tools and public declarations before
-they run. The API development command also watches Sprindle source and build
+API route commands prepare current Sprindle tooling and public framework types
+before they run. The API development command watches Sprindle source and build
 inputs. A valid framework edit rebuilds the package, closes the active
 development worker, and starts a new one. A failed preparation keeps the
-working worker active until a later edit succeeds. Route development continues
-to use `.sprindle-dev/routes.mjs` in source mode with declarations disabled.
-The worker also watches runtime source under `src` and `.env`. A change to
-startup code or environment restarts the API without compiling routes. Route
-inputs remain owned by the route compiler. RPC type generation stays disabled;
-Plan 086 records the separate work for safe automatic type generation.
+working worker active until a later edit succeeds.
+
+The development worker compiles the route graph to
+`.sprindle-dev/routes.mjs`. The same producer updates the canonical typed source
+at `.sprindle/routes.ts` for SDK inference. The runtime and SDK use the same
+route definitions. The worker also watches runtime source under `src` and `.env`.
+A change to startup code or environment restarts the API without route
+generation.
 
 Normal web type-check and build run
 `pnpm --filter @southneuhof/api routes:build` before frontend checks. This
-command refreshes the SDK contract at `apps/api/.sprindle/routes.d.ts` and uses
-the existing declaration cache when route inputs do not change.
+command refreshes the SDK contract at `apps/api/.sprindle/routes.ts`. The
+frontend checker reads the generated source graph and its live ordinary
+imports.
 
-Auth is served at `/api/auth/*`. All routes except `/health`, `/openapi.json`, and `/api/auth/*` require a valid Better Auth session cookie.
+## Route import agreement
+
+Route generation records the API compiler and runtime target for each
+supported route import in the immutable source graph. Generation fails if
+those selections disagree. The standalone SDK `type-check` refreshes the API
+contract, then checks imports with its TypeScript 7 `tsconfig.json`. The web
+`type-check` checks imports with TypeScript 6 and `tsconfig.vitest.json`.
+
+A disagreement reports the importer, import text, API target, consumer target,
+and consumer config. A package can use separate runtime and declaration files
+when its `exports` or `main` and `types`/`typings` fields, or its `@types`
+package, declare that relationship. The check validates package identity and
+the selected conditional export branch against the API runtime and compiler.
+It does not prove that a third-party declaration matches its runtime. It
+checks route imports with literal specifiers; computed imports and direct
+compiler or editor checks bypass this command gate.
+
+Auth is served at `/api/auth/*`. All routes except `/health`, `/openapi.json`, and
+`/api/auth/*` require a valid Better Auth session cookie.
 
 `src/routes/` is the public API surface. Group related route files in folders.
-
 ## Direct S3/MinIO uploads
 
 The API can issue an authenticated, short-lived `PUT` URL. The API does not

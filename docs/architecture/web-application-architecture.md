@@ -44,6 +44,16 @@ The package export maps this path to the same file. Shared API values use
 `@southneuhof/api/src/schema.ts`. Keep `RouteContract` as an `import type` from
 `@southneuhof/api/routes-contract`.
 
+Carta uses ordinary shared source resolution. Put platform-dependent behavior
+in a named adapter and import it explicitly. The surface architecture check
+rejects nonempty `moduleSuffixes` in the API, web app and test, SDK, Loom, and
+utilities TypeScript configs. It also rejects `.server.*` and `.web.*` entries
+in the web Vite extension list and source variants under `apps/api/src`,
+`apps/web/src`, `packages/sdk/src`, `packages/loom/src`, and
+`packages/utilities/src`. The check does not compare all package export
+conditions or aliases. It does not prove that every independent consumer
+resolves each import in the same way.
+
 The schema names describe different inputs. `userCreateSchema` is generated
 from the users table for an insert. `createUserSchema` accepts the password and
 role IDs for the custom user create operation. The web users module extends

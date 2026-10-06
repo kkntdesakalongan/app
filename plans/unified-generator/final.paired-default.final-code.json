@@ -1,0 +1,385 @@
+{
+  "generatedAt": "2026-10-05T00:42:53.308Z",
+  "command": "node packages/sprindle/test/generator-performance.proof.mjs --paired-default-worker --output plans/unified-generator/final.paired-default.final-code.json",
+  "host": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "hostname": "gamers-MacBook-Air.local",
+    "operatingSystemRelease": "27.0.0",
+    "cpuModel": "Apple M1"
+  },
+  "compilers": {
+    "node": "v26.9.0",
+    "sprindleTypeScript": "7.0.2",
+    "frontendTypeScript": "6.0.2",
+    "vueTsc": "3.3.11",
+    "esbuild": "0.25.12"
+  },
+  "routeCounts": {
+    "isolatedSamples": 24,
+    "defaultDevFixture": 1
+  },
+  "baselineCommit": "dc1bc1db2ad7dad2922d49fe60d7e069384555f6",
+  "candidateSource": "current working tree copied to isolated fixture",
+  "launcher": "copied unmodified apps/api/scripts/dev-launcher.mjs and normal dev child entry",
+  "preparation": {
+    "baseline": {
+      "command": [
+        "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+        "tooling/package.mjs"
+      ],
+      "cwd": "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-default-dev-baseline-19y0vx/packages/sprindle",
+      "elapsedMs": 2415.03,
+      "maximumResidentSetSizeBytes": 356597760,
+      "exitCode": 0,
+      "signal": null
+    },
+    "candidate": {
+      "command": [
+        "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+        "tooling/package.mjs"
+      ],
+      "cwd": "/private/var/folders/np/z1vz1sdj7wld8mbbvnprxg6r0000gn/T/sprindle-default-dev-candidate-GnDRg7/packages/sprindle",
+      "elapsedMs": 547.69,
+      "maximumResidentSetSizeBytes": 184320000,
+      "exitCode": 0,
+      "signal": null
+    }
+  },
+  "cold": {
+    "baseline": [
+      {
+        "mode": "default-dev",
+        "revision": "cold-0",
+        "readinessMs": 2685.54,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2698.71,
+        "shutdownMs": 13.04,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 283115520,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+24ms)\n[api:dev] Starting API server... (+24ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.69 real         3.71 user         0.69 sys\n           283115520  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               92322  page reclaims\n                 663  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2357  messages sent\n                1439  messages received\n                 796  signals received\n                1441  voluntary context switches\n                8988  involuntary context switches\n          7253697952  instructions retired\n          1929375351  cycles elapsed\n            76851952  peak memory footprint"
+      },
+      {
+        "mode": "default-dev",
+        "revision": "cold-1",
+        "readinessMs": 2460.54,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2473.64,
+        "shutdownMs": 13.05,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 281165824,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+23ms)\n[api:dev] Starting API server... (+23ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.47 real         3.60 user         0.67 sys\n           281165824  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               92104  page reclaims\n                 659  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2326  messages sent\n                1330  messages received\n                 742  signals received\n                 539  voluntary context switches\n                8310  involuntary context switches\n          7185207996  instructions retired\n          1892904977  cycles elapsed\n            76360432  peak memory footprint"
+      },
+      {
+        "mode": "default-dev",
+        "revision": "cold-2",
+        "readinessMs": 2524.2,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2543.07,
+        "shutdownMs": 18.83,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 282394624,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+1ms)\n[api:dev] Route and runtime watchers ready. (+24ms)\n[api:dev] Starting API server... (+24ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.54 real         3.65 user         0.71 sys\n           282394624  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               91379  page reclaims\n                 664  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2326  messages sent\n                 577  messages received\n                 742  signals received\n                 549  voluntary context switches\n                8773  involuntary context switches\n          7234650878  instructions retired\n          1921642541  cycles elapsed\n            76950424  peak memory footprint"
+      },
+      {
+        "mode": "default-dev",
+        "revision": "cold-3",
+        "readinessMs": 2495.18,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2508.8,
+        "shutdownMs": 13.57,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 280854528,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+25ms)\n[api:dev] Starting API server... (+25ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.50 real         3.61 user         0.66 sys\n           280854528  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               91527  page reclaims\n                 790  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2326  messages sent\n                 898  messages received\n                 817  signals received\n                 643  voluntary context switches\n                8427  involuntary context switches\n          7308042460  instructions retired\n          1936010937  cycles elapsed\n            76917560  peak memory footprint"
+      },
+      {
+        "mode": "default-dev",
+        "revision": "cold-4",
+        "readinessMs": 2476.49,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2489.39,
+        "shutdownMs": 12.86,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 281444352,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+24ms)\n[api:dev] Starting API server... (+24ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.48 real         3.63 user         0.66 sys\n           281444352  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               91311  page reclaims\n                 659  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2326  messages sent\n                 488  messages received\n                 638  signals received\n                 531  voluntary context switches\n                8063  involuntary context switches\n          7231058392  instructions retired\n          1902668880  cycles elapsed\n            76687968  peak memory footprint"
+      }
+    ],
+    "candidate": [
+      {
+        "mode": "default-dev",
+        "revision": "cold-0",
+        "readinessMs": 2578.28,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2592.23,
+        "shutdownMs": 13.9,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 284196864,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+64ms)\n[api:dev] Starting API server... (+64ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.59 real         3.80 user         0.69 sys\n           284196864  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               93637  page reclaims\n                 665  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2381  messages sent\n                1396  messages received\n                 763  signals received\n                 563  voluntary context switches\n               10032  involuntary context switches\n          7238860371  instructions retired\n          1912076580  cycles elapsed\n            76409656  peak memory footprint"
+      },
+      {
+        "mode": "default-dev",
+        "revision": "cold-1",
+        "readinessMs": 2586.52,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2602.79,
+        "shutdownMs": 16.23,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 272039936,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+63ms)\n[api:dev] Starting API server... (+63ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.60 real         3.57 user         0.64 sys\n           272039936  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               92613  page reclaims\n                 790  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2350  messages sent\n                 978  messages received\n                 800  signals received\n                 423  voluntary context switches\n                8895  involuntary context switches\n          7248542823  instructions retired\n          1915309629  cycles elapsed\n            76393056  peak memory footprint"
+      },
+      {
+        "mode": "default-dev",
+        "revision": "cold-2",
+        "readinessMs": 2526.47,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2544.09,
+        "shutdownMs": 17.57,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 273367040,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+63ms)\n[api:dev] Starting API server... (+63ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.54 real         3.71 user         0.69 sys\n           273367040  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               92622  page reclaims\n                 664  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2350  messages sent\n                 880  messages received\n                 716  signals received\n                 516  voluntary context switches\n                9199  involuntary context switches\n          7256343141  instructions retired\n          1935958260  cycles elapsed\n            77491120  peak memory footprint"
+      },
+      {
+        "mode": "default-dev",
+        "revision": "cold-3",
+        "readinessMs": 2494.68,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2507.65,
+        "shutdownMs": 12.93,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 272547840,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+63ms)\n[api:dev] Starting API server... (+63ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.50 real         3.69 user         0.67 sys\n           272547840  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               92518  page reclaims\n                 661  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2350  messages sent\n                1124  messages received\n                 764  signals received\n                 494  voluntary context switches\n                9213  involuntary context switches\n          7197759323  instructions retired\n          1905202820  cycles elapsed\n            76868288  peak memory footprint"
+      },
+      {
+        "mode": "default-dev",
+        "revision": "cold-4",
+        "readinessMs": 2494.26,
+        "statusCode": 200,
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 2506.63,
+        "shutdownMs": 12.33,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 272973824,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+63ms)\n[api:dev] Starting API server... (+63ms)",
+        "stderr": ".env not found. Continuing without it.\n        2.50 real         3.71 user         0.66 sys\n           272973824  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n               92084  page reclaims\n                 660  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2350  messages sent\n                1376  messages received\n                 791  signals received\n                 565  voluntary context switches\n                9602  involuntary context switches\n          7230057979  instructions retired\n          1895030549  cycles elapsed\n            77032320  peak memory footprint"
+      }
+    ]
+  },
+  "warm": {
+    "baseline": {
+      "samples": [
+        {
+          "mode": "default-dev",
+          "revision": "warm-0",
+          "elapsedMs": 1075.79
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-1",
+          "elapsedMs": 1039.22
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-2",
+          "elapsedMs": 971.17
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-3",
+          "elapsedMs": 1082.68
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-4",
+          "elapsedMs": 980.48
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-5",
+          "elapsedMs": 1017.03
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-6",
+          "elapsedMs": 1105.56
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-7",
+          "elapsedMs": 1080.03
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-8",
+          "elapsedMs": 1152.4
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-9",
+          "elapsedMs": 1107.95
+        }
+      ],
+      "shutdown": {
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 13111.45,
+        "shutdownMs": 12.99,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 282099712,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+23ms)\n[api:dev] Starting API server... (+23ms)\n[api:dev] Starting API server... (+1082ms)\n[api:dev] Starting API server... (+2100ms)\n[api:dev] Starting API server... (+3100ms)\n[api:dev] Starting API server... (+4180ms)\n[api:dev] Starting API server... (+5152ms)\n[api:dev] Starting API server... (+6133ms)\n[api:dev] Starting API server... (+7246ms)\n[api:dev] Starting API server... (+8351ms)\n[api:dev] Starting API server... (+9433ms)\n[api:dev] Starting API server... (+10580ms)",
+        "stderr": ".env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n       13.11 real        12.78 user         1.92 sys\n           282099712  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n              329688  page reclaims\n                1927  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2658  messages sent\n                1734  messages received\n                 938  signals received\n                1137  voluntary context switches\n               33581  involuntary context switches\n          7261433906  instructions retired\n          1927363889  cycles elapsed\n            77146912  peak memory footprint"
+      }
+    },
+    "candidate": {
+      "samples": [
+        {
+          "mode": "default-dev",
+          "revision": "warm-0",
+          "elapsedMs": 1085.41
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-1",
+          "elapsedMs": 988.89
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-2",
+          "elapsedMs": 1102.53
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-3",
+          "elapsedMs": 1002.66
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-4",
+          "elapsedMs": 1079.08
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-5",
+          "elapsedMs": 1003.57
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-6",
+          "elapsedMs": 1079.92
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-7",
+          "elapsedMs": 1046.3
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-8",
+          "elapsedMs": 1020.97
+        },
+        {
+          "mode": "default-dev",
+          "revision": "warm-9",
+          "elapsedMs": 1076.42
+        }
+      ],
+      "shutdown": {
+        "command": [
+          "/usr/bin/time",
+          "-l",
+          "/opt/homebrew/Cellar/node/26.9.0/bin/node",
+          "scripts/dev-launcher.mjs"
+        ],
+        "processElapsedMs": 13396.09,
+        "shutdownMs": 12.8,
+        "exitCode": 130,
+        "signal": null,
+        "maximumResidentSetSizeBytes": 273416192,
+        "stdout": "[api:dev] Starting TypeScript development worker...\n[api:dev] Compiling file routes and starting route watcher... (+0ms)\n[api:dev] Route and runtime watchers ready. (+70ms)\n[api:dev] Starting API server... (+70ms)\n[api:dev] Starting API server... (+1231ms)\n[api:dev] Starting API server... (+2211ms)\n[api:dev] Starting API server... (+3307ms)\n[api:dev] Starting API server... (+4337ms)\n[api:dev] Starting API server... (+5431ms)\n[api:dev] Starting API server... (+6423ms)\n[api:dev] Starting API server... (+7510ms)\n[api:dev] Starting API server... (+8576ms)\n[api:dev] Starting API server... (+9579ms)\n[api:dev] Starting API server... (+10648ms)",
+        "stderr": ".env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n.env not found. Continuing without it.\n       13.39 real        13.15 user         2.02 sys\n           273416192  maximum resident set size\n                   0  average shared memory size\n                   0  average unshared data size\n                   0  average unshared stack size\n              324962  page reclaims\n                2381  page faults\n                   0  swaps\n                   0  block input operations\n                   0  block output operations\n                2859  messages sent\n                1861  messages received\n                 784  signals received\n                3097  voluntary context switches\n               39690  involuntary context switches\n          7210167908  instructions retired\n          1913691005  cycles elapsed\n            76638816  peak memory footprint"
+      }
+    }
+  }
+}

@@ -11,6 +11,15 @@ const vueDom = requireFromVueCompiler('@vue/compiler-dom')
 const workspaceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 const extensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.mts', '.cts'])
+const moduleSuffixConfigs = [
+  'apps/api/tsconfig.json',
+  'apps/web/tsconfig.app.json',
+  'apps/web/tsconfig.vitest.json',
+  'packages/sdk/tsconfig.json',
+  'packages/loom/tsconfig.json',
+  'packages/utilities/tsconfig.json',
+]
+const platformVariantPattern = /\.(?:server|web)\.(?:d\.)?(?:[cm]?[jt]sx?|vue)$/
 const sourceRoots = ['packages/loom/src', 'apps/web/src', 'scripts', '.agents/skills']
 const markdownRoots = ['README.md', 'AGENTS.md', 'DESIGN.md', 'apps/web/README.md', 'packages/loom/README.md', 'docs/resource_system_overhaul/ARCHITECTURE.md', 'docs/ui', 'docs/architecture', '.agents/skills']
 const skippedDirectories = new Set(['.git', 'node_modules', 'dist', 'coverage'])
@@ -696,8 +705,80 @@ function checkVueSettings(root) {
   return diagnostics
 }
 
+function propertyAssignment(object, name) {
+  return object.properties.find((property) => ts.isPropertyAssignment(property)
+    && (ts.isIdentifier(property.name) || ts.isStringLiteralLike(property.name))
+    && property.name.text === name)
+}
+
+function checkModuleSuffixSettings(root) {
+  const diagnostics = []
+  for (const path of moduleSuffixConfigs) {
+    const configPath = join(root, path)
+    if (!statSync(configPath, { throwIfNoEntry: false })?.isFile()) continue
+    const parsed = ts.getParsedCommandLineOfConfigFile(configPath, {}, {
+      ...ts.sys,
+      onUnRecoverableConfigFileDiagnostic: () => undefined,
+    })
+    if (!parsed) {
+      diagnostics.push(diagnostic(path, 1, 'cannot read effective TypeScript compiler options'))
+      continue
+    }
+    if (parsed.options.moduleSuffixes?.some((suffix) => suffix !== '')) {
+      diagnostics.push(diagnostic(path, 1, 'remove nonempty moduleSuffixes and use explicit imports for platform-dependent behavior'))
+    }
+  }
+  return diagnostics
+}
+
+function checkVitePlatformExtensions(root) {
+  const path = 'apps/web/vite.config.ts'
+  const configPath = join(root, path)
+  if (!statSync(configPath, { throwIfNoEntry: false })?.isFile()) return []
+  const source = readFileSync(configPath, 'utf8')
+  const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+  const diagnostics = []
+  function visit(node) {
+    if (ts.isPropertyAssignment(node)
+      && (ts.isIdentifier(node.name) || ts.isStringLiteralLike(node.name))
+      && node.name.text === 'resolve'
+      && ts.isObjectLiteralExpression(node.initializer)) {
+      const configuredExtensions = propertyAssignment(node.initializer, 'extensions')?.initializer
+      if (configuredExtensions && ts.isArrayLiteralExpression(configuredExtensions)) {
+        for (const entry of configuredExtensions.elements) {
+          if (ts.isStringLiteralLike(entry) && /\.(?:server|web)\./.test(entry.text)) {
+            diagnostics.push(diagnostic(path, lineAt(sourceFile, entry.getStart(sourceFile), 0), 'remove platform-specific Vite extensions and use explicit imports for platform-dependent behavior'))
+          }
+        }
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(sourceFile)
+  return diagnostics
+}
+
+function checkPlatformSourceVariants(root) {
+  const diagnostics = []
+  for (const sourceRoot of ['apps/api/src', 'apps/web/src', 'packages/sdk/src', 'packages/loom/src', 'packages/utilities/src']) {
+    for (const file of filesUnder(root, sourceRoot)) {
+      if (!extensions.has(extname(file)) && extname(file) !== '.vue') continue
+      if (!platformVariantPattern.test(basename(file))) continue
+      const relativeFile = relative(root, file)
+      diagnostics.push(diagnostic(relativeFile, 1, 'platform source variants can select different modules; rename the file or import an explicitly named adapter'))
+    }
+  }
+  return diagnostics
+}
+
 function checkWorkspace(root = workspaceRoot) {
-  const diagnostics = [...checkRemovedPaths(root), ...checkVueSettings(root)]
+  const diagnostics = [
+    ...checkRemovedPaths(root),
+    ...checkVueSettings(root),
+    ...checkModuleSuffixSettings(root),
+    ...checkVitePlatformExtensions(root),
+    ...checkPlatformSourceVariants(root),
+  ]
   for (const sourceRoot of sourceRoots) {
     for (const file of filesUnder(root, sourceRoot)) {
       if (!extensions.has(extname(file)) && extname(file) !== '.vue') continue

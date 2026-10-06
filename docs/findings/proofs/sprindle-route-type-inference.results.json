@@ -1,0 +1,103 @@
+{
+  "node": "v26.9.0",
+  "compiler": "7.0.2",
+  "results": [
+    {
+      "name": "simple-inference-valid",
+      "exit": 0,
+      "diagnostics": ""
+    },
+    {
+      "name": "simple-inference-invalid",
+      "exit": 1,
+      "diagnostics": "<fixture>/simple-invalid.ts(4,38): error TS2322: Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "name": "naive-crud-accepts-invalid-input",
+      "exit": 0,
+      "diagnostics": ""
+    },
+    {
+      "name": "naive-scope-context-fails",
+      "exit": 1,
+      "diagnostics": "<fixture>/routes/users/+scope.ts(3,74): error TS2339: Property 'owner' does not exist on type '{}'.\n<fixture>/routes/users/+scope.ts(3,164): error TS2322: Type 'unknown' is not assignable to type 'string'."
+    },
+    {
+      "name": "projected-sdk-valid",
+      "exit": 0,
+      "diagnostics": ""
+    },
+    {
+      "name": "wrong-create-input",
+      "exit": 1,
+      "diagnostics": "<fixture>/generated/wrong-create-input.ts(3,49): error TS2322: Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "name": "missing-param",
+      "exit": 1,
+      "diagnostics": "<fixture>/generated/missing-param.ts(3,34): error TS2741: Property 'id' is missing in type '{}' but required in type '{ id: string; }'."
+    },
+    {
+      "name": "unknown-endpoint",
+      "exit": 1,
+      "diagnostics": "<fixture>/generated/unknown-endpoint.ts(3,14): error TS2339: Property 'missing' does not exist on type '{ users: { \":id\": ClientRequest<string, \"/users/:id\", { $delete: Endpoint<{ query?: Record<string, string | undefined> | undefined; } & { param: { id: string; }; }, RpcError, 400 | 401 | 403 | 404 | 500> | Endpoint<...> | Endpoint<...>; } & { ...; } & { ...; }>; }; } & { ...; }'."
+    },
+    {
+      "name": "wrong-output",
+      "exit": 1,
+      "diagnostics": "<fixture>/generated/wrong-output.ts(3,95): error TS2322: Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "name": "type-only-edit-invalidates-old-consumer",
+      "exit": 1,
+      "diagnostics": "<fixture>/generated/valid.ts(7,153): error TS2322: Type 'Version' is not assignable to type 'number'.\n  Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "name": "type-only-edit-current-consumer",
+      "exit": 0,
+      "diagnostics": ""
+    },
+    {
+      "name": "generated-server-files-unchanged-after-type-only-edit",
+      "hash": "503d5599eec4d5355ffee6cf4617987de05c58f2a815df866b0da4c495a25e74"
+    },
+    {
+      "name": "browser-bundle-excludes-server-runtime",
+      "inputs": [
+        "node_modules/.pnpm/hono@4.12.27/node_modules/hono/dist/utils/url.js",
+        "node_modules/.pnpm/hono@4.12.27/node_modules/hono/dist/utils/cookie.js",
+        "node_modules/.pnpm/hono@4.12.27/node_modules/hono/dist/client/fetch-result-please.js",
+        "node_modules/.pnpm/hono@4.12.27/node_modules/hono/dist/client/utils.js",
+        "node_modules/.pnpm/hono@4.12.27/node_modules/hono/dist/client/client.js",
+        "node_modules/.pnpm/hono@4.12.27/node_modules/hono/dist/client/index.js",
+        "<fixture>/generated/sdk.ts",
+        "<fixture>/generated/changed.ts"
+      ]
+    },
+    {
+      "name": "same-generated-manifest-handles-http-request",
+      "status": 202
+    },
+    {
+      "name": "actual-api-under-web-compiler-options",
+      "routes": 24,
+      "exit": 0,
+      "diagnostics": "Files:             1746\nLines:           249223\nIdentifiers:     251143\nSymbols:         328497\nTypes:           164456\nInstantiations:  429760\nMemory used:    256389K\nMemory allocs:  2039417\nConfig time:     0.000s\nParse time:      0.495s\nBind time:       0.037s\nCheck time:      0.341s\nEmit time:       0.000s\nTotal time:      0.875s"
+    },
+    {
+      "name": "actual-api-rejects-wrong-response-type",
+      "exit": 1,
+      "diagnostics": "<fixture>/actual/invalid.ts(3,100): error TS2322: Type 'string' is not assignable to type 'number'."
+    },
+    {
+      "name": "current-declaration-consumer-comparison",
+      "exit": 0,
+      "diagnostics": "Files:              613\nLines:           144237\nIdentifiers:     162330\nSymbols:         145686\nTypes:            83971\nInstantiations:  169586\nMemory used:    123284K\nMemory allocs:   786199\nConfig time:     0.000s\nParse time:      0.150s\nBind time:       0.023s\nCheck time:      0.085s\nEmit time:       0.000s\nTotal time:      0.260s"
+    },
+    {
+      "name": "projected-source-consumer-comparison",
+      "exit": 0,
+      "diagnostics": "Files:             1746\nLines:           249223\nIdentifiers:     251143\nSymbols:         328497\nTypes:           164456\nInstantiations:  429760\nMemory used:    256433K\nMemory allocs:  2039556\nConfig time:     0.000s\nParse time:      0.385s\nBind time:       0.035s\nCheck time:      0.320s\nEmit time:       0.000s\nTotal time:      0.742s"
+    }
+  ]
+}

@@ -132,6 +132,16 @@ export const invalid = [z.string().safeParse(42), v4.string().safeParse(42)]
   }
 })
 
+test('bundled SDK consumers do not include the generated route source or server runtime', async (t) => {
+  const fixture = createFixture(t)
+  writeMain(fixture, `import { createRpcClient } from '@southneuhof/sdk/client'\nexport const client = createRpcClient('/api')\n`)
+  const result = await build(buildConfig(fixture))
+  const outputs = Array.isArray(result) ? result.flatMap((item) => item.output) : result.output
+  const entry = outputs.find((item) => item.type === 'chunk' && item.isEntry)
+  assert.ok(entry)
+  assert.doesNotMatch(entry.code, /\.sprindle\/routes\.ts|apps\/api\/src\/routes|apps\/api\/src\/db\.ts|@hono\/node-server|from ["']pg["']/)
+})
+
 test('worker builds reject schema dependencies on backend execution', async (t) => {
   const fixture = createFixture(t)
   writeFileSync(join(fixture.webRoot, 'worker.ts'), `import '@southneuhof/api'\n`)
@@ -270,6 +280,11 @@ function hotUpdateObserver(path) {
       })
     },
   }
+}
+
+async function writeAndNotifyChange(server, path, source) {
+  await writeFile(path, source)
+  server.watcher.emit('change', path)
 }
 
 test('build resolves physical user and role schemas and executes their parsers', async (t) => {
@@ -465,18 +480,17 @@ test('dev removes stale graph edges after a schema changes from safe to unsafe a
   try {
     await server.listen()
     const schemaUrl = `/@fs${fixture.schemaPath}`
-    await server.watcher.add(fixture.schemaPath)
     assert.ok(await server.transformRequest('/main.ts'))
     assert.ok(await server.transformRequest(schemaUrl))
     const unsafeUpdate = observer.next()
-    await writeFile(fixture.schemaPath, "export { operation } from './operation.ts'\n")
+    await writeAndNotifyChange(server, fixture.schemaPath, "export { operation } from './operation.ts'\n")
     await unsafeUpdate
     await assert.rejects(server.transformRequest(schemaUrl), (error) => {
       assertBoundaryFailure(error, ['schema.ts', 'operation.ts'])
       return true
     })
     const safeUpdate = observer.next()
-    await writeFile(fixture.schemaPath, 'export const value = false\n')
+    await writeAndNotifyChange(server, fixture.schemaPath, 'export const value = false\n')
     await safeUpdate
     const safe = await server.transformRequest(schemaUrl)
     assert.ok(safe)

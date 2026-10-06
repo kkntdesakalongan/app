@@ -12,7 +12,7 @@
 
 ## Status
 
-- Status: TODO — DEFERRED at the user's request.
+- Status: SUPERSEDED — the user selected unified generated server source and ordinary SDK inference in Plans 087–089 on 2026-10-04.
 - Priority: P2; do not execute with the immediate workflow plans.
 - Effort: L.
 - Risk: HIGH; compiler state, dependency watching, and publication can hide stale types.
@@ -25,6 +25,10 @@ The user chose to keep development declarations disabled until this work can
 make automatic RPC types practical without slowing route compilation. This
 file records the pending work. Writing it does not authorize enabling the
 current declaration flag or starting implementation.
+
+The independent type worker described below is retained as historical planning.
+Do not implement it. Plans 087–089 replace this approach with one typed generated
+server graph for runtime compilation and normal frontend inference.
 
 ## Why this matters
 

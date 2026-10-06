@@ -146,7 +146,7 @@ async function initialize() {
       return
     }
     if (ready) requestRestart()
-  }, manifest, false, { declarations: false })
+  }, manifest, false)
   if (stopping) {
     await closeWatchers()
     return
