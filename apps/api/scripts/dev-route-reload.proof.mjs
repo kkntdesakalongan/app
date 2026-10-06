@@ -67,6 +67,8 @@ test('cold dev starts after compilation and reloads add, invalid recovery, move,
     await eventually('/added', 404)
     await rm(join(routeRoot, 'moved'), { recursive: true })
     await eventually('/moved', 404)
+  } catch (error) {
+    throw new Error(`${error.message}\n${output}`)
   } finally {
     await stop(child)
     await rm(routeRoot, { recursive: true, force: true })

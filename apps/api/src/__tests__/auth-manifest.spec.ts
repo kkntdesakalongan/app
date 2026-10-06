@@ -22,7 +22,7 @@ test.each([
       : spawnSync(process.execPath, [tsx, 'scripts/compile-routes.ts', output], { cwd: root, env: process.env, encoding: 'utf8', timeout: 30_000 })
     expect(compile.status, compile.stderr).toBe(0)
     const artifact = join(root, output)
-    if (!bundle) expect(readFileSync(artifact, 'utf8')).toMatch(/^import /)
+    if (!bundle) expect(readFileSync(artifact, 'utf8')).toMatch(/^export \{ default, manifest \} from /)
     const script = `void (async()=>{const manifest=(await import(${JSON.stringify(pathToFileURL(artifact).href)})).default;const generatedRoot=manifest.flatMap((route)=>route.scopes).find((scope)=>scope.config.identity);const identity=await generatedRoot.config.identity({c:{req:{raw:new Request('http://localhost/api/auth/get-session')}}});const rootScope=(await import('./src/routes/+scope.ts')).default;const {createApp}=await import('./src/create-app.ts');const closeDb=${bundle ? 'async()=>{}' : `(await import('./src/db.ts')).closeDb`};try{const shared=manifest.some((route)=>route.scopes.includes(rootScope));const response=await createApp(manifest).request('/api/auth/get-session');process.stdout.write(JSON.stringify({identity,shared,status:response.status,body:await response.json()}))}finally{await closeDb()}})()`
     const child = spawnSync(process.execPath, [tsx, '--eval', script], { cwd: root, env: process.env, encoding: 'utf8', timeout: 30_000 })
     expect(child.status, child.stderr).toBe(0)

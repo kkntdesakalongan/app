@@ -34,7 +34,7 @@
     "e2e:clear": "node --env-file=.env --env-file=.env.e2e --import tsx scripts/clear-e2e-storage.ts",
     "e2e:cleanup-incident-reports": "node --env-file=.env --env-file=.env.e2e --import tsx scripts/cleanup-e2e-incident-reports.ts",
     "e2e:prepare": "pnpm run e2e:reset && pnpm run e2e:migrate && pnpm run e2e:clear && pnpm run e2e:seed",
-    "test:dev-routes": "node --test scripts/dev-route-reload.proof.mjs scripts/dev-runtime-reload.proof.mjs scripts/dev-source-contract.proof.mjs"
+    "test:dev-routes": "node --test --test-concurrency=1 scripts/dev-route-reload.proof.mjs scripts/dev-runtime-reload.proof.mjs scripts/dev-source-contract.proof.mjs"
   },
   "exports": {
     ".": "./src/index.ts",
