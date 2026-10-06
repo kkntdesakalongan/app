@@ -28,7 +28,14 @@ async function freePort() {
 function createWorkspace(t, port, serverCloseDelayMs = 0) {
   const temporaryRoot = mkdtempSync(join(tmpdir(), 'carta-dev-launcher-'))
   const workspaceRoot = realpathSync(temporaryRoot)
-  t.after(() => rmSync(temporaryRoot, { recursive: true, force: true }))
+  let stopFixture = async () => {}
+  t.after(async () => {
+    try {
+      await stopFixture()
+    } finally {
+      rmSync(temporaryRoot, { recursive: true, force: true })
+    }
+  })
 
   const packageRoot = join(workspaceRoot, 'packages/sprindle')
   const apiRoot = join(workspaceRoot, 'apps/api')
@@ -68,6 +75,7 @@ function createWorkspace(t, port, serverCloseDelayMs = 0) {
     "for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { appendFileSync(process.env.CARTA_DEV_SHUTDOWN_LOG, `${process.pid}\\n`); setTimeout(() => server.close(), Number(process.env.CARTA_DEV_SERVER_CLOSE_DELAY_MS)) })",
     '',
   ].join('\n'))
+  writeFileSync(shutdownLogPath, '')
   writeFileSync(join(packageRoot, 'src/tooling/index.ts'), `${toolingBase}\nexport const fixtureValue = 'before'\n`)
   mkdirSync(join(apiRoot, 'node_modules/@southneuhof'), { recursive: true })
   symlinkSync(join(repositoryRoot, 'packages/sprindle/node_modules'), join(packageRoot, 'node_modules'), 'dir')
@@ -111,6 +119,7 @@ function createWorkspace(t, port, serverCloseDelayMs = 0) {
     },
     extensionRoot,
     installedEditor: join(extensionRoot, 'southneuhof.sprindle-language-0.0.0'),
+    setStopFixture: (callback) => { stopFixture = callback },
   }
 }
 
@@ -207,12 +216,16 @@ async function stopLauncher(child) {
 }
 
 function waitForClose(child, message) {
+  return waitForCloseWithin(child, message, 15_000)
+}
+
+function waitForCloseWithin(child, message, timeoutMs) {
   if (child.exitCode !== null || child.signalCode !== null) return Promise.resolve()
   return new Promise((resolveClose, rejectClose) => {
     const timer = setTimeout(() => {
       child.off('close', finish)
       rejectClose(new Error(message))
-    }, 15_000)
+    }, timeoutMs)
     function finish() {
       clearTimeout(timer)
       resolveClose()
@@ -250,14 +263,22 @@ function killLauncherTree(child) {
   }
 }
 
-function startFixtureLauncher(t, workspace) {
+function startFixtureLauncher(workspace) {
   const launcher = launch(workspace)
-  t.after(async () => {
+  workspace.setStopFixture(async () => {
     try {
       await stopLauncher(launcher.child)
     } catch (error) {
       process.stderr.write(`Fixture launcher cleanup failed: ${error.stack ?? error}\n${launcher.output()}`)
       killLauncherTree(launcher.child)
+      killOwnedFixtureProcesses(workspace)
+      if (launcher.child.exitCode === null && launcher.child.signalCode === null) {
+        try {
+          await waitForCloseWithin(launcher.child, 'The fixture launcher did not close after its process tree was killed.', 5000)
+        } catch {
+          launcher.child.kill('SIGKILL')
+        }
+      }
       throw error
     } finally {
       if (launcher.child.exitCode === null && launcher.child.signalCode === null) launcher.child.kill('SIGKILL')
@@ -284,7 +305,7 @@ test('framework edits replace the compiler, retain the worker after failure, and
   const workspace = createWorkspace(t, port)
   installEditorExtension(workspace)
   writeFixtureValue(workspace, 'stale')
-  const launcher = startFixtureLauncher(t, workspace)
+  const launcher = startFixtureLauncher(workspace)
 
   const initial = await waitForHttp(port, 'stale', launcher.output)
   await waitForLog(launcher.output, 'pnpm setup:editor')
@@ -329,7 +350,7 @@ test('shutdown terminates the owned producer tree during a delayed compiler buil
   const port = await freePort()
   const workspace = createWorkspace(t, port)
   writeFileSync(workspace.delayPath, '10000')
-  const launcher = startFixtureLauncher(t, workspace)
+  const launcher = startFixtureLauncher(workspace)
 
   await waitForBuildCount(workspace, 1, launcher.output)
   const active = ownedProcesses(workspace)
@@ -360,7 +381,7 @@ test('shutdown terminates the owned producer tree during a delayed compiler buil
 test('an absent editor installation stays silent while the API starts', { timeout: 30_000 }, async (t) => {
   const port = await freePort()
   const workspace = createWorkspace(t, port)
-  const launcher = startFixtureLauncher(t, workspace)
+  const launcher = startFixtureLauncher(workspace)
 
   await waitForHttp(port, 'before', launcher.output)
   await new Promise((resolveDelay) => setTimeout(resolveDelay, 500))
@@ -373,9 +394,9 @@ test('an absent editor installation stays silent while the API starts', { timeou
 test('a denied editor installation read advises and leaves the API running', { skip: process.platform === 'win32' || process.getuid?.() === 0, timeout: 60_000 }, async (t) => {
   const port = await freePort()
   const workspace = createWorkspace(t, port)
-  installEditorExtension(workspace)
+  mkdirSync(workspace.installedEditor, { recursive: true })
   chmodSync(workspace.installedEditor, 0)
-  const launcher = startFixtureLauncher(t, workspace)
+  const launcher = startFixtureLauncher(workspace)
   try {
     await waitForHttp(port, 'before', launcher.output)
     await waitForLog(launcher.output, 'EACCES')
@@ -391,12 +412,12 @@ test('a denied editor installation read advises and leaves the API running', { s
 test('a failed edit during worker shutdown keeps the last prepared response and recovers', { timeout: 120_000 }, async (t) => {
   const port = await freePort()
   const workspace = createWorkspace(t, port, 1800)
-  const launcher = startFixtureLauncher(t, workspace)
+  const launcher = startFixtureLauncher(workspace)
   const initial = await waitForHttp(port, 'before', launcher.output)
 
   writeFixtureValue(workspace, 'last-good')
   await waitForBuildCount(workspace, 2, launcher.output)
-  await waitFor(() => existsSync(workspace.shutdownLogPath), 'old server shutdown to begin', launcher.output)
+  await waitFor(() => readFileSync(workspace.shutdownLogPath, 'utf8').trim().length > 0, 'old server shutdown to begin', launcher.output)
   const shuttingDown = await request(port)
   assert.equal(shuttingDown?.body, 'before')
 
@@ -405,9 +426,7 @@ test('a failed edit during worker shutdown keeps the last prepared response and 
   await waitForBuildCount(workspace, 3, launcher.output)
   await waitForLog(launcher.output, 'Preparation failed; the active worker remains running.')
 
-  const retained = await waitFor(() => request(port), 'last prepared worker response after the failed preparation', launcher.output, 5000)
-  assert.equal(retained?.body, 'last-good')
-  assert.notEqual(retained?.pid, initial.pid)
+  const retained = await waitForHttp(port, 'last-good', launcher.output, initial.pid)
 
   writeFixtureValue(workspace, 'recovered')
   const recovered = await waitForHttp(port, 'recovered', launcher.output, retained.pid)
