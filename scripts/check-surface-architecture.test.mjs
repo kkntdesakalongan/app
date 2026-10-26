@@ -260,7 +260,7 @@ test('checks component prop bags through script aliases and object spreads', () 
 import { Form as Editor, FileInput } from '@southneuhof/loom'
 const removedFormProps = { form: savedForm }
 const editorProps = { ...removedFormProps }
-const removedAssetProps = { upload: saveFile }
+const removedAssetProps = { uploadPath: 'documents' }
 const assetProps = { ...removedAssetProps }
 </script>
 <template>
@@ -271,7 +271,7 @@ const assetProps = { ...removedAssetProps }
 
   assert.equal(diagnostics.length, 2)
   assert.match(diagnostics[0], /<Form> cannot receive removed prop "form"/)
-  assert.match(diagnostics[1], /<FileInput> cannot receive removed prop "upload"/)
+  assert.match(diagnostics[1], /<FileInput> cannot receive removed prop "uploadPath"/)
 })
 
 test('checks removed props passed through Vue component factories and aliases', () => {

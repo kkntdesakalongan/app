@@ -13,6 +13,13 @@ share schemas.
 Use [custom fields](references/custom-field-contract.md) for interactions
 existing controls cannot express.
 
+For local byte workflows, set `mode: 'file'` on FileInput or ImageInput and
+use `File` or `File[]` in the form schema. Read or send the selected file in
+the submit action and build the endpoint payload there. Omitted mode keeps
+stored `AssetValue` behavior and needs the app asset service. See the
+[local file guide](../../../docs/ui/forms.md#local-files) for the File/text
+boundary.
+
 For relations, use authorized owner sources with display labels. Read the
 [web/API connection](references/backend-form-contract.md) when changing that
 boundary. Pass `resource` with `load` and `namespace` so resource writes invalidate

@@ -257,19 +257,124 @@ Use pure synchronous behavior for dependencies. Keep hidden fields out of the
 form schema unless the submit contract needs their values. The server remains
 the authority for relation access and validation.
 
-## Assets
+## Local files
 
-Keep the stored asset object shape through read, edit, and submit. A single
-asset field stores one object or `null`; a multi asset field stores an array.
-Do not add client identity conversion or an input writer. Use shared upload
-readiness so a form cannot submit while upload work remains pending. The
-boundary example is
+Use `mode: 'file'` when the draft needs local bytes. The model is `File` or,
+with `multi: true`, `File[]`. A transform still returns a `File`. This mode
+does not upload the selection and does not need `adapters.assets`.
+
+For an import action, read the file in submit and build the endpoint payload
+there:
+
+```ts
+const sourceFile = z.custom<File>((value): value is File =>
+  typeof File !== 'undefined' && value instanceof File,
+)
+
+const importForm = defineForm({
+  schema: z.object({ source: sourceFile }),
+  fields: {
+    source: { renderer: 'file', props: { mode: 'file', accept: ['.json'] } },
+  },
+  submit: async ({ source }) => importAction({ fileText: await source.text() }),
+})
+```
+
+The browser file byte limit and an endpoint's text length limit measure
+different values. Keep each check at its own boundary. Do not pass a `File`
+where the endpoint expects a string.
+
+## File transforms and uploads
+
+`mode` selects the model value. `transform` runs before either value is
+committed: asset mode passes its returned `File` to the configured asset
+service, while file mode commits that same `File` locally. A transform must
+return a `File`; the input validates both the selected and transformed files.
+
+```ts
+import type { AssetValue } from '@southneuhof/loom/assets'
+
+const addTimestamp = async (
+  file: File,
+  { signal }: { signal: AbortSignal },
+): Promise<File> => fileActions.addTimestamp(file, { signal })
+
+const assetForm = defineForm({
+  schema: z.object({ photo: z.custom<AssetValue | null>() }),
+  fields: {
+    photo: {
+      renderer: 'image',
+      props: { transform: addTimestamp, destination: 'profile-photos' },
+    },
+  },
+})
+
+const localForm = defineForm({
+  schema: z.object({ photo: z.custom<File | null>() }),
+  fields: {
+    photo: {
+      renderer: 'image',
+      props: { mode: 'file', transform: addTimestamp, accept: ['image/*'] },
+    },
+  },
+})
+```
+
+Asset mode uses `adapters.assets.upload` by default. Set `upload` to replace
+only that transport. It receives the `File` and upload context with
+`destination`, `signal`, and `onProgress`, and it must return a canonical
+`AssetValue`. The installed asset adapter remains required for `read` and
+`preview`, including validation and display of the returned value.
+
+```ts
+import type { UploadOperation } from '@southneuhof/loom'
+import type { AssetValue } from '@southneuhof/loom/assets'
+
+const uploadReceipt: UploadOperation<AssetValue> = async (
+  file,
+  { destination, signal, onProgress },
+) => {
+  const stored = await receiptActions.upload(file, { destination, signal, onProgress })
+  return {
+    kind: 'file',
+    id: stored.id,
+    url: stored.url,
+    name: stored.name,
+    size: stored.size,
+    mimeType: stored.mimeType,
+  }
+}
+
+const receiptForm = defineForm({
+  schema: z.object({ receipt: z.custom<AssetValue | null>() }),
+  fields: {
+    receipt: {
+      renderer: 'file',
+      props: { destination: 'receipts', upload: uploadReceipt },
+    },
+  },
+})
+```
+
+Use file mode when an action needs local text or bytes. Put application-specific
+responses and JSON payload construction in that action. Do not use the upload
+hook to return arbitrary results.
+
+## Stored assets
+
+Omitting `mode` keeps the stored asset behavior. A single field stores one
+canonical `AssetValue` or `null`; a multi field stores an array. Keep that
+shape through read, edit, and submit. Do not add client identity conversion or
+an input writer. Shared form readiness blocks submission while transforms or
+uploads remain pending. The boundary example is
 [`assets.form.spec.ts`](../../apps/web/src/framework/adapters/assets.form.spec.ts).
 
-Register `adapters.assets` once through `FrameworkPlugin`. Direct and managed
-FileInput/ImageInput controls and asset-mode FileComponent/ImagePreview/
-ImagePreviewMulti consumers use that service. Keep URL-only preview props for
-URL sources; do not combine them with the `asset` or `assets` source.
+Register `adapters.assets` once through `FrameworkPlugin` for asset mode.
+FileInput, ImageInput, CameraInput, and DrawingCanvas use that service for
+stored values and default uploads. The controls also support local File mode.
+Asset-mode FileComponent, ImagePreview, and ImagePreviewMulti consumers use
+the service. Keep URL-only preview props for URL sources; do not combine them
+with the `asset` or `assets` source.
 
 ## Verification
 

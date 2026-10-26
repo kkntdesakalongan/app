@@ -135,7 +135,7 @@ Form and display renderers have separate registries. Register actual Vue compone
 
 Form passes the component's model and validity events directly. It applies managed required, disabled, error, and identity props through the component contract. Authored props cannot replace managed state. Components that retain invalid local text report a validity error without inventing a model value.
 
-Textarea constraints and file/image multi modes belong to their input components. Form checks that the selected input mode fits the schema, including each value shape a dynamic mode can emit.
+Textarea constraints and file/image mode and multi-value contracts belong to their input components. File and image inputs use `AssetValue` by default. Set `mode: 'file'` to keep local `File` values. Form checks the selected mode and collection size against the schema, including each value shape a dynamic mode can emit.
 
 The display path is record, property or read, format, renderer, then surface layout. Scalars render as text; nullish values render as a dash. Dates need an explicit format. Objects need an explicit display form. Keep HTML sanitized or render it as text. Display and export reuse the same read and format behavior; export does not mount Vue components. Export keeps mapValue, exclusions, filenames, and pagination. A safety limit must not report a partial export as complete.
 
@@ -193,7 +193,11 @@ separate text fields; bind the location renderer to latitude and longitude.
 
 ### 4.4 Global asset service
 
-Install one app-scoped asset service through the existing adapter. File and image controls use it for model reads, uploads, and previews. Upload returns a canonical asset value and keeps the existing signal, progress, and destination context. Preview lookup does not rewrite the model. Asset-dependent controls fail with ASSET_ADAPTER_REQUIRED when the service is missing; malformed adapter output fails with ASSET_ADAPTER_INVALID_RESULT. Separate app registrations stay isolated.
+Install one app-scoped asset service through the existing adapter. `FileInput`, `ImageInput`, `CameraInput`, and `DrawingCanvas` default to `mode: 'asset'`. In that mode they use the service for stored value reads, previews, and uploads. An upload returns a canonical asset value and keeps its signal, progress, and destination context. Preview lookup does not rewrite the model. A typed upload override can replace the transport and still returns `AssetValue`. The `transform` hook accepts and returns `File`; it runs before upload in asset mode and before local commit in file mode.
+
+Set `mode: 'file'` to retain browser `File` values. File mode starts no upload and does not need an asset adapter. These input components also work without `FrameworkPlugin`; a managed Form keeps its normal plugin requirement but does not need `adapters.assets`. Camera and drawing controls use the same local model when they create files. Image previews use object URLs and revoke them when the local file leaves the control.
+
+Asset mode requires the app asset service. It fails with ASSET_ADAPTER_REQUIRED when the service is missing; malformed adapter output fails with ASSET_ADAPTER_INVALID_RESULT. Separate app registrations stay isolated. `destination` and the upload override apply only in asset mode. File Manager choices are already stored assets and do not run local file transforms.
 
 Undefined means uninitialized, null means cleared, and an empty array means an empty multi-value. A nonempty invalid asset reports an input error. Do not silently drop it or replace it with an ID, URL string, or File. Accepted user selection or upload emits a canonical asset once. Reading a value or making a preview emits no model update.
 

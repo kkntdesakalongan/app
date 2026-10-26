@@ -81,8 +81,8 @@ const componentPropRules = new Map([
   ['TreeTable', new Set(['fields'])],
   ['TableInput', new Set(['fields'])],
   ['LookupInput', new Set(['fields'])],
-  ['FileInput', new Set(['upload', 'toModel', 'imageURLResolver'])],
-  ['ImageInput', new Set(['upload', 'toModel', 'imageURLResolver'])],
+  ['FileInput', new Set(['uploadPath', 'toModel', 'imageURLResolver'])],
+  ['ImageInput', new Set(['uploadPath', 'toModel', 'imageURLResolver'])],
 ])
 const forbiddenPaths = [
   'packages/loom/src/fields',
