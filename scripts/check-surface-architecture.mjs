@@ -434,15 +434,16 @@ function analyzeTypeScript(source, file, lineOffset = 0) {
       diagnostics.push(diagnostic(file, lineAt(sourceFile, node.getStart(sourceFile), lineOffset), `uses removed API "${node.text}"`))
     }
     if (ts.isCallExpression(node)) {
-      const expression = unwrapExpression(node.expression)
       if (isDefineResourceCall(node) && node.arguments.length !== 1 && !isExpectedNegativeArity(sourceFile, node, file)) {
         diagnostics.push(diagnostic(file, lineAt(sourceFile, node.getStart(sourceFile), lineOffset), 'defineResource must receive one complete definition object'))
       }
-      if ((ts.isPropertyAccessExpression(expression) || ts.isElementAccessExpression(expression)) && ['list', 'create'].includes(propertyName(expression) ?? '')) {
-        const owner = unwrapExpression(expression.expression)
-        if (ts.isIdentifier(owner) && resourceBinding(owner.text, nodeScopes.get(node))) {
-          diagnostics.push(diagnostic(file, lineAt(sourceFile, node.getStart(sourceFile), lineOffset), `resource.${propertyName(expression)}() surface factories are removed`))
-        }
+    }
+    if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
+      const owner = unwrapExpression(node.expression)
+      const property = propertyName(node)
+      const callTarget = ts.isCallExpression(node.parent) && unwrapExpression(node.parent.expression) === node
+      if (!callTarget && ['list', 'create'].includes(property ?? '') && ts.isIdentifier(owner) && resourceBinding(owner.text, nodeScopes.get(node))) {
+        diagnostics.push(diagnostic(file, lineAt(sourceFile, node.getStart(sourceFile), lineOffset), `resource.${property} must be called to bind its page props`))
       }
     }
     ts.forEachChild(node, visit)
@@ -531,22 +532,20 @@ function objectBindingNames(expression, scriptSource) {
   return names
 }
 
-function resourceFactoryCalls(expression, resourceNames) {
+function resourceSurfaceReferences(expression, resourceNames) {
   const sourceFile = ts.createSourceFile('template-expression.ts', `const __expression = (${expression})`, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
-  const calls = []
+  const references = []
   function visit(node) {
-    if (ts.isCallExpression(node)) {
-      const callee = unwrapExpression(node.expression)
-      if ((ts.isPropertyAccessExpression(callee) || ts.isElementAccessExpression(callee))
-        && ['list', 'create'].includes(propertyName(callee) ?? '')) {
-        const owner = unwrapExpression(callee.expression)
-        if (ts.isIdentifier(owner) && resourceNames.has(owner.text)) calls.push(propertyName(callee))
-      }
+    if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
+      const owner = unwrapExpression(node.expression)
+      const property = propertyName(node)
+      const callTarget = ts.isCallExpression(node.parent) && unwrapExpression(node.parent.expression) === node
+      if (!callTarget && ['list', 'create'].includes(property ?? '') && ts.isIdentifier(owner) && resourceNames.has(owner.text)) references.push(property)
     }
     ts.forEachChild(node, visit)
   }
   visit(sourceFile)
-  return calls
+  return references
 }
 
 function resourceImportAliases(source) {
@@ -579,8 +578,8 @@ function analyzeTemplate(ast, file, aliases, resourceNames, scriptSource, lineOf
     if (node.type === vueDom.NodeTypes.ELEMENT) {
       for (const prop of node.props) {
         if (prop.type !== vueDom.NodeTypes.DIRECTIVE || prop.exp?.type !== vueDom.NodeTypes.SIMPLE_EXPRESSION) continue
-        for (const method of resourceFactoryCalls(prop.exp.content, resourceNames)) {
-          diagnostics.push(diagnostic(file, prop.exp.loc.start.line + lineOffset, `resource.${method}() surface factories are removed`))
+        for (const method of resourceSurfaceReferences(prop.exp.content, resourceNames)) {
+          diagnostics.push(diagnostic(file, prop.exp.loc.start.line + lineOffset, `resource.${method} must be called to bind its page props`))
         }
       }
       const tag = componentFor(node)
@@ -605,8 +604,8 @@ function analyzeTemplate(ast, file, aliases, resourceNames, scriptSource, lineOf
       }
     }
     if (node.type === vueDom.NodeTypes.INTERPOLATION && node.content?.type === vueDom.NodeTypes.SIMPLE_EXPRESSION) {
-      for (const method of resourceFactoryCalls(node.content.content, resourceNames)) {
-        diagnostics.push(diagnostic(file, node.content.loc.start.line + lineOffset, `resource.${method}() surface factories are removed`))
+      for (const method of resourceSurfaceReferences(node.content.content, resourceNames)) {
+        diagnostics.push(diagnostic(file, node.content.loc.start.line + lineOffset, `resource.${method} must be called to bind its page props`))
       }
     }
     if (node.children) {

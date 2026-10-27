@@ -20,14 +20,10 @@ export const editorForm = defineForm({
         searchable: false,
       },
     },
-    teamId: {
+    teamId: ({ draft }) => ({
       renderer: 'select',
-      props: { load: loadTeams, pick: 'id', view: 'name', searchable: false },
-      behavior: {
-        disabled: ({ draft }) => !draft.departmentId,
-        props: ({ draft }) => ({ searchParameters: { departmentId: draft.departmentId } }),
-      },
-    },
+      props: { load: loadTeams, pick: 'id', view: 'name', searchable: false, disabled: !draft.departmentId, searchParameters: { departmentId: draft.departmentId } },
+    }),
   },
   submit: saveRequest,
 })

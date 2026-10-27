@@ -2,13 +2,15 @@
 
 ## Decision and status
 
-The user accepted this direction on 2026-10-27. Implementation has not started.
+The user accepted this direction on 2026-10-27. Implementation and parent review are complete on
+`feat/resource-authoring-simplification`. See the shared
+[verification record](108-unify-resource-configuration-contracts.md#verification).
 List follows the managed and custom composition principle from
 [Plan 110](110-share-detail-record-state.md). Form retains its existing session
 owner and does not gain a public helper merely for API symmetry.
 
 The [current architecture](../docs/resource_system_overhaul/ARCHITECTURE.md)
-continues to describe shipped behavior. Examples in this plan describe the
+describes the implementation in this branch. Examples in this plan record the
 accepted target.
 
 ## Shared List runtime
@@ -115,9 +117,9 @@ controlled queries, validation, cancellation, refresh, and active resource
 invalidation. Form proof is required only if its implementation changes. Use
 `test-audit` before test work.
 
-This plan authorizes documentation only. It does not authorize framework
-implementation, application migration, Git publication, a new Form helper, or
-changes to global freshness settings. Cross-resource effects and custom shared
+The user later authorized Carta implementation and Git publication. External
+application migrations, a new Form helper, and global freshness changes remain
+outside this work. Cross-resource effects and custom shared
 query designs remain separate proposals.
 
 Laziness Protocol reuses the existing Collection runtime and keeps Form on its

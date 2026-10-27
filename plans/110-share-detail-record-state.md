@@ -2,8 +2,9 @@
 
 ## Decision and status
 
-The user accepted this direction on 2026-10-27. Implementation has not started.
-This plan records the accepted Detail data ownership and composition contract.
+The user accepted this direction on 2026-10-27. Implementation and parent review are complete on
+`feat/resource-authoring-simplification`. See the shared
+[verification record](108-unify-resource-configuration-contracts.md#verification). This plan records the accepted Detail data ownership and composition contract.
 The later List and Form decisions are recorded in
 [Plan 111](111-share-list-data-and-preserve-form-sessions.md).
 
@@ -14,8 +15,8 @@ framework responsibilities in both cases.
 
 This extends [Plan 108](108-unify-resource-configuration-contracts.md) and uses
 the loader identity direction from
-[Plan 109](109-carry-resource-loader-identity.md). Current authoring guides
-continue to describe shipped behavior.
+[Plan 109](109-carry-resource-loader-identity.md). The current architecture guide
+describes the implementation in this branch.
 
 ## SWA Report case study
 
@@ -181,8 +182,8 @@ background refresh, refresh errors, ID changes, and late responses. The SWA
 scenario must prove that the main detail and sibling content use the same
 record for both cached and fetched results. Use `test-audit` before test work.
 
-This document does not authorize framework implementation, HK Shield migration,
-Git publication, or changes to global freshness settings. Cross-resource write
+The user later authorized Carta implementation and Git publication. HK Shield
+migration and global freshness changes remain outside this work. Cross-resource write
 effects and reusable custom-query designs from the earlier discussion remain
 proposals. This Detail decision does not define a List helper or Form helper;
 Plan 111 records their separate disposition.

@@ -13,6 +13,12 @@ share schemas.
 Use [custom fields](references/custom-field-contract.md) for interactions
 existing controls cannot express.
 
+Use a plain field object for static input. Use a field function when the full
+configuration depends on typed Form context or the read-only draft. Return the
+whole field configuration. Put visibility and span on the field. Put authored
+disabled state in the input props. Only `behavior.derived` remains for values
+computed from the draft.
+
 For file selection, imports, or preprocessing, use the existing FileInput,
 ImageInput, CameraInput, or DrawingCanvas. Omitted mode keeps stored
 `AssetValue` behavior. Set `mode: 'file'` for local bytes and build the
@@ -25,8 +31,10 @@ creating a custom file control.
 
 For relations, use authorized owner sources with display labels. Read the
 [web/API connection](references/backend-form-contract.md) when changing that
-boundary. Pass `resource` with `load` and `namespace` so resource writes invalidate
-options. For hydration and dependencies, read the
+boundary. A loader from `resource.list()` carries resource ownership and bound
+request parameters. Pass it with `pick` and `view`; do not repeat its resource
+or namespace. Put values that change the returned choices in
+`searchParameters`. For hydration and dependencies, read the
 [input source contract](../../../docs/resource_system_overhaul/ARCHITECTURE.md#74-lookup-option-and-location-inputs).
 
 Submit overrides replace access and invalidation. Follow the

@@ -43,13 +43,13 @@ const offline = defineResource({
   list: { permission: null, table: { ...table, load: () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } }) } },
 })
 
-const alphaList = alpha.list
+const alphaList = alpha.list()
 const alphaArchivedList = {
-  ...alpha.list,
-  table: { ...alpha.list.table, namespace: 'archived' },
+  ...alpha.list(),
+  table: { ...alpha.list().table, namespace: 'archived' },
 }
-const betaList = beta.list
-const offlineList = offline.list
+const betaList = beta.list()
+const offlineList = offline.list()
 const localQuery = ref<Record<string, unknown>>({ page: 1, limit: 10 })
 const localLoad = () => ({ data: rows, meta: { total: 40, pageSize: 10, totalPage: 4 } })
 
@@ -58,7 +58,7 @@ const draftForm = defineForm({
   schema: draftSchema,
   fields: {
     kind: { label: 'Jenis', renderer: 'text' },
-    reason: { label: 'Alasan', renderer: 'text', behavior: { visible: ({ draft }) => draft.kind === 'lain' } },
+    reason: ({ draft }) => ({ label: 'Alasan', renderer: 'text', visible: draft.kind === 'lain' }),
   },
   submit: (draft) => draft,
 })

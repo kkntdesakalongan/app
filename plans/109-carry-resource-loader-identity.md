@@ -2,9 +2,9 @@
 
 ## Decision and status
 
-The user accepted this direction on 2026-10-27. Implementation has not started.
-This plan records the decision. Current authoring guides still describe shipped
-behavior.
+The user accepted this direction on 2026-10-27. Implementation and parent review are complete on
+`feat/resource-authoring-simplification`. See the shared
+[verification record](108-unify-resource-configuration-contracts.md#verification). This plan records the decision.
 
 Framework-created resource loaders carry their source identity internally.
 Consumers obtain resource ownership and cache identity from the loader instead
@@ -93,14 +93,14 @@ loader does not automatically preserve its identity.
   source changes, and reuse across resource bindings. Use `test-audit` before
   test changes. Select proof appropriate to the changed framework owners.
 
-## Scope and unresolved details
+## Implementation scope
 
-This plan does not authorize framework implementation, application migration,
-Git publication, or changes to global freshness policy. The current query
-management investigation is separate from this accepted decision.
+The user later authorized Carta implementation and Git publication. External
+application migrations and global freshness changes remain outside this work.
 
-The exact internal carrier, consumer coverage, and explicit override rules
-remain implementation design details. The authoring outcome above is accepted.
+The implementation uses a private WeakMap for loader identity. Bound ownership
+conflicts are rejected. Explicit namespace overrides remain available for view
+state. Option consumers use the bound owner and request parameters.
 
 Minimize Reader Load removes repeated identity plumbing from resource-backed
 inputs. Resource and view identity remain separate because they control

@@ -41,9 +41,7 @@ const userCreateForm = defineForm({
     roleIds: {
       renderer: 'checkbox-group',
       props: {
-        load: roles.list.table.load,
-        resource: roles.list.table.resource,
-        namespace: roles.list.table.namespace,
+        load: roles.list().table.load,
         pick: 'id',
         view: 'name',
         searchParameters: { active: true },

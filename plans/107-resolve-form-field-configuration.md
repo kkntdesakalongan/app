@@ -2,8 +2,9 @@
 
 ## Decision and status
 
-The user accepted this authoring shape on 2026-10-26. Implementation has not
-started. Performance analysis and optimization are deferred.
+The user accepted this authoring shape on 2026-10-26. Implementation and parent review are complete on
+`feat/resource-authoring-simplification`. See the shared
+[verification record](108-unify-resource-configuration-contracts.md#verification). Performance analysis and optimization remain deferred.
 
 A form field is a plain configuration object or a pure function that returns
 its complete configuration. Static fields keep their current object syntax.
@@ -27,8 +28,8 @@ accepted cross-surface direction and framework type ownership. Components
 implement those shared contracts rather than restating field and prop types.
 
 The [architecture guide](../docs/resource_system_overhaul/ARCHITECTURE.md)
-continues to describe shipped behavior until implementation. The target examples
-below are not implemented APIs.
+describes the implementation in this branch. The examples below record the
+accepted target.
 
 ## Problem
 
@@ -211,10 +212,9 @@ those only from implementation evidence. Correctness of reactivity, identity,
 and draft preservation remains required.
 
 This plan concerns Form field configuration. Plan 108 records extension of the
-same authoring convention to List and Detail. Their evaluation scopes and
-surface-specific contracts still need to be defined before implementation.
-The current task changes documentation only. Framework implementation, HK
-Shield migration, and Git publication remain outside this task.
+same authoring convention to List and Detail. The implementation keeps table
+metadata separate from row cell configuration. The user later authorized Carta
+implementation and Git publication. HK Shield migration remains outside this work.
 
 Laziness Protocol keeps static objects and ordinary object composition.
 Minimize Reader Load favors one resolved configuration. Type System Discipline

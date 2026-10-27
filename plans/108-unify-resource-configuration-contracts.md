@@ -3,8 +3,10 @@
 ## Decision and status
 
 The user accepted the cross-surface consistency direction and framework-owned
-types on 2026-10-26. Implementation has not started. This task records the
-accepted direction only.
+types on 2026-10-26. Implementation and parent review are complete on
+`feat/resource-authoring-simplification`. See the shared
+[verification record](108-unify-resource-configuration-contracts.md#verification). This
+task records the accepted direction.
 
 Use a static object or a pure function that returns the complete configuration
 at each agreed configuration boundary. Static declarations remain ordinary
@@ -13,8 +15,8 @@ objects. Resolve dynamic configuration with context specific to its owner.
 [Plan 106](106-bind-create-forms-with-runtime-context.md) records create binding.
 [Plan 107](107-resolve-form-field-configuration.md) records Form field resolution.
 Extend those conventions through the existing shared contracts. The
-[architecture guide](../docs/resource_system_overhaul/ARCHITECTURE.md) continues
-to describe shipped behavior until implementation.
+[architecture guide](../docs/resource_system_overhaul/ARCHITECTURE.md) describes
+the implementation in this branch.
 
 ## Framework type ownership
 
@@ -111,9 +113,36 @@ decision changes them.
 
 Performance work remains deferred as agreed for Plan 107. Type correctness,
 reactive updates, stable identity, draft preservation, and operation policy
-remain required. No framework implementation, HK Shield migration, or Git
-publication is authorized by the current documentation task.
+remain required. The user later authorized Carta implementation and Git
+publication. HK Shield migration and package publication remain outside this work.
 
 Minimize Reader Load gives each contract one framework owner. Laziness Protocol
 extends existing shared definitions. Type System Discipline preserves distinct
 contexts and checked component implementations.
+
+## Verification
+
+Parent review is complete. All implementation work in Plans 106–111 stayed in
+Carta. The parent reproduced and required fixes for resolver inference, create
+loaders, reactive record sources, composite identity ordering, remote selection
+retention, context types and precedence, custom reader validation, and cell
+export parity. The primary test owners retain the useful regressions.
+
+The parent independently ran these checks successfully:
+
+- Loom type check and diagnostics: 51 contract, 14 TypeScript, and 8 Vue cases.
+- Full Loom unit suite: 575 tests. After the final type correction, focused
+  resource and view tests passed again: 94 tests.
+- Full Loom browser suite: 94 tests. After adding the binding-time create
+  regression, the complete Form browser file passed: 11 tests.
+- Web type check and all 255 Web unit tests. The final Web type check passed
+  after the bound form loader type changed.
+- Surface architecture tests and gate: 34 tests. Module tooling: 81 tests.
+- Focused Web lint, available Loom Oxlint checks, and `git diff --check`.
+
+Existing browser warnings concern Dialog descriptions, NumberInput/DOM props,
+router context, and the TinyMCE evaluation license. Web lint reports one existing
+restricted-syntax warning in the user role assignments route. Loom has no local
+lint or formatter script; its changed sources passed the available Web-installed
+Oxlint command. External consumer repositories and authenticated application
+browser flows were not checked in this implementation.

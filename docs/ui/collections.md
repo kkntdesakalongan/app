@@ -32,7 +32,7 @@ const query = ref({ page: 1, limit: 25 })
 
 ```vue
 <ListView
-  :table="{ ...users.list.table, query }"
+  :table="{ ...users.list().table, query }"
   @update:query="query = $event"
 />
 ```
@@ -90,8 +90,8 @@ const users = defineResource({
 })
 ```
 
-The binder adds the table loader and row actions. It keeps filters, export,
-headings, and explicit route settings on `users.list`.
+Call `users.list()` to bind the table and its row actions. The result keeps
+filters, export, headings, and explicit route settings beside the table.
 
 ## ChipFilter
 
@@ -132,9 +132,10 @@ that renderer inside its indentation and expansion controls. Use `tree-cell`
 only when the whole cell needs custom rendering.
 
 Resource extraction keeps a complete primitive bag intact. Pass
-`users.list.table` to Table, `users.update(...).form` to Form or DialogForm,
-and the full `users.update(...)` page bag to FormView. The page views add
-layout and navigation; they do not start a second load or form session.
+`users.list().table` to Table, `users.update(...).form` to Form or DialogForm,
+and the full `users.update(...)` page bag to FormView. `useCollection` reads
+the same managed collection for a custom page. The page views add layout and
+navigation; they do not start a second load or form session.
 
 The [display parity fixture](../../packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts)
 uses one joined-relation accessor in Table, TreeTable, Detail, and extracted

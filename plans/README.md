@@ -9,7 +9,7 @@ Form helper is needed for the user's Form and stepper workflows.
 
 | Plan | Result | Status |
 |---|---|---|
-| [111](111-share-list-data-and-preserve-form-sessions.md) | Share List query state while preserving independent Form sessions | Direction accepted; implementation pending |
+| [111](111-share-list-data-and-preserve-form-sessions.md) | Share List query state while preserving independent Form sessions | Implemented; parent review and verification complete |
 
 Query validation and controlled query behavior must remain consistent across
 List composition. Multiple forms can use one managed detail record while their
@@ -24,7 +24,7 @@ directly. Both paths retain automatic caching, cancellation, and refresh.
 
 | Plan | Result | Status |
 |---|---|---|
-| [110](110-share-detail-record-state.md) | Share one Detail record contract across managed and custom page composition | Direction accepted; implementation pending |
+| [110](110-share-detail-record-state.md) | Share one Detail record contract across managed and custom page composition | Implemented; parent review and verification complete |
 
 The SWA Report cache-hit incident records why sibling content needs access to
 the same state as the main detail. Framework-owned types and data-only detail
@@ -41,7 +41,7 @@ Explicit view namespaces remain available for separate persistent query state.
 
 | Plan | Result | Status |
 |---|---|---|
-| [109](109-carry-resource-loader-identity.md) | Carry resource ownership and source identity with framework loaders | Direction accepted; implementation pending |
+| [109](109-carry-resource-loader-identity.md) | Carry resource ownership and source identity with framework loaders | Implemented; parent review and verification complete |
 
 Standalone loaders retain instance isolation and explicit ownership where
 needed. The internal carrier and override rules remain implementation details.
@@ -56,7 +56,7 @@ to each owner, and callable surface bindings follow one convention.
 
 | Plan | Result | Status |
 |---|---|---|
-| [108](108-unify-resource-configuration-contracts.md) | Extend shared configuration and binding contracts through existing hosts | Direction accepted; implementation pending |
+| [108](108-unify-resource-configuration-contracts.md) | Extend shared configuration and binding contracts through existing hosts | Implemented; parent review and verification complete |
 
 Plans 106 and 107 define the initial Form work. Plan 108 extends the convention
 to display consumers and resource bindings. Table-wide and row-specific display
@@ -73,7 +73,7 @@ Performance work is deferred. Implementation has not started.
 
 | Plan | Result | Status |
 |---|---|---|
-| [107](107-resolve-form-field-configuration.md) | Resolve dynamic renderer, props, and layout together while preserving static fields | Design accepted; implementation pending |
+| [107](107-resolve-form-field-configuration.md) | Resolve dynamic renderer, props, and layout together while preserving static fields | Implemented; parent review and verification complete |
 
 Plan 107 replaces the earlier whole-map context callback in Plan 106 with
 per-field configuration functions. Keep one resolution approach. Derived
@@ -88,7 +88,7 @@ loading APIs remain. This task records the design only.
 
 | Plan | Result | Status |
 |---|---|---|
-| [106](106-bind-create-forms-with-runtime-context.md) | Bind create forms with actual context and preserve the static authoring path | Design accepted; implementation pending |
+| [106](106-bind-create-forms-with-runtime-context.md) | Bind create forms with actual context and preserve the static authoring path | Implemented; parent review and verification complete |
 
 Plan 106 records ownership, proposed usage, lifecycle requirements, unresolved
 contract details, and implementation acceptance. Current authoring guides

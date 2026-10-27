@@ -40,7 +40,7 @@ describe('C row command', () => {
   })
 
   it('C-03 refreshes the bound request list after a successful command', async () => {
-    mountFramework(() => h(Table, { ...requestResource.list.table }))
+    mountFramework(() => h(Table, { ...requestResource.list().table }))
     const row: RequestRecord = { id: 'request-1', status: 'open', allowedOperations: ['verify'] }
 
     await vi.waitFor(() => expect(readRequestListLoads()).toBe(1))

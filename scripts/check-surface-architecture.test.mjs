@@ -188,33 +188,35 @@ makeResource({}, {})`
   assert.match(diagnostics.join('\n'), /one complete definition object/)
 })
 
-test('rejects removed resource factories while allowing unrelated list methods', () => {
+test('requires resource page bindings to be called while allowing unrelated list methods', () => {
   const source = `import { defineResource as bind } from '@southneuhof/loom'
 const records = bind({})
-records.list()
-records['create']()
+records.list
+records['create']
 function readProvider(records) { return records.list() }
 const provider = { list: () => [] }
 provider.list()`
   const diagnostics = analyzeSource(source, 'sample.ts')
 
   assert.equal(diagnostics.length, 2)
-  assert.match(diagnostics[0], /resource\.list\(\)/)
-  assert.match(diagnostics[1], /resource\.create\(\)/)
+  assert.match(diagnostics[0], /resource\.list must be called/)
+  assert.match(diagnostics[1], /resource\.create must be called/)
+  assert.deepEqual(analyzeSource(source.replace('records.list\nrecords[\'create\']', 'records.list()\nrecords[\'create\']()'), 'sample.ts'), [])
 })
 
-test('rejects static resource imports and aliases while allowing provider lists', () => {
-  const source = `import { users } from './users.resource'
+test('allows callable resource bindings and unrelated provider lists', () => {
+  const legacy = `import { users } from './users.resource'
 import { accounts as records } from '../accounts.resource'
 import { providers } from './providers'
-users.list()
-records.create()
+users.list
+records.create
 providers.list()`
-  const diagnostics = analyzeSource(source, 'sample.ts')
+  const diagnostics = analyzeSource(legacy, 'sample.ts')
 
   assert.equal(diagnostics.length, 2)
-  assert.match(diagnostics[0], /resource\.list\(\)/)
-  assert.match(diagnostics[1], /resource\.create\(\)/)
+  assert.match(diagnostics[0], /resource\.list must be called/)
+  assert.match(diagnostics[1], /resource\.create must be called/)
+  assert.deepEqual(analyzeSource(legacy.replace('users.list\nrecords.create', 'users.list()\nrecords.create()'), 'sample.ts'), [])
 })
 
 test('rejects field-level form sources through aliases and object spreads', () => {
@@ -382,7 +384,7 @@ import DialogForm from '../DialogForm.vue'
   assert.equal(analyzeSource(productionSource, 'packages/loom/src/components/composites/FlatForm.vue').length, 2)
 })
 
-test('rejects resource factories in Vue directive and interpolation expressions', () => {
+test('requires callable resource bindings in Vue directive and interpolation expressions', () => {
   const source = `<script setup lang="ts">
 import { users } from './users.resource'
 import { accounts as records } from '../accounts.resource'
@@ -390,16 +392,16 @@ const provider = { list: () => [] }
 </script>
 <template>
   <ListView v-bind="users.list()" />
-  <div :data="records['create']()" />
+  <div :data="records['create']" />
   <div v-bind="provider.list()" />
+  <p>{{ users.create }}</p>
   <p>{{ users.create() }}</p>
 </template>`
   const diagnostics = analyzeSource(source, 'sample.vue')
 
-  assert.equal(diagnostics.length, 3)
-  assert.match(diagnostics[0], /resource\.list\(\)/)
-  assert.match(diagnostics[1], /resource\.create\(\)/)
-  assert.match(diagnostics[2], /resource\.create\(\)/)
+  assert.equal(diagnostics.length, 2)
+  assert.match(diagnostics[0], /resource\.create must be called/)
+  assert.match(diagnostics[1], /resource\.create must be called/)
 })
 
 test('keeps form and detail fields, command handlers, and provider lists valid', () => {

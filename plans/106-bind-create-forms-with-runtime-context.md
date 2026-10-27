@@ -2,8 +2,9 @@
 
 ## Decision and status
 
-The user accepted this design direction on 2026-10-26. Implementation has not
-started. This task records the design and the implementation plan only.
+The user accepted this design direction on 2026-10-26. Implementation and parent review are complete on
+`feat/resource-authoring-simplification`. See the shared
+[verification record](108-unify-resource-configuration-contracts.md#verification). This file keeps the design and its original rationale.
 
 Keep the reusable form definition in the resource. Supply the actual context
 when the caller binds a create form. Make every resource create binding callable.
@@ -18,9 +19,9 @@ field callback, application factory, or additional generic argument. Existing
 complete configuration functions at individual field entries. Its accepted
 shape replaces the earlier whole-`fields` context callback in this plan.
 
-The [current architecture guide](../docs/resource_system_overhaul/ARCHITECTURE.md)
-continues to describe the shipped contract until this plan is implemented.
-Examples below describe the accepted target and are not current APIs.
+The [architecture guide](../docs/resource_system_overhaul/ARCHITECTURE.md)
+describes the implementation in this branch. Examples below record the
+accepted target.
 
 ## Problem
 
@@ -258,8 +259,8 @@ cross-surface conventions. Broader resource reuse and a redesign of update
 operation behavior remain later discussion topics. Preserve update behavior
 during the create migration.
 
-The current task changes documentation only. It does not authorize framework
-implementation, an HK Shield migration, package publication, or Git publication.
+The user later authorized Carta implementation and Git publication. An HK Shield
+migration and package publication remain outside this work.
 
 The accepted direction replaces the earlier broader proposal to expose managed
 CRUD operations independently of form definitions. That separation is not
