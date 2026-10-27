@@ -131,12 +131,8 @@ export parity. The primary test owners retain the useful regressions.
 The parent independently ran these checks successfully:
 
 - Loom type check and diagnostics: 51 contract, 14 TypeScript, and 8 Vue cases.
-- Full Loom unit suite: 575 tests. After the final type correction, focused
-  resource and view tests passed again: 94 tests.
-- Full Loom browser suite: 94 tests. After adding the binding-time create
-  regression, the complete Form browser file passed: 11 tests.
-- Web type check and all 255 Web unit tests. The final Web type check passed
-  after the bound form loader type changed.
+- Full Loom unit suite: 575 tests. Full Loom browser suite: 95 tests.
+- Web type check and all 255 Web unit tests.
 - Surface architecture tests and gate: 34 tests. Module tooling: 81 tests.
 - Focused Web lint, available Loom Oxlint checks, and `git diff --check`.
 
@@ -144,5 +140,12 @@ Existing browser warnings concern Dialog descriptions, NumberInput/DOM props,
 router context, and the TinyMCE evaluation license. Web lint reports one existing
 restricted-syntax warning in the user role assignments route. Loom has no local
 lint or formatter script; its changed sources passed the available Web-installed
-Oxlint command. External consumer repositories and authenticated application
-browser flows were not checked in this implementation.
+Oxlint command. The available Oxfmt check flags 17 touched files that also fail
+that check at the original implementation commit. External consumer repositories
+and authenticated application browser flows were not checked.
+
+The later reduction review removed duplicate validation, presentation caches,
+request merging, forwarding wrappers and context calculations. It removed 106
+production lines and 26 test setup lines without removing a test or assertion.
+The full change still adds 517 production lines relative to its base. The parent
+repeated all checks listed above after the reduction.
