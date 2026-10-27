@@ -399,7 +399,7 @@ Define one raw query schema for the frontend Collection values, including endpoi
 
 | Behavior | Source owner | Example or check |
 |---|---|---|
-| Form types and session | [forms contracts](../../packages/loom/src/contracts/forms.ts), [form session](../../packages/loom/src/forms/useFormSession.ts) | [form parity browser test](../../packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts) |
+| Form types and session | [forms contracts](../../packages/loom/src/contracts/forms.ts), [form session](../../packages/loom/src/forms/useFormSession.ts) | [Form runtime test](../../packages/loom/src/components/core/__tests__/form.spec.ts) |
 | Input props and models | The selected component under packages/loom/src/components/inputs | [select/form parity test](../../packages/loom/src/components/composites/__tests__/SelectForm.browser.spec.ts) |
 | Display resolution | [display runtime](../../packages/loom/src/display/resolveDisplay.ts), table and detail constructors | [display parity test](../../packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts) |
 | Resource binding | [resource binder](../../packages/loom/src/resources/bindResource.ts), [resource types](../../packages/loom/src/resources/operations.ts) | [users module](../../apps/web/src/routes/%28authenticated%29/settings/users/users.resource.ts) |

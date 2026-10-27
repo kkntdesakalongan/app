@@ -1,5 +1,15 @@
 # File-routing plans
 
+## Test reduction survey and plan, 2026-10-28
+
+| Plan | Result | Status |
+|---|---|---|
+| [112](112-reduce-low-value-tests.md) | Remove weak inventories and consolidate duplicate proof across current and existing tests | Implemented; parent review and verification complete |
+
+The user approved deletion of diagnostic machinery, the Form parity matrix,
+weak inventories, and selected low-value variants. Retain a small set of
+consequential behavior tests. Deliver a child PR to PR #9.
+
 ## Shared List data and existing Form sessions — 2026-10-27
 
 The user accepted `useCollection` as the shared data runtime for managed List
