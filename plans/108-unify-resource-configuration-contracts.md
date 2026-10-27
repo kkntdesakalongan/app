@@ -131,7 +131,7 @@ export parity. The primary test owners retain the useful regressions.
 The parent independently ran these checks successfully:
 
 - Loom type check and diagnostics: 51 contract, 14 TypeScript, and 8 Vue cases.
-- Full Loom unit suite: 575 tests. Full Loom browser suite: 95 tests.
+- Full Loom unit suite: 573 tests. Full Loom browser suite: 95 tests.
 - Web type check and all 255 Web unit tests.
 - Surface architecture tests and gate: 34 tests. Module tooling: 81 tests.
 - Focused Web lint, available Loom Oxlint checks, and `git diff --check`.
@@ -146,6 +146,14 @@ and authenticated application browser flows were not checked.
 
 The later reduction review removed duplicate validation, presentation caches,
 request merging, forwarding wrappers and context calculations. It removed 106
-production lines and 26 test setup lines without removing a test or assertion.
+production lines and 26 test setup lines.
 The full change still adds 517 production lines relative to its base. The parent
 repeated all checks listed above after the reduction.
+
+A subsequent assertion audit removed two implementation-string tests, duplicate
+and private-state checks, and an annotation-only type assertion. It corrected
+stale DOM checks and independent workbook expectations. The retained regressions
+failed under six targeted source mutations; the parent also reproduced a controls
+state forwarding failure. Every mutation was restored byte for byte. The parent
+reran Loom unit/browser suites, types, diagnostics, surface checks, module tooling
+and focused lint. This assertion revision changed no production code.
