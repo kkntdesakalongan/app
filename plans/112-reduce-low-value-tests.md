@@ -84,7 +84,7 @@ GPT-6 Luna at max reasoning executes the bounded cuts. The parent reads the
 full diff and affected owners, independently verifies retained behavior, and
 creates a child PR targeting `feat/resource-authoring-simplification`.
 
-## Result and verification
+## First pass result and verification
 
 The final non-document diff adds 96 lines and removes 3,995 lines, for a net
 reduction of 3,899 lines. No production runtime file changed. The diagnostic
@@ -117,3 +117,30 @@ suite, and Sprindle suite were not rerun. No API or Sprindle files changed.
 
 Accepted gaps remain cosmetics, routine forwarding, rare configuration changes,
 and diagnostic wording/location. Do not rebuild these inventories as new tests.
+
+## Second reduction pass
+
+The user approved a stricter continuation from `4d40ac0` on the same branch.
+It removes another 5,981 net test/check lines and deletes 33 whole files,
+including the historical generator benchmark and repeated UI/type matrices.
+Tracked tests, fixtures, and helpers fall from 40,559 to 34,578 lines. Runtime
+implementation remains 35,135 lines under the same classification.
+
+Table tests now keep representative query, paging, hierarchy, keyboard, row
+interaction, and resize behavior. Retained negative row-click assertions have
+positive controls. Resize persistence checks the result after remount rather
+than counting private storage writes. IDR input still checks typed numeric
+values separately from its formatted display.
+
+Parent review and independent checks pass for 436 Loom unit tests, 57 browser
+tests, 252 Web tests, 235 Sprindle tests, module tooling, surface checks, all
+three affected package type checks, and configured Oxlint. The two browser
+files that gained formatting differences were corrected. Five existing Web
+formatter mismatches remain unchanged. The supplemental Web ESLint wrapper
+cannot parse Loom files with that configuration.
+
+Parallel baseline runs failed for browser and Web generation cases. Isolated
+baseline reruns and the parent's sequential final checks pass. API database,
+editor, and low-file-limit watcher suites were not rerun. No production runtime,
+dependency, permission, write-recovery, or cached-detail code changed. Unrelated
+skill-creator edits remain outside this commit.
