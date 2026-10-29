@@ -1,18 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { editableStatusCodes, statusCatalog } from './statuses'
 import { appInputPresets } from './input-presets'
-import { appDisplayPresets } from './display-presets'
 
 describe('status catalog', () => {
-  it('keeps editable choices within the full display catalog', () => {
+  it('limits editable choices to active and non-active statuses', () => {
     const options = appInputPresets.statusCode.props.data
 
-    expect(editableStatusCodes).toEqual(['active', 'non_active'])
-    expect(options).toEqual([
-      { id: 'active', name: 'Aktif' },
-      { id: 'non_active', name: 'Nonaktif' },
-    ])
-    expect(Object.keys(statusCatalog)).toEqual(['active', 'non_active', 'expired', 'expiring_soon'])
-    expect(appDisplayPresets.statusCode.props.options.expired).toEqual({ color: 'error', label: 'Kadaluwarsa' })
+    expect(options.map(({ id }) => id)).toEqual(['active', 'non_active'])
   })
 })

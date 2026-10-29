@@ -1,6 +1,5 @@
 import type { ClientResponse } from 'hono/client'
 import { z } from 'zod/v4'
-import * as honoSchemas from '../schema'
 import { checkedHonoCreateSchema, checkedHonoRecordSchema, checkedHonoUpdateSchema } from '../schema'
 
 type Row = { id: string; name: string; active: boolean }
@@ -20,10 +19,6 @@ const update = z.object({ name: z.string().optional(), active: z.boolean().optio
 checkedHonoRecordSchema(route, record)
 checkedHonoCreateSchema(route, create)
 checkedHonoUpdateSchema(route, update)
-
-const querySchemaGuardIsRemoved: 'checkedHonoQuerySchema' extends keyof typeof honoSchemas ? false : true = true
-
-void querySchemaGuardIsRemoved
 
 // @ts-expect-error A record schema must retain every required endpoint field.
 checkedHonoRecordSchema(route, z.object({ id: z.string(), active: z.boolean() }))

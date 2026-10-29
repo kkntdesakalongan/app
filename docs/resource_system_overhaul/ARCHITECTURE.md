@@ -399,14 +399,11 @@ Define one raw query schema for the frontend Collection values, including endpoi
 
 | Behavior | Source owner | Example or check |
 |---|---|---|
-| Form types and session | [forms contracts](../../packages/loom/src/contracts/forms.ts), [form session](../../packages/loom/src/forms/useFormSession.ts) | [form parity browser test](../../packages/loom/src/components/composites/__tests__/SurfaceParity.browser.spec.ts) |
-| Input props and models | The selected component under packages/loom/src/components/inputs | [select/form parity test](../../packages/loom/src/components/composites/__tests__/SelectForm.browser.spec.ts) |
-| Display resolution | [display runtime](../../packages/loom/src/display/resolveDisplay.ts), table and detail constructors | [display parity test](../../packages/loom/src/components/core/__tests__/DisplayParity.browser.spec.ts) |
+| Form types and session | [forms contracts](../../packages/loom/src/contracts/forms.ts), [form session](../../packages/loom/src/forms/useFormSession.ts) | [Form runtime test](../../packages/loom/src/components/core/__tests__/form.spec.ts) |
 | Resource binding | [resource binder](../../packages/loom/src/resources/bindResource.ts), [resource types](../../packages/loom/src/resources/operations.ts) | [users module](../../apps/web/src/routes/%28authenticated%29/settings/users/users.resource.ts) |
 | ListView delete outcomes | [ListView](../../packages/loom/src/components/views/ListView.vue) and [view contracts](../../packages/loom/src/contracts/views.ts) | [mounted delete outcome tests](../../packages/loom/src/components/views/__tests__/views.spec.ts) |
 | Query and transport | [Hono actions](../../apps/web/src/framework/hono/actions.ts) and the app query schema | [users actions](../../apps/web/src/routes/%28authenticated%29/settings/users/users.actions.ts) |
 | Resource route entry | [Loom route registry](../../packages/loom/src/resources/routeAccess.ts) and [the app route guard](../../apps/web/src/router/guards.ts) | [route requirement tests](../../packages/loom/src/resources/__tests__/boundResource.spec.ts) and [guard tests](../../apps/web/src/router/__tests__/guards.spec.ts) |
-| Asset values | Loom's asset contracts and the app's installed asset adapter | [asset parity test](../../packages/loom/src/assets/__tests__/AssetParity.browser.spec.ts) |
 
 Extend the existing input or display registry for a new component. Keep form and display contracts separate. Put domain value transforms in a schema or explicit loader. Add shared mechanics only when more than one real owner uses them.
 
