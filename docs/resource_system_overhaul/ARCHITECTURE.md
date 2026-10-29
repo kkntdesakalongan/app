@@ -1,6 +1,6 @@
 # Carta surface architecture
 
-**Current contract.** This is the current authoring guide for Loom and its Carta web integration. It describes behavior in the current source. Open repair plans below record gaps. A planned target is not a shipped contract.
+**Current contract.** This guide describes the current Loom and Carta web source. Plans 106–111 are implemented and reviewed. See their [verification record](../../plans/108-unify-resource-configuration-contracts.md#verification).
 
 Use [Carta module terms](../../CONTEXT.md) for ownership language. Use the
 [API schema boundary](../architecture/web-application-architecture.md#api-schema-boundary)
@@ -20,20 +20,20 @@ for backend schema imports in web code.
 Use a resource for standard operation pages and declare only the operations the module supports. The route passes a complete bag to its page view. For direct Form and Table composition on a nonstandard page, see the compiled [query ownership fixture](../../apps/web/src/framework/acceptance/QueryOwnershipFixture.vue).
 
 ~~~vue
-<ListView v-bind="users.list" title="Users" />
-<FormView v-bind="users.create" title="Create User" />
+<ListView v-bind="users.list()" title="Users" />
+<FormView v-bind="users.create()" title="Create User" />
 <DetailView v-bind="users.detail({ id: userId })" />
 <FormView v-bind="form" title="Edit User" />
 ~~~
 
-These bindings are literal template expressions in the [users list route](../../apps/web/src/routes/%28authenticated%29/settings/users/index.route.vue), [create route](../../apps/web/src/routes/%28authenticated%29/settings/users/create.route.vue), [detail route](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/detail.route.vue), and [edit route](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/edit.route.vue). The edit route builds `form` from `users.update({ id: userId.value })` and adds route-owned confirmation behavior. The app type check compiles all four routes and the linked users module.
+These bindings use the callable `list()` and `create()` operations and the identity-bound `detail({ id })` and `update({ id })` operations. The [users list route](../../apps/web/src/routes/%28authenticated%29/settings/users/index.route.vue), [create route](../../apps/web/src/routes/%28authenticated%29/settings/users/create.route.vue), [detail route](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/detail.route.vue), and [edit route](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/edit.route.vue) compile those bindings. The edit route builds `form` from `users.update({ id: userId.value })` and adds route-owned confirmation behavior.
 
 | Step | Write | Conditions and check |
 |---|---|---|
 | 1. Select behavior | Use the approved design and plan. State which operations, routes, and page behavior the module needs. | The route owns dialogs, navigation, notices, and workflow state. For nonstandard composition, see the compiled [direct Form and Table fixture](../../apps/web/src/framework/acceptance/QueryOwnershipFixture.vue). |
 | 2. Define schemas and transport | Use the API module's schema values for backend create, update, and record values. Put Collection query values and web form conversion in the web module. Put app calls in its action file. | Keep input, parsed output, returned record, and query values distinct. A typed list operation needs a query schema. A route without list calls the Hono factory without options. |
 | 3. Define surfaces | Use defineForm for an editor, defineTable for a collection, and defineDetail for a record display. Use only the surfaces the page needs. | Every form entry names a renderer. Tables and details use record keys; forms use input keys or explicit field bindings. The users module is the compiled example. |
-| 4. Bind operations | Use one defineResource object for supported standard operations. Keep list and create bags static. Bind detail, update, and delete to a resource identity. | An update form maps the loaded record to its input draft. An update-only resource does not need a visible detail operation. |
+| 4. Bind operations | Use one defineResource object for supported standard operations. Call `list()` and `create()` to bind their page bags. Bind detail, update, and delete to a resource identity. | An update form maps the loaded record to its input draft. An update-only resource does not need a visible detail operation. |
 | 5. Compose the route | Pass the resource bag to ListView, DetailView, or FormView. Let the route own page-specific workflow. | The [users list](../../apps/web/src/routes/%28authenticated%29/settings/users/index.route.vue), [create](../../apps/web/src/routes/%28authenticated%29/settings/users/create.route.vue), [detail](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/detail.route.vue), and [edit](../../apps/web/src/routes/%28authenticated%29/settings/users/%5BuserId%5D/edit.route.vue) routes show the current page bindings. |
 | 6. Check the module | Run ordinary app lint and type checks plus focused behavior tests for changed owners. Review field and relation wiring in source. | Use [web verification](../../.agents/skills/web-ui-surfaces/references/verification.md) and the [Loom examples](../../packages/loom/README.md#executable-examples). |
 
@@ -49,11 +49,11 @@ Use flat props for Form and DialogForm; the compiled [Form and DialogForm fixtur
 
 ~~~vue
 <Form v-bind="draftForm" :initial-data="{ kind: 'biasa' }" @submitted="submitted = $event" />
-<FormView v-bind="users.create" title="Create User" />
-<ListView v-bind="users.list" title="Users" />
+<FormView v-bind="users.create()" title="Create User" />
+<ListView v-bind="users.list()" title="Users" />
 ~~~
 
-The Form binding is from the compiled [query ownership fixture](../../apps/web/src/framework/acceptance/QueryOwnershipFixture.vue). The FormView and ListView bindings are literal expressions in the linked [create route](../../apps/web/src/routes/%28authenticated%29/settings/users/create.route.vue) and [users list route](../../apps/web/src/routes/%28authenticated%29/settings/users/index.route.vue). The app keeps page metadata outside the primitive bag. FormView.form, ListView.table, and DetailView.detail carry the complete primitive props they need.
+The Form binding is from the compiled [query ownership fixture](../../apps/web/src/framework/acceptance/QueryOwnershipFixture.vue). The FormView and ListView bindings are callable expressions in the linked [create route](../../apps/web/src/routes/%28authenticated%29/settings/users/create.route.vue) and [users list route](../../apps/web/src/routes/%28authenticated%29/settings/users/index.route.vue). The app keeps page metadata outside the primitive bag. FormView.form, ListView.table, and DetailView.detail carry the complete primitive props they need.
 
 ### 1.2 Component boundaries
 
@@ -95,7 +95,7 @@ A label does not supply a renderer, format, requiredness, default, loader, or su
 
 Share business values, captions, and identity as ordinary data. Derive input choices and display options from that data. State explicitly which business values are editable. A form input fragment is an ordinary object. Check it against the form input and selected renderer, including when it comes from a variable or spread.
 
-A behavior callback that reads another draft property declares that property in its draft context. Keep workflow-specific behavior local. Use typed functions for parameterized reuse.
+Use a field resolver when a field's complete configuration depends on the current draft or supplied context. Keep workflow-specific logic local. Use typed functions for parameterized reuse.
 
 ### 2.4 Forms and submit ownership
 
@@ -119,13 +119,13 @@ A relation label needs relation data in the returned record. Keep joined values 
 
 Keep three shapes distinct: schema input, editable FormDraft, and parsed submit output. FormDraft makes each input optional and permits null as an explicit clear. Undefined is unset. The raw schema still decides which values are valid on submit. A null draft does not make a non-nullable schema accept null.
 
-A form field selects a top-level schema input or declares a field binding. Each field names its renderer and may define component props, span, a per-session initial-value factory, and behavior. There is no second key, source, or native-attribute bag. A props object stays under the selected component's contract. Do not widen it to an arbitrary map.
+A form field selects a top-level schema input or declares a field binding. Each field is a plain configuration or a synchronous function that returns its complete configuration from `FormFieldContext<TInput, TContext>`. The context has a read-only draft and typed runtime context. Each resolved field names its renderer and may define component props, `span`, `visible`, a per-session initial-value factory, and `behavior.derived`. `visible` defaults to true. Authored disabled state belongs in component `props.disabled`; Form still owns managed disabled and required state. There is no second key, source, or native-attribute bag. A props object stays under the selected component's contract. Do not widen it to an arbitrary map.
 
-Behavior can control visibility, disabled state, props, presentation, and derived values. It reads detached draft values. Validators return issues and can run on blur or submit; they do not replace parsed schema output. A dynamic renderer must accept the same editable value contract as the original renderer. Schema validation remains authoritative when presentation changes required hints.
+Field resolvers replace the whole field configuration; they do not merge patches with another authored field or behavior object. `behavior.derived` reads detached draft values. Validators return issues and can run on blur or submit; they do not replace parsed schema output. A dynamic renderer must accept the same editable value contract as the original renderer. Schema validation remains authoritative when presentation changes required hints.
 
 ### 3.2 Display, table, and detail types
 
-Table and detail schemas describe returned records. Their maps select record keys. A computed entry needs a read function. A sortable computed entry needs an explicit sort key. The query and record schemas remain separate.
+Table and detail schemas describe returned records. Their maps select record keys. Detail entries accept a full configuration object or a function of `{ record, context }`. Table columns accept a full configuration object or a function of `{ context }`; headers, sort keys, order, and layout do not depend on a row. A column's `cell` may be a full display configuration or a function of `{ record, context }`. When `cell` is present, the column cannot also define flat display members. A computed entry needs a read function. A sortable computed entry needs an explicit sort key. The query and record schemas remain separate.
 
 Display props cannot replace values, record or field identity, setters, or validation plumbing supplied by the display surface. Required props of a renderer remain required. Table-only options do not belong on detail entries; form inputs do not extend DisplayField.
 
@@ -248,7 +248,9 @@ Forward the current Form props, events, slots, and exposed methods. Class and st
 
 ### 6.1 Declaration and result
 
-Use one declaration object. Put schemas and surfaces on the operation that owns them. The list and create bags are static. Detail and update factories bind an identity. Delete returns a bound command handle. Custom commands live under actions.
+Use one declaration object. Put schemas and surfaces on the operation that owns them. Call `list()` and `create()` to bind those page bags with optional runtime inputs. Detail and update factories bind an identity. Delete returns a bound command handle. Custom commands live under actions.
+
+Context configures presentation. Put values that change returned data in `searchParameters`, `query`, or the bound `id`. Static definitions do not need an empty context object. A context-dependent definition requires the matching typed context at binding.
 
 A standard operation declares a permission string or null. Null removes the permission-code requirement; it does not remove resource access or row-policy checks. A custom command can use a string, a list of permission strings, null, or a permission callback. At route entry, Loom stores the resource key, the actual operation name, and a copied set of static permission codes. It checks every code with that operation. An empty set calls the access adapter with null.
 
@@ -259,6 +261,8 @@ The binder returns complete View props and preserves supported page options such
 ### 6.2 Binding responsibilities
 
 The binder owns operation compatibility, access checks, bound identity, cache namespaces, write invalidation, and sibling navigation targets. It does not inspect schema fields, labels, renderers, or asset values.
+
+Each bound loader carries private framework identity in a weak association. Readers and option sources use the bound resource and request parameters without a public registry or repeated owner props. The loader keeps its access check and effective request scope when extracted from its page bag. An explicit conflicting resource owner fails. Explicit `namespace` remains a view or query-instance override.
 
 Copy identity and record context before a factory or closure captures them. Check that the record identity matches the bound identity. Use that snapshot for loads, mutations, permission checks, and cache keys. A new row context needs a new binding; mutating an old record does not retarget it.
 
@@ -313,17 +317,21 @@ Use the app's Hono adapter or a typed app service for transport. Keep HTTP encod
 
 ### 7.1 Table, TreeTable, Detail, and page views
 
-Table owns one collection and query lifecycle. TreeTable keeps hierarchy and row metadata. Detail loads one record. Collection, Table, TreeTable, and Detail types require exactly one of data or load. The mounted components check own-property presence and data shape for JavaScript callers at setup and on prop updates. An empty collection is valid controlled data; Detail controlled data is a non-null record object. With the current TypeScript optional-property settings, an explicit undefined can pass an optional-never property, and the runtime own-property check rejects it.
+Table owns one collection and query lifecycle. TreeTable keeps hierarchy and row metadata. Detail loads one record. `useCollection(sourceGetter)` exposes the same collection runtime to custom pages. It returns records, metadata, result context, query state, loading, error, empty, refresh, and query updates. It validates `querySchema` before calling the bound loader. `useRecord(sourceGetter)` exposes the same record runtime used by Detail and DetailView.
 
-A table schema describes returned records, not query or mutation values. The bound table loader belongs to the resource operation. Extracting a table keeps its columns, query settings, loader, and operation cache behavior. Page headings, filters, exports, and action menus stay with ListView.
+Collection, Table, TreeTable, and Detail types require exactly one of data or load. The mounted components check own-property presence and data shape for JavaScript callers at setup and on prop updates. An empty collection is valid controlled data; Detail controlled data is a non-null record object. With the current TypeScript optional-property settings, an explicit undefined can pass an optional-never property, and the runtime own-property check rejects it.
+
+A table schema describes returned records, not query or mutation values. The bound table loader belongs to the resource operation. Extracting a table keeps its columns, query settings, loader, and operation cache behavior. Page headings, filters, exports, and action menus stay with ListView. A resource list binding uses `resource.list()`; a create binding uses `resource.create()`. These operations do not have object-shaped aliases.
 
 A ListView delete callback needs `recordIdentity`. A ListView without a delete callback does not accept that property. A resource binder forwards its declared identity when it binds a delete operation; resource authors do not declare it again. A standalone ListView delete callback supplies the identity. The view checks and encodes that identity before a write. Its local outcome state uses the bound table resource key and canonical scalar or composite identity. A standalone view uses its identity callback as its local owner.
 
 When a delete callback returns an uncertain or legacy error with `postWrite: true`, ListView retains the normalized error for that owner and identity. It blocks another request for that record and shows persistent guidance that the delete may have completed. A confirmed refresh failure closes the confirmation, reports one saved/refresh warning, and offers a guarded read-only Retry refresh action. It clears the block only after that read succeeds while the view and binding still match. A different record remains available. Pre-write failures show the normalized message and allow a deliberate retry. Row-action and collection slots receive a guarded callback and read-only per-record state; use that callback because a direct resource call outside ListView has no view guard.
 
-Query changes, refresh, pagination, namespace changes, and replacement row objects do not clear an outcome for the same owner and identity. Recovery cannot repeat a delete, and concurrent recovery requests for the same mounted outcome are ignored. The state belongs to the mounted ListView and clears on unmount. A new mount starts without a local block; it does not provide server idempotency.
+Query changes, refresh, pagination, namespace changes, and replacement row objects do not clear an outcome for the same owner and identity. If a recovery is canceled after the current view changes, ListView clears the block only when the current collection read is ready. Recovery cannot repeat a delete, and concurrent recovery requests for the same mounted outcome are ignored. The state belongs to the mounted ListView and clears on unmount. A new mount starts without a local block; it does not provide server idempotency.
 
 With a controlled query prop, the parent owns query values. Forward replacements and emit one update. Without a controlled query, Collection owns query state and URL synchronization. Do not mutate the parent query. Browser back and parent replacements update the controls without an echo loop.
+
+DetailView owns one `useRecord` read. Its `controls` slot receives record and read state. Its ready `body` slot receives `{ record, detail }`; `detail` contains the resolved record as data and has no loader. The body replaces the standard detail card. Without a body slot, DetailView renders that card from the same available record. A cache hit follows the same path as a fresh load. Background refresh errors stay visible with the record and have a separate `read-error` slot.
 
 TreeTable starts collapsed and renders expanded hierarchy rows with their original record context. It requires rowKey, children, and treeColumn. Use a cell slot to replace the label content while keeping the disclosure control. TreeTable and TreeTableContent share expansion state and rendering. Do not apply a display accessor or format twice.
 
@@ -371,7 +379,7 @@ Read-only TableInput needs a table and a model only. Add and edit use DialogForm
 
 ### 7.4 Lookup, option, and location inputs
 
-Option inputs own their data or loader. Declare load, namespace, searchParameters, pick, and view on the component. SelectInput, RadioGroupInput, and CheckboxGroupInput also accept an optional resource owner. Set it to the resource key when the loader comes from a resource. Resource writes then invalidate its option data. Keep namespace for query-instance identity; it does not identify the resource. Standalone loaders can omit resource, and static data does not need it. A static data list is the full valid-value set. A remote page does not prove that a selected value is invalid. Keep surviving values, extra fields, and order. Emit only when the component's canonical value changes.
+Option inputs own their data or loader. Declare `load`, `searchParameters`, `pick`, and `view` on the component. Resource-bound loaders carry resource ownership and bound request parameters, so do not copy `resource` or `namespace` from the resource table. Pass explicit request-changing parameters to the option source. Standalone loaders use instance isolation; set an explicit resource owner only when the source must follow resource invalidation. An explicit namespace remains available when one view needs a separate option query. Static data does not need a loader. A static data list is the full valid-value set. A remote page does not prove that a selected value is invalid. Keep surviving values, extra fields, and order. Emit only when the component's canonical value changes.
 
 A custom input that owns a custom data set uses `useLoader`. The installed query client owns shared reads, lifecycle cancellation, retries, and one terminal failure notification for the active read. `enabled` controls whether the loader runs; interaction `disabled` remains separate. This read feedback does not cover the independent LookupInput, location, or file-manager loaders.
 

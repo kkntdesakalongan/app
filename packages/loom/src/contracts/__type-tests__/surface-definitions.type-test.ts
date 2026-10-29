@@ -5,9 +5,10 @@ import { defineDetail } from '../../details/defineDetail'
 import { defineForm } from '../../forms/defineForm'
 import { defineTable } from '../../tables/defineTable'
 import type { DetailField } from '../details'
-import type { FormDefinition, FormDraft, FormDraftSnapshot } from '../forms'
+import type { FormDefinition, FormDraft, FormDraftSnapshot, FormFieldContext, FormFieldResolver, FormFields } from '../forms'
 import type { RawSchema, RawSchemaInput, RawSchemaOutput } from '../schema'
-import type { TableColumn } from '../tables'
+import type { TableColumn, TableColumnContext } from '../tables'
+import type { FormRendererProps } from '../../renderers/formContracts'
 
 const BadgeRenderer = defineComponent({
   props: {
@@ -15,10 +16,17 @@ const BadgeRenderer = defineComponent({
     tone: { type: String as () => 'muted' | 'strong', required: false },
   },
 })
+const CaptionRenderer = defineComponent({
+  props: {
+    value: { type: String, required: true },
+    prefix: { type: String, required: true },
+  },
+})
 
 declare module '../../renderers/displayContracts' {
   interface DisplayRendererComponents {
     badge: typeof BadgeRenderer
+    caption: typeof CaptionRenderer
   }
 }
 
@@ -63,6 +71,78 @@ const formWithoutSubmit = defineForm({
 type NoSubmitRemainsAbsent = Assert<Equal<typeof formWithoutSubmit.submit, undefined>>
 type SubmitResultIsAwaited = Assert<Equal<Awaited<ReturnType<typeof form4.submit>>, string>>
 
+const resolverSchema = z4.object({ name: z4.string(), note: z4.string().optional(), value: z4.string() })
+const resolverForm = defineForm({
+  schema: resolverSchema,
+  fields: {
+    name: { renderer: 'text' },
+    note: ({ draft }) => {
+      const note: string | undefined = draft.note ?? undefined
+      // @ts-expect-error A field resolver reads the schema's input type.
+      const invalidDraft: number = draft.note
+      void [note, invalidDraft]
+      return { renderer: 'text', props: { placeholder: draft.name ?? '', maxlength: draft.note?.length ?? 1 } }
+    },
+    value: ({ draft }) => draft.note
+      ? { renderer: 'textarea', props: { rows: 2 } }
+      : { renderer: 'text', props: { placeholder: draft.name ?? '' } },
+  },
+})
+type ResolverFormFieldsStaySelected = Assert<Equal<keyof typeof resolverForm.fields, 'name' | 'note' | 'value'>>
+type ResolverBranchesKeepTheirRenderer = Assert<Equal<ReturnType<Exclude<typeof resolverForm.fields.value, undefined>>['renderer'], 'text' | 'textarea'>>
+
+// @ts-expect-error A field resolver cannot change a string input to a number input.
+defineForm({ schema: z4.object({ value: z4.string() }), fields: { value: () => ({ renderer: 'number' }) } })
+
+// @ts-expect-error A field resolver cannot provide props from another renderer.
+defineForm({ schema: z4.object({ value: z4.string() }), fields: { value: () => ({ renderer: 'text', props: { options: [] } }) } })
+
+type WorkspaceContext = { workspaceId: string; scale: number }
+const contextualFieldEntries: FormFields<{ amount: number }, 'amount', WorkspaceContext> = {
+  amount: () => ({ renderer: 'number', behavior: { derived: ({ context }) => context.scale } }),
+}
+const annotatedResolverForm = defineForm({
+  schema: z4.object({ name: z4.string() }),
+  fields: {
+    name: ({ context }: FormFieldContext<{ name: string }, WorkspaceContext>) => ({
+      renderer: 'text',
+      props: { placeholder: context.workspaceId },
+    }),
+  },
+})
+type AnnotatedResolverKeepsItsRenderer = Assert<Equal<ReturnType<Exclude<typeof annotatedResolverForm.fields.name, undefined>>['renderer'], 'text'>>
+
+const lookupContextSchema = z4.object({ id: z4.string(), name: z4.string() })
+const nestedLookupProps: FormRendererProps<'lookup', WorkspaceContext> = {
+  data: [],
+  table: {
+    schema: lookupContextSchema,
+    columns: {
+      name: ({ context }) => {
+        // @ts-expect-error The framework-inferred workspaceId remains a string.
+        const numericWorkspaceId: number = context.workspaceId
+        void numericWorkspaceId
+        return { read: () => `${context.workspaceId.toUpperCase()}:${context.scale.toFixed(0)}` }
+      },
+    },
+  },
+  context: { workspaceId: 'north', scale: 2 },
+}
+type LookupFieldInput = { ownerId: string }
+const contextAwareLookupResolver: FormFieldResolver<LookupFieldInput, string, 'lookup', WorkspaceContext> = ({ context }) => ({
+  renderer: 'lookup',
+  behavior: { derived: ({ context: derivedContext }) => `${derivedContext.workspaceId.toUpperCase()}:${derivedContext.scale.toFixed(0)}` },
+  props: {
+    data: [],
+    table: {
+      schema: lookupContextSchema,
+      columns: { name: ({ context: columnContext }) => ({ read: () => `${context.workspaceId.toUpperCase()}:${context.scale.toFixed(0)}:${columnContext.workspaceId.toUpperCase()}:${columnContext.scale.toFixed(0)}` }) },
+    },
+    context,
+  },
+})
+const contextAwareLookupFields: FormFields<LookupFieldInput, 'ownerId', WorkspaceContext> = { ownerId: contextAwareLookupResolver }
+
 const recordSchema = z4.record(z4.string(), z4.string())
 type FormRejectsUnboundedInput = Assert<Equal<IsAssignable<{ schema: typeof recordSchema; fields: {} }, FormArgument<typeof recordSchema, {}>>, false>>
 type TableRejectsUnboundedOutput = Assert<Equal<IsAssignable<{ schema: typeof recordSchema; columns: { label: {} } }, TableArgument<typeof recordSchema, { label: {} }>>, false>>
@@ -82,6 +162,87 @@ const goodTable = defineTable({
   },
 })
 const goodDetail = defineDetail({ schema: schemaUser, fields: { displayName: sharedName } })
+const displaySchema = z4.object({ name: z4.string(), amount: z4.number() })
+type DisplayRecord = RawSchemaOutput<typeof displaySchema>
+const resolvedDetail = defineDetail({
+  schema: displaySchema,
+  fields: {
+    name: ({ record }) => {
+      // @ts-expect-error Detail resolvers receive the schema output record.
+      const invalidRecord: string = record.amount
+      void invalidRecord
+      return { read: () => record.name, span: 6 }
+    },
+  },
+})
+const cellTable = defineTable({
+  schema: displaySchema,
+  columns: {
+    name: { cell: ({ record }) => {
+      // @ts-expect-error Cell resolvers receive the schema output record.
+      const invalidRecord: string = record.amount
+      void invalidRecord
+      return { read: () => record.name, format: 'uppercase' }
+    } },
+  },
+})
+const resolvedCellTable = defineTable({
+  schema: displaySchema,
+  columns: {
+    name: () => ({ cell: ({ record }) => ({ read: () => record.name }) }),
+  },
+})
+const syntheticCellTable = defineTable({
+  schema: displaySchema,
+  columns: {
+    summary: { cell: ({ record }) => ({ read: () => `${record.name}: ${record.amount}` }) },
+  },
+})
+const displayRecord: DisplayRecord = { name: 'Ada', amount: 1 }
+const resolvedDetailValue: string | undefined = resolvedDetail.fields.name({ record: displayRecord, context: {} }).read?.()
+const staticCellValue: string | undefined = cellTable.columns.name.cell({ record: displayRecord, context: {} }).read?.()
+const resolverCellValue: string | undefined = resolvedCellTable.columns.name().cell({ record: displayRecord, context: {} }).read?.()
+const syntheticCellValue: string | undefined = syntheticCellTable.columns.summary.cell({ record: displayRecord, context: {} }).read?.()
+type DisplayContext = { workspaceId: string }
+const contextualCellTable = defineTable({
+  schema: displaySchema,
+  columns: {
+    name: ({ context }: TableColumnContext<DisplayContext>) => ({
+      cell: ({ record, context: cellContext }: { record: DisplayRecord; context: DisplayContext }) => {
+        return { read: () => `${context.workspaceId}:${cellContext.workspaceId}:${record.name}` }
+      },
+    }),
+  },
+})
+const branchedCellTable = defineTable({
+  schema: displaySchema,
+  columns: {
+    name: {
+      cell: ({ record }) => record.amount > 0
+        ? { read: () => record.name, renderer: 'badge', props: { tone: 'strong' } }
+        : { read: () => record.name, renderer: 'caption', props: { prefix: 'Name:' } },
+    },
+  },
+})
+type CellRendererBranchesArePreserved = Assert<Equal<ReturnType<Exclude<typeof branchedCellTable.columns.name.cell, undefined>>['renderer'], 'badge' | 'caption'>>
+// @ts-expect-error Synthetic cells need a read accessor.
+defineTable({ schema: displaySchema, columns: { summary: { cell: { renderer: 'badge', props: { tone: 'strong' } } } } })
+
+// @ts-expect-error A cell cannot mix its configuration with flat display members.
+defineTable({ schema: displaySchema, columns: { name: { read: (record) => record.name, cell: { read: (record) => record.name } } } })
+
+// @ts-expect-error Cell renderer props use the selected display renderer contract.
+defineTable({ schema: displaySchema, columns: { summary: { cell: { read: (record) => record.name, renderer: 'badge', props: { tone: 'loud' } } } } })
+
+// @ts-expect-error Every cell resolver renderer branch must accept its read value.
+defineTable({ schema: displaySchema, columns: { name: { cell: ({ record }) => record.amount > 0
+  ? { read: () => record.name, renderer: 'badge', props: { tone: 'strong' } }
+  : { read: () => record.amount, renderer: 'badge', props: { tone: 'strong' } } } } })
+
+// @ts-expect-error Every cell resolver renderer branch must satisfy its props contract.
+defineTable({ schema: displaySchema, columns: { name: { cell: ({ record }) => record.amount > 0
+  ? { read: () => record.name, renderer: 'badge', props: { tone: 'strong' } }
+  : { read: () => record.name, renderer: 'badge', props: { tone: 'loud' } } } } })
 const sharedFormFields = { name: { renderer: 'text' } } as const
 const goodSpreadForm = defineForm({ schema: schemaUser, fields: { ...sharedFormFields } })
 const sharedTableColumns = { name: {} } as const
@@ -227,8 +388,8 @@ const mixedTextPresentation = Math.random() > 0.5 ? validTextPresentation : inva
 
 defineForm({
   schema: z4.object({ name: z4.string() }),
-  // @ts-expect-error A valid presentation result cannot hide invalid renderer props.
-  fields: { name: { renderer: 'text', behavior: { presentation: () => mixedTextPresentation } } },
+  // @ts-expect-error A valid resolver result cannot hide invalid renderer props.
+  fields: { name: () => mixedTextPresentation },
 })
 
 void [
@@ -236,8 +397,20 @@ void [
   submitted3,
   submitted4,
   goodSpreadForm,
+  contextualFieldEntries,
+  contextAwareLookupFields,
   goodSpreadTable,
   goodSpreadDetail,
+  resolvedDetail,
+  resolvedDetailValue,
+  cellTable,
+  staticCellValue,
+  resolvedCellTable,
+  resolverCellValue,
+  syntheticCellTable,
+  syntheticCellValue,
+  contextualCellTable,
+  branchedCellTable,
   readRoleNames,
   nullableDraft,
   draftShape,

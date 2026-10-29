@@ -42,8 +42,8 @@ const resource = defineResource({
   },
 })
 
-resource.list.table.load({ query: {}, searchParameters: {} })
-resource.create.form.submit({ name: 'One' })
+resource.list().table.load({ query: {}, searchParameters: {} })
+resource.create().form.submit({ name: 'One' })
 resource.detail({ id: '1' }).detail.load({ searchParameters: {} })
 resource.update({ id: '1' }).form.submit({ name: 'Updated' })
 

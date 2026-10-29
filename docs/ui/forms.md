@@ -28,7 +28,12 @@ Every input declares its `renderer`. Its flat `props` object follows that
 component's public contract, including its supported native attributes. Use the
 same prop bag when the component is standalone and when Form renders it.
 Component-required props stay required. The schema supplies requiredness to the
-real control; it does not select a renderer or create choices.
+real control; it does not select a renderer or create choices. A field may be a
+plain configuration or a function that returns its complete configuration
+from `FormFieldContext<TInput, TContext>`. That context contains the read-only
+draft and typed `context` prop. Keep `span` and `visible` on the field;
+`visible` defaults to true. Put authored disabled state in `props.disabled`.
+Only `behavior.derived` remains for a value computed from the draft.
 
 Set `initialValue` to a value or a zero-argument factory. Form clones mutable
 values for each session. Use a factory for values computed when the session
@@ -78,8 +83,10 @@ back.
 
 ## Resource forms
 
-Create uses one static form bag. Update binds identity and loads its draft in the
-resource form factory. Select update values explicitly in that loader:
+Call `create()` to bind a create form. Pass runtime context or request
+parameters only when the form uses them. Update binds identity and loads its
+draft in the resource form factory. Select update values explicitly in that
+loader:
 
 ```ts
 const updateForm = defineForm({
@@ -109,9 +116,10 @@ export const users = defineResource({
 })
 ```
 
-The route passes the resulting page bag to `FormView`:
+The route calls the binding and passes the resulting page bag to `FormView`:
 
 ```vue
+<FormView v-bind="users.create()" />
 <FormView v-bind="users.update({ id: String(route.params.userId) })" />
 ```
 
@@ -229,19 +237,17 @@ input and display renderer registries separate.
 
 Keep the submitted relation value separate from its display label. Put a
 component's loader in its field `props`. SelectInput, RadioGroupInput, and
-CheckboxGroupInput use `load`, optional `resource` and `namespace`, and
-explicit `pick` and `view` props. Set `resource` to the owner's resource key so
-resource invalidation refreshes the options. The namespace identifies the query
-instance. A standalone loader can omit `resource`; use `data` for static
-choices. For example:
+CheckboxGroupInput use `load` with explicit `pick` and `view` props. A
+resource-bound loader carries its resource and request identity, so do not copy
+`resource` or `namespace` from the resource. Keep request-changing values in
+`searchParameters`. A standalone loader can set an explicit resource owner when
+it needs resource invalidation. Use `data` for static choices. For example:
 
 ```ts
 const roleInput = {
   renderer: 'select',
   props: {
-    load: roles.list.table.load,
-    resource: roles.list.table.resource,
-    namespace: roles.list.table.namespace,
+    load: roles.list().table.load,
     pick: 'id',
     view: 'name',
   },
@@ -253,9 +259,11 @@ and detail surfaces. Return the relation data needed for display from the API.
 Do not fetch one label per row. The form schema accepts the control value and
 does not infer choices from schema metadata.
 
-Use pure synchronous behavior for dependencies. Keep hidden fields out of the
-form schema unless the submit contract needs their values. The server remains
-the authority for relation access and validation.
+Use a field function when its full configuration depends on the current draft
+or supplied context. It runs in Form's reactive path and returns a complete
+field configuration. Set `visible: false` to hide a field. Keep hidden fields
+out of the form schema unless the submit contract needs their values. The
+server remains the authority for relation access and validation.
 
 ## Local files
 

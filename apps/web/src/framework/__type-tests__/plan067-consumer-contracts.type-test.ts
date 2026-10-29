@@ -28,8 +28,9 @@ const resource = defineResource({
   identity: (record: { id: string }) => record.id,
   create: { permission: null, form },
 })
-const boundResult: Promise<{ id: string }> = resource.create.form.submit({ label: 'one' })
-const boundAfterSubmit: NonNullable<typeof resource.create.afterSubmit> = async ({ result }) => {
+const createPage = resource.create()
+const boundResult: Promise<{ id: string }> = createPage.form.submit({ label: 'one' })
+const boundAfterSubmit: NonNullable<typeof createPage.afterSubmit> = async ({ result }) => {
   const id: string = result.id
   void id
 }

@@ -2,8 +2,9 @@ type DisplaySurface = 'table' | 'detail'
 
 type InvalidDisplayOption = (surface: DisplaySurface, key: string, member: string, expected: string) => never
 
-const tableMembers = new Set(['label', 'read', 'renderer', 'props', 'format', 'sortable', 'sortKey', 'align', 'class', 'headerClass'])
+const tableMembers = new Set(['label', 'read', 'renderer', 'props', 'format', 'cell', 'sortable', 'sortKey', 'align', 'class', 'headerClass'])
 const detailMembers = new Set(['label', 'read', 'renderer', 'props', 'format', 'emphasis', 'span'])
+export const cellDisplayMembers = new Set(['read', 'renderer', 'props', 'format'])
 const reservedProps = new Set([
   'value',
   'modelValue',
@@ -38,11 +39,12 @@ export function assertDisplayEntry(
   key: string,
   entry: unknown,
   invalidOption: InvalidDisplayOption,
+  allowedMembers?: ReadonlySet<string>,
 ): asserts entry is Record<string, unknown> {
   const owner = surface === 'table' ? 'TableColumn' : 'DetailField'
   if (!isRecord(entry)) invalidOption(surface, key, 'definition', `a ${owner} object`)
 
-  const allowed = surface === 'table' ? tableMembers : detailMembers
+  const allowed = allowedMembers ?? (surface === 'table' ? tableMembers : detailMembers)
 
   for (const member of Reflect.ownKeys(entry)) {
     if (typeof member !== 'string' || !allowed.has(member)) {
@@ -65,6 +67,12 @@ export function assertDisplayEntry(
   if ('format' in entry && typeof entry.format !== 'string') invalidOption(surface, key, 'format', 'a format key')
 
   if (surface === 'table') {
+    if ('cell' in entry && entry.cell !== undefined) {
+      for (const member of ['read', 'renderer', 'props', 'format']) {
+        if (Object.hasOwn(entry, member)) invalidOption(surface, key, member, 'omitted when cell is supplied')
+      }
+      if (typeof entry.cell !== 'function') assertDisplayEntry(surface, key, entry.cell, invalidOption, cellDisplayMembers)
+    }
     if ('sortable' in entry && typeof entry.sortable !== 'boolean') invalidOption(surface, key, 'sortable', 'a boolean')
     if ('sortKey' in entry && typeof entry.sortKey !== 'string') invalidOption(surface, key, 'sortKey', 'a record key')
     if (entry.sortable === true && typeof entry.read === 'function' && (!Object.hasOwn(entry, 'sortKey') || !entry.sortKey)) {

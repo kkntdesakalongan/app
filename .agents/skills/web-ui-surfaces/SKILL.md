@@ -19,5 +19,10 @@ point, then lower-level components. Add local code for unmet requirements.
 Use View-supplied guarded callbacks in custom controls; direct resource calls
 bypass mounted protections.
 
+Call `resource.list()` and `resource.create()` to bind their page props. Bind
+`detail` and `update` with the record identity. Use DetailView's `body` and
+`controls` slots or `useRecord` for custom record pages. Use `useCollection`
+when a custom page owns a collection presentation.
+
 Normal web type checks and builds validate module navigation paths.
 Use [UI review](references/verification.md) for changed wiring.

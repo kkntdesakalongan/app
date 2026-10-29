@@ -1,5 +1,100 @@
 # File-routing plans
 
+## Shared List data and existing Form sessions — 2026-10-27
+
+The user accepted `useCollection` as the shared data runtime for managed List
+components and fully custom pages. Existing collection slots remain. Form keeps
+its session owner, including cached hydration and draft protection. No public
+Form helper is needed for the user's Form and stepper workflows.
+
+| Plan | Result | Status |
+|---|---|---|
+| [111](111-share-list-data-and-preserve-form-sessions.md) | Share List query state while preserving independent Form sessions | Implemented; parent review and verification complete |
+
+Query validation and controlled query behavior must remain consistent across
+List composition. Multiple forms can use one managed detail record while their
+drafts remain independent. No source implementation is included.
+
+## Shared Detail record state — 2026-10-27
+
+The user accepted one framework-owned record reader for managed and fully
+custom Detail pages. DetailView uses `useRecord` internally and exposes its
+record through scoped controls and body slots. Custom pages use `useRecord`
+directly. Both paths retain automatic caching, cancellation, and refresh.
+
+| Plan | Result | Status |
+|---|---|---|
+| [110](110-share-detail-record-state.md) | Share one Detail record contract across managed and custom page composition | Implemented; parent review and verification complete |
+
+The SWA Report cache-hit incident records why sibling content needs access to
+the same state as the main detail. Framework-owned types and data-only detail
+props remove application cache-key reconstruction and synchronization refs.
+[Plan 111](111-share-list-data-and-preserve-form-sessions.md) records the later
+List and Form decisions.
+
+## Resource loader identity — 2026-10-27
+
+The user accepted framework-created loaders carrying their source identity
+internally. Resource-backed inputs obtain ownership and cache identity from
+the loader instead of copying `load`, `resource`, and `namespace` together.
+Explicit view namespaces remain available for separate persistent query state.
+
+| Plan | Result | Status |
+|---|---|---|
+| [109](109-carry-resource-loader-identity.md) | Carry resource ownership and source identity with framework loaders | Implemented; parent review and verification complete |
+
+Standalone loaders retain instance isolation and explicit ownership where
+needed. The internal carrier and override rules remain implementation details.
+Query freshness policy is a separate discussion. No source change is included.
+
+## Consistent resource configuration contracts — 2026-10-26
+
+The user accepted the object-or-function convention across resource surfaces
+and their existing hosts. The framework owns shared types. Components implement
+those contracts instead of restating them. Resolver context remains specific
+to each owner, and callable surface bindings follow one convention.
+
+| Plan | Result | Status |
+|---|---|---|
+| [108](108-unify-resource-configuration-contracts.md) | Extend shared configuration and binding contracts through existing hosts | Implemented; parent review and verification complete |
+
+Plans 106 and 107 define the initial Form work. Plan 108 extends the convention
+to display consumers and resource bindings. Table-wide and row-specific display
+configuration must keep separate evaluation scopes. Performance work remains
+deferred. No source implementation is included.
+
+## Complete Form field configuration — 2026-10-26
+
+The user accepted plain field objects or pure functions that return complete
+field configurations. Component props include author-controlled `disabled`.
+Layout and visibility stay at field level. Fixed values such as `span: 6` and
+`visible: false` remain valid. Field functions compute dynamic values directly.
+Performance work is deferred. Implementation has not started.
+
+| Plan | Result | Status |
+|---|---|---|
+| [107](107-resolve-form-field-configuration.md) | Resolve dynamic renderer, props, and layout together while preserving static fields | Implemented; parent review and verification complete |
+
+Plan 107 replaces the earlier whole-map context callback in Plan 106 with
+per-field configuration functions. Keep one resolution approach. Derived
+writes, dynamic renderers, and paired field bindings remain supported.
+
+## Loom form context binding — 2026-10-26
+
+The user accepted runtime context binding for resource create forms. Static
+forms keep their declarations and use `create()`. Context-dependent forms
+receive typed context through `create({ context })`. Existing draft and input
+loading APIs remain. This task records the design only.
+
+| Plan | Result | Status |
+|---|---|---|
+| [106](106-bind-create-forms-with-runtime-context.md) | Bind create forms with actual context and preserve the static authoring path | Implemented; parent review and verification complete |
+
+Plan 106 records ownership, proposed usage, lifecycle requirements, unresolved
+contract details, and implementation acceptance. Current authoring guides
+continue to describe shipped behavior. List, Detail, and broader resource
+reuse remain outside this plan.
+
 ## Implicit form input/output shapes — 2026-10-25
 
 The user selected removal of Loom's explicit custom-draft mode and authorized

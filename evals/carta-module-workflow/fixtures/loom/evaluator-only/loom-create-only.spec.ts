@@ -13,7 +13,7 @@ describe('D create-only module', () => {
   it('D-01 sends valid input through the bound create operation and returns its typed id', async () => {
     mountFramework(() => h('div'))
 
-    await expect(serviceRequestResource.create.form.submit({ name: 'Water filter' })).resolves.toEqual({ id: 'request-1', name: 'Water filter' })
+    await expect(serviceRequestResource.create().form.submit({ name: 'Water filter' })).resolves.toEqual({ id: 'request-1', name: 'Water filter' })
 
     expect(readCreatedRequests()).toEqual([{ id: 'request-1', name: 'Water filter' }])
   })

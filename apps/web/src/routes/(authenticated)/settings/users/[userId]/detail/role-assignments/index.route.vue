@@ -17,10 +17,7 @@ function canToggle(row: RoleAssignment) {
   return roleAssignments.actions.set.withContext({ record: row }).can(userId.value, String(row.id), !row.assigned)
 }
 
-const list = computed(() => ({
-  ...roleAssignments.list,
-  table: { ...roleAssignments.list.table, searchParameters: { userId: userId.value } },
-}))
+const list = computed(() => roleAssignments.list({ searchParameters: { userId: userId.value } }))
 
 function isPending(roleId: string) {
   return pending.value.has(roleId)

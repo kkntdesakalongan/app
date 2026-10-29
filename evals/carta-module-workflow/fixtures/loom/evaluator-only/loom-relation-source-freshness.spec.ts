@@ -18,7 +18,7 @@ describe('E relation source freshness', () => {
     const formRef = ref<{ draft: { categoryId?: string; summary?: string } } | null>(null)
     mountFramework(() => h(Form, {
       ref: formRef,
-      ...serviceRequestResource.create.form,
+      ...serviceRequestResource.create().form,
       initialData: { categoryId: '', summary: 'Replace a filter' },
     }))
 

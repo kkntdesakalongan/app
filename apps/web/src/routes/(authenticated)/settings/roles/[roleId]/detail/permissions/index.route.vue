@@ -12,10 +12,7 @@ import { rolePermissions } from './role-permissions.resource'
 const route = useRoute('settings-roles-detail-permissions')
 const roleId = computed(() => String(route.params.roleId))
 const pending = ref(new Map<string, boolean>())
-const list = computed(() => ({
-  ...rolePermissions.list,
-  table: { ...rolePermissions.list.table, searchParameters: { role_id: roleId.value } },
-}))
+const list = computed(() => rolePermissions.list({ searchParameters: { role_id: roleId.value } }))
 
 function rowKey(id: string) {
   return `${roleId.value}:${id}`

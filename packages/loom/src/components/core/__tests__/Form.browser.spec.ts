@@ -1,10 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { userEvent } from 'vitest/browser'
-import { createApp, defineComponent, h, nextTick, ref, type App } from 'vue'
+import { createApp, defineComponent, h, nextTick, ref, type App, type VNodeChild } from 'vue'
 import { z } from 'zod/v4'
 import { FrameworkPlugin } from '../../../adapters/plugin'
 import { createFrameworkQueryClient } from '../../../query'
+import type { FormFieldContext } from '../../../contracts/forms'
+import type { RecordLoadContext } from '../../../contracts/load'
+import type { TableColumnContext } from '../../../contracts/tables'
 import { defineForm } from '../../../forms/defineForm'
+import { defineResource } from '../../../resources/defineResource'
+import { defineTable } from '../../../tables/defineTable'
 import Form from '../Form.vue'
 import CheckboxGroupInput from '../../inputs/CheckboxGroupInput.vue'
 import RadioGroupInput from '../../inputs/RadioGroupInput.vue'
@@ -20,46 +25,46 @@ async function settle() {
   await nextTick()
 }
 
+function mountFormBrowser(render: () => VNodeChild) {
+  const host = document.createElement('div')
+  document.body.append(host)
+  const app = createApp(defineComponent({ setup: () => render }))
+  app.use(FrameworkPlugin, { queryClient: createFrameworkQueryClient({ retry: 0, staleTime: 0 }) })
+  app.mount(host)
+  apps.push(app)
+  return host
+}
+
 afterEach(() => {
   apps.splice(0).forEach((app) => app.unmount())
   document.body.innerHTML = ''
 })
 
 describe('Form control contracts in the browser', () => {
-  it('keeps authored renderer and span values while presentation changes both at runtime', async () => {
+  it('replaces the complete field configuration while preserving the edited value', async () => {
     const form = defineForm({
       schema: z.object({ mode: z.string(), body: z.string() }),
       fields: {
         mode: { renderer: 'text' },
-        body: {
-          renderer: 'text',
-          span: 2,
-          behavior: {
-            presentation: ({ draft }) => draft.mode === 'expanded'
-              ? { renderer: 'textarea', span: 4 }
-              : {},
-          },
-        },
+        body: ({ draft }) => draft.mode === 'expanded'
+          ? { renderer: 'textarea', span: 4, props: { placeholder: 'expanded', disabled: true } }
+          : draft.mode === 'hidden'
+            ? { renderer: 'text', span: 2, visible: false }
+            : { renderer: 'text', span: 2, props: { placeholder: 'compact', disabled: false } },
       },
     })
     const modelValue = ref({ mode: 'compact', body: 'Saved body' })
-    const host = document.createElement('div')
-    document.body.append(host)
-    const app = createApp(defineComponent({
-      setup: () => () => h(Form, {
-        ...form,
-        modelValue: modelValue.value,
-        'onUpdate:modelValue': (value) => { modelValue.value = value },
-      }),
+    const host = mountFormBrowser(() => h(Form, {
+      ...form,
+      modelValue: modelValue.value,
+      'onUpdate:modelValue': (value) => { modelValue.value = value },
     }))
-    app.use(FrameworkPlugin, { queryClient: createFrameworkQueryClient({ retry: 0, staleTime: 0 }) })
-    app.mount(host)
-    apps.push(app)
     await settle()
 
     const authoredInput = host.querySelector<HTMLInputElement>('input[id$="-field-body"]')
     const field = authoredInput?.closest('.is-form-field')
     expect(authoredInput?.value).toBe('Saved body')
+    expect(authoredInput?.placeholder).toBe('compact')
     expect(field?.getAttribute('style')).toContain('span 2')
 
     const modeInput = host.querySelector<HTMLInputElement>('input[id$="-field-mode"]')
@@ -71,8 +76,188 @@ describe('Form control contracts in the browser', () => {
     await vi.waitFor(() => expect(host.querySelector('textarea')).not.toBeNull())
     const dynamicInput = host.querySelector<HTMLTextAreaElement>('textarea')
     expect(dynamicInput?.value).toBe('Saved body')
+    expect(dynamicInput?.placeholder).toBe('expanded')
+    expect(dynamicInput?.disabled).toBe(true)
     expect(dynamicInput?.closest('.is-form-field')?.getAttribute('style')).toContain('span 4')
     expect(modelValue.value.body).toBe('Saved body')
+
+    const expandedMode = host.querySelector<HTMLInputElement>('input[id$="-field-mode"]')!
+    expandedMode.value = 'hidden'
+    expandedMode.dispatchEvent(new Event('input', { bubbles: true }))
+    await settle()
+
+    expect(host.querySelector('[id$="-field-body"]')).toBeNull()
+    expect(modelValue.value.body).toBe('Saved body')
+  })
+
+  it('loads a binding-time create draft with request parameters and field context', async () => {
+    type WorkspaceContext = { workspaceId: string }
+    type CreateInput = { name: string }
+    const schema = z.object({ name: z.string() })
+    const load = async ({ searchParameters }: RecordLoadContext) => ({
+      name: `Prepared ${String(searchParameters.invitation)}`,
+    })
+    const resource = defineResource({
+      key: 'binding-create-load-browser',
+      identity: (record: { id: string }) => record.id,
+      create: {
+        permission: null,
+        form: defineForm({
+          schema,
+          fields: {
+            name: ({ context }: FormFieldContext<CreateInput, WorkspaceContext>) => ({
+              renderer: 'text',
+              props: { placeholder: context.workspaceId },
+            }),
+          },
+          submit: async (output) => ({ id: 'created', ...output }),
+        }),
+      },
+    })
+    const bound = resource.create({
+      context: { workspaceId: 'Workspace North' },
+      searchParameters: { invitation: 'from invitation' },
+      load,
+    })
+    const host = mountFormBrowser(() => h(Form, { ...bound.form }))
+
+    await vi.waitFor(async () => {
+      await settle()
+      const input = host.querySelector<HTMLInputElement>('input[id$="-field-name"]')
+      expect(input?.value).toBe('Prepared from invitation')
+      expect(input?.placeholder).toBe('Workspace North')
+    })
+  })
+
+  it('keeps remote selections across resolver reevaluation for Select, Radio, Checkbox, and Lookup fields', async () => {
+    const optionSchema = z.object({ id: z.string(), name: z.string() })
+    type Option = z.output<typeof optionSchema>
+    type Draft = { note?: string | null; selectId?: string | null; radioId?: string | null; checked?: Option[] | null; lookupId?: string | null }
+    const option = { id: 'one', name: 'One' }
+    const table = defineTable({ schema: optionSchema, columns: { name: {} } })
+    const form = defineForm({
+      schema: z.object({ note: z.string(), selectId: z.string(), radioId: z.string(), checked: z.array(optionSchema), lookupId: z.string() }),
+      fields: {
+        note: { renderer: 'text' },
+        selectId: ({ draft }) => ({
+          renderer: 'select',
+          span: draft.note ? 6 : 12,
+          props: { load: async () => [option], pick: 'id', view: 'name', namespace: 'resolver-select' },
+        }),
+        radioId: ({ draft }) => ({
+          renderer: 'radio',
+          label: draft.note ? 'Edited choice' : 'Choice',
+          span: draft.note ? 6 : 12,
+          props: { load: async () => [option], pick: 'id', view: 'name', namespace: 'resolver-radio' },
+        }),
+        checked: ({ draft }) => ({
+          renderer: 'checkbox-group',
+          span: draft.note ? 6 : 12,
+          props: { load: async () => [option], pick: 'id', view: 'name', namespace: 'resolver-checkbox' },
+        }),
+        lookupId: ({ draft }) => ({
+          renderer: 'lookup',
+          span: draft.note ? 6 : 12,
+          props: {
+            table,
+            load: async () => ({ data: [option], meta: { total: 1, page: 1, pageSize: 5 } }),
+            loadDetail: async () => option,
+            pick: 'id',
+            view: 'name',
+          },
+        }),
+      },
+    })
+    const modelValue = ref<Draft>({ note: '', selectId: 'one', radioId: 'one', checked: [option], lookupId: 'one' })
+    const host = mountFormBrowser(() => h(Form, {
+      ...form,
+      modelValue: modelValue.value,
+      'onUpdate:modelValue': (value) => { modelValue.value = value },
+    }))
+    await vi.waitFor(async () => {
+      await settle()
+      expect(host.querySelector<HTMLInputElement>('input[type="radio"]')?.checked).toBe(true)
+      expect(host.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true)
+      expect(host.querySelector('label[for$="-field-radioId"]')?.textContent).toContain('Choice')
+      expect(host.querySelector('[role="radiogroup"]')?.textContent).toContain('One')
+      expect(host.querySelector('[role="group"]')?.textContent).toContain('One')
+      expect(host.querySelector('[id$="-field-selectId"]')?.textContent).toContain('One')
+      expect(host.querySelector('[id$="-field-lookupId"]')?.textContent?.trim()).toBe('One')
+    })
+
+    const note = host.querySelector<HTMLInputElement>('input[id$="-field-note"]')
+    if (!note) throw new Error('The remote Form controls did not render.')
+
+    await userEvent.fill(note, 'Changed')
+    await vi.waitFor(async () => {
+      await settle()
+      expect(host.querySelector('label[for$="-field-radioId"]')?.textContent).toContain('Edited choice')
+      expect(host.querySelector<HTMLInputElement>('input[type="radio"]')?.checked).toBe(true)
+      expect(host.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true)
+      expect(host.querySelector('[role="radiogroup"]')?.textContent).toContain('One')
+      expect(host.querySelector('[role="group"]')?.textContent).toContain('One')
+      expect(host.querySelector('[id$="-field-selectId"]')?.textContent).toContain('One')
+      expect(host.querySelector('[id$="-field-lookupId"]')?.textContent?.trim()).toBe('One')
+    })
+
+    expect.soft(modelValue.value).toMatchObject({ note: 'Changed', selectId: 'one', radioId: 'one', checked: [option], lookupId: 'one' })
+  })
+
+  it('keeps a static Lookup context local and inherits the Form context when absent', async () => {
+    type WorkspaceContext = { workspaceId: string }
+    type LookupInput = { ownerId: string; scopeLabel: string }
+    const workspaceTable = defineTable({
+      schema: z.object({ id: z.string(), name: z.string() }),
+      columns: {
+        name: ({ context }: TableColumnContext<WorkspaceContext>) => ({ read: () => context.workspaceId }),
+      },
+    })
+    const schema = z.object({ ownerId: z.string(), scopeLabel: z.string() })
+    const rows = [{ id: 'one', name: 'Option one' }]
+    const localContext = { workspaceId: 'Field local' }
+    const localForm = defineForm({
+      schema,
+      fields: {
+        ownerId: { renderer: 'lookup', props: { table: workspaceTable, data: rows, pick: 'id', view: 'name', context: localContext } },
+        scopeLabel: ({ context }: FormFieldContext<LookupInput, WorkspaceContext>) => ({ renderer: 'text', props: { placeholder: context.workspaceId } }),
+      },
+    })
+    const inheritedForm = defineForm({
+      schema,
+      fields: {
+        ownerId: { renderer: 'lookup', props: { table: workspaceTable, data: rows, pick: 'id', view: 'name' } },
+        scopeLabel: ({ context }: FormFieldContext<LookupInput, WorkspaceContext>) => ({ renderer: 'text', props: { placeholder: context.workspaceId } }),
+      },
+    })
+    const host = mountFormBrowser(() => h('div', [
+      h('section', { 'data-context-case': 'local-without-outer' }, [
+        h(Form, { ...localForm, modelValue: { ownerId: 'one', scopeLabel: '' } }),
+      ]),
+      h('section', { 'data-context-case': 'local-with-outer' }, [
+        h(Form, { ...localForm, modelValue: { ownerId: 'one', scopeLabel: '' }, context: { workspaceId: 'Outer replacement' } }),
+      ]),
+      h('section', { 'data-context-case': 'inherited' }, [
+        h(Form, { ...inheritedForm, modelValue: { ownerId: 'one', scopeLabel: '' }, context: { workspaceId: 'Outer inherited' } }),
+      ]),
+    ]))
+    await settle()
+
+    const openAndCheck = async (testCase: string, expected: string) => {
+      const section = host.querySelector<HTMLElement>(`[data-context-case="${testCase}"]`)
+      const trigger = section?.querySelector<HTMLElement>('.overlay')
+      if (!trigger) throw new Error(`Lookup field was not rendered for ${testCase}.`)
+      trigger.click()
+      await settle()
+      expect(document.body.querySelector('[role="dialog"]')?.textContent).toContain(expected)
+      const close = [...document.body.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')]
+        .find((button) => button.textContent?.includes('Close'))
+      close?.click()
+      await settle()
+    }
+
+    await openAndCheck('local-without-outer', 'Field local')
+    await openAndCheck('local-with-outer', 'Field local')
+    await openAndCheck('inherited', 'Outer inherited')
   })
 
   it('forwards canonical props to native controls and keeps direct and managed models live', async () => {

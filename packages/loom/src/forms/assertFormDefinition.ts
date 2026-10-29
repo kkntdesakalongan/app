@@ -49,7 +49,8 @@ export function assertFormDefinition<
   TOutput extends object,
   TResult,
   TKeys extends string,
->(definition: FormDefinition<TInput, TOutput, TResult, TKeys>, schemaRuntime?: SchemaRuntime<TOutput>): void {
+  TContext extends object,
+>(definition: FormDefinition<TInput, TOutput, TResult, TKeys, TContext>, schemaRuntime?: SchemaRuntime<TOutput>): void {
   if (!isRecord(definition)) invalidOption('definition', 'an object')
   if (!Object.hasOwn(definition, 'schema') || definition.schema == null) {
     throw new Error('[loom][FORM_SCHEMA_REQUIRED] Form requires a raw schema.')
@@ -64,13 +65,19 @@ export function assertFormDefinition<
   assertLabels(definition.labels)
   assertValidators(definition.validators)
 
+  assertFormFields(definition.fields, runtime.inputKeys)
+}
+
+export function assertFormFields(fields: unknown, inputKeys: readonly string[]): void {
+  if (!isRecord(fields)) invalidOption('fields', 'an ordered field map')
   const owners = new Map<string, string>()
-  for (const key of Reflect.ownKeys(definition.fields)) {
+  for (const key of Reflect.ownKeys(fields)) {
     if (typeof key !== 'string') {
       throw new Error('[loom][SURFACE_OPTION_INVALID] Form field keys must be strings.')
     }
     assertSafeFieldKey(key)
-    const input: unknown = Reflect.get(definition.fields, key)
+    const input: unknown = Reflect.get(fields, key)
+    if (typeof input === 'function') continue
     if (!isFormInputRecord(input)) invalidOption(`fields.${key}`, 'a FormInput object')
     const binding = bindingFor(input)
     if (binding !== undefined) {
@@ -81,7 +88,7 @@ export function assertFormDefinition<
       }
     }
     for (const name of fieldKeys(key, input)) {
-      if (typeof name !== 'string' || !runtime.inputKeys.includes(name)) {
+      if (typeof name !== 'string' || !inputKeys.includes(name)) {
         throw new Error(`[loom][FORM_FIELD_UNKNOWN] Form field "${key}" targets "${String(name)}", which is not in the schema input.`)
       }
       assertSafeFieldKey(name)

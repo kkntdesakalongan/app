@@ -98,8 +98,8 @@ function createApi() {
     setFetchHandler: (handler: typeof intercept) => {
       intercept = handler
     },
-    list: resource.list,
-    create: resource.create,
+    list: resource.list(),
+    create: resource.create(),
     update: resource.update({ id: '1' }),
   }
 }
@@ -121,6 +121,7 @@ function mountPage(resource: ReturnType<typeof createApi>, options: { operation?
   const host = document.createElement('div')
   document.body.appendChild(host)
   const route = options.operation === 'update' ? resource.update : resource.create
+  const list = resource.list
   const submissions: { result: unknown; refreshError: unknown }[] = []
   const errors: unknown[] = []
   let formView: FormViewHandle | undefined
@@ -135,7 +136,7 @@ function mountPage(resource: ReturnType<typeof createApi>, options: { operation?
     defineComponent(
       () => () =>
         h('main', [
-          h(ListView as Component, { ...resource.list, title: 'Records' }),
+          h(ListView as Component, { ...list, title: 'Records' }),
           h(
             FormView as Component,
             {
@@ -220,7 +221,10 @@ function mountListSurfaces(resource: ReturnType<typeof createApi>, namespaces: {
       () => () =>
         h(
           'main',
-          namespaces.value.map((namespace) => h(ListView as Component, { ...resource.list, table: { ...resource.list.table, namespace } }))
+          namespaces.value.map((namespace) => {
+            const list = resource.list
+            return h(ListView as Component, { ...list, table: { ...list.table, namespace } })
+          })
         )
     )
   )
