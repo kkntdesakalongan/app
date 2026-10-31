@@ -311,6 +311,10 @@ Check access again on run, even if can returned true earlier. The binder copies 
 
 FormView runs its completion callback, then applies its default navigation unless the callback prevents it or defaultTo is false. A callback or navigation failure does not repeat the write or become a validation error. Keep page completion and toast policy at the page owner.
 
+FormView merges the current route query into its default submit target. Target query values replace carried values. A callback's `navigate(target)` uses exactly the supplied target and does not add the current query. NavigationHeader merges the current route query into an explicit `backTo` target. Browser history back stays unchanged.
+
+Shared view props, action slot targets, and submit context use `RouteTarget`, a string or a generic relative or path target. Resource route declarations use strict `RouteMap` types.
+
 Use the app's Hono adapter or a typed app service for transport. Keep HTTP encoding in that adapter. Do not change backend request or response contracts to fit a UI type.
 
 ## 7. Collections, views, and composite inputs
@@ -322,6 +326,8 @@ Table owns one collection and query lifecycle. TreeTable keeps hierarchy and row
 Collection, Table, TreeTable, and Detail types require exactly one of data or load. The mounted components check own-property presence and data shape for JavaScript callers at setup and on prop updates. An empty collection is valid controlled data; Detail controlled data is a non-null record object. With the current TypeScript optional-property settings, an explicit undefined can pass an optional-never property, and the runtime own-property check rejects it.
 
 A table schema describes returned records, not query or mutation values. The bound table loader belongs to the resource operation. Extracting a table keeps its columns, query settings, loader, and operation cache behavior. Page headings, filters, exports, and action menus stay with ListView. A resource list binding uses `resource.list()`; a create binding uses `resource.create()`. These operations do not have object-shaped aliases.
+
+ListView merges the current route query into its standard create, detail, and update targets, including targets in action slots. Destination query values replace carried values. The standard export button appears when `export` is not `false` and the table has data or a loader. Set `export: false` to hide it. The unscoped `toolbar` slot adds controls beside the standard list controls.
 
 A ListView delete callback needs `recordIdentity`. A ListView without a delete callback does not accept that property. A resource binder forwards its declared identity when it binds a delete operation; resource authors do not declare it again. A standalone ListView delete callback supplies the identity. The view checks and encodes that identity before a write. Its local outcome state uses the bound table resource key and canonical scalar or composite identity. A standalone view uses its identity callback as its local owner.
 
