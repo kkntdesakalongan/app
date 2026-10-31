@@ -2,6 +2,8 @@
 
 **Current contract.** This guide describes the current Loom and Carta web source. Plans 106–111 are implemented and reviewed. See their [verification record](../../plans/108-unify-resource-configuration-contracts.md#verification).
 
+For the HK Shield ADS update, use [the migration guide](HK_SHIELD_MIGRATION.md).
+
 Use [Carta module terms](../../CONTEXT.md) for ownership language. Use the
 [API schema boundary](../architecture/web-application-architecture.md#api-schema-boundary)
 for backend schema imports in web code.
