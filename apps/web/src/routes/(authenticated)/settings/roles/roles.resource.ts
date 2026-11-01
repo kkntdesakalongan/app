@@ -55,6 +55,7 @@ const roleUpdateForm = defineForm({
 export const roles = defineResource({
   key: 'roles',
   identity: (record: { id: string }) => record.id,
+  actions: { list: rolesActions.list },
   list: {
     permission: 'view-roles',
     route: { name: 'settings-roles' },

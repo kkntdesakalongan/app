@@ -244,9 +244,17 @@ bags own their loaders. An update loader selects draft keys explicitly. Do not
 add a flat page loader or fabricate a detail operation for an update-only
 resource.
 
-Custom commands stay under `actions`. They declare `run` and a permission,
-and return guarded `can` and `run` functions. Standard operation members do
-not live in `actions`.
+The `actions` map accepts callable collection reads and custom command objects.
+Callable reads retain their inferred query and record types. The resource key
+and action key supply their cache ownership. For example, the Roles resource
+declares `actions: { list: rolesActions.list }`, and the Users role selector
+loads through `roles.actions.list`. This read does not use a management page
+binding or inherit its permission. The API owns authorization.
+
+Custom commands declare `run` and a permission, and return guarded `can` and
+`run` functions. Standard operation names remain reserved for page operations
+and callable reads. A resource with only callable reads can omit identity and
+page declarations. Both resource forms use the existing invalidation path.
 
 `run` and `can` receive exactly the declared business arguments. For a
 row-dependent policy, bind the row with `command.withContext({ record })` and

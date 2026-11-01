@@ -68,6 +68,37 @@ function requestQuery(index = 0) {
 afterEach(() => fetchMock.mockClear())
 
 describe('createHonoResourceActions', () => {
+  it('infers named collection actions and forwards scoped queries through the typed Hono client', async () => {
+    const records = [
+      { id: 'one', project_id: 'north', name: 'Alpha' },
+      { id: 'two', project_id: 'south', name: 'Beta' },
+    ]
+    const collectionApp = new Hono().get(
+      '/catalog/dataset',
+      validator('query', (value) => z.object({ project_id: z.string(), search: z.string().optional() }).passthrough().parse(value)),
+      (context) => {
+        const query = context.req.valid('query')
+        if (query.project_id === 'denied') return context.json({ message: 'Access denied' }, 403)
+        const data = records.filter((record) => record.project_id === query.project_id && record.name.includes(query.search ?? ''))
+        return context.json({ data, total: data.length })
+      }
+    )
+    const collectionFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => collectionApp.fetch(new Request(String(input), init)))
+    const rpc = hc<typeof collectionApp>('https://api.test', { fetch: collectionFetch })
+    const actions = createHonoResourceActions(rpc.catalog)
+    const controller = new AbortController()
+
+    expect(collectionFetch).not.toHaveBeenCalled()
+    expect(actions.dataset).toBe(actions.dataset)
+    expect(Reflect.get(actions, 'then')).toBeUndefined()
+    await expect(actions.dataset({ query: { project_id: 'north', search: 'Al' }, searchParameters: { project_id: 'south' }, signal: controller.signal })).resolves.toMatchObject({
+      data: [{ id: 'one', name: 'Alpha' }],
+      meta: { total: 1 },
+    })
+    expect(collectionFetch.mock.calls[0]?.[1]?.signal).toBe(controller.signal)
+    await expect(actions.dataset({ query: { project_id: 'denied' }, searchParameters: {} })).rejects.toEqual({ message: 'Access denied' })
+  })
+
   it('adapts a list-only route without a detail or mutation endpoint', async () => {
     const listApp = new Hono().get(
       '/records/list',

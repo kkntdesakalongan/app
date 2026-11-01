@@ -123,3 +123,22 @@ const routeTypeProof: [
 ] = [true, true, true, true, true, true, true, true, true, true, true, true, true, true]
 
 void [actions, actualUsersActions, createOnlyResult, detailAndUpdateResult, createPayload, updatePayload, queryContext, listResult, optionLoad, routeTypeProof]
+
+type CollectionsRoute = {
+  choices: { $get: Endpoint<{}, { data: Row[] }, 200> }
+  dataset: { $get: Endpoint<{ query: { project_id: string; page?: string; limit?: string; sort?: 'name'; order?: 'asc' | 'desc' } }, { data: Row[]; total: number }, 200> }
+  summary: { $get: Endpoint<{ query: {} }, { data: Row }, 200> }
+  scoped: { $get: Endpoint<{ param: { project_id: string }; query: {} }, { data: Row[] }, 200> }
+}
+declare const collectionRoute: CollectionsRoute
+const collectionActions = createHonoResourceActions(collectionRoute)
+type CollectionNamesAreInferred = Assert<Equal<keyof typeof collectionActions, 'dataset' | 'choices'>>
+type CollectionRowsAreInferred = Assert<Equal<Awaited<ReturnType<typeof collectionActions.dataset>>, CollectionResult<Row>>>
+type CollectionQueryIsInferred = Assert<
+  Equal<Parameters<typeof collectionActions.dataset>[0]['query'], { project_id: string; page?: string | number; limit?: string | number; sort_by?: 'name'; sort?: 'asc' | 'desc' }>
+>
+const collectionTypeProof: [CollectionNamesAreInferred, CollectionRowsAreInferred, CollectionQueryIsInferred] = [true, true, true]
+void collectionTypeProof
+
+const inferredOptionLoad: OptionLoad<Row> = collectionActions.choices
+void inferredOptionLoad

@@ -157,5 +157,18 @@ export function createHonoResourceActions(route: unknown, options?: { querySchem
       ),
     delete: async (id: RecordIdentity) => writePayload(await requestFor('delete', () => routeEndpoint(route, ['delete', ':id', '$delete'])({ param: { id: wireIdentity(id) } }), true), 'delete'),
   }
-  return actions
+  return new Proxy(actions, {
+    get(target, property, receiver) {
+      if (typeof property !== 'string' || Reflect.has(target, property) || property === 'then' || property === 'toJSON' || property === 'inspect' || !/^[a-z][a-zA-Z0-9-]*$/.test(property)) {
+        return Reflect.get(target, property, receiver)
+      }
+      const endpoint = routeEndpoint(route, [property, '$get'])
+      const load = async ({ query, searchParameters, signal }: CollectionLoadContext<Record<string, unknown>>) => {
+        const values = encodeCollectionQuery({ ...searchParameters, ...query })
+        return dataAdapter.normalizeCollection(await readPayload(await requestFor(property, () => endpoint({ query: wireQuery(values) }, { init: { signal } }))))
+      }
+      Object.defineProperty(target, property, { value: load, enumerable: true })
+      return load
+    },
+  })
 }
