@@ -100,11 +100,37 @@ export type HonoUpdateOf<TRoute> = AdapterPayload<ObjectJsonOf<UpdateEndpoint<TR
 
 type MutationRecordOf<TEndpoint, TStatus extends StatusCode> = [DataOf<HonoResponseOf<TEndpoint, TStatus>>] extends [never] ? Record<string, unknown> : DataOf<HonoResponseOf<TEndpoint, TStatus>>
 
-export type HonoResourceActions<TRoute, TQuery extends object = Record<string, unknown>> = ([ListEndpoint<TRoute>] extends [never]
-  ? {}
-  : {
-      list: (context: CollectionLoadContext<TQuery>) => Promise<CollectionResult<HonoRecordOf<TRoute>>>
-    }) &
+type CollectionEndpoint<TRoute, TKey extends string> = EndpointAt<TRoute, TKey, '$get'>
+type CollectionQueryOf<TEndpoint> = [QueryOfEndpoint<TEndpoint>] extends [never]
+  ? Record<string, never>
+  : QueryOfEndpoint<TEndpoint> extends infer TQuery extends object
+    ? { [TKey in keyof TQuery as TKey extends 'sort' ? 'sort_by' : TKey extends 'order' ? 'sort' : TKey]: TKey extends 'page' | 'limit' ? TQuery[TKey] | number : TQuery[TKey] }
+    : Record<string, never>
+type CollectionActionKeys<TRoute> = {
+  [TKey in Extract<keyof TRoute, string>]: TKey extends 'list' | 'create' | 'detail' | 'update' | 'delete'
+    ? never
+    : [CollectionEndpoint<TRoute, TKey>] extends [never]
+      ? never
+      : HonoRequestOf<CollectionEndpoint<TRoute, TKey>> extends { param: object }
+        ? never
+        : [ListRecordOf<HonoResponseOf<CollectionEndpoint<TRoute, TKey>, 200>>] extends [never]
+          ? never
+          : ListRecordOf<HonoResponseOf<CollectionEndpoint<TRoute, TKey>, 200>> extends object
+            ? TKey
+            : never
+}[Extract<keyof TRoute, string>]
+type HonoCollectionActions<TRoute> = {
+  [TKey in CollectionActionKeys<TRoute>]: (
+    context: CollectionLoadContext<CollectionQueryOf<CollectionEndpoint<TRoute, TKey>>>
+  ) => Promise<CollectionResult<Extract<ListRecordOf<HonoResponseOf<CollectionEndpoint<TRoute, TKey>, 200>>, object>>>
+}
+
+export type HonoResourceActions<TRoute, TQuery extends object = Record<string, unknown>> = HonoCollectionActions<TRoute> &
+  ([ListEndpoint<TRoute>] extends [never]
+    ? {}
+    : {
+        list: (context: CollectionLoadContext<TQuery>) => Promise<CollectionResult<HonoRecordOf<TRoute>>>
+      }) &
   ([DetailGetEndpoint<TRoute>] extends [never]
     ? {}
     : {

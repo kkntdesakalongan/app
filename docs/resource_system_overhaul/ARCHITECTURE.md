@@ -266,6 +266,12 @@ The binder owns operation compatibility, access checks, bound identity, cache na
 
 Each bound loader carries private framework identity in a weak association. Readers and option sources use the bound resource and request parameters without a public registry or repeated owner props. The loader keeps its access check and effective request scope when extracted from its page bag. An explicit conflicting resource owner fails. Explicit `namespace` remains a view or query-instance override.
 
+The resource `actions` map also accepts callable collection reads. The resource key supplies their owner, and each action key supplies its operation name. Their function types supply query and record types. They use the existing `CollectionResult` contract for both complete and paginated reads. No action-kind field or repeated schema is required. A callable read does not inherit a management page's permission. The API remains responsible for authorization. Command objects keep their declared permission and guarded write behavior.
+
+The Roles resource declares `actions: { list: rolesActions.list }`. The Users role selector passes `roles.actions.list` directly to its input. It does not extract the Roles page table to load options. Both reads remain under the Roles resource owner for invalidation.
+
+A resource with only callable collection reads can omit identity and page declarations. It exposes its key, callable actions, and the existing resource invalidation operation. Record operations and guarded commands retain their identity requirements. Do not register the same function under conflicting resource or operation names.
+
 Copy identity and record context before a factory or closure captures them. Check that the record identity matches the bound identity. Use that snapshot for loads, mutations, permission checks, and cache keys. A new row context needs a new binding; mutating an old record does not retarget it.
 
 Recheck access when an operation runs. Preserve the distinction between absent row policy and malformed explicit row policy; malformed restrictions cannot grant access. Keep client permission checks separate from backend authorization. The server remains the final authorization boundary.
@@ -389,7 +395,9 @@ Read-only TableInput needs a table and a model only. Add and edit use DialogForm
 
 Option inputs own their data or loader. Declare `load`, `searchParameters`, `pick`, and `view` on the component. Resource-bound loaders carry resource ownership and bound request parameters, so do not copy `resource` or `namespace` from the resource table. Pass explicit request-changing parameters to the option source. Standalone loaders use instance isolation; set an explicit resource owner only when the source must follow resource invalidation. An explicit namespace remains available when one view needs a separate option query. Static data does not need a loader. A static data list is the full valid-value set. A remote page does not prove that a selected value is invalid. Keep surviving values, extra fields, and order. Emit only when the component's canonical value changes.
 
-A custom input that owns a custom data set uses `useLoader`. The installed query client owns shared reads, lifecycle cancellation, retries, and one terminal failure notification for the active read. `enabled` controls whether the loader runs; interaction `disabled` remains separate. This read feedback does not cover the independent LookupInput, location, or file-manager loaders.
+A custom input that owns a custom data set uses `useLoader`. LookupInput also uses this runtime for its collection reads. The installed query client owns shared reads, lifecycle cancellation, retries, and one terminal failure notification for the active read. `enabled` controls whether the loader runs; interaction `disabled` remains separate. LookupInput keeps selected-record hydration separate. This read feedback does not cover location or file-manager loaders.
+
+Resource-owned option and lookup keys include the operation, explicit namespace, and effective request parameters. Query values override matching search parameters. Different pages and page sizes have separate cache entries. An explicit namespace separates otherwise matching reads. Resource invalidation refreshes these reads through the existing options cache hierarchy.
 
 A source-context change includes resource owner, loader identity, namespace, searchParameters, source mode, and identity props. A resource owner change follows the existing context-change behavior; refreshing options for the same owner does not clear a valid remote selection. SelectInput multi/asWhole, CheckboxGroupInput uniqueIDAs, and LookupInput multi affect model interpretation. A changed SelectInput picked-key identity affects selection validity; a view-only change does not. A context-driven clear is a normal model update and does not mark the input touched. A cleared value stays clear after component defaults run.
 
@@ -402,6 +410,8 @@ LocationInput emits `{ lat, lng }` or `null`. It does not edit names or emit pro
 ### 7.5 Frontend transport query boundary
 
 Define one raw query schema for the frontend Collection values, including endpoint-specific filters and allowed sort keys. Pass it to the Hono adapter when the typed route has a list operation. A route without list calls the factory without options. The returned actions include only operations present in the typed Hono route. The adapter parses list queries asynchronously before dispatch, merges searchParameters with parsed query values taking precedence, maps sort_by to the wire sort key and sort to wire order, then uses the existing HTTP serializer. It keeps false and zero, preserves arrays, objects, and signal identity, and applies the existing empty-value omission. Invalid values prevent dispatch. Do not mutate inputs or feed wire names back into Collection. The resource table binds the adapter loader directly; do not parse the same query again on the table. A different endpoint protocol needs an explicit adapter.
+
+The same Hono adapter exposes named direct GET collection endpoints from the typed RPC contract. Their query and record types come from the endpoint. They need no additional query or response schema. Endpoints that require path parameters are not exposed as these collection actions. Select public reads in the resource's plain action map. The adapter creates a named loader when that property is read and keeps its function identity stable. Hono route proxies cannot enumerate the endpoint names present only in TypeScript types.
 
 ## 8. Implementation ownership
 
@@ -445,13 +455,12 @@ Run these existing checks from the repository root:
 
 ~~~sh
 pnpm test:surface-architecture
-node --test scripts/web-validation-workflow.test.mjs
 pnpm --filter @southneuhof/loom exec vue-tsc --noEmit --incremental false -p tsconfig.json
 pnpm --filter @southneuhof/framework-web type-check
 git diff --check
 ~~~
 
-The architecture gate checks the active contract and real source. The CI contract test checks workflow selection. The two type checks compile Loom and app contracts. The web workflow also runs package unit and browser tests for their changed owners.
+The architecture gate checks the active contract and real source. The two type checks compile Loom and app contracts. The web workflow also runs package unit and browser tests for their changed owners.
 
 ## 11. Execution and completion
 
