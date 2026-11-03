@@ -1,0 +1,31 @@
+import type { AssetValue } from '../../../assets/contracts'
+import type { FileInputModelValue } from '../fileInput.types'
+import type { TextareaInputModelValue } from '../textareaInput.types'
+import type { RadioInputModelValue } from '../selectInput.types'
+
+type Equal<TLeft, TRight> = (<T>() => T extends TLeft ? 1 : 2) extends (<T>() => T extends TRight ? 1 : 2)
+  ? (<T>() => T extends TRight ? 1 : 2) extends (<T>() => T extends TLeft ? 1 : 2) ? true : false
+  : false
+type Assert<T extends true> = T
+
+type BooleanRadioData = Assert<Equal<RadioInputModelValue<{ data: readonly { id: boolean; name: string }[] }>, boolean>>
+type BooleanRadioLoad = Assert<Equal<RadioInputModelValue<{ load: () => Promise<{ data: { code: boolean; label: string }[] }>; pick: 'code' }>, boolean>>
+
+type TextareaNumberMode = Assert<Equal<TextareaInputModelValue<readonly ['number']>, number | undefined>>
+type TextareaTextMode = Assert<Equal<TextareaInputModelValue<readonly ['text']>, string | undefined>>
+type TextareaMixedFixedMode = Assert<Equal<TextareaInputModelValue<readonly ['number', 'text']>, string | undefined>>
+type TextareaKnownTextPrefix = Assert<Equal<TextareaInputModelValue<readonly ['text', ...('number')[]]>, string | undefined>>
+type TextareaDefaultMode = Assert<Equal<TextareaInputModelValue<undefined>, string | undefined>>
+type TextareaDefaultConstraint = Assert<Equal<TextareaInputModelValue, string | undefined>>
+type TextareaWidenedMode = Assert<Equal<TextareaInputModelValue<readonly ('number' | 'text')[]>, string | number | undefined>>
+type TextareaUnionMode = Assert<Equal<TextareaInputModelValue<readonly ['number'] | readonly ['text']>, string | number | undefined>>
+type TextareaOptionalNumberMode = Assert<Equal<TextareaInputModelValue<readonly ['number'] | undefined>, string | number | undefined>>
+
+type AssetSingleMode = Assert<Equal<FileInputModelValue<'asset', false>, AssetValue | null>>
+type AssetOmittedMode = Assert<Equal<FileInputModelValue, AssetValue | null>>
+type AssetMultiMode = Assert<Equal<FileInputModelValue<'asset', true>, AssetValue[] | null>>
+type AssetWidenedMode = Assert<Equal<FileInputModelValue<'asset', boolean>, AssetValue | AssetValue[] | null>>
+type AssetUnionMode = Assert<Equal<FileInputModelValue<'asset', true | false>, AssetValue | AssetValue[] | null>>
+type LocalSingleMode = Assert<Equal<FileInputModelValue<'file', false>, File | null>>
+type LocalMultiMode = Assert<Equal<FileInputModelValue<'file', true>, File[] | null>>
+type DynamicMode = Assert<Equal<FileInputModelValue<'asset' | 'file', false>, AssetValue | File | null>>

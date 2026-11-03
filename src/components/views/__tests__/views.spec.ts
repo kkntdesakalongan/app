@@ -1,0 +1,2198 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createApp, defineComponent, h, ref, toRaw, type Component } from 'vue'
+import { createMemoryHistory, createRouter, RouterView } from 'vue-router'
+import { z } from 'zod'
+import * as XLSX from 'xlsx'
+import { configureParser, resetParserConfigForTests } from '@southneuhof/utilities/parse'
+import type { CollectionSlotProps, DetailViewControls, DetailViewReadyProps, QueryValues, RecordIdentity } from '../../../contracts'
+import type { ListViewSlotActions } from '../../../contracts/views'
+import { FrameworkPlugin } from '../../../adapters/plugin'
+import ListView from '../ListView.vue'
+import DetailView from '../DetailView.vue'
+import FormView from '../FormView.vue'
+import Detail from '../../core/Detail.vue'
+import Form from '../../core/Form.vue'
+import { deferred, flush, mountCore } from '../../core/__tests__/harness'
+import { testAssetAdapter } from '../../inputs/__tests__/harness'
+import type { AssetAdapter } from '../../../assets/contracts'
+import { defineResource } from '../../../resources/defineResource'
+import { useFrameworkQueryClient } from '../../../query/client'
+import { resetResourceRuntimeForTests } from '../../../resources/runtime'
+import { toast } from 'vue-sonner'
+
+const exportedWorkbook = vi.hoisted(() => ({ value: undefined as unknown }))
+
+vi.mock('../../../services/excel', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../services/excel')>()
+  return {
+    ...actual,
+    downloadWorkbook: (workbook: unknown) => { exportedWorkbook.value = workbook },
+  }
+})
+
+const tableProps = {
+  schema: z.object({ name: z.string() }),
+  columns: { name: { label: 'Nama', read: (record: { name: string }) => record.name } },
+  data: [{ name: 'Admin' }],
+}
+const detailProps = {
+  schema: z.object({ name: z.string() }),
+  fields: { name: { label: 'Nama', read: (record: { name: string }) => record.name } },
+  data: { name: 'Admin' },
+}
+const boundDeleteListCleanup = new Set<() => void>()
+
+function mountControlledListView(props: Record<string, unknown>) {
+  const table = props.table as Record<string, unknown>
+  const query = ref<QueryValues>({ ...(table.query as QueryValues) })
+  const updates: QueryValues[] = []
+  const Host = defineComponent({
+    setup: () => () => h(ListView, {
+      ...props,
+      table: { ...table, query: query.value },
+      'onUpdate:query': (value: QueryValues) => { updates.push({ ...value }); query.value = { ...value } },
+    }),
+  })
+  return { view: mountCore(Host, {}), query, updates }
+}
+
+function installStorage() {
+  const values = new Map<string, string>()
+  const setItem = vi.fn((key: string, value: string) => values.set(key, value))
+  const descriptor = Object.getOwnPropertyDescriptor(window, 'localStorage')
+  Object.defineProperty(window, 'localStorage', {
+    configurable: true,
+    value: {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem,
+      removeItem: (key: string) => values.delete(key),
+      get length() { return values.size },
+    },
+  })
+  return {
+    values,
+    setItem,
+    restore: () => {
+      if (descriptor) Object.defineProperty(window, 'localStorage', descriptor)
+      else delete (window as { localStorage?: Storage }).localStorage
+    },
+  }
+}
+
+describe('ListView', () => {
+  it('renders a context slot with the list', async () => {
+    const view = mountCore(
+      ListView,
+      { title: 'Role', description: 'Manage roles.', table: tableProps },
+      {
+        slots: {
+          context: () => h('div', { 'data-context-slot': '' }, 'List summary'),
+        },
+      },
+    )
+    await flush()
+
+    expect(view.find('h1')?.textContent).toBe('Role')
+    expect(view.text()).toContain('Manage roles.')
+    expect(view.all('th').map((cell) => cell.textContent)).toEqual(['Nama'])
+    expect(view.text()).toContain('Admin')
+    expect(view.text()).toContain('List summary')
+    view.unmount()
+  })
+
+  it('passes table context to row cell export resolvers', async () => {
+    configureParser({ formatters: { uppercase: (value) => String(value).toUpperCase() } })
+    const view = mountCore(ListView, {
+      table: {
+        schema: z.object({ name: z.string() }),
+        columns: {
+          name: {
+            label: 'Name',
+            cell: ({ context }: { context: { prefix: string } }) => ({
+              read: (record: { name: string }) => `${context.prefix} ${record.name}`,
+              format: 'uppercase',
+            }),
+          },
+        },
+        context: { prefix: 'joined' },
+        data: [{ name: 'name' }],
+      },
+      export: { filename: 'context' },
+    })
+
+    try {
+      view.find('[aria-label="Export Excel"]')!.click()
+      await vi.waitFor(() => expect(exportedWorkbook.value).toBeDefined())
+      const workbook = exportedWorkbook.value as XLSX.WorkBook
+      expect(XLSX.utils.sheet_to_json(workbook.Sheets.Data!, { header: 1 })).toEqual([
+        ['Name'],
+        ['JOINED NAME'],
+      ])
+    } finally {
+      view.unmount()
+      exportedWorkbook.value = undefined
+      resetParserConfigForTests()
+    }
+  })
+
+  it('updates visible columns immediately, coalesces persistence, and reset cancels pending visibility', async () => {
+    vi.useFakeTimers()
+    const storage = installStorage()
+    let view: ReturnType<typeof mountCore> | undefined
+    try {
+      view = mountCore(ListView, {
+        table: {
+          namespace: 'roles',
+          schema: z.object({ name: z.string(), status: z.string() }),
+          columns: {
+            name: { label: 'Nama', read: (record: { name: string; status: string }) => record.name },
+            status: { label: 'Status', read: (record: { name: string; status: string }) => record.status },
+          },
+          data: [{ name: 'Admin', status: 'active' }],
+        },
+      })
+      await flush()
+
+      view.find<HTMLButtonElement>('[aria-label="Columns"]')!.click()
+      await flush()
+      const statusSwitch = [...document.querySelectorAll<HTMLButtonElement>('label button')][1]
+      statusSwitch.click()
+      await flush()
+      expect(view.all('th').map((cell) => cell.textContent)).toEqual(['Nama'])
+      statusSwitch.click()
+      await flush()
+      expect(view.all('th').map((cell) => cell.textContent)).toEqual(['Nama', 'Status'])
+      statusSwitch.click()
+      await flush()
+      expect(view.all('th').map((cell) => cell.textContent)).toEqual(['Nama'])
+      expect(storage.setItem).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(200)
+      expect(storage.setItem).toHaveBeenCalledTimes(1)
+      expect(storage.setItem).toHaveBeenCalledWith(
+        'is-framework:roles:table:visible-columns',
+        JSON.stringify({ known: ['name', 'status'], visible: ['name'] }),
+      )
+
+      storage.setItem.mockClear()
+      statusSwitch.click()
+      await flush()
+      ;[...document.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Reset columns')!.click()
+      await flush()
+      await vi.advanceTimersByTimeAsync(200)
+      expect(storage.setItem).not.toHaveBeenCalled()
+      expect(storage.values.has('is-framework:roles:table:visible-columns')).toBe(false)
+    } finally {
+      view?.unmount()
+      storage.restore()
+      vi.useRealTimers()
+    }
+  })
+
+  it('flushes final column visibility when unmounted before debounce expiry', async () => {
+    vi.useFakeTimers()
+    const storage = installStorage()
+    let view: ReturnType<typeof mountCore> | undefined
+    try {
+      view = mountCore(ListView, {
+        table: {
+          namespace: 'roles',
+          schema: z.object({ name: z.string(), status: z.string() }),
+          columns: {
+            name: { label: 'Nama', read: (record: { name: string; status: string }) => record.name },
+            status: { label: 'Status', read: (record: { name: string; status: string }) => record.status },
+          },
+          data: [{ name: 'Admin', status: 'active' }],
+        },
+      })
+      await flush()
+      view.find<HTMLButtonElement>('[aria-label="Columns"]')!.click()
+      await flush()
+      ;[...document.querySelectorAll<HTMLButtonElement>('label button')][1].click()
+      await flush()
+
+      view.unmount()
+      view = undefined
+      expect(storage.setItem).toHaveBeenCalledTimes(1)
+      expect(storage.setItem).toHaveBeenCalledWith(
+        'is-framework:roles:table:visible-columns',
+        JSON.stringify({ known: ['name', 'status'], visible: ['name'] }),
+      )
+      await vi.advanceTimersByTimeAsync(200)
+      expect(storage.setItem).toHaveBeenCalledTimes(1)
+    } finally {
+      view?.unmount()
+      storage.restore()
+      vi.useRealTimers()
+    }
+  })
+
+  it('lets slots replace the header and the body entirely', async () => {
+    const view = mountCore(
+      ListView,
+      { title: 'Role', table: tableProps },
+      {
+        slots: {
+          header: () => h('h2', 'Judul khusus'),
+          body: () => h('p', 'Badan khusus'),
+        },
+      },
+    )
+    await flush()
+
+    expect(view.find('h1')).toBeNull()
+    expect(view.text()).toContain('Judul khusus')
+    expect(view.text()).toContain('Badan khusus')
+    expect(view.find('table')).toBeNull()
+    view.unmount()
+  })
+
+  it('passes cell slots through to the table', async () => {
+    const view = mountCore(
+      ListView,
+      { table: tableProps },
+      { slots: { 'cell:name': (scope) => h('strong', String((scope as { value: unknown }).value)) } },
+    )
+    await flush()
+
+    expect(view.find('strong')?.textContent).toBe('Admin')
+    view.unmount()
+  })
+
+  it('passes the loaded collection to the collection slot without a second loader', async () => {
+    let calls = 0
+    let slotState: Record<string, unknown> | undefined
+    const view = mountCore(
+      ListView,
+      {
+        table: {
+          namespace: 'custom-list',
+          schema: z.object({ name: z.string() }),
+          columns: { name: { label: 'Name', read: (record: { name: string }) => record.name } },
+          load: () => {
+            calls += 1
+            return { data: [{ name: 'Admin' }], meta: { total: 1, totalPage: 1 } }
+          },
+        },
+      },
+      {
+        slots: {
+          collection: (state) => {
+            slotState = state
+            return h('p', { class: 'custom-record' }, String((state.records as Array<{ name: string }>)[0]?.name))
+          },
+        },
+      },
+    )
+    await flush()
+
+    expect(calls).toBe(1)
+    expect(view.find('.custom-record')?.textContent).toBe('Admin')
+    expect(slotState).not.toHaveProperty('load')
+    expect(slotState).not.toHaveProperty('data')
+    view.unmount()
+  })
+
+  it('forwards the standard action surface to the collection slot', async () => {
+    let actions: Record<string, unknown> | undefined
+    let collectionKeys: string[] = []
+    const view = mountCore(
+      ListView,
+      {
+        table: {
+          schema: z.object({ id: z.string(), name: z.string() }),
+          columns: { name: { label: 'Name', read: (record: { id: string; name: string }) => record.name } },
+          namespace: 'custom-actions',
+          load: () => ({ data: [{ id: '1', name: 'Admin' }], meta: { total: 1, totalPage: 1 } }),
+        },
+        createRoute: { name: 'test-route' },
+        detailRoute: (record) => ({ name: 'test-route', params: { id: String(record.id) } }),
+        updateRoute: (record) => ({ name: 'test-route', params: { id: String(record.id) } }),
+        can: (operation, record) => operation === 'delete' && record?.id === '1',
+        deleteRecord: async () => undefined,
+        recordIdentity: (record: Record<string, unknown>) => String(record.id),
+      },
+      {
+        slots: {
+          collection: (state) => {
+            actions = (state as { actions?: Record<string, unknown> }).actions
+            collectionKeys = Object.keys(state)
+            return h('p', 'custom')
+          },
+        },
+      },
+    )
+    await flush()
+
+    expect(actions?.createRoute).toEqual({ name: 'test-route' })
+    expect((actions!.detailRoute as (record: Record<string, unknown>) => unknown)({ id: '1' })).toEqual({ name: 'test-route', params: { id: '1' } })
+    expect((actions!.updateRoute as (record: Record<string, unknown>) => unknown)({ id: '1' })).toEqual({ name: 'test-route', params: { id: '1' } })
+    expect((actions!.can as (operation: string, record?: Record<string, unknown>) => boolean)('delete', { id: '1' })).toBe(true)
+    expect((actions!.can as (operation: string, record?: Record<string, unknown>) => boolean)('delete', { id: '2' })).toBe(false)
+    expect(typeof actions!.deleteRecord).toBe('function')
+    expect(collectionKeys).not.toContain('load')
+    expect(collectionKeys).not.toContain('data')
+    expect(Object.keys(actions!)).toEqual(['createRoute', 'detailRoute', 'updateRoute', 'can', 'deleteRecord', 'deleteState'])
+    view.unmount()
+  })
+
+  it('renders the table by default and flips live when a conditional collection slot toggles', async () => {
+    const ToggleHost = defineComponent({
+      setup() {
+        const grid = ref(false)
+        return () => [
+          h('button', { 'data-toggle': '', onClick: () => { grid.value = !grid.value } }, 'toggle'),
+          h(ListView, {
+            table: {
+              namespace: 'slot-toggle-live',
+              schema: z.object({ name: z.string() }),
+              columns: { name: { label: 'Nama', read: (record: { name: string }) => record.name } },
+              data: [{ name: 'Admin' }],
+            },
+          }, grid.value
+            ? { collection: () => [h('p', { class: 'collection-body' }, 'grid body')] }
+            : {}),
+        ]
+      },
+    })
+    const view = mountCore(ToggleHost, {})
+    await flush()
+    expect(view.find('table')).not.toBeNull()
+    expect(view.find('.collection-body')).toBeNull()
+
+    view.find<HTMLButtonElement>('[data-toggle]')!.click()
+    await flush()
+    expect(view.find('.collection-body')?.textContent).toBe('grid body')
+    expect(view.find('table')).toBeNull()
+
+    view.find<HTMLButtonElement>('[data-toggle]')!.click()
+    await flush()
+    expect(view.find('table')).not.toBeNull()
+    expect(view.find('.collection-body')).toBeNull()
+    view.unmount()
+  })
+
+  it('sends debounced search through the table query and resets page', async () => {
+    vi.useFakeTimers()
+    const contexts: Record<string, unknown>[] = []
+    const { view } = mountControlledListView({
+      table: {
+        schema: z.object({ name: z.string() }),
+        columns: { name: { label: 'Nama', read: (record: { name: string }) => record.name } },
+        query: { page: 4, limit: 10 },
+        load: ({ query }: { query: Record<string, unknown> }) => {
+          contexts.push({ ...query })
+          return { data: [{ name: 'Admin' }] }
+        },
+      },
+    })
+    await flush()
+
+    const search = view.find<HTMLInputElement>('header input')!
+    search.value = 'admin'
+    search.dispatchEvent(new Event('input'))
+    await vi.advanceTimersByTimeAsync(300)
+    await flush()
+
+    expect(contexts.at(-1)).toMatchObject({ search: 'admin', page: 1, limit: 10 })
+    view.unmount()
+    vi.useRealTimers()
+  })
+
+  it('renders model-bound filter Form and resets filters without clearing search or limit', async () => {
+    const contexts: Record<string, unknown>[] = []
+    const { view } = mountControlledListView({
+      table: {
+        schema: z.object({ name: z.string() }),
+        columns: { name: { label: 'Nama', read: (record: { name: string }) => record.name } },
+        query: { search: 'admin', limit: 25, page: 3 },
+        load: ({ query }: { query: Record<string, unknown> }) => {
+          contexts.push({ ...query })
+          return { data: [{ name: 'Admin' }] }
+        },
+      },
+      filters: {
+        schema: z.object({ active: z.string() }),
+        fields: { active: { label: 'Aktif', renderer: 'text' } },
+        defaults: { active: 'yes' },
+        queryKeys: ['active'],
+        toDraft: (query: Readonly<Record<string, unknown>>) => typeof query.active === 'string' ? { active: query.active } : {},
+      },
+    })
+    await flush()
+
+    view.find<HTMLButtonElement>('[aria-label="Filter"]')!.click()
+    await flush()
+    const filter = document.querySelector<HTMLInputElement>('[id$="-field-active"]')!
+    filter.value = 'no'
+    filter.dispatchEvent(new Event('input'))
+    await flush()
+    expect(contexts.at(-1)).toMatchObject({ active: 'no', search: 'admin', limit: 25, page: 1 })
+
+    ;[...document.querySelectorAll('button')].find((button) => button.textContent === 'Reset filter')!.dispatchEvent(new MouseEvent('click'))
+    await flush()
+    expect(contexts.at(-1)).toMatchObject({ active: 'yes', search: 'admin', limit: 25, page: 1 })
+    view.unmount()
+  })
+
+  it('validates reset defaults when the query mapping leaves the displayed draft unchanged', async () => {
+    const contexts: Record<string, unknown>[] = []
+    const { view, query, updates } = mountControlledListView({
+      table: {
+        schema: z.object({ name: z.string() }),
+        columns: { name: { label: 'Name' } },
+        query: { status: 'old', page: 3 },
+        load: ({ query }: { query: Record<string, unknown> }) => {
+          contexts.push({ ...query })
+          return { data: [{ name: 'Admin' }] }
+        },
+      },
+      filters: {
+        schema: z.object({ selection: z.string() }).transform(({ selection }) => ({ status: selection })),
+        fields: { selection: { label: 'Status', renderer: 'text' } },
+        defaults: { selection: 'default' },
+        queryKeys: ['status'],
+        toDraft: () => ({}),
+      },
+    })
+    await flush()
+
+    view.find<HTMLButtonElement>('[aria-label="Filter"]')!.click()
+    await flush()
+    expect(document.querySelector<HTMLInputElement>('[id$="-field-selection"]')!.value).toBe('default')
+    const updateCount = updates.length
+
+    ;[...document.querySelectorAll('button')].find((button) => button.textContent === 'Reset filter')!.dispatchEvent(new MouseEvent('click'))
+    await flush()
+
+    expect(updates).toHaveLength(updateCount + 1)
+    expect(query.value).toMatchObject({ status: 'default', page: 1 })
+    expect(contexts.at(-1)).toMatchObject({ status: 'default', page: 1 })
+    view.unmount()
+  })
+
+  it('hydrates and commits transformed filters through their declared query mapping', async () => {
+    const staleParse = deferred<void>()
+    const externalParse = deferred<void>()
+    const contexts: Record<string, unknown>[] = []
+    const schema = z.object({ selection: z.string() }).superRefine(({ selection }, context) => {
+      if (selection === 'invalid') context.addIssue({ code: 'custom', message: 'Invalid selection.' })
+    }).transform(async ({ selection }) => {
+      if (selection === 'slow') await staleParse.promise
+      if (selection === 'pending') await externalParse.promise
+      const normalized = selection.trim()
+      return normalized ? { status: normalized } : {}
+    })
+    const { view, query, updates } = mountControlledListView({
+      table: {
+        schema: z.object({ name: z.string() }),
+        columns: { name: { label: 'Name' } },
+        query: { search: 'admin', sort_by: '-name', status: 'old', retained: 'value', page: 3 },
+        defaultPageSize: 25,
+        load: ({ query }: { query: Record<string, unknown> }) => {
+          contexts.push({ ...query })
+          return { data: [{ name: 'Admin' }] }
+        },
+      },
+      filters: {
+        schema,
+        fields: { selection: { label: 'Status', renderer: 'text' } },
+        defaults: { selection: 'default' },
+        queryKeys: ['status'],
+        toDraft: (query: Readonly<Record<string, unknown>>) => typeof query.status === 'string' ? { selection: query.status } : {},
+      },
+    })
+    await flush()
+
+    view.find<HTMLButtonElement>('[aria-label="Filter"]')!.click()
+    await flush()
+    const selection = document.querySelector<HTMLInputElement>('[id$="-field-selection"]')!
+
+    expect(selection.value).toBe('old')
+
+    const beforeClear = updates.length
+    selection.value = ''
+    selection.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(query.value).not.toHaveProperty('status')
+    expect(query.value).toMatchObject({ retained: 'value', search: 'admin', sort_by: '-name', limit: 25, page: 1 })
+    expect(updates).toHaveLength(beforeClear + 1)
+    expect(contexts.at(-1)).not.toHaveProperty('status')
+    expect(contexts.at(-1)).toMatchObject({ retained: 'value', search: 'admin', sort_by: '-name', limit: 25, page: 1 })
+
+    selection.value = ' active '
+    selection.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(contexts.at(-1)).toMatchObject({ status: 'active', retained: 'value', search: 'admin', sort_by: '-name', limit: 25, page: 1 })
+    expect(selection.value).toBe(' active ')
+
+    const beforeInvalid = updates.length
+    selection.value = 'invalid'
+    selection.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(query.value).toMatchObject({ status: 'active', page: 1 })
+    expect(updates).toHaveLength(beforeInvalid)
+
+    selection.value = 'slow'
+    selection.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    selection.value = 'chosen'
+    selection.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+    expect(contexts.at(-1)).toMatchObject({ status: 'chosen' })
+
+    staleParse.resolve()
+    await flush()
+    expect(contexts.at(-1)).toMatchObject({ status: 'chosen' })
+    expect(selection.value).toBe('chosen')
+
+    ;[...document.querySelectorAll('button')].find((button) => button.textContent === 'Reset filter')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await flush()
+    expect(selection.value).toBe('old')
+    expect(contexts.at(-1)).toMatchObject({ status: 'old', retained: 'value', search: 'admin', sort_by: '-name', limit: 25, page: 1 })
+
+    const beforeReplacement = updates.length
+    selection.value = 'pending'
+    selection.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    query.value = { ...query.value, status: 'external', retained: 'replacement', page: 4 }
+    await flush()
+    expect(selection.value).toBe('external')
+    expect(updates).toHaveLength(beforeReplacement)
+    const loadsAfterReplacement = contexts.length
+
+    externalParse.resolve()
+    await flush()
+    expect(query.value).toMatchObject({ status: 'external', retained: 'replacement', page: 4 })
+    expect(contexts).toHaveLength(loadsAfterReplacement)
+    expect(updates).toHaveLength(beforeReplacement)
+    expect(selection.value).toBe('external')
+    view.unmount()
+  })
+
+  it('maps raw URL query values to supported filter drafts without an echo', async () => {
+    const rawQuery = { page: 4, count: '3', status: ['active'], retained: 'raw' }
+    const { view, query, updates } = mountControlledListView({
+      table: {
+        schema: z.object({ name: z.string() }),
+        columns: { name: { label: 'Name' } },
+        query: rawQuery,
+        load: () => ({ data: [{ name: 'Admin' }] }),
+      },
+      filters: {
+        schema: z.object({ count: z.number().optional(), status: z.string().optional(), category: z.string().optional() }),
+        fields: {
+          count: { label: 'Count', renderer: 'text' },
+          status: { label: 'Status', renderer: 'text' },
+          category: { label: 'Category', renderer: 'text' },
+        },
+        defaults: { count: 8, status: 'default', category: 'default' },
+        queryKeys: ['count', 'status', 'category'],
+        toDraft: (values: Readonly<Record<string, unknown>>) => ({
+          count: typeof values.count === 'string' && /^\d+$/.test(values.count) ? Number(values.count) : undefined,
+          status: typeof values.status === 'string' ? values.status : undefined,
+          category: typeof values.category === 'string' ? values.category : undefined,
+        }),
+      },
+    })
+    await flush()
+
+    view.find<HTMLButtonElement>('[aria-label="Filter"]')!.click()
+    await flush()
+
+    const filterInputs = [...document.querySelectorAll<HTMLInputElement>('.is-form-field input')]
+    expect(filterInputs.map((input) => input.value)).toEqual(['3', '', ''])
+    expect(query.value).toEqual(rawQuery)
+    expect(updates).toHaveLength(0)
+    view.unmount()
+  })
+
+  it('keeps raw filter text when its query echo adds the collection page size', async () => {
+    const { view, query } = mountControlledListView({
+      table: {
+        schema: z.object({ name: z.string() }),
+        columns: { name: { label: 'Name' } },
+        query: { status: 'old', page: 3 },
+        defaultPageSize: 25,
+        load: () => ({ data: [{ name: 'Admin' }] }),
+      },
+      filters: {
+        schema: z.object({ selection: z.string() }).transform(({ selection }) => ({ status: selection.trim() })),
+        fields: { selection: { label: 'Status', renderer: 'text' } },
+        defaults: { selection: 'old' },
+        queryKeys: ['status'],
+        toDraft: (values: Readonly<Record<string, unknown>>) => typeof values.status === 'string' ? { selection: values.status } : {},
+      },
+    })
+    await flush()
+
+    view.find<HTMLButtonElement>('[aria-label="Filter"]')!.click()
+    await flush()
+    const selection = document.querySelector<HTMLInputElement>('[id$="-field-selection"]')!
+    expect(selection.value).toBe('old')
+    selection.value = ' active '
+    selection.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    expect(query.value).toMatchObject({ status: 'active', page: 1, limit: 25 })
+    expect(selection.value).toBe(' active ')
+    view.unmount()
+  })
+
+  it('reports filter output keys without ownership and leaves the query unchanged', async () => {
+    const contexts: QueryValues[] = []
+    const { view, query, updates } = mountControlledListView({
+      table: {
+        schema: z.object({ name: z.string() }),
+        columns: { name: { label: 'Name' } },
+        query: { status: 'old', retained: 'value', page: 3 },
+        load: ({ query: values }: { query: QueryValues }) => {
+          contexts.push({ ...values })
+          return { data: [{ name: 'Admin' }] }
+        },
+      },
+      filters: {
+        schema: z.object({ selection: z.string() }).transform(({ selection }) => ({ status: selection, unexpected: 'value' })),
+        fields: { selection: { label: 'Status', renderer: 'text' } },
+        queryKeys: ['status'],
+        toDraft: (values: Readonly<Record<string, unknown>>) => typeof values.status === 'string' ? { selection: values.status } : {},
+      },
+    })
+    const errors: unknown[] = []
+    view.app.config.errorHandler = (error) => { errors.push(error) }
+    await flush()
+    const initialLoads = contexts.length
+
+    view.find<HTMLButtonElement>('[aria-label="Filter"]')!.click()
+    await flush()
+    const selection = document.querySelector<HTMLInputElement>('[id$="-field-selection"]')!
+    selection.value = 'active'
+    selection.dispatchEvent(new Event('input', { bubbles: true }))
+    await flush()
+
+    expect(errors).toHaveLength(1)
+    expect(errors[0]).toMatchObject({ message: expect.stringContaining('filters.queryKeys') })
+    expect(query.value).toEqual({ status: 'old', retained: 'value', page: 3 })
+    expect(updates).toHaveLength(0)
+    expect(contexts).toHaveLength(initialLoads)
+    view.unmount()
+  })
+
+  it('rejects page as a filter-owned query key', () => {
+    const errors: Array<{ error: unknown; info: string }> = []
+    const host = document.createElement('div')
+    const app = createApp(
+      defineComponent({
+        setup: () => () =>
+          h(ListView, {
+            table: { schema: z.object({ name: z.string() }), columns: { name: { label: 'Name' } }, query: { page: 2 }, data: [{ name: 'Admin' }] },
+            filters: {
+              schema: z.object({ page: z.number().optional() }),
+              fields: { page: { label: 'Page', renderer: 'number' } },
+              queryKeys: ['page'],
+              toDraft: () => ({}),
+            },
+          }),
+      })
+    )
+    app.config.errorHandler = (error, _instance, info) => {
+      errors.push({ error, info })
+    }
+    app.use(
+      createRouter({
+        history: createMemoryHistory(),
+        routes: [{ path: '/:pathMatch(.*)*', name: 'test-route', component: { render: () => null } }],
+      })
+    )
+    app.use(FrameworkPlugin, { adapters: { assets: testAssetAdapter } })
+    let mounted = false
+    try {
+      app.mount(host)
+      mounted = true
+      const setupErrors = errors.filter(({ info }) => info === 'setup function')
+      expect(setupErrors).toHaveLength(1)
+      expect(setupErrors[0]?.error).toMatchObject({
+        message: '[loom][SURFACE_OPTION_INVALID] filters.queryKeys cannot include the reserved ListView query key "page".',
+      })
+    } finally {
+      if (mounted) app.unmount()
+      host.remove()
+      resetResourceRuntimeForTests()
+    }
+  })
+})
+
+describe('DetailView', () => {
+  it('renders chrome around the detail and forwards its props unchanged', async () => {
+    const view = mountCore(DetailView, { title: 'Role', backTo: { name: 'test-route' }, detail: detailProps })
+    await flush()
+
+    expect(view.find('h1')?.textContent).toBe('Role')
+    expect(view.all('th[scope="row"]').map((node) => node.textContent)).toEqual(['Nama'])
+    expect(view.text()).toContain('Admin')
+    expect(view.all('.is-detail-view > div').every((card) => card.classList.contains('bg-surface-container'))).toBe(true)
+    view.unmount()
+  })
+
+  it('renders required navigation chrome and controls without a footer', async () => {
+    const view = mountCore(DetailView, { title: 'Role', backTo: { name: 'test-route' }, detail: detailProps }, {
+      uiDefaults: { backLabel: 'Kembali' },
+      slots: {
+        controls: () => h('button', { 'data-controls-slot': '' }, 'Ubah'),
+      },
+    })
+    await flush()
+
+    expect(view.all('h1')).toHaveLength(1)
+    expect(view.find('h1')?.textContent).toBe('Role')
+    const back = view.find<HTMLAnchorElement>('a[aria-label="Kembali"]')
+    expect(back).not.toBeNull()
+    expect(back?.getAttribute('href')).toBe(view.router.resolve({ name: 'test-route' }).href)
+    expect(view.find('[data-controls-slot]')).not.toBeNull()
+    expect(view.find('header > div [data-controls-slot]')).not.toBeNull()
+    expect(view.find('footer')).toBeNull()
+    view.unmount()
+  })
+
+  it('resolves header title and back target from the action bag when no explicit prop is set', async () => {
+    const view = mountCore(DetailView, {
+      detail: {
+        schema: detailProps.schema,
+        fields: detailProps.fields,
+        load: async () => ({ name: 'Admin' }),
+        id: '1',
+      },
+      title: 'Detail Role',
+      backTo: { name: 'test-route' },
+    }, { uiDefaults: { backLabel: 'Kembali' } })
+    await flush()
+
+    expect(view.find('h1')?.textContent).toBe('Detail Role')
+    expect(view.find<HTMLAnchorElement>('a[aria-label="Kembali"]')).not.toBeNull()
+    view.unmount()
+  })
+
+  it('forwards value slots', async () => {
+    const view = mountCore(
+      DetailView,
+      { title: 'Role', backTo: { name: 'test-route' }, detail: detailProps },
+      {
+        slots: {
+          'value:name': (scope) => h('em', String((scope as { value: unknown }).value)),
+        },
+      },
+    )
+    await flush()
+
+    expect(view.find('em')?.textContent).toBe('Admin')
+    view.unmount()
+  })
+
+  it('forwards loading and value slot scopes without repeating the load', async () => {
+    const result = deferred<{ name: string }>()
+    const record = { name: 'Loaded role' }
+    const load = vi.fn(() => result.promise)
+    const valueScopes: Array<Record<string, unknown>> = []
+    const view = mountCore(DetailView, {
+      title: 'Role',
+      detail: {
+        schema: z.object({ name: z.string() }),
+        fields: { name: { label: 'Name', read: (value: { name: string }) => value.name } },
+        load,
+      },
+    }, {
+      slots: {
+        loading: () => h('p', { 'data-detail-loading': '' }, 'Loading role'),
+        'value:name': (scope) => {
+          valueScopes.push(scope)
+          return h('em', { 'data-detail-value': '' }, String(scope.value))
+        },
+      },
+    })
+    await flush()
+    expect(view.find('[data-detail-loading]')?.textContent).toBe('Loading role')
+    expect(load).toHaveBeenCalledOnce()
+
+    result.resolve(record)
+    await flush()
+
+    expect(load).toHaveBeenCalledOnce()
+    expect(view.find('[data-detail-value]')?.textContent).toBe('Loaded role')
+    expect(valueScopes.at(-1)).toMatchObject({ value: 'Loaded role', record })
+    expect(toRaw(valueScopes.at(-1)?.record)).toBe(record)
+    view.unmount()
+  })
+
+  it('gives the body a loaded detail config and keeps controls separate', async () => {
+    const record = { name: 'Loaded role' }
+    const result = deferred<{ name: string }>()
+    let readyDetail: DetailViewReadyProps<{ name: string }>['detail'] | undefined
+    const view = mountCore(DetailView, {
+      title: 'Role',
+      detail: {
+        schema: z.object({ name: z.string() }),
+        fields: { name: { label: 'Name' } },
+        id: '1',
+        load: () => result.promise,
+      },
+    }, {
+      slots: {
+        loading: () => h('p', { 'data-detail-loading': '' }, 'Loading role'),
+        body: ({ record: readyRecord, detail }: DetailViewReadyProps<{ name: string }>) => {
+          readyDetail = detail
+          return h('section', { 'data-detail-body': '' }, [
+            h(Detail, { ...detail }),
+            h('aside', { 'data-detail-sibling': '' }, `Sibling ${readyRecord.name}`),
+          ])
+        },
+        controls: ({ loading, record }: DetailViewControls<{ name: string }>) => {
+          return h('button', { 'data-detail-controls': '', disabled: loading }, record ? `Edit ${record.name}` : 'Edit')
+        },
+      },
+    })
+    await flush()
+
+    expect(view.find('[data-detail-loading]')?.textContent).toBe('Loading role')
+    expect(view.find<HTMLButtonElement>('[data-detail-controls]')?.disabled).toBe(true)
+    expect(view.find('[data-detail-body]')).toBeNull()
+
+    result.resolve(record)
+    await flush()
+
+    expect(view.find('[data-detail-controls]')?.textContent).toBe('Edit Loaded role')
+    expect(view.find<HTMLButtonElement>('[data-detail-controls]')?.disabled).toBe(false)
+    expect(view.find('[data-detail-body] .is-detail tbody tr td:last-child')?.textContent).toBe('Loaded role')
+    expect(view.find('[data-detail-sibling]')?.textContent).toBe('Sibling Loaded role')
+    expect(view.all('table')).toHaveLength(1)
+    expect(readyDetail).not.toHaveProperty('load')
+    view.unmount()
+  })
+})
+
+describe('FormView', () => {
+  const formProps = (submit: () => Promise<unknown>) => ({
+    schema: z.object({ name: z.string() }),
+    fields: { name: { label: 'Nama', renderer: 'text' } },
+    initialData: { name: 'Admin' },
+    submit,
+  })
+
+  it('shows Save only when the nested Form has a submit handler', async () => {
+    const schema = z.object({ name: z.string() })
+    const fields = { name: { label: 'Nama', renderer: 'text' } }
+    const modelOnlyForm = { schema, fields, modelValue: { name: 'Admin' } }
+    const Host = defineComponent({
+      setup: () => () => h('main', [
+        h('section', { id: 'direct-form' }, [h(Form, modelOnlyForm)]),
+        h('section', { id: 'form-view' }, [h(FormView, { form: modelOnlyForm })]),
+      ]),
+    })
+    const view = mountCore(Host, {})
+    await flush()
+
+    expect(view.find('#direct-form form button[type="submit"]')).toBeNull()
+    expect(view.find('#form-view form button[type="submit"]')).toBeNull()
+    expect(view.find('#form-view .is-form-view-controls button[type="button"]')?.textContent).toContain('Cancel')
+    view.unmount()
+  })
+
+  it('exposes the managed Form state and methods through the parent ref', async () => {
+    const load = vi.fn(async () => ({ name: 'Loaded role' }))
+    const pending = deferred<{ id: number }>()
+    const submit = vi.fn(() => pending.promise)
+    const exposed = ref<Record<string, unknown> | null>(null)
+    const Host = defineComponent({
+      setup: () => () => h(FormView, {
+        form: {
+          schema: z.object({ name: z.string() }),
+          fields: { name: { renderer: 'text' } },
+          load,
+          submit,
+        },
+        successMessage: false,
+        ref: (value: unknown) => { exposed.value = value as Record<string, unknown> | null },
+      }),
+    })
+    const view = mountCore(Host, {})
+    await flush()
+
+    expect(load).toHaveBeenCalledOnce()
+    expect(exposed.value?.draft).toEqual({ name: 'Loaded role' })
+    expect(exposed.value?.dirty).toBe(false)
+    expect(exposed.value?.submitting).toBe(false)
+    expect(exposed.value?.validating).toBe(false)
+    expect(exposed.value?.inputPending).toBe(false)
+
+    const input = view.find<HTMLInputElement>('input')!
+    input.value = 'Updated role'
+    input.dispatchEvent(new Event('input'))
+    await flush()
+    expect(exposed.value?.draft).toEqual({ name: 'Updated role' })
+    expect(exposed.value?.dirty).toBe(true)
+
+    const validate = exposed.value?.validate as (() => Promise<{ success: boolean; data?: unknown }>) | undefined
+    const formSubmit = exposed.value?.submit as (() => Promise<void>) | undefined
+    const reset = exposed.value?.reset as (() => void) | undefined
+    const refresh = exposed.value?.refresh as (() => Promise<void>) | undefined
+    expect(validate).toBeTypeOf('function')
+    expect(formSubmit).toBeTypeOf('function')
+    expect(reset).toBeTypeOf('function')
+    expect(refresh).toBeTypeOf('function')
+    expect(await validate?.()).toEqual({ success: true, data: { name: 'Updated role' } })
+
+    const submitting = formSubmit!()
+    await flush()
+    expect(exposed.value?.submitting).toBe(true)
+    expect(exposed.value?.submitPending).toBe(true)
+    pending.resolve({ id: 1 })
+    await submitting
+    expect(submit.mock.calls[0]?.[0]).toEqual({ name: 'Updated role' })
+    expect(exposed.value?.submitting).toBe(false)
+
+    reset!()
+    await flush()
+    expect(exposed.value?.draft).toEqual({ name: 'Loaded role' })
+    expect(exposed.value?.dirty).toBe(false)
+    await refresh!()
+    expect(load).toHaveBeenCalledTimes(2)
+    view.unmount()
+  })
+
+  it('runs the same chrome for create-like and update-like props, with no mode anywhere', async () => {
+    const createSubmit = vi.fn(async () => undefined)
+    const create = mountCore(FormView, { title: 'Create Role', form: formProps(createSubmit) })
+    await flush()
+    create.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+
+    const updateSubmit = vi.fn(async () => undefined)
+    const update = mountCore(FormView, {
+      title: 'Edit Role',
+      form: { ...formProps(updateSubmit), load: async () => ({ name: 'Editor' }) },
+    })
+    await flush()
+    update.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+
+    expect(createSubmit.mock.calls[0]?.[0]).toEqual({ name: 'Admin' })
+    expect(updateSubmit.mock.calls[0]?.[0]).toEqual({ name: 'Editor' })
+    expect(create.find('h1')?.textContent).toBe('Create Role')
+    expect(update.find('h1')?.textContent).toBe('Edit Role')
+    create.unmount()
+    update.unmount()
+  })
+
+  it('uses DetailView-style navigation and body cards', async () => {
+    const view = mountCore(FormView, {
+      title: 'Create Role',
+      description: 'Set user access.',
+      form: formProps(async () => undefined),
+    })
+    await flush()
+
+    const cards = view.all('.is-form-view > div')
+    expect(cards).toHaveLength(2)
+    expect(cards.every((card) => card.classList.contains('bg-surface-container'))).toBe(true)
+    expect(cards.every((card) => card.classList.contains('border-outline-variant'))).toBe(true)
+    expect(view.find('h1')?.classList.contains('text-lg')).toBe(true)
+    expect(view.text()).toContain('Set user access.')
+    expect(cards[1].contains(view.find('form')!)).toBe(true)
+    expect(view.find<HTMLButtonElement>('button[aria-label="Back"]')).not.toBeNull()
+    view.unmount()
+  })
+
+  it('renders page action slots without generic fallbacks', async () => {
+    const view = mountCore(FormView, { form: formProps(async () => undefined) }, {
+      slots: {
+        controls: () => h('button', { 'data-controls-slot': '' }, 'Bantuan'),
+        footer: () => h('button', { 'data-footer-slot': '' }, 'Kembali'),
+      },
+    })
+    await flush()
+
+    expect(view.find('[data-controls-slot]')).not.toBeNull()
+    expect(view.find('header [data-controls-slot]')).not.toBeNull()
+    expect(view.find('[data-footer-slot]')).not.toBeNull()
+    view.unmount()
+  })
+
+  it('renders submit and cancel chrome and re-emits form events', async () => {
+    const onSubmitted = vi.fn()
+    const view = mountCore(FormView, {
+      form: { ...formProps(async () => ({ id: 1 })), submitLabel: 'Kirim' },
+      onSubmitted,
+    })
+    await flush()
+
+    expect(view.text()).toContain('Kirim')
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+
+    expect(onSubmitted).toHaveBeenCalledWith({ id: 1 })
+    view.unmount()
+  })
+
+  it('keeps the post-write warning and disables the default save action', async () => {
+    const submit = vi.fn(async () => {
+      throw Object.assign(new Error('The write may have completed.'), { postWrite: true })
+    })
+    const view = mountCore(FormView, { form: formProps(submit) })
+    await flush()
+
+    view.find<HTMLButtonElement>('.is-form-view-controls button[type="submit"]')?.click()
+    const exposedSubmit = view.exposed().submit
+    if (typeof exposedSubmit !== 'function') throw new Error('FormView does not expose submit().')
+    await exposedSubmit()
+    await flush()
+
+    expect(view.exposed().postWriteError).toMatchObject({ postWrite: true })
+    expect(view.find<HTMLButtonElement>('.is-form-view-controls button[type="submit"]')?.disabled).toBe(true)
+    expect(view.find<HTMLButtonElement>('.is-form-view-controls button[type="button"]')?.disabled).toBe(false)
+    expect(view.find('[role="alert"]')?.textContent).toContain('Check the record before starting another save.')
+    expect(submit).toHaveBeenCalledOnce()
+  })
+
+  it('uses nested submit labels while submitting', async () => {
+    const pending = deferred<{ id: number }>()
+    const view = mountCore(FormView, {
+      form: { ...formProps(async () => pending.promise), submitLabel: 'Save role', submittingLabel: 'Saving role' },
+    })
+    await flush()
+
+    const actions = view.find('.is-form-view-controls')!
+    const cancel = actions.querySelector<HTMLButtonElement>('button[type="button"]')!
+    const submit = actions.querySelector<HTMLButtonElement>('button[type="submit"]')!
+    expect(actions.classList.contains('border-t')).toBe(true)
+    expect(actions.classList.contains('sm:flex-row')).toBe(true)
+    expect(cancel.classList.contains('bg-transparent')).toBe(true)
+    expect(submit.classList.contains('bg-primary')).toBe(true)
+    expect(cancel.classList.contains('w-full')).toBe(true)
+    expect(submit.textContent).toBe('Save role')
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(submit.textContent).toBe('Saving role')
+    expect(cancel.disabled).toBe(true)
+    expect(submit.disabled).toBe(true)
+    pending.resolve({ id: 1 })
+    await flush()
+    view.unmount()
+  })
+
+  it('disables FormView submit while an input operation is pending and keeps cancel enabled', async () => {
+    const first = deferred<{ kind: 'file'; id: string; url: string; name: string }>()
+    const upload = () => first.promise
+    const view = mountCore(FormView, {
+      form: {
+        schema: z.object({ files: z.array(z.object({ kind: z.literal('file'), id: z.string(), url: z.string(), name: z.string() })) }),
+        fields: { files: { label: 'Files', renderer: 'file', props: { multi: true } } },
+        initialData: { files: [] },
+        submit: async () => undefined,
+      },
+    }, { adapters: { assets: { ...testAssetAdapter, upload: upload as AssetAdapter['upload'] } } })
+    await flush()
+
+    const input = view.find<HTMLInputElement>('input[type="file"]')!
+    Object.defineProperty(input, 'files', { configurable: true, value: [new File(['first'], 'first.pdf', { type: 'application/pdf' })] })
+    input.dispatchEvent(new Event('change'))
+    await flush()
+
+    const actions = view.find('.is-form-view-controls')!
+    const submit = actions.querySelector<HTMLButtonElement>('button[type="submit"]')!
+    const cancel = [...actions.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Cancel')!
+    expect(submit.disabled).toBe(true)
+    expect(cancel.disabled).toBe(false)
+
+    first.resolve({ kind: 'file', id: '/uploads/first.pdf', url: 'https://files.test/first.pdf', name: 'first.pdf' })
+    await flush()
+    expect(submit.disabled).toBe(false)
+    expect(cancel.disabled).toBe(false)
+    view.unmount()
+  })
+
+  it('uses browser history through Cancel without resetting the draft', async () => {
+    const view = mountCore(FormView, { form: formProps(async () => undefined) })
+    await flush()
+
+    const input = view.find<HTMLInputElement>('input')!
+    input.value = 'Diubah'
+    input.dispatchEvent(new Event('input'))
+    await flush()
+
+    const back = vi.spyOn(view.router, 'back')
+    view.all<HTMLButtonElement>('button').find((button) => button.textContent === 'Cancel')!.click()
+    await flush()
+
+    expect(view.find<HTMLInputElement>('input')!.value).toBe('Diubah')
+    expect(back).toHaveBeenCalledOnce()
+    view.unmount()
+  })
+
+  it('lets body and header slots replace their defaults', async () => {
+    const view = mountCore(FormView, { title: 'Create Role', form: formProps(async () => undefined) }, {
+      slots: {
+        header: () => h('h2', { 'data-header-slot': '' }, 'Header khusus'),
+        body: () => h('p', { 'data-body-slot': '' }, 'Badan khusus'),
+      },
+    })
+    await flush()
+
+    expect(view.find('[data-header-slot]')).not.toBeNull()
+    expect(view.find('[data-body-slot]')).not.toBeNull()
+    expect(view.find('h1')).toBeNull()
+    expect(view.find('form')).toBeNull()
+    view.unmount()
+  })
+
+  it('forwards the Form actions scope through the standard actions slot', async () => {
+    const pending = deferred<{ id: number }>()
+    const scopes: Array<Record<string, unknown>> = []
+    const view = mountCore(FormView, { form: formProps(async () => pending.promise) }, {
+      slots: {
+        actions: (scope) => {
+          scopes.push(scope)
+          return h('button', { type: 'submit', 'data-form-actions-slot': '' }, 'Save custom')
+        },
+      },
+    })
+    await flush()
+
+    const initialScope = scopes.at(-1)!
+    expect(initialScope).toEqual(expect.objectContaining({
+      submit: expect.any(Function),
+      reset: expect.any(Function),
+      submitting: false,
+      submitPending: false,
+      validating: false,
+      dirty: false,
+      inputPending: false,
+    }))
+    expect(view.find('[data-form-actions-slot]')).not.toBeNull()
+    expect(view.find('.is-form-view-controls')).toBeNull()
+
+    view.find<HTMLButtonElement>('[data-form-actions-slot]')!.click()
+    await flush()
+    expect(scopes.at(-1)).toEqual(expect.objectContaining({ submitting: true, submitPending: true }))
+    pending.resolve({ id: 1 })
+    await flush()
+    view.unmount()
+  })
+
+  function actionForm(options: {
+    detail?: (id: string) => string
+    list?: string
+    afterSubmit?: (context: { navigate: (to: string) => Promise<void>; preventDefaultNavigation: () => void }) => Promise<void | string> | void | string
+    submit?: () => Promise<{ id: string; name: string }>
+  } = {}) {
+    return {
+      form: {
+        schema: z.object({ name: z.string() }),
+        fields: { name: { label: 'Nama', renderer: 'text' } },
+        initialData: { name: 'Admin' },
+        submit: options.submit ?? (async () => ({ id: '1', name: 'Admin' })),
+      },
+      defaultTo: options.detail ? (result: { id: string }) => options.detail!(result.id) : options.list,
+      afterSubmit: options.afterSubmit,
+    }
+  }
+
+  async function mountRoutedFormView() {
+    const host = document.createElement('div')
+    document.body.append(host)
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/form',
+          name: 'form',
+          component: FormView,
+          props: {
+            title: 'Edit Role',
+            form: formProps(async () => undefined),
+          },
+        },
+        { path: '/other', name: 'other', component: defineComponent({ setup: () => () => h('p', 'Other page') }) },
+      ],
+    })
+    const app = createApp(defineComponent({ setup: () => () => h(RouterView) }))
+    app.use(router)
+    app.use(FrameworkPlugin )
+    await router.push({ name: 'form' })
+    await router.isReady()
+    app.mount(host)
+    await flush()
+
+    return { host, router, unmount: () => { app.unmount(); host.remove() } }
+  }
+
+  it('guards dirty route exits, preserves drafts when staying, and registers native unload protection', async () => {
+    const view = await mountRoutedFormView()
+    const input = view.host.querySelector<HTMLInputElement>('input')!
+    const cleanUnload = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(cleanUnload)
+    expect(cleanUnload.defaultPrevented).toBe(false)
+
+    input.value = 'Editor'
+    input.dispatchEvent(new Event('input'))
+    await flush()
+
+    const dirtyUnload = new Event('beforeunload', { cancelable: true })
+    window.dispatchEvent(dirtyUnload)
+    expect(dirtyUnload.defaultPrevented).toBe(true)
+
+    const navigation = view.router.push({ name: 'other' })
+    await flush()
+    expect(document.body.textContent).toContain('Discard unsaved changes?')
+    ;[...document.body.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Stay')!.click()
+    await navigation
+    await flush()
+    expect(view.router.currentRoute.value.name).toBe('form')
+    expect(view.host.querySelector<HTMLInputElement>('input')!.value).toBe('Editor')
+
+    const discardNavigation = view.router.push({ name: 'other' })
+    await flush()
+    ;[...document.body.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent === 'Discard changes')!.click()
+    await discardNavigation
+    expect(view.router.currentRoute.value.name).toBe('other')
+    view.unmount()
+  })
+
+  it('derives detail navigation, then list fallback, and stays without either target', async () => {
+    const detail = mountCore(FormView, { ...actionForm({ detail: (id) => `/records/${id}`, list: '/records' }) })
+    const detailReplace = vi.spyOn(detail.router, 'replace')
+    detail.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(detailReplace).toHaveBeenCalledWith('/records/1')
+    detail.unmount()
+
+    const list = mountCore(FormView, { ...actionForm({ list: '/records' }) })
+    const listReplace = vi.spyOn(list.router, 'replace')
+    list.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(listReplace).toHaveBeenCalledWith('/records')
+    list.unmount()
+
+    const stay = mountCore(FormView, { ...actionForm() })
+    const stayReplace = vi.spyOn(stay.router, 'replace')
+    stay.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(stayReplace).not.toHaveBeenCalled()
+    stay.unmount()
+  })
+
+  it('runs effects before default navigation and only controller calls suppress it', async () => {
+    const order: string[] = []
+    const effect = mountCore(FormView, {
+      ...actionForm({
+        detail: () => '/default',
+        afterSubmit: async () => { order.push('effect') },
+      }),
+    })
+    const effectReplace = vi.spyOn(effect.router, 'replace')
+    effect.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(order).toEqual(['effect'])
+    expect(effectReplace).toHaveBeenCalledWith('/default')
+    effect.unmount()
+
+    const ignoredReturn = mountCore(FormView, {
+      ...actionForm({ detail: () => '/default', afterSubmit: () => '/ignored' }),
+    })
+    const ignoredReplace = vi.spyOn(ignoredReturn.router, 'replace')
+    ignoredReturn.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(ignoredReplace).toHaveBeenCalledWith('/default')
+    ignoredReturn.unmount()
+
+    const controlled = mountCore(FormView, {
+      ...actionForm({ detail: () => '/default', afterSubmit: async ({ navigate }) => navigate('/custom') }),
+    })
+    const controlledReplace = vi.spyOn(controlled.router, 'replace')
+    controlled.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(controlledReplace).toHaveBeenCalledTimes(1)
+    expect(controlledReplace).toHaveBeenCalledWith('/custom')
+    controlled.unmount()
+
+    const prevented = mountCore(FormView, {
+      ...actionForm({ detail: () => '/default', afterSubmit: ({ preventDefaultNavigation }) => preventDefaultNavigation() }),
+    })
+    const preventedReplace = vi.spyOn(prevented.router, 'replace')
+    prevented.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(preventedReplace).not.toHaveBeenCalled()
+    prevented.unmount()
+  })
+
+  it('keeps persisted form mounted when follow-up effect fails', async () => {
+    const view = mountCore(FormView, {
+      ...actionForm({ detail: () => '/default', afterSubmit: async () => { throw new Error('follow-up') } }),
+    })
+    const replace = vi.spyOn(view.router, 'replace')
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+
+    expect(view.find('form')).not.toBeNull()
+    expect(replace).not.toHaveBeenCalled()
+    view.unmount()
+  })
+
+  it('keeps a successful submit when destination resolution fails', async () => {
+    const submitted = vi.fn()
+    const view = mountCore(FormView, {
+      form: formProps(async () => ({ id: '1' })),
+      defaultTo: () => { throw new Error('destination') },
+      onSubmitted: submitted,
+    })
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+
+    expect(submitted).toHaveBeenCalledOnce()
+    expect(view.find('form')).not.toBeNull()
+    expect(view.text()).not.toContain('The form could not be submitted.')
+    view.unmount()
+  })
+})
+
+describe('shell boundaries', () => {
+  it('keeps one heading per shell for a predictable document outline', async () => {
+    const view = mountCore(ListView, { title: 'Role', table: tableProps })
+    await flush()
+
+    expect(view.all('h1')).toHaveLength(1)
+    view.unmount()
+  })
+})
+
+describe('ListView row delete control', () => {
+  const baseProps = {
+    table: {
+      schema: z.object({ id: z.string(), name: z.string() }),
+      columns: { name: { label: 'Name', read: (record: { id: string; name: string }) => record.name } },
+      namespace: 'delete-slot',
+    },
+  }
+
+  function mountRows(slots: Record<string, unknown>, extra: Record<string, unknown> = {}) {
+    return mountCore(
+      ListView,
+      {
+        ...baseProps,
+        table: { ...baseProps.table, load: () => ({ data: [{ id: '1', name: 'Admin' }], meta: { total: 1, totalPage: 1 } }) },
+        can: (operation: string, record?: Record<string, unknown>) =>
+          operation === 'delete' && record?.id === '1',
+        ...(typeof extra.deleteRecord === 'function' && !('recordIdentity' in extra)
+          ? { recordIdentity: (record: Record<string, unknown>) => String(record.id) }
+          : {}),
+        ...extra,
+      },
+      { slots },
+    )
+  }
+
+  it('renders the native delete only when a delete action is runnable and permitted', async () => {
+    const view = mountRows({}, { deleteRecord: async () => undefined })
+    await flush()
+    expect(view.find('button[aria-label="Delete"]')).not.toBeNull()
+    view.unmount()
+  })
+
+  it('requires a record identity at runtime when delete is configured', () => {
+    const errors: Array<{ error: unknown; info: string }> = []
+    const host = document.createElement('div')
+    const app = createApp(
+      defineComponent({
+        setup: () => () =>
+          h(ListView, {
+            table: { ...baseProps.table, load: () => ({ data: [{ id: '1', name: 'Admin' }] }) },
+            deleteRecord: async () => undefined,
+          }),
+      })
+    )
+    app.config.errorHandler = (error, _instance, info) => {
+      errors.push({ error, info })
+    }
+    app.use(
+      createRouter({
+        history: createMemoryHistory(),
+        routes: [{ path: '/:pathMatch(.*)*', name: 'test-route', component: { render: () => null } }],
+      })
+    )
+    app.use(FrameworkPlugin, { adapters: { assets: testAssetAdapter } })
+    let mounted = false
+    try {
+      app.mount(host)
+      mounted = true
+      const identityErrors = errors.filter(({ error, info }) =>
+        info === 'watcher getter'
+        && error instanceof Error
+        && error.message === '[loom][SURFACE_OPTION_INVALID] ListView deleteRecord requires recordIdentity.'
+      )
+      expect(identityErrors).toHaveLength(1)
+    } finally {
+      if (mounted) app.unmount()
+      host.remove()
+      resetResourceRuntimeForTests()
+    }
+  })
+  it('keeps a post-write warning and blocks the default delete after dialog reopen', async () => {
+    const serverDelete = vi.fn(async () => undefined)
+    const invalidate = vi.fn(async () => {
+      throw new Error('Refresh failed after deletion.')
+    })
+    const deleteRecord = async (record: { id: string }) => {
+      await serverDelete(record.id)
+      try {
+        await invalidate(record.id)
+      } catch {
+        throw Object.assign(new Error('Refresh failed after deletion.'), { postWrite: true, retryable: false })
+      }
+    }
+    const view = mountRows({}, { deleteRecord })
+    const dialog = () => document.body.querySelector<HTMLElement>('[role="dialog"]')
+    const button = (label: string) => [...(dialog()?.querySelectorAll<HTMLButtonElement>('button') ?? [])]
+      .find((item) => item.textContent?.trim() === label)
+
+    await flush()
+    view.find<HTMLButtonElement>('button[aria-label="Delete"]')?.click()
+    await flush()
+    button('Delete')?.click()
+    await flush()
+
+    expect(serverDelete).toHaveBeenCalledOnce()
+    expect(invalidate).toHaveBeenCalledOnce()
+    expect(view.text()).toContain('The delete may have completed. Check the record before trying again.')
+    expect(view.text()).toContain('Refresh failed after deletion.')
+    expect(button('Delete')?.disabled).toBe(true)
+
+    button('Cancel')?.click()
+    await flush()
+    expect(dialog()).toBeNull()
+    view.find<HTMLButtonElement>('button[aria-label="Delete"]')?.click()
+    await flush()
+
+    expect(dialog()).not.toBeNull()
+    expect(button('Delete')?.disabled).toBe(true)
+    button('Delete')?.click()
+    await flush()
+    expect(serverDelete).toHaveBeenCalledOnce()
+    view.unmount()
+  })
+
+  it('renders nothing when the capability exists but no delete action backs it', async () => {
+    const view = mountRows({})
+    await flush()
+    expect(view.text()).not.toContain('Delete')
+    expect(view.find('button[aria-label="Delete"]')).toBeNull()
+    view.unmount()
+  })
+
+  it('lets a #delete slot replace the native control', async () => {
+    const view = mountRows(
+      { 'row-actions-delete': ({ record }: { record: { id: string } }) => h('span', { class: 'custom-delete' }, `custom-${record.id}`) },
+      { deleteRecord: async () => undefined },
+    )
+    await flush()
+    expect(view.find('.custom-delete')).not.toBeNull()
+    expect(view.find('button[aria-label="Delete"]')).toBeNull()
+    view.unmount()
+  })
+
+  it('guards a custom row action that ignores its delete state', async () => {
+    type RowDeleteProps = {
+      record: Record<string, unknown>
+      deleteRecord?: (record: Record<string, unknown>) => Promise<unknown>
+      deleteState: { disabled: boolean; pending: boolean; error?: { message: string; postWrite?: boolean } }
+    }
+    let rowAction: RowDeleteProps | undefined
+    const deleteRecord = vi.fn(async () => {
+      throw Object.assign(new Error('Refresh failed after deletion.'), { postWrite: true, retryable: false })
+    })
+    const view = mountRows({
+      'row-actions-delete': (props) => {
+        rowAction = props as RowDeleteProps
+        return h('button', {
+          class: 'custom-delete',
+          onClick: () => {
+            const action = rowAction
+            if (action?.deleteRecord) void action.deleteRecord(action.record).catch(() => undefined)
+          },
+        }, 'Delete')
+      },
+    }, { deleteRecord })
+    await flush()
+
+    view.find<HTMLButtonElement>('.custom-delete')?.click()
+    await flush()
+    expect(rowAction?.deleteState).toMatchObject({
+      disabled: true,
+      pending: false,
+      error: { message: 'Refresh failed after deletion.', postWrite: true },
+    })
+
+    view.find<HTMLButtonElement>('.custom-delete')?.click()
+    await flush()
+    expect(deleteRecord).toHaveBeenCalledOnce()
+    view.unmount()
+  })
+
+  it('hides custom delete content too when permission is missing', async () => {
+    const view = mountCore(
+      ListView,
+      {
+        ...baseProps,
+        table: { ...baseProps.table, load: () => ({ data: [{ id: '2', name: 'Other' }], meta: { total: 1, totalPage: 1 } }) },
+        can: (operation: string, record?: Record<string, unknown>) =>
+          operation === 'delete' && record?.id === '1',
+        deleteRecord: async () => undefined,
+        recordIdentity: (record: Record<string, unknown>) => String(record.id),
+      },
+      {
+        slots: {
+          'row-actions-delete': () => h('span', { class: 'custom-delete' }, 'should-not-render'),
+        },
+      },
+    )
+    await flush()
+    expect(view.find('.custom-delete')).toBeNull()
+    expect(view.text()).not.toContain('should-not-render')
+    view.unmount()
+  })
+})
+
+describe('ListView standard action overrides', () => {
+  const baseProps = {
+    table: {
+      schema: z.object({ id: z.string(), name: z.string() }),
+      columns: { name: { label: 'Name', read: (record: { id: string; name: string }) => record.name } },
+      namespace: 'action-overrides',
+    },
+  }
+
+  function mountWith(slots: Record<string, unknown>, overrides: Record<string, unknown> = {}) {
+    return mountCore(
+      ListView,
+      {
+        ...baseProps,
+        table: { ...baseProps.table, load: () => ({ data: [{ id: '1', name: 'Admin' }], meta: { total: 1, totalPage: 1 } }) },
+        createRoute: { name: 'test-route' },
+        detailRoute: (record: Record<string, unknown>) => `/records/${String(record.id)}`,
+        updateRoute: (record: Record<string, unknown>) => `/records/${String(record.id)}/edit`,
+        can: (operation: string, record?: Record<string, unknown>) =>
+          operation === 'delete' ? record?.id === '1' : ['create', 'detail', 'update'].includes(operation),
+        deleteRecord: async () => undefined,
+        recordIdentity: (record: Record<string, unknown>) => String(record.id),
+        ...overrides,
+      },
+      { slots },
+    )
+  }
+
+  it('renders native controls when no overrides are given', async () => {
+    const view = mountWith({})
+    await flush()
+    expect(view.find('a[aria-label="View"]')).not.toBeNull()
+    expect(view.find('a[aria-label="Edit"]')).not.toBeNull()
+    expect(view.find('button[aria-label="Delete"]')).not.toBeNull()
+    expect(view.text()).toContain('Create')
+    view.unmount()
+  })
+
+  it('replaces view, edit and delete with slot content while natives stay hidden', async () => {
+    let viewCan: unknown
+    const view = mountWith({
+      'row-actions-view': (props: { can?: unknown }) => { viewCan = props.can; return h('span', { class: 'ov-view' }, 'V') },
+      'row-actions-edit': () => h('span', { class: 'ov-edit' }, 'E'),
+      'row-actions-delete': () => h('span', { class: 'ov-del' }, 'D'),
+    })
+    await flush()
+    expect(typeof viewCan).toBe('function')
+    expect( (viewCan as (operation: string, record?: Record<string, unknown>) => boolean)('delete', { id: '1' })).toBe(true)
+    expect(view.find('.ov-view')).not.toBeNull()
+    expect(view.find('.ov-edit')).not.toBeNull()
+    expect(view.find('.ov-del')).not.toBeNull()
+    expect(view.find('a[aria-label="View"]')).toBeNull()
+    expect(view.find('a[aria-label="Edit"]')).toBeNull()
+    expect(view.find('button[aria-label="Delete"]')).toBeNull()
+    view.unmount()
+  })
+
+  it('does not render view or edit replacements when their record access is denied', async () => {
+    const view = mountWith({
+      'row-actions-view': () => h('span', { class: 'ov-view' }, 'V'),
+      'row-actions-edit': () => h('span', { class: 'ov-edit' }, 'E'),
+      'row-actions-delete': () => h('span', { class: 'ov-del' }, 'D'),
+    }, {
+      can: (operation: string, record?: Record<string, unknown>) =>
+        operation === 'create' || (operation === 'delete' && record?.id === '1'),
+    })
+    await flush()
+    expect(view.find('.ov-view')).toBeNull()
+    expect(view.find('.ov-edit')).toBeNull()
+    expect(view.find('.ov-del')).not.toBeNull()
+    expect(view.find('a[aria-label="View"]')).toBeNull()
+    expect(view.find('a[aria-label="Edit"]')).toBeNull()
+    view.unmount()
+  })
+
+  it('replaces the toolbar Create button via #create-action', async () => {
+    let createCan: unknown
+    const view = mountWith({
+      'create-action': (props: { target: unknown; can?: unknown }) => {
+        createCan = props.can
+        return h('span', { class: 'ov-create' }, JSON.stringify(props.target))
+      },
+    })
+    await flush()
+    expect(view.find('.ov-create')?.textContent).toContain('test-route')
+    expect(typeof createCan).toBe('function')
+    expect((createCan as (operation: string) => boolean)('create')).toBe(true)
+    expect(view.text()).not.toContain('Create')
+    view.unmount()
+  })
+
+  it('hides a denied Create replacement while keeping resource actions available', async () => {
+    const createAction = vi.fn(() => h('span', { class: 'ov-create' }, 'should-not-render'))
+    const view = mountCore(
+      ListView,
+      {
+        ...baseProps,
+        table: { ...baseProps.table, load: () => ({ data: [{ id: '1', name: 'Admin' }], meta: { totalPage: 1 } }) },
+        createRoute: { name: 'test-route' },
+        can: () => false,
+      },
+      {
+        slots: {
+          'create-action': createAction,
+          'resource-action': () => h('span', { class: 'ov-resource' }, 'Independent action'),
+        },
+      },
+    )
+    await flush()
+    expect(view.find('.ov-create')).toBeNull()
+    expect(view.text()).not.toContain('should-not-render')
+    expect(view.find('.ov-resource')).not.toBeNull()
+    expect(createAction).not.toHaveBeenCalled()
+    view.unmount()
+  })
+
+  it('does not render the default Create control when create access is denied', async () => {
+    const view = mountWith({}, { can: () => false })
+    await flush()
+    expect(view.find('a[href="/"]')).toBeNull()
+    expect(view.text()).not.toContain('Create')
+    view.unmount()
+  })
+
+  it('updates Create visibility when permission changes', async () => {
+    const canCreate = ref(false)
+    const createAction = vi.fn(() => h('span', { class: 'ov-create' }, 'New sale'))
+    const Host = defineComponent({
+      setup(_, { slots }) {
+        return () => h(ListView, {
+          ...baseProps,
+          table: { ...baseProps.table, data: [] },
+          createRoute: { name: 'test-route' },
+          can: (operation: string) => operation !== 'create' || canCreate.value,
+        }, slots)
+      },
+    })
+    const view = mountCore(Host, {}, {
+      slots: { 'create-action': createAction },
+    })
+    await flush()
+    expect(view.find('.ov-create')).toBeNull()
+    expect(createAction).not.toHaveBeenCalled()
+    canCreate.value = true
+    await flush()
+    expect(view.find('.ov-create')?.textContent).toBe('New sale')
+    expect(createAction).toHaveBeenCalled()
+    createAction.mockClear()
+    canCreate.value = false
+    await flush()
+    expect(view.find('.ov-create')).toBeNull()
+    expect(createAction).not.toHaveBeenCalled()
+    view.unmount()
+  })
+
+  it('uses action labels for the standard controls and keeps their route targets', async () => {
+    const view = mountWith({}, {
+      actionLabels: {
+        create: 'New Sale',
+        view: 'Open Sale',
+        edit: 'Change Sale',
+        delete: 'Remove Sale',
+      },
+    })
+    await flush()
+
+    const createLink = view.find<HTMLAnchorElement>('a[href="/"]')
+    const viewLink = view.find<HTMLAnchorElement>('a[aria-label="Open Sale"]')
+    const editLink = view.find<HTMLAnchorElement>('a[aria-label="Change Sale"]')
+    expect(createLink?.textContent).toContain('New Sale')
+    expect(viewLink?.getAttribute('href')).toBe('/records/1')
+    expect(editLink?.getAttribute('href')).toBe('/records/1/edit')
+    expect(view.find('button[aria-label="Remove Sale"]')).not.toBeNull()
+    view.unmount()
+  })
+})
+
+type DeleteOutcomeRow = { tenant: string; id: string; name: string; reversed: boolean }
+
+function deleteOutcomeIdentity(record: DeleteOutcomeRow): RecordIdentity {
+  return record.reversed ? { id: record.id, tenant: record.tenant } : { tenant: record.tenant, id: record.id }
+}
+
+function mountDeleteOutcomeList(initialRows: DeleteOutcomeRow[], deleteRecord: (record: DeleteOutcomeRow) => Promise<unknown>) {
+  const rows = ref(initialRows)
+  const namespace = ref('delete-query-one')
+  const query = ref<QueryValues>({ page: 1, limit: 10 })
+  const resourceOwner = ref('delete-outcome-resource')
+  let currentActions: ListViewSlotActions<DeleteOutcomeRow> | undefined
+  let refreshRows: (() => Promise<void>) | undefined
+  const Host = defineComponent({
+    setup: () => () => h(ListView, {
+      table: {
+        schema: z.object({ tenant: z.string(), id: z.string(), name: z.string(), reversed: z.boolean() }),
+        columns: { name: { read: (record: DeleteOutcomeRow) => record.name } },
+        resource: resourceOwner.value,
+        namespace: namespace.value,
+        query: query.value,
+        load: async () => ({ data: rows.value }),
+      },
+      can: () => true,
+      deleteRecord,
+      recordIdentity: deleteOutcomeIdentity,
+    }, {
+      collection: (state: CollectionSlotProps<DeleteOutcomeRow> & { actions?: ListViewSlotActions<DeleteOutcomeRow> }) => {
+        currentActions = state.actions
+        refreshRows = state.refresh
+        return h('div', state.records.map((record) => h('span', { key: `${record.tenant}-${record.id}` }, record.name)))
+      },
+    }),
+  })
+  return {
+    view: mountCore(Host, {}),
+    rows,
+    namespace,
+    query,
+    resourceOwner,
+    actions: () => {
+      if (!currentActions) throw new Error('The collection slot has not received delete actions.')
+      return currentActions
+    },
+    refresh: () => {
+      if (!refreshRows) throw new Error('The collection slot has not received refresh().')
+      return refreshRows()
+    },
+  }
+}
+
+function mountBoundDeleteList(load: (context: { signal: AbortSignal }) => Promise<{ data: DeleteOutcomeRow[] }>, options: { collection?: boolean; run?: (id: string) => Promise<unknown> } = {}) {
+  const rowSchema = z.object({ tenant: z.string(), id: z.string(), name: z.string(), reversed: z.boolean() })
+  const run = vi.fn(options.run ?? (async () => undefined))
+  const createBoundResource = (key: string) => defineResource({
+    key,
+    identity: deleteOutcomeIdentity,
+    list: { permission: null, table: { schema: rowSchema, columns: { name: {} }, load } },
+    delete: { permission: null, run },
+  })
+  const resource = createBoundResource('bound-delete-recovery')
+  const replacementResource = createBoundResource('replacement-delete-recovery')
+  const resources = new Map([
+    [resource.key, { list: resource.list!() }],
+    [replacementResource.key, { list: replacementResource.list!() }],
+  ])
+  const resourceOwner = ref(resource.key)
+  let actions: ListViewSlotActions<DeleteOutcomeRow> | undefined
+  let queryClient: ReturnType<typeof useFrameworkQueryClient> | undefined
+  const Host = defineComponent({
+    setup(_, { expose }) {
+      queryClient = useFrameworkQueryClient()
+      expose({
+        setResource: (value: string) => {
+          resourceOwner.value = value
+        },
+      })
+      return () => {
+        const props = resources.get(resourceOwner.value)?.list
+        if (!props) throw new Error(`No bound list resource exists for "${resourceOwner.value}".`)
+        const slots = {
+          collection: (state: CollectionSlotProps<DeleteOutcomeRow> & { actions?: ListViewSlotActions<DeleteOutcomeRow> }) => {
+            actions = state.actions
+            return h(
+              'div',
+              state.records.map((record) => h('span', { key: record.id }, record.name))
+            )
+          },
+        }
+        return options.collection === false ? h(ListView as Component, props) : h(ListView as Component, props, slots)
+      }
+    },
+  })
+  const view = mountCore(Host, {})
+  if (!queryClient) throw new Error('The mounted resource query client was not captured.')
+  const mountedQueryClient = queryClient
+  let active = true
+  const unmount = () => {
+    if (!active) return
+    active = false
+    view.unmount()
+    mountedQueryClient.clear()
+    resetResourceRuntimeForTests()
+  }
+  boundDeleteListCleanup.add(unmount)
+  return {
+    view,
+    run,
+    actions: () => {
+      if (!actions) throw new Error('The resource collection slot has no delete actions.')
+      return actions
+    },
+    queryClient: () => mountedQueryClient,
+    unmount,
+    setResource: (value: string) => {
+      const method = view.exposed().setResource
+      if (typeof method !== 'function') throw new Error('The resource setter was not exposed.')
+      method(value)
+    },
+  }
+}
+
+describe('ListView delete outcomes', () => {
+  afterEach(() => {
+    for (const cleanup of boundDeleteListCleanup) cleanup()
+    boundDeleteListCleanup.clear()
+    vi.restoreAllMocks()
+  })
+
+  it('keeps a confirmed delete blocked through failed and canceled recovery, then clears it once', async () => {
+    const row: DeleteOutcomeRow = { tenant: 'north', id: '1', name: 'First', reversed: false }
+    const other: DeleteOutcomeRow = { tenant: 'north', id: '2', name: 'Second', reversed: false }
+    let reads = 0
+    let mode: 'post-write' | 'recovery-failure' | 'pending' | 'success' = 'post-write'
+    let pendingRead = deferred<{ data: DeleteOutcomeRow[] }>()
+    const load = vi.fn(async () => {
+      reads += 1
+      if (reads === 1) return { data: [row] }
+      if (mode === 'post-write' || mode === 'recovery-failure') throw new Error('The list read failed.')
+      if (mode === 'pending') return pendingRead.promise
+      return { data: [row, other] }
+    })
+    const toastWarning = vi.spyOn(toast, 'warning').mockImplementation(() => '')
+    const toastError = vi.spyOn(toast, 'error').mockImplementation(() => '')
+    const mounted = mountBoundDeleteList(load)
+
+    try {
+      await vi.waitFor(() => {
+        expect(load).toHaveBeenCalledOnce()
+        expect(mounted.view.text()).toContain('First')
+      })
+      await expect(mounted.actions().deleteRecord!(row)).rejects.toMatchObject({ writeOutcome: 'confirmed' })
+      await vi.waitFor(() => expect(reads).toBe(2))
+      expect(mounted.run).toHaveBeenCalledOnce()
+      expect(mounted.actions().deleteState(row)).toMatchObject({ disabled: true, error: { writeOutcome: 'confirmed' } })
+      expect(mounted.actions().deleteState(other).disabled).toBe(false)
+      expect(mounted.view.text()).toContain('First')
+      expect(toastError).not.toHaveBeenCalled()
+
+      mode = 'recovery-failure'
+      const retryAfterFailure = mounted.actions().deleteState(row).refresh
+      if (!retryAfterFailure) throw new Error('Confirmed delete state has no refresh action.')
+      await retryAfterFailure()
+      expect(reads).toBe(3)
+      expect(mounted.actions().deleteState(row)).toMatchObject({ disabled: true, error: { writeOutcome: 'confirmed' } })
+      expect(toastWarning).toHaveBeenCalledOnce()
+
+      mode = 'pending'
+      const retryAfterCancel = mounted.actions().deleteState(row).refresh
+      if (!retryAfterCancel) throw new Error('Confirmed delete state lost its refresh action.')
+      const pendingRetry = retryAfterCancel()
+      await vi.waitFor(() => expect(reads).toBe(4))
+      const query = mounted
+        .queryClient()
+        .getQueryCache()
+        .findAll({ queryKey: ['resource', 'bound-delete-recovery', 'list'] })[0]
+      if (!query) throw new Error('The resource list query was not found.')
+      await mounted.queryClient().cancelQueries({ queryKey: query.queryKey, exact: true })
+      pendingRead.resolve({ data: [row, other] })
+      await pendingRetry
+
+      expect(mounted.actions().deleteState(row)).toMatchObject({ disabled: true, error: { writeOutcome: 'confirmed' } })
+      expect(toastWarning).toHaveBeenCalledOnce()
+      expect(mounted.run).toHaveBeenCalledOnce()
+
+      mode = 'pending'
+      pendingRead = deferred<{ data: DeleteOutcomeRow[] }>()
+      const retryAfterCancelSettlement = mounted.actions().deleteState(row).refresh
+      if (!retryAfterCancelSettlement) throw new Error('Confirmed delete state lost its retry action.')
+      const firstRetry = retryAfterCancelSettlement()
+      const secondRetry = retryAfterCancelSettlement()
+      await vi.waitFor(() => expect(reads).toBe(5))
+      pendingRead.resolve({ data: [row, other] })
+      await Promise.all([firstRetry, secondRetry])
+
+      expect(mounted.actions().deleteState(row)).toMatchObject({ disabled: false, pending: false })
+      expect(mounted.run).toHaveBeenCalledOnce()
+      expect(toastWarning).toHaveBeenCalledOnce()
+    } finally {
+      mounted.unmount()
+      vi.restoreAllMocks()
+    }
+  })
+
+  it.each(['success', 'rejection'] as const)('settles a stale $0 delete outcome for its original owner', async (settlement) => {
+    const row: DeleteOutcomeRow = { tenant: 'north', id: '1', name: 'First', reversed: false }
+    const request = deferred<unknown>()
+    const load = vi.fn(async () => ({ data: [row] }))
+    const mounted = mountBoundDeleteList(load, { run: () => request.promise })
+
+    try {
+      await vi.waitFor(() => {
+        expect(load).toHaveBeenCalledOnce()
+        expect(mounted.view.text()).toContain('First')
+      })
+      const pending = mounted.actions().deleteRecord!(row)
+      expect(mounted.actions().deleteState(row)).toMatchObject({ disabled: true, pending: true })
+
+      mounted.setResource('replacement-delete-recovery')
+      await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(2))
+      if (settlement === 'success') request.resolve(undefined)
+      else request.reject(new Error('The delete was rejected.'))
+      await expect(pending).rejects.toMatchObject({ message: 'Delete completed after the list changed.' })
+
+      mounted.setResource('bound-delete-recovery')
+      await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(3))
+      await vi.waitFor(() => expect(mounted.actions().deleteState(row)).toMatchObject({ disabled: false, pending: false }))
+      expect(mounted.run).toHaveBeenCalledOnce()
+    } finally {
+      mounted.unmount()
+      vi.restoreAllMocks()
+    }
+  })
+
+  it('keeps a new confirmation open and silent when an old delete settles after rebind', async () => {
+    const request = deferred<unknown>()
+    const row: DeleteOutcomeRow = { tenant: 'north', id: '1', name: 'First', reversed: false }
+    const load = vi.fn(async () => ({ data: [row] }))
+    const toastSuccess = vi.spyOn(toast, 'success').mockImplementation(() => '')
+    const toastWarning = vi.spyOn(toast, 'warning').mockImplementation(() => '')
+    const toastError = vi.spyOn(toast, 'error').mockImplementation(() => '')
+    const mounted = mountBoundDeleteList(load, { collection: false, run: () => request.promise })
+    const dialog = () => document.body.querySelector<HTMLElement>('[role="dialog"]')
+    const dialogButton = (label: string) => [...(dialog()?.querySelectorAll<HTMLButtonElement>('button') ?? [])].find((button) => button.textContent?.trim() === label)
+
+    try {
+      await vi.waitFor(() => {
+        expect(load).toHaveBeenCalledOnce()
+        expect(mounted.view.text()).toContain('First')
+      })
+      const rowDeleteButton = [...mounted.view.host.querySelectorAll<HTMLTableRowElement>('tbody tr')]
+        .find((entry) => entry.textContent?.includes('First'))
+        ?.querySelector<HTMLButtonElement>('button[aria-label="Delete"]')
+      rowDeleteButton?.click()
+      await vi.waitFor(() => expect(dialog()).not.toBeNull())
+      dialogButton('Delete')?.click()
+      await vi.waitFor(() => expect(mounted.run).toHaveBeenCalledOnce())
+
+      mounted.setResource('replacement-delete-recovery')
+      await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(2))
+      const replacementDeleteButton = [...mounted.view.host.querySelectorAll<HTMLTableRowElement>('tbody tr')]
+        .find((entry) => entry.textContent?.includes('First'))
+        ?.querySelector<HTMLButtonElement>('button[aria-label="Delete"]')
+      replacementDeleteButton?.click()
+      await vi.waitFor(() => expect(dialog()).not.toBeNull())
+      request.resolve(undefined)
+      await flush()
+
+      expect(dialog()).not.toBeNull()
+      expect(toastSuccess).not.toHaveBeenCalled()
+      expect(toastWarning).not.toHaveBeenCalled()
+      expect(toastError).not.toHaveBeenCalled()
+    } finally {
+      mounted.unmount()
+    }
+  })
+
+  it('ignores a late rejected delete after its ListView unmounts', async () => {
+    const request = deferred<unknown>()
+    const load = vi.fn(async () => ({ data: [{ tenant: 'north', id: '1', name: 'First', reversed: false }] }))
+    const toastSuccess = vi.spyOn(toast, 'success').mockImplementation(() => '')
+    const toastWarning = vi.spyOn(toast, 'warning').mockImplementation(() => '')
+    const toastError = vi.spyOn(toast, 'error').mockImplementation(() => '')
+    const mounted = mountBoundDeleteList(load, { collection: false, run: () => request.promise })
+    const dialog = () => document.body.querySelector<HTMLElement>('[role="dialog"]')
+    const dialogButton = (label: string) => [...(dialog()?.querySelectorAll<HTMLButtonElement>('button') ?? [])].find((button) => button.textContent?.trim() === label)
+
+    await vi.waitFor(() => expect(mounted.view.text()).toContain('First'))
+    mounted.view.find<HTMLButtonElement>('button[aria-label="Delete"]')?.click()
+    await vi.waitFor(() => expect(dialog()).not.toBeNull())
+    dialogButton('Delete')?.click()
+    await vi.waitFor(() => expect(mounted.run).toHaveBeenCalledOnce())
+    mounted.unmount()
+    request.reject(new Error('The delayed request failed.'))
+    await flush()
+
+    expect(mounted.run).toHaveBeenCalledOnce()
+    expect(toastSuccess).not.toHaveBeenCalled()
+    expect(toastWarning).not.toHaveBeenCalled()
+    expect(toastError).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+
+  it('ignores a late successful delete read after the list is rebound', async () => {
+    const row: DeleteOutcomeRow = { tenant: 'north', id: '1', name: 'First', reversed: false }
+    const recoveryRead = deferred<{ data: DeleteOutcomeRow[] }>()
+    let reads = 0
+    let mode: 'post-write' | 'pending' | 'success' = 'post-write'
+    const load = vi.fn(async () => {
+      reads += 1
+      if (reads === 1) return { data: [row] }
+      if (mode === 'post-write') throw new Error('The post-delete read failed.')
+      if (mode === 'pending') return recoveryRead.promise
+      return { data: [row] }
+    })
+    const toastWarning = vi.spyOn(toast, 'warning').mockImplementation(() => '')
+    const mounted = mountBoundDeleteList(load)
+
+    try {
+      await vi.waitFor(() => expect(mounted.view.text()).toContain('First'))
+      await expect(mounted.actions().deleteRecord!(row)).rejects.toMatchObject({ writeOutcome: 'confirmed' })
+      mode = 'pending'
+      const refresh = mounted.actions().deleteState(row).refresh
+      if (!refresh) throw new Error('Confirmed delete state has no refresh action.')
+      const recovery = refresh()
+      await vi.waitFor(() => expect(reads).toBe(3))
+      mode = 'success'
+      mounted.setResource('replacement-delete-recovery')
+      await vi.waitFor(() => expect(reads).toBe(4))
+      recoveryRead.resolve({ data: [row] })
+      await recovery
+
+      expect(mounted.actions().deleteState(row).disabled).toBe(false)
+      expect(toastWarning).not.toHaveBeenCalled()
+    } finally {
+      mounted.unmount()
+      vi.restoreAllMocks()
+    }
+  })
+
+  it('ignores a late failed delete read after the list unmounts', async () => {
+    const row: DeleteOutcomeRow = { tenant: 'north', id: '1', name: 'First', reversed: false }
+    const recoveryRead = deferred<{ data: DeleteOutcomeRow[] }>()
+    let reads = 0
+    const load = vi.fn(async () => {
+      reads += 1
+      if (reads === 1) return { data: [row] }
+      if (reads === 2) throw new Error('The post-delete read failed.')
+      return recoveryRead.promise
+    })
+    const toastWarning = vi.spyOn(toast, 'warning').mockImplementation(() => '')
+    const mounted = mountBoundDeleteList(load)
+
+    await vi.waitFor(() => expect(mounted.view.text()).toContain('First'))
+    await expect(mounted.actions().deleteRecord!(row)).rejects.toMatchObject({ writeOutcome: 'confirmed' })
+    const refresh = mounted.actions().deleteState(row).refresh
+    if (!refresh) throw new Error('Confirmed delete state has no refresh action.')
+    const recovery = refresh()
+    await vi.waitFor(() => expect(reads).toBe(3))
+    mounted.unmount()
+    recoveryRead.reject(new Error('The late read failed.'))
+    await recovery
+
+    expect(toastWarning).not.toHaveBeenCalled()
+    vi.restoreAllMocks()
+  })
+  it('retains independent post-write outcomes across query and row replacement', async () => {
+    const first = { tenant: 'north', id: '1', name: 'First', reversed: false }
+    const second = { tenant: 'north', id: '2', name: 'Second', reversed: false }
+    const third = { tenant: 'north', id: '3', name: 'Third', reversed: false }
+    const serverDelete = vi.fn(async () => undefined)
+    const invalidate = vi.fn(async (id: string) => {
+      if (id !== '3') throw new Error('Refresh failed after deletion.')
+    })
+    const deleteRecord = vi.fn(async (record: DeleteOutcomeRow) => {
+      await serverDelete(record.id)
+      try {
+        await invalidate(record.id)
+      } catch {
+        throw Object.assign(new Error('Refresh failed after deletion.'), { postWrite: true, retryable: false })
+      }
+      return { id: record.id }
+    })
+    const mounted = mountDeleteOutcomeList([first], deleteRecord)
+    await flush()
+
+    await expect(mounted.actions().deleteRecord!(first)).rejects.toMatchObject({
+      message: 'Refresh failed after deletion.',
+      postWrite: true,
+      retryable: false,
+    })
+    expect(serverDelete).toHaveBeenCalledOnce()
+    expect(invalidate).toHaveBeenCalledOnce()
+
+    const replacedFirst = { ...first, name: 'First refreshed', reversed: true }
+    mounted.rows.value = [replacedFirst, second, third]
+    mounted.query.value = { page: 2, limit: 10 }
+    mounted.namespace.value = 'delete-query-two'
+    await flush()
+    await mounted.refresh()
+    await flush()
+
+    expect(mounted.actions().deleteState(replacedFirst)).toMatchObject({
+      disabled: true,
+      pending: false,
+      error: { message: 'Refresh failed after deletion.', postWrite: true },
+    })
+    await expect(mounted.actions().deleteRecord!(replacedFirst)).rejects.toMatchObject({ postWrite: true })
+    expect(serverDelete).toHaveBeenCalledOnce()
+
+    await expect(mounted.actions().deleteRecord!(second)).rejects.toMatchObject({ postWrite: true })
+    expect(mounted.actions().deleteState(replacedFirst).disabled).toBe(true)
+    expect(mounted.actions().deleteState(second).disabled).toBe(true)
+    expect(serverDelete).toHaveBeenCalledTimes(2)
+
+    await expect(mounted.actions().deleteRecord!(third)).resolves.toEqual({ id: '3' })
+    expect(serverDelete).toHaveBeenCalledTimes(3)
+    expect(mounted.actions().deleteState(third)).toMatchObject({ disabled: false, pending: false })
+    mounted.view.unmount()
+  })
+
+  it('keeps a normalized pre-write failure retryable', async () => {
+    const record = { tenant: 'south', id: '4', name: 'Fourth', reversed: false }
+    const deleteRecord = vi.fn(async () => {
+      if (deleteRecord.mock.calls.length === 1) throw new Error('Delete was rejected.')
+      return 'deleted'
+    })
+    const mounted = mountDeleteOutcomeList([record], deleteRecord)
+    await flush()
+
+    await expect(mounted.actions().deleteRecord!(record)).rejects.toMatchObject({ message: 'Delete was rejected.' })
+    expect(mounted.actions().deleteState(record)).toMatchObject({ disabled: false, pending: false })
+    await expect(mounted.actions().deleteRecord!(record)).resolves.toBe('deleted')
+    expect(deleteRecord).toHaveBeenCalledTimes(2)
+    mounted.view.unmount()
+  })
+
+  it('blocks a duplicate pending delete and ignores its completion after resource rebind', async () => {
+    const record = { tenant: 'west', id: '5', name: 'Fifth', reversed: false }
+    const request = deferred<unknown>()
+    const deleteRecord = vi.fn(() => request.promise)
+    const mounted = mountDeleteOutcomeList([record], deleteRecord)
+    await flush()
+
+    const pending = mounted.actions().deleteRecord!(record)
+    expect(mounted.actions().deleteState(record)).toMatchObject({ disabled: true, pending: true })
+    await expect(mounted.actions().deleteRecord!(record)).rejects.toMatchObject({ message: 'A delete request is already in progress.' })
+    expect(deleteRecord).toHaveBeenCalledOnce()
+
+    mounted.resourceOwner.value = 'rebound-resource'
+    await flush()
+    expect(mounted.actions().deleteState(record)).toMatchObject({ disabled: false, pending: false })
+    request.resolve('deleted')
+    await expect(pending).rejects.toMatchObject({ message: 'Delete completed after the list changed.' })
+    expect(mounted.actions().deleteState(record)).toMatchObject({ disabled: false, pending: false })
+    mounted.view.unmount()
+  })
+})

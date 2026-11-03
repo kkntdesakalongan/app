@@ -1,0 +1,793 @@
+import { defineComponent, h, ref } from 'vue'
+import { describe, expect, it, vi } from 'vitest'
+import { z } from 'zod'
+import FileInput from '../FileInput.vue'
+import { deferred, mountInput } from './harness'
+import Form from '../../core/Form.vue'
+import { flush, mountCore } from '../../core/__tests__/harness'
+import type { AssetAdapter } from '../../../assets/contracts'
+import { testAssetAdapter } from './harness'
+
+type Asset = {
+  kind: 'file'
+  id: string
+  url: string
+  name: string
+}
+
+const singleFileSchema = z.object({ file: z.custom<Asset | null>() })
+const multiFileSchema = z.object({ files: z.array(z.custom<Asset>()) })
+const fileAndToggleSchema = z.object({ toggle: z.string(), file: z.custom<Asset | null>().optional() })
+
+function asset(name: string): Asset {
+  return {
+    kind: 'file',
+    id: `/uploads/${name}`,
+    url: `https://files.test/${name}`,
+    name,
+  }
+}
+
+function selectFiles(input: HTMLInputElement, files: File[]) {
+  Object.defineProperty(input, 'files', { configurable: true, value: files })
+  input.dispatchEvent(new Event('change'))
+}
+
+function uploadCards(host: HTMLElement) {
+  return [...host.querySelectorAll<HTMLElement>('[data-testid="file-upload-progress"]')]
+}
+
+function adaptersForUpload(upload: AssetAdapter['upload']) {
+  return { assets: { ...testAssetAdapter, upload } }
+}
+
+describe('FileInput upload surface', () => {
+  it('commits the transformed local File without registering asset or data adapters', async () => {
+    const source = new File(['source'], 'record.txt', { type: 'text/plain' })
+    const transformed = new File(['normalized'], 'record.txt', { type: 'text/plain' })
+    const transform = vi.fn(async (file: File, { signal }: { signal: AbortSignal }) => {
+      expect(signal.aborted).toBe(false)
+      expect(file).toBe(source)
+      return transformed
+    })
+    const view = mountInput<File | null>(FileInput, {
+      model: null,
+      props: { mode: 'file', accept: ['.txt'], transform },
+      framework: false,
+    })
+    await view.flush()
+
+    selectFiles(view.host.querySelector<HTMLInputElement>('input[type="file"]')!, [source])
+    await view.flush()
+
+    expect(transform).toHaveBeenCalledOnce()
+    expect(view.model.value).toBe(transformed)
+    expect(view.model.value?.name).toBe('record.txt')
+    expect(view.host.textContent).toContain('record.txt')
+    view.cleanup()
+  })
+
+  it('validates the source before transform and keeps the old File when transformed output is rejected', async () => {
+    const current = new File(['current'], 'current.txt', { type: 'text/plain' })
+    const transform = vi.fn(async () => new File(['wrong type'], 'wrong.csv', { type: 'text/csv' }))
+    const view = mountInput<File | null>(FileInput, {
+      model: current,
+      props: { mode: 'file', accept: ['.txt'], transform },
+      framework: false,
+    })
+    await view.flush()
+
+    selectFiles(view.host.querySelector<HTMLInputElement>('input[type="file"]')!, [new File(['source'], 'source.csv', { type: 'text/csv' })])
+    await view.flush()
+    expect(transform).not.toHaveBeenCalled()
+    expect(view.model.value).toBe(current)
+
+    selectFiles(view.host.querySelector<HTMLInputElement>('input[type="file"]')!, [new File(['source'], 'source.txt', { type: 'text/plain' })])
+    await view.flush()
+    expect(transform).toHaveBeenCalledOnce()
+    expect(view.model.value).toBe(current)
+    expect(view.host.textContent).toContain('current.txt')
+    expect(view.host.textContent).toContain('not accepted')
+    view.cleanup()
+  })
+
+  it('transforms a File before the default asset upload and commits the canonical asset', async () => {
+    const transformed = new File(['watermarked'], 'photo.png', { type: 'image/png' })
+    const transform = vi.fn(async () => transformed)
+    const upload = vi.fn(async (file: Blob) => {
+      expect(file).toBe(transformed)
+      return asset('photo.png')
+    })
+    const view = mountInput<Asset | null>(FileInput, {
+      model: null,
+      props: { transform },
+      adapters: adaptersForUpload(upload),
+    })
+    await view.flush()
+
+    selectFiles(view.host.querySelector<HTMLInputElement>('input[type="file"]')!, [new File(['source'], 'photo.png', { type: 'image/png' })])
+    await view.flush()
+
+    expect(transform).toHaveBeenCalledOnce()
+    expect(upload).toHaveBeenCalledOnce()
+    expect(view.model.value).toEqual(asset('photo.png'))
+    view.cleanup()
+  })
+
+  it('uses an asset upload override for destination, progress, and canonical output', async () => {
+    const result = deferred<Asset>()
+    let reportProgress: ((value: { loaded: number; total?: number }) => void) | undefined
+    let signal: AbortSignal | undefined
+    const serviceUpload = vi.fn(async () => asset('unused.pdf'))
+    const upload = vi.fn((_file: Blob, context: { destination?: string; signal?: AbortSignal; onProgress?: (value: { loaded: number; total?: number }) => void }) => {
+      signal = context.signal
+      reportProgress = context.onProgress
+      return result.promise
+    })
+    const view = mountInput<Asset | null>(FileInput, {
+      model: null,
+      props: { destination: 'receipts', upload },
+      adapters: adaptersForUpload(serviceUpload),
+    })
+    await view.flush()
+
+    const source = new File(['receipt'], 'receipt.pdf', { type: 'application/pdf' })
+    selectFiles(view.host.querySelector<HTMLInputElement>('input[type="file"]')!, [source])
+    await view.flush()
+    expect(upload).toHaveBeenCalledOnce()
+    expect(upload.mock.calls[0]?.[0]).toBe(source)
+    expect(upload.mock.calls[0]?.[1].destination).toBe('receipts')
+    expect(signal?.aborted).toBe(false)
+    expect(serviceUpload).not.toHaveBeenCalled()
+
+    reportProgress?.({ loaded: 50, total: 100 })
+    await view.flush()
+    expect(view.host.querySelector('[role="status"]')?.textContent).toContain('50%')
+    result.resolve(asset('receipt.pdf'))
+    await view.flush()
+    expect(view.model.value).toEqual(asset('receipt.pdf'))
+    view.cleanup()
+  })
+
+  it('aborts an asset upload when its pending selection is removed', async () => {
+    const result = deferred<Asset>()
+    let signal: AbortSignal | undefined
+    const upload = vi.fn((_file: Blob, context: { signal?: AbortSignal }) => {
+      signal = context.signal
+      return result.promise
+    })
+    const view = mountInput<Asset | null>(FileInput, {
+      model: null,
+      props: { upload },
+      adapters: adaptersForUpload(vi.fn(async () => asset('unused.pdf'))),
+    })
+    await view.flush()
+
+    selectFiles(view.host.querySelector<HTMLInputElement>('input[type="file"]')!, [new File(['receipt'], 'receipt.pdf', { type: 'application/pdf' })])
+    await view.flush()
+    expect(signal?.aborted).toBe(false)
+    view.host.querySelector<HTMLButtonElement>('[aria-label="Remove pending upload"]')!.click()
+    await view.flush()
+    expect(signal?.aborted).toBe(true)
+
+    result.resolve(asset('late.pdf'))
+    await view.flush()
+
+    expect(view.model.value).toBeNull()
+    expect(view.host.textContent).not.toContain('late.pdf')
+    view.cleanup()
+  })
+
+  it('accepts the same local File again after resetting the native input', async () => {
+    const source = new File(['source'], 'record.txt', { type: 'text/plain' })
+    const transform = vi.fn((file: File) => file)
+    const view = mountInput<File | null>(FileInput, {
+      model: null,
+      props: { mode: 'file', accept: ['.txt'], transform },
+      framework: false,
+    })
+    await view.flush()
+    const input = view.host.querySelector<HTMLInputElement>('input[type="file"]')!
+
+    selectFiles(input, [source])
+    expect(input.value).toBe('')
+    await view.flush()
+    selectFiles(input, [source])
+    expect(input.value).toBe('')
+    await view.flush()
+
+    expect(transform).toHaveBeenCalledTimes(2)
+    expect(view.model.value).toBe(source)
+    view.cleanup()
+  })
+
+  it('rejects an invalid or over-capacity local batch without changing the model', async () => {
+    const current = new File(['current'], 'current.txt', { type: 'text/plain' })
+    const firstCandidate = new File(['first'], 'first.txt', { type: 'text/plain' })
+    const secondCandidate = new File(['second'], 'second.txt', { type: 'text/plain' })
+    const thirdCandidate = new File(['third'], 'third.txt', { type: 'text/plain' })
+    const transform = vi.fn((file: File) => file)
+    const view = mountInput<File[]>(FileInput, {
+      model: [current],
+      props: { mode: 'file', multi: true, limit: 3, accept: ['.txt'], transform },
+      framework: false,
+    })
+    await view.flush()
+    const input = view.host.querySelector<HTMLInputElement>('input[type="file"]')!
+
+    selectFiles(input, [firstCandidate, new File(['invalid'], 'invalid.csv', { type: 'text/csv' })])
+    await view.flush()
+    expect(view.model.value).toEqual([current])
+    expect(transform).not.toHaveBeenCalled()
+    expect(view.host.textContent).toContain('not accepted')
+
+    selectFiles(input, [firstCandidate, secondCandidate, thirdCandidate])
+    await view.flush()
+    expect(view.model.value).toEqual([current])
+    expect(transform).not.toHaveBeenCalled()
+    expect(view.host.textContent).toContain('no more than 3 files')
+    view.cleanup()
+  })
+
+  it('rejects a custom upload result that the asset adapter cannot read', async () => {
+    const upload = vi.fn(async () => 'untyped response' as unknown as Asset)
+    const view = mountInput<Asset | null>(FileInput, {
+      model: null,
+      props: { upload },
+      adapters: adaptersForUpload(vi.fn(async () => asset('unused.pdf'))),
+    })
+    await view.flush()
+
+    selectFiles(view.host.querySelector<HTMLInputElement>('input[type="file"]')!, [new File(['receipt'], 'receipt.pdf', { type: 'application/pdf' })])
+    await view.flush()
+
+    expect(view.model.value).toBeNull()
+    expect(view.host.textContent).toContain('invalid asset')
+    view.cleanup()
+  })
+
+  it('aborts a local transform when its pending file is removed and ignores its late result', async () => {
+    const output = deferred<File>()
+    let signal: AbortSignal | undefined
+    const transform = vi.fn((_file: File, context: { signal: AbortSignal }) => {
+      signal = context.signal
+      return output.promise
+    })
+    const view = mountInput<File | null>(FileInput, {
+      model: null,
+      props: { mode: 'file', transform },
+      framework: false,
+    })
+    await view.flush()
+
+    selectFiles(view.host.querySelector<HTMLInputElement>('input[type="file"]')!, [new File(['source'], 'source.txt', { type: 'text/plain' })])
+    await view.flush()
+    expect(view.host.querySelector('[role="status"]')?.textContent).toContain('Processing')
+    expect(signal?.aborted).toBe(false)
+
+    view.host.querySelector<HTMLButtonElement>('[aria-label="Remove pending upload"]')!.click()
+    await view.flush()
+    expect(signal?.aborted).toBe(true)
+    output.resolve(new File(['late'], 'late.txt', { type: 'text/plain' }))
+    await view.flush()
+
+    expect(view.model.value).toBeNull()
+    expect(view.host.textContent).not.toContain('late.txt')
+    view.cleanup()
+  })
+
+  it('renders its drop zone through the form renderer without an upload operation', async () => {
+    const view = mountCore(Form, {
+      schema: singleFileSchema,
+      fields: { file: { label: 'File', renderer: 'file' } },
+      initialData: {},
+      submit: async () => undefined,
+    })
+
+    await flush()
+
+    expect(view.text()).toContain('Letakkan file anda di sini')
+    expect(view.text()).toContain('Pilih sumber file')
+    view.unmount()
+  })
+
+  it('keeps the uploaded asset object in the live draft through submission', async () => {
+    const upload = vi.fn(async () => asset('first.pdf'))
+    const submit = vi.fn(async () => undefined)
+    const model = ref<Record<string, unknown>>({ file: null })
+    const host = defineComponent({
+      setup: () => () => h(Form, {
+        schema: singleFileSchema,
+        fields: {
+          file: {
+            label: 'File',
+            renderer: 'file',
+            props: {},
+          },
+        },
+        modelValue: model.value,
+        'onUpdate:modelValue': (value: Record<string, unknown>) => { model.value = value },
+        submit,
+      }),
+    })
+    const view = mountCore(host, {}, { adapters: adaptersForUpload(upload) })
+    await flush()
+
+    const input = view.find<HTMLInputElement>('input[type="file"]')!
+    selectFiles(input, [new File(['first'], 'first.pdf', { type: 'application/pdf' })])
+    await flush()
+
+    expect(model.value.file).toEqual(asset('first.pdf'))
+    expect(view.text()).toContain('first.pdf')
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(submit).toHaveBeenCalledWith({ file: asset('first.pdf') }, expect.objectContaining({ context: {} }))
+    view.unmount()
+  })
+
+  it('refreshes optional asset metadata with the same storage identity', async () => {
+    const first = { ...asset('first.pdf'), size: 1 }
+    const refreshed = { ...asset('first.pdf'), size: 2, mimeType: 'application/pdf' }
+    const view = mountInput<Asset | null>(FileInput, { model: first, props: { multi: false } })
+    await view.flush()
+
+    view.setProps({ modelValue: refreshed } as unknown as Record<string, unknown>)
+    view.model.value = refreshed
+    await view.flush()
+
+    expect(view.model.value).toEqual(refreshed)
+    expect(view.host.textContent).toContain('first.pdf')
+    view.cleanup()
+  })
+
+  it('keeps reordered multi-file objects unchanged apart from array position', async () => {
+    const first = asset('first.pdf')
+    const second = asset('second.pdf')
+    const view = mountInput<Asset[]>(FileInput, { model: [first, second], props: { multi: true } })
+    await view.flush()
+
+    view.model.value = [second, first]
+    await view.flush()
+
+    expect(view.model.value).toEqual([second, first])
+    expect(view.host.textContent).toContain('first.pdf')
+    expect(view.host.textContent).toContain('second.pdf')
+    view.cleanup()
+  })
+
+  it.each([
+    ['single', false, asset('single.pdf'), null],
+    ['multi', true, [asset('multi.pdf')], []],
+  ] as const)('clears a selected %s file to its empty model value', async (_name, multi, model, emptyValue) => {
+    const view = mountInput<Asset | Asset[] | null>(FileInput, {
+      model,
+      props: { multi },
+    })
+    await view.flush()
+
+    expect(view.host.textContent?.includes('Pilih sumber file')).toBe(multi)
+
+    const remove = [...view.host.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.trim() === 'Hapus')
+    expect(remove).toBeDefined()
+    remove?.click()
+    await view.flush()
+
+    expect(view.model.value).toEqual(emptyValue)
+    expect(view.host.textContent).toContain('Pilih sumber file')
+    view.cleanup()
+  })
+
+  it('registers concurrent uploads as one pending interval and releases each operation separately', async () => {
+    const first = deferred<Asset>()
+    const second = deferred<Asset>()
+    let call = 0
+    const upload = vi.fn(() => (call++ === 0 ? first.promise : second.promise))
+    const submit = vi.fn(async () => undefined)
+    const view = mountCore(Form, {
+      schema: multiFileSchema,
+      fields: { files: { label: 'Files', renderer: 'file', props: { multi: true } } },
+      initialData: { files: [] },
+      submit,
+    }, { adapters: adaptersForUpload(upload) })
+    await flush()
+
+    const exposed = view.exposed() as { inputPending: boolean; submit: () => Promise<void> }
+    const input = view.find<HTMLInputElement>('input[type="file"]')!
+    selectFiles(input, [new File(['first'], 'first.pdf', { type: 'application/pdf' }), new File(['second'], 'second.pdf', { type: 'application/pdf' })])
+    await flush()
+
+    expect(exposed.inputPending).toBe(true)
+    expect(view.find<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true)
+    await exposed.submit()
+    await flush()
+    expect(submit).not.toHaveBeenCalled()
+
+    second.resolve(asset('second.pdf'))
+    await flush()
+    expect(exposed.inputPending).toBe(true)
+    await exposed.submit()
+    await flush()
+    expect(submit).not.toHaveBeenCalled()
+
+    first.resolve(asset('first.pdf'))
+    await flush()
+    expect(exposed.inputPending).toBe(false)
+    expect(view.find<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(false)
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(submit).toHaveBeenCalledWith({ files: [asset('first.pdf'), asset('second.pdf')] }, expect.objectContaining({ context: {} }))
+    view.unmount()
+  })
+
+  it('keeps a failed upload error after a sibling succeeds until a new selection', async () => {
+    const failed = deferred<Asset>()
+    const sibling = deferred<Asset>()
+    const recovery = deferred<Asset>()
+    const results = [failed, sibling, recovery]
+    const upload = vi.fn(() => results.shift()!.promise)
+    const submit = vi.fn(async () => undefined)
+    const view = mountCore(Form, {
+      schema: multiFileSchema,
+      fields: { files: { label: 'Files', renderer: 'file', props: { multi: true } } },
+      initialData: { files: [] },
+      submit,
+    }, { adapters: adaptersForUpload(upload) })
+    await flush()
+
+    const exposed = view.exposed() as { inputPending: boolean; submit: () => Promise<void> }
+    const input = view.find<HTMLInputElement>('input[type="file"]')!
+    selectFiles(input, [
+      new File(['failed'], 'failed.pdf', { type: 'application/pdf' }),
+      new File(['sibling'], 'sibling.pdf', { type: 'application/pdf' }),
+    ])
+    await flush()
+    expect(upload).toHaveBeenCalledTimes(2)
+
+    failed.reject(new Error('first upload failed'))
+    await flush()
+    expect(view.text()).toContain('first upload failed')
+    expect(exposed.inputPending).toBe(true)
+    await exposed.submit()
+    await flush()
+    expect(submit).not.toHaveBeenCalled()
+
+    sibling.resolve(asset('sibling.pdf'))
+    await flush()
+    expect(exposed.inputPending).toBe(false)
+    expect(view.text()).toContain('first upload failed')
+    await exposed.submit()
+    await flush()
+    expect(submit).not.toHaveBeenCalled()
+
+    selectFiles(input, [new File(['recovery'], 'recovery.pdf', { type: 'application/pdf' })])
+    await flush()
+    expect(view.text()).not.toContain('first upload failed')
+    expect(exposed.inputPending).toBe(true)
+    recovery.resolve(asset('recovery.pdf'))
+    await flush()
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+
+    expect(submit).toHaveBeenCalledWith({ files: [asset('sibling.pdf'), asset('recovery.pdf')] }, expect.objectContaining({ context: {} }))
+    view.unmount()
+  })
+
+  it('keeps an attempted submit from queueing after a failed upload releases its operation', async () => {
+    const result = deferred<Asset>()
+    const upload = vi.fn(() => result.promise)
+    const submit = vi.fn(async () => undefined)
+    const view = mountCore(Form, {
+      schema: multiFileSchema,
+      fields: { files: { label: 'Files', renderer: 'file', props: { multi: true } } },
+      initialData: { files: [] },
+      submit,
+    }, { adapters: adaptersForUpload(upload) })
+    await flush()
+
+    const exposed = view.exposed() as { inputPending: boolean; submit: () => Promise<void> }
+    selectFiles(view.find<HTMLInputElement>('input[type="file"]')!, [new File(['bad'], 'bad.pdf', { type: 'application/pdf' })])
+    await flush()
+    expect(exposed.inputPending).toBe(true)
+
+    await exposed.submit()
+    await flush()
+    expect(submit).not.toHaveBeenCalled()
+
+    result.reject(new Error('upload failed'))
+    await flush()
+    expect(exposed.inputPending).toBe(false)
+    expect(submit).not.toHaveBeenCalled()
+    view.unmount()
+  })
+
+  it('releases pending work when its owning input is hidden and ignores the late result', async () => {
+    const uploaded = deferred<Asset>()
+    const upload = vi.fn(() => uploaded.promise)
+    const submit = vi.fn(async () => undefined)
+    const show = ref(true)
+    const view = mountCore(Form, {
+      fields: {
+        toggle: { label: 'Toggle', renderer: 'text' },
+        file: () => ({ label: 'File', renderer: 'file', visible: show.value }),
+      },
+      schema: fileAndToggleSchema,
+      initialData: { toggle: '', file: null },
+      submit,
+    }, { adapters: adaptersForUpload(upload) })
+    await flush()
+
+    selectFiles(view.find<HTMLInputElement>('input[type="file"]')!, [new File(['first'], 'first.pdf', { type: 'application/pdf' })])
+    await flush()
+    const exposed = view.exposed() as { inputPending: boolean; submit: () => Promise<void> }
+    expect(exposed.inputPending).toBe(true)
+
+    show.value = false
+    await flush()
+    expect(view.find('input[type="file"]')).toBeNull()
+    expect(exposed.inputPending).toBe(false)
+
+    uploaded.resolve(asset('first.pdf'))
+    await flush()
+    expect(exposed.inputPending).toBe(false)
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(submit).toHaveBeenCalledWith({ toggle: '' }, expect.objectContaining({ context: {} }))
+    view.unmount()
+  })
+
+  it('keeps concurrent operations independent when one input is disposed', async () => {
+    const first = deferred<Asset>()
+    const second = deferred<Asset>()
+    let call = 0
+    const upload = vi.fn(() => (call++ === 0 ? first.promise : second.promise))
+    const submit = vi.fn(async () => undefined)
+    const view = mountCore(Form, {
+      schema: multiFileSchema,
+      fields: { files: { label: 'Files', renderer: 'file', props: { multi: true } } },
+      initialData: { files: [] },
+      submit,
+    }, { adapters: adaptersForUpload(upload) })
+    await flush()
+
+    const exposed = view.exposed() as { inputPending: boolean; submit: () => Promise<void> }
+    selectFiles(view.find<HTMLInputElement>('input[type="file"]')!, [
+      new File(['first'], 'first.pdf', { type: 'application/pdf' }),
+      new File(['second'], 'second.pdf', { type: 'application/pdf' }),
+    ])
+    await flush()
+    expect(exposed.inputPending).toBe(true)
+
+    view.unmount()
+    first.resolve(asset('first.pdf'))
+    second.resolve(asset('second.pdf'))
+    await flush()
+    expect(exposed.inputPending).toBe(false)
+    expect(submit).not.toHaveBeenCalled()
+  })
+
+  it('allows submit after form reset during pending work once operations settle', async () => {
+    const result = deferred<Asset>()
+    const upload = vi.fn(() => result.promise)
+    const submit = vi.fn(async () => undefined)
+    const view = mountCore(Form, {
+      schema: multiFileSchema,
+      fields: { files: { label: 'Files', renderer: 'file', props: { multi: true } } },
+      initialData: { files: [] },
+      submit,
+    }, { adapters: adaptersForUpload(upload) })
+    await flush()
+
+    const exposed = view.exposed() as { inputPending: boolean; submit: () => Promise<void>; reset: () => void }
+    selectFiles(view.find<HTMLInputElement>('input[type="file"]')!, [new File(['first'], 'first.pdf', { type: 'application/pdf' })])
+    await flush()
+    expect(exposed.inputPending).toBe(true)
+
+    exposed.reset()
+    await flush()
+    expect(exposed.inputPending).toBe(true)
+
+    result.resolve(asset('first.pdf'))
+    await flush()
+    expect(exposed.inputPending).toBe(false)
+    view.find('form')!.dispatchEvent(new Event('submit'))
+    await flush()
+    expect(submit).toHaveBeenCalledWith({ files: [asset('first.pdf')] }, expect.objectContaining({ context: {} }))
+    view.unmount()
+  })
+
+  it('shows a dropped file immediately, updates its own fill, then replaces it after upload', async () => {
+    const result = deferred<Asset>()
+    let reportProgress: ((value: { loaded: number; total?: number }) => void) | undefined
+    const upload = vi.fn((_file: Blob, context: { onProgress?: (value: { loaded: number; total?: number }) => void }) => {
+      reportProgress = context.onProgress
+      return result.promise
+    })
+    const view = mountInput<Asset | null>(FileInput, { model: null, adapters: adaptersForUpload(upload) })
+    const input = view.host.querySelector<HTMLInputElement>('input[type="file"]')!
+
+    selectFiles(input, [new File(['first'], 'first.pdf', { type: 'application/pdf' })])
+    selectFiles(input, [new File(['second'], 'second.pdf', { type: 'application/pdf' })])
+    await view.flush()
+
+    expect(upload).toHaveBeenCalledTimes(1)
+    expect(uploadCards(view.host)).toHaveLength(1)
+    expect(uploadCards(view.host)[0].textContent).toContain('first.pdf')
+    expect(uploadCards(view.host)[0].firstElementChild?.className).toContain('animate-pulse')
+    expect(uploadCards(view.host)[0].querySelector('[role="status"]')?.textContent).toContain('Mengunggah')
+    expect(view.model.value).toBeNull()
+    expect(view.host.querySelector('input[type="file"]')).toBe(input)
+    expect(input.disabled).toBe(true)
+
+    reportProgress?.({ loaded: 25, total: 100 })
+    await view.flush()
+    const fill = uploadCards(view.host)[0].firstElementChild as HTMLElement
+    expect(fill.style.width).toBe('25%')
+    expect(uploadCards(view.host)[0].textContent).toContain('25%')
+
+    result.resolve(asset('first.pdf'))
+    await view.flush()
+
+    expect(uploadCards(view.host)).toHaveLength(0)
+    expect(view.host.textContent).toContain('first.pdf')
+    expect(view.host.textContent).toContain('Download')
+    expect(view.model.value).toEqual(asset('first.pdf'))
+    expect(view.host.querySelector('input[type="file"]')).toBe(input)
+    view.cleanup()
+  })
+
+  it('keeps multi-file progress and visual order isolated when uploads finish out of order', async () => {
+    const first = deferred<Asset>()
+    const second = deferred<Asset>()
+    const progress: Array<(value: { loaded: number; total?: number }) => void> = []
+    let call = 0
+    const upload = vi.fn((_file: Blob, context: { onProgress?: (value: { loaded: number; total?: number }) => void }) => {
+      progress.push(context.onProgress!)
+      return call++ === 0 ? first.promise : second.promise
+    })
+    const view = mountInput<Asset[]>(FileInput, { model: [], props: { multi: true }, adapters: adaptersForUpload(upload) })
+    const input = view.host.querySelector<HTMLInputElement>('input[type="file"]')!
+
+    selectFiles(input, [
+      new File(['first'], 'first.pdf', { type: 'application/pdf' }),
+      new File(['second'], 'second.pdf', { type: 'application/pdf' }),
+    ])
+    await view.flush()
+    progress[0]({ loaded: 10, total: 100 })
+    progress[1]({ loaded: 80, total: 100 })
+    await view.flush()
+
+    expect(uploadCards(view.host).map((card) => card.textContent)).toEqual([
+      expect.stringContaining('first.pdf'),
+      expect.stringContaining('second.pdf'),
+    ])
+    expect((uploadCards(view.host)[0].firstElementChild as HTMLElement).style.width).toBe('10%')
+    expect((uploadCards(view.host)[1].firstElementChild as HTMLElement).style.width).toBe('80%')
+
+    second.resolve(asset('second.pdf'))
+    await view.flush()
+    expect(view.host.textContent).toContain('first.pdf')
+    expect(view.host.textContent).toContain('second.pdf')
+    expect(view.model.value).toEqual([asset('second.pdf')])
+
+    first.resolve(asset('first.pdf'))
+    await view.flush()
+    expect(view.model.value).toEqual([asset('first.pdf'), asset('second.pdf')])
+    view.cleanup()
+  })
+
+  it('removes only a failed pending row without updating the controlled model', async () => {
+    const result = deferred<Asset>()
+    const upload = vi.fn(() => result.promise)
+    const view = mountInput<Asset[]>(FileInput, { model: [], props: { multi: true }, adapters: adaptersForUpload(upload) })
+    const input = view.host.querySelector<HTMLInputElement>('input[type="file"]')!
+
+    selectFiles(input, [new File(['bad'], 'bad.pdf', { type: 'application/pdf' })])
+    await view.flush()
+    result.reject(new Error('upload failed'))
+    await view.flush()
+
+    expect(uploadCards(view.host)).toHaveLength(0)
+    expect(view.model.value).toEqual([])
+    view.cleanup()
+  })
+
+  it('blocks disabled picker and drop handlers without starting an upload', async () => {
+    const upload = vi.fn(async () => asset('ignored.pdf'))
+    const view = mountInput<Asset | null>(FileInput, {
+      model: null,
+      props: { disabled: true },
+      adapters: adaptersForUpload(upload),
+    })
+    const file = new File(['ignored'], 'ignored.pdf', { type: 'application/pdf' })
+    const input = view.host.querySelector<HTMLInputElement>('input[type="file"]')!
+    selectFiles(input, [file])
+    const drop = new Event('drop') as DragEvent
+    Object.defineProperty(drop, 'dataTransfer', { value: { files: [file] } })
+    view.host.querySelector<HTMLElement>('.outline-dashed')!.dispatchEvent(drop)
+    await view.flush()
+
+    expect(upload).not.toHaveBeenCalled()
+    expect(view.model.value).toBeNull()
+    expect(uploadCards(view.host)).toHaveLength(0)
+    view.cleanup()
+  })
+
+  it('completes an accepted upload after disable and ignores a removed pending row', async () => {
+    const first = deferred<Asset>()
+    const second = deferred<Asset>()
+    let call = 0
+    const upload = vi.fn(() => (call++ === 0 ? first.promise : second.promise))
+    const view = mountInput<Asset[]>(FileInput, {
+      model: [],
+      props: { multi: true },
+      adapters: adaptersForUpload(upload),
+    })
+    const input = view.host.querySelector<HTMLInputElement>('input[type="file"]')!
+    selectFiles(input, [new File(['first'], 'first.pdf', { type: 'application/pdf' })])
+    await view.flush()
+    view.setProps({ disabled: true })
+    await view.flush()
+    first.resolve(asset('first.pdf'))
+    await view.flush()
+
+    expect(view.model.value).toEqual([asset('first.pdf')])
+
+    view.setProps({ disabled: false })
+    await view.flush()
+    selectFiles(input, [new File(['second'], 'second.pdf', { type: 'application/pdf' })])
+    await view.flush()
+    view.host.querySelector<HTMLButtonElement>('[aria-label="Remove pending upload"]')!.click()
+    await view.flush()
+    second.resolve(asset('second.pdf'))
+    await view.flush()
+
+    expect(view.model.value).toEqual([asset('first.pdf')])
+    expect(view.host.textContent).not.toContain('second.pdf')
+    view.cleanup()
+  })
+
+  it('discards pending uploads after an external model replacement', async () => {
+    const result = deferred<Asset>()
+    const upload = vi.fn(() => result.promise)
+    const replacement = asset('replacement.pdf')
+    const view = mountInput<Asset[]>(FileInput, {
+      model: [],
+      props: { multi: true },
+      adapters: adaptersForUpload(upload),
+    })
+    const input = view.host.querySelector<HTMLInputElement>('input[type="file"]')!
+    selectFiles(input, [new File(['stale'], 'stale.pdf', { type: 'application/pdf' })])
+    await view.flush()
+    view.model.value = [replacement]
+    await view.flush()
+    result.resolve(asset('stale.pdf'))
+    await view.flush()
+
+    expect(view.model.value).toEqual([replacement])
+    expect(view.host.textContent).toContain('replacement.pdf')
+    expect(view.host.textContent).not.toContain('stale.pdf')
+    view.cleanup()
+  })
+
+  it('shows a rejected multi-value and only drops it after explicit removal', async () => {
+    const current = asset('current.pdf')
+    const invalid = [current, 'old-key']
+    const view = mountInput<unknown[]>(FileInput, {
+      model: invalid,
+      props: { multi: true },
+    })
+    await view.flush()
+
+    expect(view.host.textContent).toContain('Invalid asset value.')
+    expect(view.model.value).toEqual(invalid)
+    const removeInvalid = [...view.host.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.includes('Remove invalid value'))
+    removeInvalid?.click()
+    await view.flush()
+
+    expect(view.model.value).toEqual([current])
+    expect(view.host.textContent).not.toContain('Invalid asset value.')
+    view.cleanup()
+  })
+})
