@@ -5,7 +5,7 @@
       "root": "apps/api",
       "framework": "hono",
       "entrypoint": "vercel.mjs",
-      "buildCommand": "pnpm run build"
+      "buildCommand": "pnpm run type-check && pnpm run routes:compile .sprindle-vercel/routes.mjs"
     },
     "web": {
       "root": "apps/web",
