@@ -1,0 +1,26 @@
+{
+  "name": "@southneuhof/utilities",
+  "version": "0.1.2",
+  "type": "module",
+  "description": "Shared frontend utility helpers for South Neuhof applications and framework packages.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/southneuhof/utilities.git"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^1.13.1"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.9"
+  },
+  "scripts": {
+    "build": "pnpm run type-check",
+    "type-check": "tsc --noEmit -p tsconfig.json --singleThreaded",
+    "test": "vitest run --environment jsdom"
+  }
+}
