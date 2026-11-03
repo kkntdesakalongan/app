@@ -1,0 +1,16 @@
+.git
+.local
+.agents
+.github
+docs
+plans
+evals
+**/.env
+**/.env.*
+**/node_modules
+**/dist
+**/dist-tooling
+**/dist-types
+**/.sprindle*
+**/*.tsbuildinfo
+**/.turbo
