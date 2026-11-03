@@ -42,7 +42,7 @@ function getStorage(): Storage {
     client: new S3Client({
       endpoint,
       forcePathStyle: true,
-      region: 'us-east-1',
+      region: process.env.AWS_REGION ?? 'us-east-1',
       credentials: {
         accessKeyId: requiredEnv('S3_ACCESS_KEY'),
         secretAccessKey: requiredEnv('S3_SECRET_KEY'),
