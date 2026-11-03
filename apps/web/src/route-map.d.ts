@@ -38,6 +38,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'map-preview': RouteRecordInfo<
+      'map-preview',
+      '/map-preview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'settings-permissions': RouteRecordInfo<
       'settings-permissions',
       '/settings/permissions',
@@ -152,6 +159,7 @@ declare module 'vue-router/auto-routes' {
     'src/routes/(authenticated)/authenticated.layout.vue': {
       routes:
         | 'dashboard'
+        | 'map-preview'
         | 'settings-permissions'
         | 'settings-permissions-detail'
         | 'settings-roles'
@@ -172,6 +180,14 @@ declare module 'vue-router/auto-routes' {
     'src/routes/(authenticated)/dashboard/index.route.vue': {
       routes:
         | 'dashboard'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/map-preview/index.route.vue': {
+      routes:
+        | 'map-preview'
       views:
         | never
       pathParamNames:
