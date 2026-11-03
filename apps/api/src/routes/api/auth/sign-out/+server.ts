@@ -1,4 +1,5 @@
 import { defineRoute } from '@southneuhof/sprindle'
+import { z } from 'zod/v4'
 import { getAuth } from '../../../auth/auth'
 
-export const POST = defineRoute({ action: async ({ c }) => getAuth().handler(c.req.raw) })
+export const POST = defineRoute({ openapi: { requestBody: z.object({}) }, action: async ({ c }) => getAuth().handler(c.req.raw) })
