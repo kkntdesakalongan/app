@@ -14,7 +14,7 @@ describe('sdk createRpcClient', () => {
       proofClient.users.update[':id'].$patch({ param: { id: 'user-1' }, json: { name: 'Ada' } })
       proofClient.roles.detail[':id'].$get({ param: { id: 'role-1' } })
       proofClient.me.$get()
-      proofClient.api.auth['sign-out'].$post()
+      proofClient.api.auth['sign-out'].$post({ json: {} })
       proofClient.files.$get({ query: { prefix: 'uploads/' } })
 
       // @ts-expect-error missing root route must stay absent
@@ -63,7 +63,7 @@ describe('sdk createRpcClient', () => {
     try {
       const client = createRpcClient('http://localhost:8787', { headers: { 'x-test': 'sdk' } })
       await client.users.list.$get({ query: { page: '1', limit: '20' } })
-      await client.api.auth['sign-out'].$post()
+      await client.api.auth['sign-out'].$post({ json: {} })
       await client.files.object.$get()
 
       expect(fetchMock).toHaveBeenCalledTimes(3)
