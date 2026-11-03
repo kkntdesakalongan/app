@@ -42,7 +42,7 @@ async function parseResponse(response: Response, responseType?: ServiceRequestOp
 
 async function notifyLogoutToServer() {
   try {
-    await rpc.api.auth['sign-out'].$post()
+    await rpc.api.auth['sign-out'].$post({ json: {} })
   } catch (_) {
     // Best effort only: the local logout flow must continue if notification fails.
   }

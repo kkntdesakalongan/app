@@ -31,7 +31,7 @@ async function rejectLogin(message: string, sessionEstablished: boolean, clearAc
   if (clearAccess) clearStagedAccess()
   if (sessionEstablished) {
     try {
-      await rpc.api.auth['sign-out'].$post()
+      await rpc.api.auth['sign-out'].$post({ json: {} })
     } catch (_) {}
   }
   loginMessage.value = { message, type: 'error' }
