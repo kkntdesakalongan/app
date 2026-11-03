@@ -1,4 +1,5 @@
 import { defaultDataAdapter, type CollectionResult, type DataAdapter, type RecordResult, type SchemaIssue, type SubmitError } from '@southneuhof/loom'
+import { z } from 'zod/v4'
 
 /**
  * Backend conventions of this project, kept out of framework components.
@@ -12,16 +13,26 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+const collectionMetadata = z.object({
+  total: z.int().nonnegative().optional(),
+  page: z.int().positive().optional(),
+  limit: z.int().positive().optional(),
+  pageSize: z.int().positive().optional(),
+  totalPage: z.int().nonnegative().optional(),
+})
+
 export function normalizeCollection<TRecord extends object>(payload: unknown): CollectionResult<TRecord> {
   if (Array.isArray(payload)) return { data: payload as TRecord[] }
-  if (!isRecord(payload) || !Array.isArray(payload.data)) return { data: [] }
+  if (!isRecord(payload) || !Array.isArray(payload.data)) throw new Error('The server returned an invalid collection envelope.')
+  if (payload.meta !== undefined && !isRecord(payload.meta)) throw new Error('The server returned invalid collection metadata.')
 
   const nestedMeta = isRecord(payload.meta) ? payload.meta : undefined
   const source = nestedMeta ? { ...payload, ...nestedMeta } : payload
-  const total = typeof source.total === 'number' ? source.total : undefined
-  const pageSize = typeof source.limit === 'number' ? source.limit : typeof source.pageSize === 'number' ? source.pageSize : undefined
-  const page = typeof source.page === 'number' ? source.page : undefined
-  const totalPage = typeof source.totalPage === 'number' ? source.totalPage : total != null && pageSize && pageSize > 0 ? Math.ceil(total / pageSize) : undefined
+  const parsed = collectionMetadata.safeParse(source)
+  if (!parsed.success) throw new Error('The server returned invalid collection metadata.')
+  const { total, page } = parsed.data
+  const pageSize = parsed.data.limit ?? parsed.data.pageSize
+  const totalPage = parsed.data.totalPage ?? (total !== undefined && pageSize !== undefined ? Math.ceil(total / pageSize) : undefined)
 
   return {
     data: payload.data as TRecord[],

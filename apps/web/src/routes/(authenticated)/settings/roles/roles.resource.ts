@@ -84,5 +84,5 @@ export const roles = defineResource({
       submit: (output: (typeof rolesUpdateSchema)['_output']) => rolesActions.update(id, output),
     }),
   },
-  delete: { permission: 'delete-roles', run: rolesActions.delete },
+  delete: { permission: 'delete-roles', run: (record) => rolesActions.delete(record.id) },
 })

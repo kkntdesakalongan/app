@@ -103,7 +103,7 @@ Use a field resolver when a field's complete configuration depends on the curren
 
 A form definition contains a raw schema, an ordered map of selected inputs, and optional labels, validators, and submit. Each operation owns its own schema and selected inputs. Share a complete form only when its inputs and behavior are the same. Share fragments when only part of the form is common.
 
-Submit receives parsed schema output. Its return type is the result reported by Form. The constructor keeps the supplied function. A resource wraps its effective submit once for access and invalidation. A later component-level override replaces that wrapper and its policy.
+Submit receives parsed schema output and a second scope with typed caller context and form-local transient outputs. Its return type is the result reported by Form. The constructor keeps the supplied function. A resource wraps its effective submit once for access and invalidation. A later component-level override replaces that wrapper and its policy.
 
 ### 2.5 Complete display reuse
 
@@ -284,7 +284,7 @@ A bound submit uses the resource's access and invalidation behavior. Replacing i
 
 ### 6.3 Commands and delete handles
 
-Delete is bound to an identity and returns can, run, and route capabilities. A custom command's run and permission checks receive the same declared business arguments. Bind row context separately with withContext. It does not append the row to run arguments. A row-dependent policy denies when no row is bound.
+Delete binds an identity and its selected record, then returns can, run, and route capabilities. The declared delete callback receives the copied selected record, including any concurrency version. A custom command's run and permission checks receive the same declared business arguments. Bind row context separately with withContext. It does not append the row to run arguments. A row-dependent policy denies when no row is bound.
 
 A static routed command uses its `permission` for entry:
 
@@ -476,3 +476,30 @@ These sources explain language and framework behavior. The contracts above defin
 - R4 — TypeScript satisfies: https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html
 - R5 — Vue attribute forwarding: https://vuejs.org/guide/components/attrs
 - R6 — Vue app-level dependency provision: https://vuejs.org/guide/components/provide-inject
+
+
+## Approved editor extensions
+
+An update may declare an operation-level load and a form factory. Loom loads,
+checks identity and access, and calls the factory with the copied original record
+and context. FormView pins that original per editor and exposes record separately
+from draft. Primitive Form has no separate original-record prop.
+
+Form renderer values may be registered keys or typed Vue components. Concrete
+field types remain through Form, DialogForm, FormView, and resource binding.
+Input slots receive setError and the standard effective disabled value. Submission
+passes disabled to controls. Extra mutation guards, reset restrictions, hydration
+suppression, and parent-update queues are outside this contract.
+
+Submit attempt values apply before field visibility and validation without
+changing the visible draft. Transient outputs stay separate from draft and writes.
+Reset starts a fresh transient session and rejects old publication callbacks.
+Inline TableInput owns row mechanics and nested issue paths under parent validation.
+
+Successful default completion preserves the saved result while navigation is
+retried. It does not repeat writes. Explicit defaultTo wins over inferred routes.
+Caller afterSubmit and defaultTo false retain their existing ownership.
+
+Outside click and Escape dismiss dialogs by default. A caller may explicitly
+change dismissal policy. The shared collection contract remains CollectionResult
+with optional metadata. Pagination changes the request, not the result category.
