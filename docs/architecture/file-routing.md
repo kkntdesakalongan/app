@@ -87,7 +87,9 @@ adoption in each application.
 
 Pages such as the dashboard map declare `definePage({ meta: { fullBleed: true } })`.
 AppRouterView reads this setting from the record at its own routing depth. It
-places that page in an absolute viewport that fills the positioned parent,
-outside the normal document-page transition. Parent layouts and ordinary pages
-keep their existing presentation. The shell does not switch its padding based
-on the target route. Map animation stays inside the map viewport.
+places that page in an absolute viewport that fills the positioned parent.
+The viewport uses the same 200 ms fade and small vertical slide as ordinary
+pages. Map resources register cleanup with the routing host so their layers
+remain present until the exit finishes. If a nested host unmounts, pending
+cleanup passes to its parent host. The shell keeps its padding during route
+changes. Map zoom animation remains independent of the page transition.

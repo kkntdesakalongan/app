@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import Button from '@southneuhof/loom/components/base/Button.vue'
-import { onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { inject, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { z } from 'zod/v4'
 import { mapPinsSelectSchema } from '@southneuhof/api/src/routes/(authenticated)/map-pins/schema.ts'
+import { routeLeaveCleanup } from '@/components/routing/routeTransition'
 import { rpc } from '@/framework/rpc'
 import { useCollection, type CollectionLoadContext } from '@southneuhof/loom'
 const pinSchema = mapPinsSelectSchema.pick({ id: true, name: true, description: true, latitude: true, longitude: true })
@@ -14,6 +15,7 @@ async function loadPins({ signal }: CollectionLoadContext) {
   return { data: z.array(pinSchema).parse(await response.json()) }
 }
 const { records: pins, loading, error, refresh } = useCollection(() => ({ load: loadPins, query: {} }))
+const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
 const host = ref<HTMLElement>()
 const tileError = ref(false)
 const selected = ref<z.output<typeof pinSchema>>()
@@ -70,7 +72,7 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   observer?.disconnect()
-  map?.remove()
+  deferCleanup(() => map?.remove())
 })
 </script>
 <template>

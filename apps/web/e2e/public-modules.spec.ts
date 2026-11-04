@@ -19,6 +19,14 @@ async function navigateWithoutMapFlash(page: Page, target: RegExp) {
               const viewport = main.getBoundingClientRect()
               if (Math.abs(bounds.height - viewport.height) > 3 || Math.abs(bounds.width - viewport.width) > 3) samples.push('unstable-map-viewport')
               if (!map.querySelector('.leaflet-map-pane')) samples.push('map-removed-before-page')
+              const pageStyle = getComputedStyle(map.parentElement!)
+              const opacity = Number(pageStyle.opacity)
+              if (opacity > 0 && opacity < 1) samples.push('map-fade-frame')
+              if (pageStyle.transform !== 'none') {
+                const transform = new DOMMatrix(pageStyle.transform)
+                if (transform.m42 > 0 && transform.m42 <= 8) samples.push('map-slide-frame')
+              }
+              if (pageStyle.transitionDuration === '0.2s') samples.push('map-200ms-transition')
             }
           }
           if (performance.now() - start < 700) requestAnimationFrame(sample)
@@ -33,6 +41,9 @@ async function navigateWithoutMapFlash(page: Page, target: RegExp) {
   expect(transitionSamples).not.toContain('0px')
   expect(transitionSamples).not.toContain('unstable-map-viewport')
   expect(transitionSamples).not.toContain('map-removed-before-page')
+  expect(transitionSamples).toContain('map-fade-frame')
+  expect(transitionSamples).toContain('map-slide-frame')
+  expect(transitionSamples).toContain('map-200ms-transition')
 }
 
 test('places a pin and shows it on both full-area maps', async ({ authenticatedPage: page }) => {
