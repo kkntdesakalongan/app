@@ -30,7 +30,7 @@ Excluded: report publication, map pins, report locations, review states, and rep
 | Title | Short report name | Required; trim whitespace; reject an empty result. |
 | Description | Additional information | Optional plain text; an empty value means no description. |
 | Image | Supporting image | Optional; at most one image. Accept PNG, JPEG, or WebP up to 5 MB. Validate file type, signature, and size on the server. |
-| Created at | Submission time | Set by the server; cannot be edited. |
+| Created at | Submission time | Set by the server; cannot be edited. Show the formatted date and time as Submitted at in the list and detail. |
 | Updated at | Last change time | Set by the server after a saved change. |
 
 Image access follows report access. Public upload authority is limited to intake images; it must not grant access to other assets. A failed upload must not save a report that references a missing image. Removing an image must not remove an asset used by another record.

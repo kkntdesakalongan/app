@@ -9,7 +9,7 @@ const fields = {
   description: { renderer: 'textarea' },
   image: { renderer: 'image', props: { mode: 'file', maxSize: 5, accept: ['image/png', 'image/jpeg', 'image/webp'] } },
 } as const
-const labels = { title: 'Title', name: 'Name', description: 'Description', image: 'Image', latitude: 'Latitude', longitude: 'Longitude' }
+const labels = { title: 'Title', name: 'Name', description: 'Description', image: 'Image', createdAt: 'Submitted at', latitude: 'Latitude', longitude: 'Longitude' }
 const form = defineForm({ schema: reportFormSchema, labels, fields })
 export const resource = defineResource({
   key: 'disaster-reports',
@@ -23,7 +23,7 @@ export const resource = defineResource({
   detail: {
     permission: 'view-disaster-reports',
     route: { name: 'disaster-reports-detail', params: (id) => ({ id: String(id) }) },
-    detail: () => ({ ...defineDetail({ schema: recordSchema, labels, fields: { title: {}, description: {}, image: {} } }), load: actions.detail }),
+    detail: () => ({ ...defineDetail({ schema: recordSchema, labels, fields: { title: {}, description: {}, createdAt: appDisplayPresets.createdAt, image: {} } }), load: actions.detail }),
   },
   update: {
     permission: 'update-disaster-reports',

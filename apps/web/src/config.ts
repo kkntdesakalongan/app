@@ -1,5 +1,5 @@
 const config = {
-  name: 'Frontend Vue App',
+  name: 'Kalongan WebGIS',
 }
 
 export default config

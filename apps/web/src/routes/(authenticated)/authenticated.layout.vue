@@ -4,6 +4,7 @@ import Sidebar from '@/components/navigations/sidebar/rail/Sidebar.vue'
 import NavigationDrawer from '@/components/navigations/sidebar/drawer/NavigationDrawer.vue'
 import AppRouterView from '@/components/routing/AppRouterView.vue'
 import GlobalToolbar from '@/components/navigations/GlobalToolbar.vue'
+import config from '@/config'
 import Logo from '@/assets/corporate/common/Logo.vue'
 
 const mobileNavigationOpen = ref(false)
@@ -20,7 +21,7 @@ function closeMobileNavigation() {
   >
     <div class="relative z-[2] hidden h-full items-center gap-3 overflow-hidden px-5 lg:col-start-1 lg:row-start-1 lg:flex">
       <Logo class="size-8 shrink-0" />
-      <span class="truncate text-sm font-semibold tracking-[-0.01em]">Information System</span>
+      <span class="truncate text-sm font-semibold tracking-[-0.01em]">{{ config.name }}</span>
     </div>
     <GlobalToolbar class="lg:col-start-2 lg:row-start-1" @open-navigation="mobileNavigationOpen = true" />
     <Sidebar class="lg:col-start-1 lg:row-start-1 lg:row-end-3" />

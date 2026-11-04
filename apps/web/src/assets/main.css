@@ -363,3 +363,11 @@ html {
     print-color-adjust: exact !important;
   }
 }
+
+#app {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html:has(.public-map-viewport), body:has(.public-map-viewport) {
+  overflow: hidden;
+}
