@@ -7,8 +7,10 @@ const access = permissions()
 <template>
   <LocationMap>
     <h1 class="text-xl font-semibold tracking-tight">Location map</h1>
-    <Button variant="tonal" v-if="access.can('create-map-pins')" href="/map-pins/create">Create location</Button>
-    <Button variant="tonal" v-if="access.can('view-map-pins')" href="/map-pins">Manage locations</Button>
-    <template #selected="{ pin }"><Button variant="tonal" v-if="access.can('update-map-pins')" :href="`/map-pins/${pin.id}/edit`">Edit location</Button></template>
+    <template #actions>
+      <Button variant="text" v-if="access.can('create-map-pins')" href="/map-pins/create">Create location</Button>
+      <Button variant="text" v-if="access.can('view-map-pins')" href="/map-pins">Manage locations</Button>
+    </template>
+    <template #selected="{ pin }"><Button variant="text" v-if="access.can('update-map-pins')" :href="`/map-pins/${pin.id}/edit`">Edit location</Button></template>
   </LocationMap>
 </template>

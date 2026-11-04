@@ -3,12 +3,17 @@ import { appDisplayPresets } from '@/configs/display-presets'
 import { actions } from './map-pins.actions'
 import { createSchema, recordSchema } from './map-pins.schema'
 
-import MapPositionInput from '@/components/maps/MapPositionInput.vue'
+import { z } from 'zod/v4'
+import { locationOperations } from '@/framework/adapters/location'
 const formSchema = createSchema
   .omit({ latitude: true, longitude: true })
-  .extend({ position: createSchema.pick({ latitude: true, longitude: true }) })
-  .transform(({ position, ...value }) => ({ ...value, ...position }))
-const fields = { name: { renderer: 'text' }, description: { renderer: 'textarea' }, position: { renderer: MapPositionInput, label: 'Map position' } } as const
+  .extend({ position: z.object({ lat: z.number().finite().min(-90).max(90), lng: z.number().finite().min(-180).max(180) }) })
+  .transform(({ position, ...value }) => ({ ...value, latitude: position.lat, longitude: position.lng }))
+const fields = {
+  name: { renderer: 'text' },
+  description: { renderer: 'textarea' },
+  position: { renderer: 'location', label: 'Map position', props: { mapProvider: 'openstreetmap', operations: locationOperations } },
+} as const
 const labels = { title: 'Title', name: 'Name', description: 'Description', image: 'Image', latitude: 'Latitude', longitude: 'Longitude' }
 const form = defineForm({ schema: formSchema, labels, fields })
 export const resource = defineResource({
@@ -33,7 +38,7 @@ export const resource = defineResource({
       ...form,
       load: async (context) => {
         const record = await actions.detail(context)
-        return record ? { name: record.name, description: record.description, position: { latitude: record.latitude, longitude: record.longitude } } : undefined
+        return record ? { name: record.name, description: record.description, position: { lat: record.latitude, lng: record.longitude } } : undefined
       },
       submit: (value: (typeof createSchema)['_output']) => actions.update(id, value),
     }),

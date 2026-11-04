@@ -8,7 +8,7 @@ test('places a pin and shows it on both full-area maps', async ({ authenticatedP
   try {
     await page.goto('/map-pins/create')
     await page.getByRole('textbox', { name: 'Name', exact: true }).fill(name)
-    await page.getByRole('button', { name: 'Use map center' }).click()
+    await page.locator('.leaflet-container').click({ position: { x: 160, y: 160 } })
     const saved = page.waitForResponse((response) => response.url().endsWith('/api/map-pins/create') && response.request().method() === 'POST')
     await page.getByRole('button', { name: 'Submit', exact: true }).click()
     const response = await saved
