@@ -23,7 +23,7 @@ export const resource = defineResource({
   detail: {
     permission: 'view-disaster-reports',
     route: { name: 'disaster-reports-detail', params: (id) => ({ id: String(id) }) },
-    detail: () => ({ ...defineDetail({ schema: recordSchema, labels, fields: { title: {}, description: {} } }), load: actions.detail }),
+    detail: () => ({ ...defineDetail({ schema: recordSchema, labels, fields: { title: {}, description: {}, image: {} } }), load: actions.detail }),
   },
   update: {
     permission: 'update-disaster-reports',

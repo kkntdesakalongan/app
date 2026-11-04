@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import { DetailView, Detail } from '@southneuhof/loom'
+import { DetailView } from '@southneuhof/loom'
+import ImagePreview from '@southneuhof/loom/components/base/ImagePreview.vue'
 import { resource } from '../disaster-reports.resource'
 const route = useRoute('disaster-reports-detail')
 </script>
 <template>
   <DetailView v-bind="resource.detail({ id: String(route.params.id) })" title="Disaster report">
-    <template #body="{ record, detail }"
-      ><Detail v-bind="detail" />
-      <section v-if="record.image">
-        <h2>Image</h2>
-        <img :src="record.image" alt="Disaster report attachment" class="max-h-[32rem] max-w-full object-contain" /></section
-    ></template>
+    <template #value:image="{ value }">
+      <ImagePreview v-if="typeof value === 'string'" :image-u-r-l="value" :thumbnail-u-r-l="value" class="h-40 w-40" />
+      <span v-else>-</span>
+    </template>
   </DetailView>
 </template>
