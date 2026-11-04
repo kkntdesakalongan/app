@@ -3,6 +3,7 @@ import Button from '@southneuhof/loom/components/base/Button.vue'
 import LocationMap from '@/components/maps/LocationMap.vue'
 import { permissions } from '@/stores/permissions'
 const access = permissions()
+definePage({ meta: { fullBleed: true } })
 </script>
 <template>
   <LocationMap>

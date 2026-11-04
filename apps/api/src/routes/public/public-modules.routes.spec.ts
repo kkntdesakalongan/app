@@ -34,6 +34,7 @@ it('accepts anonymous reports, protects saved content, and validates image bytes
   expect((await write('/public/disaster-reports/create', { title, image: 'data:image/png;base64,%%%%' })).status).toBe(400)
   expect(await getDb().select().from(disasterReports).where(eq(disasterReports.title, title))).toHaveLength(1)
   const admin = await createSystemSession(['detail-disaster-reports', 'update-disaster-reports', 'delete-disaster-reports'], 'reports-admin')
+  expect((await write('/disaster-reports/create', { title: 'Admin report' }, admin.cookie)).status).toBe(404)
   expect((await app.request(`/api/disaster-reports/detail/${saved.id}`, { headers: { Cookie: admin.cookie } })).status).toBe(200)
   expect((await write(`/disaster-reports/update/${saved.id}`, { title: 'Updated', image: null }, admin.cookie, 'PATCH')).status).toBe(200)
   expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id)))[0]).toMatchObject({ title: 'Updated', image: null })

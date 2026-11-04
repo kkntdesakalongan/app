@@ -2,6 +2,7 @@ import 'vue-router'
 
 declare module 'vue-router' {
   interface RouteMeta {
+    fullBleed?: boolean
     requiresAuth?: boolean
     title?: string
     moduleName?: string

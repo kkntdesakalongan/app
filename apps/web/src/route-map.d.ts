@@ -59,13 +59,6 @@ declare module 'vue-router/auto-routes' {
       { id: ParamValue<false> },
       | never
     >,
-    'disaster-reports-create': RouteRecordInfo<
-      'disaster-reports-create',
-      '/disaster-reports/create',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     'map-pins': RouteRecordInfo<
       'map-pins',
       '/map-pins',
@@ -223,7 +216,6 @@ declare module 'vue-router/auto-routes' {
       routes:
         | 'dashboard'
         | 'disaster-reports'
-        | 'disaster-reports-create'
         | 'disaster-reports-detail'
         | 'disaster-reports-edit'
         | 'map-pins'
@@ -274,14 +266,6 @@ declare module 'vue-router/auto-routes' {
     'src/routes/(authenticated)/disaster-reports/[id]/edit.route.vue': {
       routes:
         | 'disaster-reports-edit'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/routes/(authenticated)/disaster-reports/create.route.vue': {
-      routes:
-        | 'disaster-reports-create'
       views:
         | never
       pathParamNames:

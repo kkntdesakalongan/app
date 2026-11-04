@@ -31,3 +31,10 @@ Local evidence is in `.local/verification/disaster-map/`. Isolated PostgreSQL
 was prepared on port 55432 for test and browser proof. These checks did not reset
 the development database or use the shared storage bucket. Playwright owned and
 stopped its preview servers. Development preview uses `pnpm dev`.
+
+Administrator creation has been removed from the resource, page routes, API
+routes, and permission catalog. Public intake remains available.
+The four focused API cases, web type check, API lint, web lint, and diff check
+passed. Existing lint warnings remain. No database seed was performed for this
+change. The removed API route prevents administrator creation regardless of
+previous permission grants.

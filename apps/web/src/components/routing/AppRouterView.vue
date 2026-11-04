@@ -31,7 +31,15 @@ const routeViewKey = computed(() => {
 
 <template>
   <RouterView v-slot="{ Component }">
-    <Transition name="vfade" mode="out-in" appear>
+    <div v-if="Component && renderedRecord?.meta.fullBleed" :key="routeViewKey" class="absolute inset-0 overflow-hidden">
+      <Suspense :timeout="0">
+        <component :is="Component" />
+        <template #fallback
+          ><div class="flex h-full items-center justify-center"><Spinner /></div
+        ></template>
+      </Suspense>
+    </div>
+    <Transition v-else name="vfade" mode="out-in" appear>
       <div v-if="Component" :key="routeViewKey">
         <Suspense :timeout="0">
           <component :is="Component" />

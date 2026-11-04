@@ -31,7 +31,6 @@ export const authorizationModules = [
     { code: "view-disaster-reports", name: "View Disaster reports", description: "View disaster reports.", targetType: "global", active: true },
     { code: "list-disaster-reports", name: "List Disaster reports", description: "List disaster reports.", targetType: "global", active: true },
     { code: "detail-disaster-reports", name: "Detail Disaster reports", description: "Detail disaster reports.", targetType: "global", active: true },
-    { code: "create-disaster-reports", name: "Create Disaster reports", description: "Create disaster reports.", targetType: "global", active: true },
     { code: "update-disaster-reports", name: "Update Disaster reports", description: "Update disaster reports.", targetType: "global", active: true },
     { code: "delete-disaster-reports", name: "Delete Disaster reports", description: "Delete disaster reports.", targetType: "global", active: true },
   ] },

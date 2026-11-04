@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from '@southneuhof/loom/components/base/Button.vue'
 import LocationMap from '@/components/maps/LocationMap.vue'
+definePage({ meta: { fullBleed: true } })
 </script>
 <template>
   <LocationMap>
