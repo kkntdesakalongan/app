@@ -83,7 +83,7 @@ describe('CommandPalette', () => {
     await view.get('[data-command-palette-input]').trigger('keydown', { key: 'ArrowDown' })
     await view.get('[data-command-palette-input]').trigger('keydown', { key: 'Enter' })
 
-    expect(mocks.push).toHaveBeenCalledExactlyOnceWith({ name: 'settings-users' })
+    expect(mocks.push).toHaveBeenCalledExactlyOnceWith({ name: 'map-pins' })
     expect(view.find('[data-command-palette-input]').exists()).toBe(false)
   })
 

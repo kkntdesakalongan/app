@@ -31,3 +31,18 @@ are in `.local/verification/disaster-map/`. The test and browser databases were
 isolated from development. Playwright stopped its preview servers after proof.
 Development preview uses `pnpm dev`. Tile availability depends on the external
 OpenStreetMap service.
+
+The map refinement moves Dashboard first and uses map-pin and warning icons.
+The map controls use progressive backdrop blur and Loom buttons. Shell padding
+stays fixed while the absolutely positioned map covers the content area. This
+prevents an outgoing list page from losing its padding during the route fade.
+Zoom and tile animation follow the reduced-motion preference. The HKA incident
+map reference uses Leaflet defaults; the previous explicit animation disablement
+has been removed. Zoom controls sit below the blur area at bottom-left.
+
+The focused navigation/layout checks passed all 14 cases. Both browser cases
+passed, including frame samples during navigation and animated zoom in/out.
+Desktop and mobile screenshots were inspected in the bounded visual review.
+The Impeccable detector returned no findings. Web type checking and production
+build passed. Evidence uses the `map-polish` filenames in the shared local run
+directory.

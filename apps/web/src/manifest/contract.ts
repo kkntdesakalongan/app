@@ -1,6 +1,6 @@
 import type { AppRouteName } from '@/router/route-names'
 
-export type NavigationIcon = 'home' | 'inbox' | 'folder' | 'settings'
+export type NavigationIcon = 'map-pin' | 'alarm-warning' | 'home' | 'inbox' | 'folder' | 'settings'
 export type NavigationSeparator = { separator: string }
 type NavigationSearch = { aliases?: readonly string[] }
 export type NavigationAction = NavigationSearch & { action: { permission: string | null; to?: { name: AppRouteName; params?: Record<string, string> } }; title: string; icon: NavigationIcon }

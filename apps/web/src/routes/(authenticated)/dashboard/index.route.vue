@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import Button from '@southneuhof/loom/components/base/Button.vue'
 import LocationMap from '@/components/maps/LocationMap.vue'
 import { permissions } from '@/stores/permissions'
 const access = permissions()
 </script>
 <template>
   <LocationMap>
-    <h1 class="font-semibold">Location map</h1>
-    <RouterLink v-if="access.can('create-map-pins')" to="/map-pins/create">Create location</RouterLink>
-    <RouterLink v-if="access.can('view-map-pins')" to="/map-pins">Manage locations</RouterLink>
-    <template #selected="{ pin }"><RouterLink v-if="access.can('update-map-pins')" :to="`/map-pins/${pin.id}/edit`">Edit location</RouterLink></template>
+    <h1 class="text-xl font-semibold tracking-tight">Location map</h1>
+    <Button variant="tonal" v-if="access.can('create-map-pins')" href="/map-pins/create">Create location</Button>
+    <Button variant="tonal" v-if="access.can('view-map-pins')" href="/map-pins">Manage locations</Button>
+    <template #selected="{ pin }"><Button variant="tonal" v-if="access.can('update-map-pins')" :href="`/map-pins/${pin.id}/edit`">Edit location</Button></template>
   </LocationMap>
 </template>
