@@ -38,3 +38,9 @@ The four focused API cases, web type check, API lint, web lint, and diff check
 passed. Existing lint warnings remain. No database seed was performed for this
 change. The removed API route prevents administrator creation regardless of
 previous permission grants.
+
+Report detail uses the standard DetailView body. The declared image field uses
+the supported value slot with the shared ImagePreview component. The custom
+body, duplicate Detail, and native image element have been removed. Browser
+proof passed for opening and closing the preview, preserving the image after
+editing, and removing it. Evidence uses `report-detail` filenames.
