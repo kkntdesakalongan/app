@@ -107,7 +107,10 @@ export default defineConfig({
     video: 'off',
     viewport: { width: 1440, height: 900 },
   },
-  projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
+  projects: [
+    { name: 'chromium', use: { browserName: 'chromium' } },
+    { name: 'mobile-webkit', testMatch: 'public-map-mobile.spec.ts', use: { browserName: 'webkit' } },
+  ],
   webServer: [
     {
       command: 'pnpm exec tsx scripts/ensure-tooling.mjs && pnpm exec tsx scripts/compile-routes.ts .sprindle-e2e/routes.mjs && node --env-file=.env --env-file=.env.e2e --import tsx src/server.ts',

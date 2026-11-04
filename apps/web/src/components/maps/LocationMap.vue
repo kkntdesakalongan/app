@@ -18,7 +18,6 @@ const { records: pins, loading, error, refresh } = useCollection(() => ({ load: 
 const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
 const host = ref<HTMLElement>()
 const tileError = ref(false)
-const selected = ref<z.output<typeof pinSchema>>()
 let map: L.Map | undefined
 let tiles: L.TileLayer | undefined
 let markers: L.LayerGroup | undefined
@@ -36,11 +35,23 @@ function renderPins() {
         html: '<span style="display:block;width:20px;height:20px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#b42318;border:3px solid white;box-shadow:0 2px 6px #0006"></span>',
         iconSize: [24, 24],
         iconAnchor: [12, 24],
+        popupAnchor: [0, -24],
       }),
     })
-    marker.on('click', () => {
-      selected.value = pin
-    })
+    const content = document.createElement('section')
+    content.setAttribute('aria-label', 'Location details')
+    const heading = document.createElement('h2')
+    heading.className = 'text-base font-semibold'
+    heading.textContent = pin.name
+    content.append(heading)
+    if (pin.description) {
+      const description = document.createElement('p')
+      description.className = 'mt-2 max-h-48 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed'
+      description.textContent = pin.description
+      content.append(description)
+    }
+    const toolbarHeight = host.value?.parentElement?.querySelector('.map-toolbar')?.getBoundingClientRect().height ?? 100
+    marker.bindPopup(content, { className: 'location-popup', maxWidth: 320, autoPanPaddingTopLeft: L.point(20, toolbarHeight + 20) })
     marker.addTo(markers)
   }
   if (!fitted && pins.value.length && map) {
@@ -98,15 +109,6 @@ onBeforeUnmount(() => {
         <p v-else-if="!pins.length">No locations yet.</p>
         <p v-if="tileError" role="alert">Map tiles could not load.</p>
       </div>
-      <section v-if="selected" class="relative mt-4 flex flex-wrap items-start justify-between gap-3" aria-label="Selected location">
-        <div class="min-w-0 max-w-prose flex-1">
-          <h2 class="text-lg font-semibold">{{ selected.name }}</h2>
-          <p class="max-h-36 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed">{{ selected.description }}</p>
-        </div>
-        <div class="ml-auto flex flex-wrap items-center justify-end gap-2">
-          <slot name="selected" :pin="selected" /><Button type="button" variant="text" @click="selected = undefined">Close location</Button>
-        </div>
-      </section>
     </div>
   </div>
 </template>
@@ -136,5 +138,39 @@ onBeforeUnmount(() => {
   .map-atmosphere > div {
     backdrop-filter: none;
   }
+}
+</style>
+
+<style>
+.location-popup .leaflet-popup-content-wrapper,
+.location-popup .leaflet-popup-tip {
+  background: rgb(var(--md-sys-color-surface-container-lowest));
+  color: rgb(var(--md-sys-color-on-surface));
+}
+.location-popup .leaflet-popup-content {
+  margin: 1rem;
+}
+.location-popup a.leaflet-popup-close-button {
+  color: rgb(var(--md-sys-color-on-surface));
+}
+.public-map-viewport .map-toolbar {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
+  padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+}
+.public-map-viewport .leaflet-control-container {
+  position: absolute;
+  inset: 0;
+  height: 100dvh;
+  pointer-events: none;
+}
+.public-map-viewport .leaflet-bottom {
+  bottom: env(safe-area-inset-bottom, 0px);
+}
+.public-map-viewport .leaflet-left {
+  left: env(safe-area-inset-left, 0px);
+}
+.public-map-viewport .leaflet-right {
+  right: env(safe-area-inset-right, 0px);
 }
 </style>

@@ -50,7 +50,7 @@ directory.
 
 The toolbar now spans the map width without a card, border, or rounded surface.
 Its progressive blur has a slight dark tint. Titles and status text align left;
-framework text actions align right, including retry and selected-pin actions.
+framework text actions align right, including retry actions.
 The browser module cases passed after the LocationInput change. Desktop and
 mobile screenshots were inspected. Evidence uses `toolbar-location` filenames.
 
@@ -74,3 +74,19 @@ Both browser module cases passed.
 The 16 focused routing/layout cases, web type check, lint, production build,
 and diff check passed for the restored transition. Existing warnings remain.
 Evidence uses `map-transition` filenames in the local run directory.
+
+The application is named Kalongan WebGIS in runtime configuration, the shell,
+HTML title, and web manifest. Both map titles read WebGIS. Create and Manage
+location actions were removed from the map toolbar; the report action is filled
+and includes a warning icon. Marker details use a Leaflet popover above the
+marker, with name and description assigned as text. The appended top detail
+section and selected-pin action slot were removed.
+
+The public map uses viewport-fit=cover, fixed positioning, and large viewport
+height. Toolbar and map controls use safe-area insets; controls follow the
+dynamic viewport. Four browser cases passed across Chromium and mobile WebKit,
+including resize and rotation. Desktop and mobile screenshots were inspected.
+Web type checking, lint, and production build passed, with existing warnings.
+The detector returned no findings. Evidence uses `webgis-update` filenames.
+Native iPhone Safari chrome remains for the user to check on-device. Further
+verification was stopped at the user's request.

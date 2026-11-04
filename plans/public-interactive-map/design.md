@@ -5,7 +5,7 @@ Implementation: Current
 
 ## 1. Purpose and scope
 
-Show location pins on a public map and on `/dashboard`. Let administrators manage the pins.
+Show location pins on the public WebGIS map and on `/dashboard`. The application name is Kalongan WebGIS. Let administrators manage the pins.
 
 Included: a public route at `/map`, a map that fills the dashboard content area, and simple pin CRUD.
 
@@ -17,7 +17,7 @@ Excluded: disaster report integration, routes and directions, live tracking, and
 |---|---|---|---|
 | 1 | View the public map | Public, without sign-in | `/map` fills the viewport and supports pan, zoom, and pin selection. |
 | 2 | View the dashboard map | Signed-in users who can open `/dashboard` | The map fills the entire content area. Use absolute positioning inside a positioned content container. Keep shell navigation available. |
-| 3 | Read pins | All map viewers | Select a pin to see its name and description. Both maps show the same saved pins. |
+| 3 | Read pins | All map viewers | Select a pin to open a popover above its marker with its name and description. Both maps show the same saved pins. |
 | 4 | Manage pins | Administrators with the required operation permission | Create, read, update, and delete pins. Place a new pin by selecting a map position. |
 | 5 | Change a pin position | Authorized administrators | Select a replacement position and save it with the pin form. |
 
@@ -39,7 +39,7 @@ All saved pins are public. Public reads expose only the fields needed for map di
 
 Fit the initial map view to saved pins. With no pins, use a configured default view. Keep tile attribution visible. Use OpenStreetMap tiles through Leaflet for both maps and the pin position input. Google Maps is not used.
 
-The public map needs a separate full-viewport layout: the current public layout constrains content to a centered form. The dashboard map is an explicit exception to normal page spacing and header placement in `DESIGN.md`; place required controls over the map so it can cover the content area. Keep these changes local to the app. Use a full-width progressive-blur toolbar with a slight dark tint and no cards. Put text at the far left and framework text action buttons at the far right. Use the existing LocationInput with its OpenStreetMap provider for pin position forms. Put zoom controls at the bottom-left. Animate zoom and tile changes unless the user prefers reduced motion. Keep shell padding stable during route transitions. Dashboard is the first navigation entry; map pins and disaster reports use location and warning icons.
+The public map extends into mobile safe areas, while toolbar and map controls stay within safe bounds. It uses the large viewport height for map coverage and the dynamic viewport height for controls. The public map needs a separate full-viewport layout: the current public layout constrains content to a centered form. The dashboard map is an explicit exception to normal page spacing and header placement in `DESIGN.md`; place required controls over the map so it can cover the content area. Keep these changes local to the app. Use a full-width progressive-blur toolbar with a slight dark tint and no cards. Put WebGIS at the far left and a filled Report a disaster action with a warning icon at the far right. Keep pin creation and management in the Map pins navigation entry. Use the existing LocationInput with its OpenStreetMap provider for pin position forms. Put zoom controls at the bottom-left. Animate zoom and tile changes unless the user prefers reduced motion. Keep shell padding stable during route transitions. Dashboard is the first navigation entry; map pins and disaster reports use location and warning icons.
 
 Approved defaults: descriptions are optional, every saved pin is public, and only administrators can change pins.
 
@@ -49,14 +49,14 @@ Approved defaults: descriptions are optional, every saved pin is public, and onl
 
 1. Open `/map` or `/dashboard`.
 2. Load the map and saved pins. Pan or zoom to inspect locations.
-3. Select a pin to open its name and description. Close the detail to continue.
+3. Select a pin to open its name and description in a popover above the marker. Close the popover to continue. Do not append details to the top toolbar.
 
 ### Manage pins
 
-1. An authorized administrator opens the pin management controls on the dashboard map.
+1. An authorized administrator opens Map pins from navigation.
 2. Select Create, then select a map position. Enter the name and optional description in a short form.
 3. Submit to save the pin. Show it on the map after confirmation.
-4. Select a saved pin to view, edit, move, or delete it. Confirm deletion before the write.
+4. Use the pin management pages to view, edit, move, or delete a saved pin. Confirm deletion before the write.
 
 | Trigger or condition | Result | Next step |
 |---|---|---|

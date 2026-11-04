@@ -44,3 +44,6 @@ the supported value slot with the shared ImagePreview component. The custom
 body, duplicate Detail, and native image element have been removed. Browser
 proof passed for opening and closing the preview, preserving the image after
 editing, and removing it. Evidence uses `report-detail` filenames.
+
+The list and standard detail show the formatted submission timestamp with the
+label Submitted at. The browser report journey checked both labels.
