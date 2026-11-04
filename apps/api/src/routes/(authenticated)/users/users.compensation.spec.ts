@@ -67,7 +67,7 @@ describe('user creation compensation', () => {
     const email = `${id('created')}@example.invalid`
     await db.insert(roles).values({ id: roleId, roleCode: id('target-role-code'), name: 'Target Role' })
 
-    const response = await app.request('/users/create', {
+    const response = await app.request('/api/users/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Cookie: session.cookie },
       body: JSON.stringify({ name: 'Created Then Removed', email, password: 'password-123', roleIds: [roleId] }),

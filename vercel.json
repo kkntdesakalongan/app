@@ -19,16 +19,6 @@
   },
   "rewrites": [
     { "source": "/api/:path*", "destination": { "service": "api" } },
-    { "source": "/health", "destination": { "service": "api" } },
-    { "source": "/openapi.json", "destination": { "service": "api" } },
-    { "source": "/me", "destination": { "service": "api" } },
-    { "source": "/files/:path*", "destination": { "service": "api" } },
-    { "source": "/users/:path*", "destination": { "service": "api" } },
-    { "source": "/roles/:path*", "destination": { "service": "api" } },
-    { "source": "/permissions/:path*", "destination": { "service": "api" } },
-    { "source": "/public/:path*", "destination": { "service": "api" } },
-    { "source": "/map-pins/:path*", "missing": [{ "type": "header", "key": "accept", "value": ".*text/html.*" }], "destination": { "service": "api" } },
-    { "source": "/disaster-reports/:path*", "missing": [{ "type": "header", "key": "accept", "value": ".*text/html.*" }], "destination": { "service": "api" } },
     { "source": "/(.*)", "destination": { "service": "web" } }
   ]
 }

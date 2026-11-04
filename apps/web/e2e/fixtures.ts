@@ -108,7 +108,7 @@ export const test = base.extend<{ authenticatedPage: Page; e2eState: void; fastA
           headers: { Origin: webUrl },
         })
         if (!signIn.ok()) throw new Error(`Fast E2E sign-in failed with status ${signIn.status()}.`)
-        const me = await request.get('/me')
+        const me = await request.get('/api/me')
         if (!me.ok()) throw new Error(`Fast E2E identity check failed with status ${me.status()}.`)
         const identity = (await me.json()).data
         if (identity.user.email !== 'admin@example.com' || !identity.roleCodes.includes('administrator')) {

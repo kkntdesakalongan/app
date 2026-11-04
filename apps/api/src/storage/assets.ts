@@ -42,7 +42,7 @@ export function storedAsset(key: string, metadata: StoredAssetMetadata = {}): St
     pdf: 'application/pdf',
     txt: 'text/plain',
   }[extension ?? '']
-  const url = new URL('/files/object', currentRequestUrl())
+  const url = new URL('/api/files/object', currentRequestUrl())
   url.searchParams.set('key', id)
   return storedAssetSchema.parse({
     kind: 'file',

@@ -21,8 +21,8 @@ it('paginates active permissions and protects mapping writes', async () => {
     description: `${prefix} description`,
     active: index < 11,
   }))
-  const request = (query = '', cookie = admin.cookie) => app.request(`/roles/${roleId}/permissions${query}`, { headers: { Cookie: cookie } })
-  const write = (method: string, cookie = admin.cookie) => app.request(`/roles/${roleId}/permissions/${fixtures[0]!.id}`, { method, headers: { Cookie: cookie } })
+  const request = (query = '', cookie = admin.cookie) => app.request(`/api/roles/${roleId}/permissions${query}`, { headers: { Cookie: cookie } })
+  const write = (method: string, cookie = admin.cookie) => app.request(`/api/roles/${roleId}/permissions/${fixtures[0]!.id}`, { method, headers: { Cookie: cookie } })
   const stored = () => db.select({ active: rolePermissions.active }).from(rolePermissions).where(and(eq(rolePermissions.roleId, roleId), eq(rolePermissions.permissionId, fixtures[0]!.id)))
   try {
     await db.insert(roles).values({ id: roleId, roleCode: roleId, name: 'Mapping role' })

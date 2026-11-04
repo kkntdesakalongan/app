@@ -9,7 +9,7 @@ test('places a pin and shows it on both full-area maps', async ({ authenticatedP
     await page.goto('/map-pins/create')
     await page.getByRole('textbox', { name: 'Name', exact: true }).fill(name)
     await page.getByRole('button', { name: 'Use map center' }).click()
-    const saved = page.waitForResponse((response) => response.url().endsWith('/map-pins/create') && response.request().method() === 'POST')
+    const saved = page.waitForResponse((response) => response.url().endsWith('/api/map-pins/create') && response.request().method() === 'POST')
     await page.getByRole('button', { name: 'Submit', exact: true }).click()
     const response = await saved
     expect(response.status()).toBe(201)
@@ -58,7 +58,7 @@ test('submits an anonymous report with a local image', async ({ browser, authent
     await page
       .locator('input[type=file]')
       .setInputFiles({ name: 'flood.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1sAAAAASUVORK5CYII=', 'base64') })
-    const saved = page.waitForResponse((response) => response.url().endsWith('/public/disaster-reports/create') && response.request().method() === 'POST')
+    const saved = page.waitForResponse((response) => response.url().endsWith('/api/public/disaster-reports/create') && response.request().method() === 'POST')
     await page.getByRole('button', { name: 'Submit', exact: true }).click()
     reportId = (await (await saved).json()).data.id
     await expect(page.getByRole('heading', { name: 'Report submitted' })).toBeVisible()

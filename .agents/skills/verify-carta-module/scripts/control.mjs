@@ -21,7 +21,7 @@ const emit = (event, fields = {}) => console.log(JSON.stringify({ event, ...fiel
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 5000, query_timeout: 5000 })
 
 async function request(path, status, { method = 'GET', data, cookie } = {}) {
-  const response = await fetch(new URL(path, base), {
+  const response = await fetch(new URL(`/api${path}`, base), {
     method,
     headers: {
       'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ async function request(path, status, { method = 'GET', data, cookie } = {}) {
     signal: AbortSignal.timeout(10000),
     redirect: 'error',
   })
-  emit('http', { method, path, status: response.status })
+  emit('http', { method, path: `/api${path}`, status: response.status })
   assert.equal(response.status, status, `${method} ${path}`)
   return { response, body: await response.json() }
 }
@@ -61,7 +61,7 @@ async function users() {
   const sessionTokens = []
   emit('fixtures', { email, roleIds })
   const signIn = async (address, password) => {
-    const result = await request('/api/auth/sign-in/email', 200, { method: 'POST', data: { email: address, password } })
+    const result = await request('/auth/sign-in/email', 200, { method: 'POST', data: { email: address, password } })
     assert.equal(typeof result.body.token, 'string')
     sessionTokens.push(result.body.token)
     const cookie = result.response.headers.getSetCookie().map((value) => value.split(';')[0]).join('; ')

@@ -14,7 +14,7 @@ afterAll(async () => {
   await closeDb()
 })
 function write(path: string, body: unknown, cookie = '', method = 'POST') {
-  return app.request(path, { method, headers: { 'Content-Type': 'application/json', Cookie: cookie }, body: JSON.stringify(body) })
+  return app.request(`/api${path}`, { method, headers: { 'Content-Type': 'application/json', Cookie: cookie }, body: JSON.stringify(body) })
 }
 
 it('accepts anonymous reports, protects saved content, and validates image bytes', async () => {
@@ -25,19 +25,19 @@ it('accepts anonymous reports, protects saved content, and validates image bytes
   const saved = (await response.json()).data
   reportIds.push(saved.id)
   expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id)))[0]).toMatchObject({ title, image, description: null })
-  expect((await app.request(`/disaster-reports/detail/${saved.id}`)).status).toBe(401)
-  expect((await app.request('/disaster-reports/list')).status).toBe(401)
+  expect((await app.request(`/api/disaster-reports/detail/${saved.id}`)).status).toBe(401)
+  expect((await app.request('/api/disaster-reports/list')).status).toBe(401)
   const limited = await createSystemSession([], 'reports-limited')
-  expect((await app.request(`/disaster-reports/detail/${saved.id}`, { headers: { Cookie: limited.cookie } })).status).toBe(403)
+  expect((await app.request(`/api/disaster-reports/detail/${saved.id}`, { headers: { Cookie: limited.cookie } })).status).toBe(403)
   expect((await write('/public/disaster-reports/create', { title: '   ' })).status).toBe(400)
   expect((await write('/public/disaster-reports/create', { title, image: 'data:image/png;base64,aGVsbG8=' })).status).toBe(400)
   expect((await write('/public/disaster-reports/create', { title, image: 'data:image/png;base64,%%%%' })).status).toBe(400)
   expect(await getDb().select().from(disasterReports).where(eq(disasterReports.title, title))).toHaveLength(1)
   const admin = await createSystemSession(['detail-disaster-reports', 'update-disaster-reports', 'delete-disaster-reports'], 'reports-admin')
-  expect((await app.request(`/disaster-reports/detail/${saved.id}`, { headers: { Cookie: admin.cookie } })).status).toBe(200)
+  expect((await app.request(`/api/disaster-reports/detail/${saved.id}`, { headers: { Cookie: admin.cookie } })).status).toBe(200)
   expect((await write(`/disaster-reports/update/${saved.id}`, { title: 'Updated', image: null }, admin.cookie, 'PATCH')).status).toBe(200)
   expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id)))[0]).toMatchObject({ title: 'Updated', image: null })
-  expect((await app.request(`/disaster-reports/delete/${saved.id}`, { method: 'DELETE', headers: { Cookie: admin.cookie } })).status).toBe(200)
+  expect((await app.request(`/api/disaster-reports/delete/${saved.id}`, { method: 'DELETE', headers: { Cookie: admin.cookie } })).status).toBe(200)
   expect(await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id))).toHaveLength(0)
 })
 
@@ -52,9 +52,9 @@ it('publishes saved pins but restricts writes and rejects invalid coordinates', 
   expect(response.status).toBe(201)
   const saved = (await response.json()).data
   pinIds.push(saved.id)
-  expect((await (await app.request('/public/map-pins')).json())).toContainEqual({ id: saved.id, ...input })
+  expect((await (await app.request('/api/public/map-pins')).json())).toContainEqual({ id: saved.id, ...input })
   expect((await write(`/map-pins/update/${saved.id}`, { ...input, name: 'Moved shelter', longitude: 111 }, admin.cookie, 'PATCH')).status).toBe(200)
   expect((await getDb().select().from(mapPins).where(eq(mapPins.id, saved.id)))[0]).toMatchObject({ name: 'Moved shelter', longitude: 111 })
-  expect((await app.request(`/map-pins/delete/${saved.id}`, { method: 'DELETE', headers: { Cookie: admin.cookie } })).status).toBe(200)
+  expect((await app.request(`/api/map-pins/delete/${saved.id}`, { method: 'DELETE', headers: { Cookie: admin.cookie } })).status).toBe(200)
   expect(await getDb().select().from(mapPins).where(eq(mapPins.id, saved.id))).toHaveLength(0)
 })

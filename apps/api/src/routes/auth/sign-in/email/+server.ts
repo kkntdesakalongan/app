@@ -1,7 +1,7 @@
 import { defineRoute } from '@southneuhof/sprindle'
 import type { TypedResponse } from 'hono'
 import { z } from 'zod/v4'
-import { getAuth } from '../../../../auth/auth'
+import { getAuth } from '../../auth'
 
 type SignInOutput = {
   redirect: boolean

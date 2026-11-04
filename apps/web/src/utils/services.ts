@@ -2,18 +2,13 @@ import router from '../router'
 import { storage } from '@southneuhof/utilities/storage'
 import { clearIdentity } from '@/framework/identity'
 import { toast } from 'vue-sonner'
-import { rpc } from '@/framework/rpc'
+import { apiUrl, rpc } from '@/framework/rpc'
 
 type ServiceRequestOptions = {
   bypassErrorToast?: boolean
   responseType?: 'arrayBuffer' | 'blob' | 'formData' | 'json' | 'text' | 'raw'
   init?: RequestInit
 }
-
-const apiUrl = (() => {
-  const raw = import.meta.env.VITE_API_URL || ''
-  return raw && !raw.endsWith('/') ? `${raw}/` : raw
-})()
 
 function extractErrorMessage(error: any): string {
   return String(error?.message?.message || error?.message || error?.error || error?.statusText || 'Terjadi kesalahan')
@@ -25,7 +20,7 @@ function parseURL(url: string, prefix: string = '', suffix: string = '') {
 }
 
 function buildURL(path: string, query?: Record<string, any>) {
-  const url = new URL(path, apiUrl)
+  const url = new URL(path.replace(/^\//, ''), new URL(apiUrl, window.location.origin))
   for (const [key, value] of Object.entries(query || {})) {
     if (value === undefined || value === null) continue
     if (Array.isArray(value)) value.forEach((item) => url.searchParams.append(key, String(item)))
@@ -42,7 +37,7 @@ async function parseResponse(response: Response, responseType?: ServiceRequestOp
 
 async function notifyLogoutToServer() {
   try {
-    await rpc.api.auth['sign-out'].$post({ json: {} })
+    await rpc.auth['sign-out'].$post({ json: {} })
   } catch (_) {
     // Best effort only: the local logout flow must continue if notification fails.
   }

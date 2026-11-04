@@ -69,7 +69,7 @@ if (urlPort(appOrigin, 'APP_ORIGIN', apiEnvPath) !== webPort) {
   throw new Error(`APP_ORIGIN port must equal WEB_PORT in ${webEnvPath}.`)
 }
 
-const apiUrl = betterAuthUrl
+const apiUrl = `${betterAuthUrl.replace(/\/$/, '')}/api`
 const webUrl = appOrigin
 const reuseExistingServer = isE2eIteration()
 
@@ -117,7 +117,7 @@ export default defineConfig({
       reuseExistingServer,
       env: {
         API_PORT: apiPort,
-        BETTER_AUTH_URL: apiUrl,
+        BETTER_AUTH_URL: betterAuthUrl,
         APP_ORIGIN: webUrl,
         SPRINDLE_ROUTE_MANIFEST: '.sprindle-e2e/routes.mjs',
       },

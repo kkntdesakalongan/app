@@ -13,7 +13,7 @@ test('session lifecycle: login, dashboard, reload, logout', async ({ authenticat
   expect(identity.user.email).toBe('admin@example.com')
   expect(identity.roleCodes).toContain('administrator')
   const adminCookies = await page.context().cookies()
-  await page.request.post(`${apiUrl}/api/auth/sign-out`, { headers: { Origin: requiredE2eValue('E2E_WEB_URL') } })
+  await page.request.post(`${apiUrl}/auth/sign-out`, { headers: { Origin: requiredE2eValue('E2E_WEB_URL') } })
   await page.context().clearCookies()
   const after = await page.request.get(`${apiUrl}/me`)
   expect(after.status()).toBe(401)
