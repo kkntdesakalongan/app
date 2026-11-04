@@ -71,7 +71,9 @@ watch(
 )
 onMounted(() => {
   if (!host.value) return
-  map = L.map(host.value, { zoomAnimation: false, fadeAnimation: false }).setView([-2.5, 118], 5)
+  const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  map = L.map(host.value, { zoomAnimation: animate, fadeAnimation: animate, markerZoomAnimation: animate, zoomControl: false }).setView([-2.5, 118], 5)
+  L.control.zoom({ position: 'bottomleft' }).addTo(map)
   tiles = L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -93,9 +95,14 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <div class="absolute inset-0 isolate">
+  <div class="location-map absolute inset-0 isolate">
     <div ref="host" class="absolute inset-0 z-0" aria-label="Location map" />
-    <div class="absolute right-3 top-3 z-[1000] flex max-w-[min(22rem,80%)] flex-col gap-2 rounded-lg bg-surface-container-lowest p-3 text-on-surface shadow-lg">
+    <div class="map-atmosphere pointer-events-none absolute inset-x-0 top-0 z-[400] h-64" aria-hidden="true">
+      <div />
+      <div />
+      <div />
+    </div>
+    <div class="map-controls absolute inset-x-0 top-0 z-[500] flex max-h-[calc(100%_-_2rem)] flex-col gap-3 overflow-y-auto px-5 pb-5 pt-5 text-on-surface sm:left-auto sm:w-[24rem] sm:px-7 sm:pt-7">
       <slot />
       <p v-if="loading" role="status">Loading locations…</p>
       <p v-else-if="error" role="alert">{{ error.message }} <Button type="button" @click="refresh">Retry locations</Button></p>
@@ -114,12 +121,51 @@ onBeforeUnmount(() => {
         Use map center
       </Button>
       <p v-if="placement">Select a map position, or move the map and use its center.</p>
-      <section v-if="selected" class="flex flex-col gap-2" aria-label="Selected location">
-        <h2 class="font-semibold">{{ selected.name }}</h2>
-        <p class="whitespace-pre-wrap">{{ selected.description }}</p>
+      <section v-if="selected" class="mt-2 flex flex-col gap-2 border-t border-outline-variant pt-4" aria-label="Selected location">
+        <h2 class="text-lg font-semibold">{{ selected.name }}</h2>
+        <p class="whitespace-pre-wrap text-sm leading-relaxed">{{ selected.description }}</p>
         <slot name="selected" :pin="selected" />
-        <Button type="button" @click="selected = undefined">Close location</Button>
+        <Button type="button" variant="text" @click="selected = undefined">Close location</Button>
       </section>
     </div>
   </div>
 </template>
+
+<style scoped>
+.map-atmosphere {
+  background: linear-gradient(to bottom, rgb(var(--md-sys-color-surface) / 0.94), rgb(var(--md-sys-color-surface) / 0));
+}
+.map-atmosphere > div {
+  position: absolute;
+  inset: 0;
+  mask-image: linear-gradient(to bottom, black, transparent);
+  backdrop-filter: blur(3px);
+}
+.map-atmosphere > div:nth-child(2) {
+  bottom: 25%;
+  backdrop-filter: blur(8px);
+}
+.map-atmosphere > div:nth-child(3) {
+  bottom: 55%;
+  backdrop-filter: blur(16px);
+}
+.map-controls {
+  background: linear-gradient(to bottom, rgb(var(--md-sys-color-surface) / 0.78) 65%, rgb(var(--md-sys-color-surface) / 0.86));
+  backdrop-filter: blur(12px);
+  border-radius: 0 0 0 1rem;
+}
+@media (max-width: 639px) {
+  .map-controls {
+    left: 3.5rem;
+    padding: 1rem;
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .map-controls {
+    background: rgb(var(--md-sys-color-surface));
+  }
+  .map-atmosphere > div {
+    backdrop-filter: none;
+  }
+}
+</style>

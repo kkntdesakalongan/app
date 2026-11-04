@@ -39,7 +39,7 @@ All saved pins are public. Public reads expose only the fields needed for map di
 
 Fit the initial map view to saved pins. With no pins, use a configured default view. Keep tile attribution visible. Use OpenStreetMap tiles through Leaflet for both maps and the pin position input. Google Maps is not used.
 
-The public map needs a separate full-viewport layout: the current public layout constrains content to a centered form. The dashboard map is an explicit exception to normal page spacing and header placement in `DESIGN.md`; place required controls over the map so it can cover the content area. Keep these changes local to the app.
+The public map needs a separate full-viewport layout: the current public layout constrains content to a centered form. The dashboard map is an explicit exception to normal page spacing and header placement in `DESIGN.md`; place required controls over the map so it can cover the content area. Keep these changes local to the app. Use progressive blur behind map text and framework action buttons. Put zoom controls at the bottom-left. Animate zoom and tile changes unless the user prefers reduced motion. Keep shell padding stable during route transitions. Dashboard is the first navigation entry; map pins and disaster reports use location and warning icons.
 
 Approved defaults: descriptions are optional, every saved pin is public, and only administrators can change pins.
 
