@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { clearIdentity, refreshIdentity } from '@/framework/identity'
 import Logo from '@/assets/corporate/common/Logo.vue'
+import config from '@/config'
 import { resolvePostLoginRoute } from '@/router/navigation'
 import { consumePostLoginRedirect } from '@/utils/post-login-redirect'
 import Card from '@southneuhof/loom/components/base/Card.vue'
@@ -83,7 +84,7 @@ async function login() {
     <div class="flex flex-row items-center gap-8"><Logo class="w-16" /></div>
     <div class="flex flex-col gap-4">
       <div class="text-lg">Welcome to</div>
-      <div class="text-4xl font-bold">Demo App</div>
+      <div class="text-4xl font-bold">{{ config.name }}</div>
     </div>
     <form class="flex flex-col items-center gap-4" @submit.prevent="login">
       <TextInput class="w-full" :model-value="formData.email" @update:model-value="(value) => (formData.email = String(value))" label="Email" required />
