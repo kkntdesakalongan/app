@@ -236,6 +236,9 @@ importers:
       html2pdf.js:
         specifier: ^0.10.3
         version: 0.10.3
+      leaflet:
+        specifier: ^1.9.4
+        version: 1.9.4
       pinia:
         specifier: ^3.0.4
         version: 3.0.4(typescript@6.0.2)(vue@3.5.39(typescript@6.0.2))
@@ -306,6 +309,9 @@ importers:
       '@types/jsdom':
         specifier: ^20.0.1
         version: 20.0.1
+      '@types/leaflet':
+        specifier: ^1.9.22
+        version: 1.9.22
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.3

@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import Sidebar from '@/components/navigations/sidebar/rail/Sidebar.vue'
 import NavigationDrawer from '@/components/navigations/sidebar/drawer/NavigationDrawer.vue'
 import AppRouterView from '@/components/routing/AppRouterView.vue'
 import GlobalToolbar from '@/components/navigations/GlobalToolbar.vue'
 import Logo from '@/assets/corporate/common/Logo.vue'
 
+const route = useRoute()
 const mobileNavigationOpen = ref(false)
 function closeMobileNavigation() {
   mobileNavigationOpen.value = false
@@ -26,6 +28,7 @@ function closeMobileNavigation() {
     <Sidebar class="lg:col-start-1 lg:row-start-1 lg:row-end-3" />
     <NavigationDrawer :open="mobileNavigationOpen" @close="closeMobileNavigation" />
     <main
+      :class="route.name === 'dashboard' ? 'relative !min-h-[calc(100dvh-3.5rem)] !overflow-hidden !p-0 lg:!min-h-0' : ''"
       class="col-start-1 row-start-2 flex min-h-0 min-w-0 flex-col gap-2 overflow-x-hidden overflow-y-auto bg-surface-container-lowest p-4 sm:p-6 lg:absolute lg:bottom-4 lg:col-end-3 lg:col-start-1 lg:left-[17rem] lg:right-4 lg:row-end-3 lg:row-start-1 lg:top-[var(--app-toolbar-height)] lg:rounded-2xl lg:border lg:border-outline-variant lg:p-8 lg:shadow-[0_18px_50px_-24px_rgb(var(--md-sys-color-shadow)/0.42)]"
     >
       <AppRouterView />

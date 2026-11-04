@@ -18,6 +18,24 @@ type ModuleDefinition = {
 };
 
 export const authorizationModules = [
+  { code: "map-pins", name: "Map pins", active: true, permissions: [
+    { code: "view-map-pins", name: "View Map pins", description: "View map pins.", targetType: "global", active: true },
+    { code: "list-map-pins", name: "List Map pins", description: "List map pins.", targetType: "global", active: true },
+    { code: "detail-map-pins", name: "Detail Map pins", description: "Detail map pins.", targetType: "global", active: true },
+    { code: "create-map-pins", name: "Create Map pins", description: "Create map pins.", targetType: "global", active: true },
+    { code: "update-map-pins", name: "Update Map pins", description: "Update map pins.", targetType: "global", active: true },
+    { code: "delete-map-pins", name: "Delete Map pins", description: "Delete map pins.", targetType: "global", active: true },
+  ] },
+
+  { code: "disaster-reports", name: "Disaster reports", active: true, permissions: [
+    { code: "view-disaster-reports", name: "View Disaster reports", description: "View disaster reports.", targetType: "global", active: true },
+    { code: "list-disaster-reports", name: "List Disaster reports", description: "List disaster reports.", targetType: "global", active: true },
+    { code: "detail-disaster-reports", name: "Detail Disaster reports", description: "Detail disaster reports.", targetType: "global", active: true },
+    { code: "create-disaster-reports", name: "Create Disaster reports", description: "Create disaster reports.", targetType: "global", active: true },
+    { code: "update-disaster-reports", name: "Update Disaster reports", description: "Update disaster reports.", targetType: "global", active: true },
+    { code: "delete-disaster-reports", name: "Delete Disaster reports", description: "Delete disaster reports.", targetType: "global", active: true },
+  ] },
+
   {
     code: "users",
     name: "Users",
