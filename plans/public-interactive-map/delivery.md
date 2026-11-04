@@ -4,8 +4,9 @@ Design: [design.md](design.md)
 
 The public map is at `/map`. The dashboard map is at `/dashboard` and fills the
 content area with absolute positioning. Administrator pin management is at
-`/map-pins`. Create and edit forms use the same OpenStreetMap position input.
-A map click or the keyboard-accessible Use map center action sets the position.
+`/map-pins`. Create and edit forms use Loom LocationInput with the existing OpenStreetMap
+provider and location adapter. Its coordinate value maps to the pin latitude
+and longitude at the form boundary. The custom position input was removed.
 Both map routes read the same public pin endpoint through the typed app client
 and Loom collection runtime.
 
@@ -46,3 +47,9 @@ Desktop and mobile screenshots were inspected in the bounded visual review.
 The Impeccable detector returned no findings. Web type checking and production
 build passed. Evidence uses the `map-polish` filenames in the shared local run
 directory.
+
+The toolbar now spans the map width without a card, border, or rounded surface.
+Its progressive blur has a slight dark tint. Titles and status text align left;
+framework text actions align right, including retry and selected-pin actions.
+The browser module cases passed after the LocationInput change. Desktop and
+mobile screenshots were inspected. Evidence uses `toolbar-location` filenames.
