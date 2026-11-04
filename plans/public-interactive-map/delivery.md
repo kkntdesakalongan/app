@@ -55,13 +55,22 @@ The browser module cases passed after the LocationInput change. Desktop and
 mobile screenshots were inspected. Evidence uses `toolbar-location` filenames.
 
 The route viewport now owns full-bleed map placement. Both map pages declare
-`fullBleed`; AppRouterView renders them outside the document transition in a
-stable absolute viewport. Normal document routes keep their fade. This removes
-the transformed-ancestor dependency and prevents map disposal during an outgoing
-document animation. A browser frame check reproduced incorrect map dimensions
+`fullBleed`; AppRouterView renders them in a stable absolute viewport with the
+same 200 ms fade and small vertical slide as ordinary pages. Map cleanup runs
+after the route exit completes, so layers and toolbar remain visible together.
+This removes the dependency on an unsized transformed ancestor. A browser frame check reproduced incorrect map dimensions
 before the change. The same check now passes while entering and leaving the
 dashboard; it also checks that the toolbar is not left without map panes. Both
 browser module cases passed.
 The 16 focused routing/layout cases, web type check, web lint, production build,
 and diff check passed. Existing lint and build warnings remain. Verification
 evidence uses `map-viewport` filenames in the local run directory.
+
+The animation regression check failed when the map had no page transition and
+passed after the shared transition was restored. It requires visible fade and
+slide frames and a 200 ms duration while entering and leaving Dashboard, as
+well as stable dimensions and intact map panes throughout both transitions.
+Both browser module cases passed.
+The 16 focused routing/layout cases, web type check, lint, production build,
+and diff check passed for the restored transition. Existing warnings remain.
+Evidence uses `map-transition` filenames in the local run directory.

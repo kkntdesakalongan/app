@@ -1,9 +1,34 @@
 <script setup lang="ts">
-import { computed, inject, unref } from 'vue'
+import { computed, inject, onBeforeUnmount, provide, unref } from 'vue'
 import { RouterView, useRoute, useRouter, viewDepthKey } from 'vue-router'
 import type { RouteNamedMap } from 'vue-router/auto-routes'
 import Spinner from '@southneuhof/loom/components/base/Spinner.vue'
+import { routeLeaveCleanup } from './routeTransition'
 import { keyManager } from '@/stores/keyManager'
+
+const parentCleanup = inject(routeLeaveCleanup, undefined)
+const pendingCleanup = new Set<() => void>()
+let disposing = false
+provide(routeLeaveCleanup, (cleanup) => {
+  if (disposing) {
+    if (parentCleanup) parentCleanup(cleanup)
+    else cleanup()
+  } else pendingCleanup.add(cleanup)
+})
+function finishLeave() {
+  const callbacks = [...pendingCleanup]
+  pendingCleanup.clear()
+  for (const cleanup of callbacks) cleanup()
+}
+onBeforeUnmount(() => {
+  disposing = true
+  const callbacks = [...pendingCleanup]
+  pendingCleanup.clear()
+  for (const cleanup of callbacks) {
+    if (parentCleanup) parentCleanup(cleanup)
+    else cleanup()
+  }
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -31,16 +56,8 @@ const routeViewKey = computed(() => {
 
 <template>
   <RouterView v-slot="{ Component }">
-    <div v-if="Component && renderedRecord?.meta.fullBleed" :key="routeViewKey" class="absolute inset-0 overflow-hidden">
-      <Suspense :timeout="0">
-        <component :is="Component" />
-        <template #fallback
-          ><div class="flex h-full items-center justify-center"><Spinner /></div
-        ></template>
-      </Suspense>
-    </div>
-    <Transition v-else name="vfade" mode="out-in" appear>
-      <div v-if="Component" :key="routeViewKey">
+    <Transition name="vfade" mode="out-in" appear @after-leave="finishLeave" @leave-cancelled="finishLeave">
+      <div v-if="Component" :key="routeViewKey" :class="renderedRecord?.meta.fullBleed ? 'absolute inset-0 overflow-hidden' : undefined">
         <Suspense :timeout="0">
           <component :is="Component" />
           <template #fallback>
