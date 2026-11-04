@@ -24,12 +24,12 @@ test('plain Node runs the source-free application with one request asset module'
       const directory = statSync(source).isDirectory()
       symlinkSync(source, join(fixture, 'node_modules', entry.name), directory && process.platform === 'win32' ? 'junction' : directory ? 'dir' : 'file')
     }
-    const script = `const m=await import('./dist/application.mjs');const response=await m.app.request('/health');const session=await m.app.request('/api/auth/get-session');const asset=m.runWithAssetRequestUrl('https://api.example.test/request',()=>m.storedAsset('uploads/file.pdf'));process.stdout.write(JSON.stringify({status:response.status,body:await response.json(),sessionStatus:session.status,session:await session.json(),url:asset.url}))`
+    const script = `const m=await import('./dist/application.mjs');const response=await m.app.request('/api/health');const session=await m.app.request('/api/auth/get-session');const asset=m.runWithAssetRequestUrl('https://api.example.test/request',()=>m.storedAsset('uploads/file.pdf'));process.stdout.write(JSON.stringify({status:response.status,body:await response.json(),sessionStatus:session.status,session:await session.json(),url:asset.url}))`
     const environment = { ...process.env }
     delete environment.NODE_OPTIONS
     const child = spawnSync(process.execPath, ['--input-type=module', '--eval', script], { cwd: fixture, env: environment, encoding: 'utf8' })
     expect(child.status, child.stderr).toBe(0)
-    expect(JSON.parse(child.stdout)).toEqual({ status: 200, body: { ok: true }, sessionStatus: 200, session: null, url: 'https://api.example.test/files/object?key=uploads%2Ffile.pdf' })
+    expect(JSON.parse(child.stdout)).toEqual({ status: 200, body: { ok: true }, sessionStatus: 200, session: null, url: 'https://api.example.test/api/files/object?key=uploads%2Ffile.pdf' })
   } finally {
     rmSync(fixture, { recursive: true, force: true })
   }

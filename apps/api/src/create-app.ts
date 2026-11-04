@@ -8,7 +8,7 @@ import { assetRequestContext, storedAssetResponse } from './storage/assets'
 
 export function createApp(routeManifest: FileRouteManifest) {
   return installSprindle(
-    new Hono()
+    new Hono().basePath('/api')
       .onError(onError)
       .notFound(sprindleNotFound)
       .use('*', requestContext())

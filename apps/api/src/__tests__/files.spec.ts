@@ -30,7 +30,7 @@ function routeRequest(
 ) {
   const headers = new Headers({ "Content-Type": "application/json" });
   if (cookie) headers.set("Cookie", cookie);
-  return rawApp.request(path, {
+  return rawApp.request(`/api${path}`, {
     method,
     headers,
     body:
@@ -178,7 +178,7 @@ describe("file upload presign route", () => {
           name: "report.txt",
           mimeType: "text/plain",
           size: 12,
-          url: "http://localhost/files/object?key=uploads%2Freport.txt",
+          url: "http://localhost/api/files/object?key=uploads%2Freport.txt",
         },
       ],
       meta: { total: 2, totalPage: 1 },

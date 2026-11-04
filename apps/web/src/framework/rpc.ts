@@ -1,8 +1,5 @@
 import { createRpcClient } from '@southneuhof/sdk'
 
-export const apiUrl = (() => {
-  const raw = import.meta.env.VITE_API_URL || ''
-  return raw && !raw.endsWith('/') ? `${raw}/` : raw
-})()
-
+const apiOrigin = new URL(import.meta.env.VITE_API_URL || '/', window.location.origin).origin
+export const apiUrl = `${apiOrigin}/api/`
 export const rpc = createRpcClient(apiUrl)

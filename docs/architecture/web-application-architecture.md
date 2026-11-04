@@ -308,3 +308,16 @@ types own schema membership and component props. Review displayed values,
 authorization and workflow behavior in source and tests. See the
 [web verification guide](../../.agents/skills/web-ui-surfaces/references/verification.md)
 for lint findings and source review.
+
+## HTTP API namespace
+
+The API application sets `/api` once in `apps/api/src/create-app.ts`. Route
+files declare paths relative to that prefix. Auth route files live under
+`routes/auth`, so their public paths remain `/api/auth/...`. The web RPC client
+and app services add the API prefix to the configured API origin.
+`VITE_API_URL` selects that origin; an omitted value uses the website origin.
+Stored file links and OpenAPI server metadata use the same prefix.
+
+Vercel sends `/api/:path*` to the API service and other paths to the web service.
+New API modules need no Vercel route entry. Page routes do not depend on request
+headers to remain separate from API routes.

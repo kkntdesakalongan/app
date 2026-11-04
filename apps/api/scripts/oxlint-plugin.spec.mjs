@@ -63,7 +63,7 @@ ruleTester.run('route-authorization', routeAuthorization, {
         import { defineRoute } from '@southneuhof/sprindle/routes'
         defineRoute({})
       `,
-      filename: 'src/routes/api/auth/sign-in/email/+server.ts',
+      filename: 'src/routes/auth/sign-in/email/+server.ts',
     },
   ],
   invalid: [

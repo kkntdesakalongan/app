@@ -19,7 +19,7 @@ describe('stored asset contract', () => {
     expect(result).toEqual({
       kind: 'file',
       id: 'uploads/report.pdf',
-      url: 'https://api.test:3000/files/object?key=uploads%2Freport.pdf',
+      url: 'https://api.test:3000/api/files/object?key=uploads%2Freport.pdf',
       name: 'report.pdf',
       mimeType: 'application/pdf',
       size: 12,
@@ -45,8 +45,8 @@ describe('stored asset contract', () => {
       }),
     ])
 
-    expect(first.url).toBe('https://api-one.test:3000/files/object?key=uploads%2Fone.jpg')
-    expect(second.url).toBe('https://api-two.test:4000/files/object?key=uploads%2Ftwo.jpg')
+    expect(first.url).toBe('https://api-one.test:3000/api/files/object?key=uploads%2Fone.jpg')
+    expect(second.url).toBe('https://api-two.test:4000/api/files/object?key=uploads%2Ftwo.jpg')
   })
 
   it('projects only exact upload-key strings recursively', () => {
@@ -73,7 +73,7 @@ describe('stored asset contract', () => {
     }))
 
     expect(result.file.id).toBe('uploads/one.pdf')
-    expect(result.files[0]?.url).toBe('https://api.test:3000/files/object?key=uploads%2Ftwo.pdf')
+    expect(result.files[0]?.url).toBe('https://api.test:3000/api/files/object?key=uploads%2Ftwo.pdf')
   })
 
   it('projects stored IDs back to object arrays without equating client metadata', async () => {
@@ -83,7 +83,7 @@ describe('stored asset contract', () => {
     }))
 
     expect(stored.attachments.map((asset) => asset.id)).toEqual(['uploads/one.pdf', 'uploads/two.pdf'])
-    expect(stored.attachments[0]?.url).toBe('https://api.test:3000/files/object?key=uploads%2Fone.pdf')
+    expect(stored.attachments[0]?.url).toBe('https://api.test:3000/api/files/object?key=uploads%2Fone.pdf')
     expect(stored.attachments.every((asset) => storedAssetSchema.safeParse(asset).success)).toBe(true)
   })
 
@@ -100,7 +100,7 @@ describe('stored asset contract', () => {
     expect(projected?.headers.get('content-length')).toBeNull()
     await expect(projected?.json()).resolves.toEqual({
       data: {
-        file: expect.objectContaining({ id: 'uploads/rtm.jpg', url: 'https://api.test:3000/files/object?key=uploads%2Frtm.jpg' }),
+        file: expect.objectContaining({ id: 'uploads/rtm.jpg', url: 'https://api.test:3000/api/files/object?key=uploads%2Frtm.jpg' }),
         plain: 'hello',
       },
     })
@@ -121,8 +121,8 @@ describe('stored asset contract', () => {
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
       data: {
-        file: expect.objectContaining({ id: 'uploads/installed.jpg', url: 'https://api.test:3000/files/object?key=uploads%2Finstalled.jpg' }),
-        files: [expect.objectContaining({ id: 'uploads/installed-a.jpg', url: 'https://api.test:3000/files/object?key=uploads%2Finstalled-a.jpg' }), 'hello'],
+        file: expect.objectContaining({ id: 'uploads/installed.jpg', url: 'https://api.test:3000/api/files/object?key=uploads%2Finstalled.jpg' }),
+        files: [expect.objectContaining({ id: 'uploads/installed-a.jpg', url: 'https://api.test:3000/api/files/object?key=uploads%2Finstalled-a.jpg' }), 'hello'],
       },
     })
   })

@@ -32,7 +32,8 @@ vi.mock('@southneuhof/utilities/storage', () => ({ storage: mocks.storage }))
 vi.mock('@/framework/identity', () => ({ clearIdentity: mocks.clearIdentity }))
 vi.mock('vue-sonner', () => ({ toast: { error: mocks.toastError } }))
 vi.mock('@/framework/rpc', () => ({
-  rpc: { api: { auth: { 'sign-out': { $post: mocks.signOut } } } },
+  apiUrl: 'http://api.test/api/',
+  rpc: { auth: { 'sign-out': { $post: mocks.signOut } } },
 }))
 
 import services from '../services'
@@ -76,7 +77,7 @@ describe('legacy app services', () => {
     await services.get('users', { status: ['active', 'pending'], page: 2, empty: null, missing: undefined })
 
     const requestUrl = new URL(String(fetchMock.mock.calls[0]![0]))
-    expect(requestUrl.pathname).toBe('/users')
+    expect(requestUrl.pathname).toBe('/api/users')
     expect(requestUrl.searchParams.getAll('status')).toEqual(['active', 'pending'])
     expect(requestUrl.searchParams.get('page')).toBe('2')
     expect(requestUrl.searchParams.has('empty')).toBe(false)
@@ -132,7 +133,7 @@ describe('legacy app services', () => {
     await services.detail('users', 'team/member?active=true')
 
     const requestUrl = new URL(String(fetchMock.mock.calls[0]![0]))
-    expect(requestUrl.pathname).toBe('/users/team%2Fmember%3Factive%3Dtrue/show')
+    expect(requestUrl.pathname).toBe('/api/users/team%2Fmember%3Factive%3Dtrue/show')
   })
 
   it('downloads a raw response and revokes one object URL', async () => {

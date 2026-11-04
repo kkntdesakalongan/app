@@ -31,7 +31,7 @@ async function rejectLogin(message: string, sessionEstablished: boolean, clearAc
   if (clearAccess) clearStagedAccess()
   if (sessionEstablished) {
     try {
-      await rpc.api.auth['sign-out'].$post({ json: {} })
+      await rpc.auth['sign-out'].$post({ json: {} })
     } catch (_) {}
   }
   loginMessage.value = { message, type: 'error' }
@@ -43,7 +43,7 @@ async function login() {
   let sessionEstablished = false
   let failureStage: 'sign-in' | 'identity' = 'sign-in'
   try {
-    const loginResponse = await rpc.api.auth['sign-in'].email.$post({ json: formData.value })
+    const loginResponse = await rpc.auth['sign-in'].email.$post({ json: formData.value })
     if (!loginResponse.ok) {
       await rejectLogin(INVALID_CREDENTIALS_MESSAGE, false)
       return

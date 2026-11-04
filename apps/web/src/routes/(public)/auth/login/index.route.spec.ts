@@ -39,7 +39,7 @@ vi.mock('@/router/navigation', () => ({
 
 vi.mock('@/framework/rpc', () => ({
   rpc: {
-    api: { auth: { 'sign-in': { email: { $post: mocks.signIn } }, 'sign-out': { $post: mocks.signOut } } },
+    auth: { 'sign-in': { email: { $post: mocks.signIn } }, 'sign-out': { $post: mocks.signOut } },
   },
 }))
 

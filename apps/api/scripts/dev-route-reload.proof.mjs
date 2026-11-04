@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const routeRoot = join(root, 'src/routes/(dev-proof)')
 const port = 41000 + Math.floor(Math.random() * 1000)
-const base = `http://127.0.0.1:${port}`
+const base = `http://127.0.0.1:${port}/api`
 
 async function eventually(path, status, body) {
   const deadline = Date.now() + 20_000

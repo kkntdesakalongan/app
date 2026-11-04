@@ -41,7 +41,7 @@ async function session(withPermission: boolean, permissionCodes = ['create-users
 }
 
 function request(body: unknown, cookie = '') {
-  return app.request('/users/create', {
+  return app.request('/api/users/create', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) },
     body: JSON.stringify(body),
@@ -106,7 +106,7 @@ describe('user credential creation route', () => {
 
   it('rejects invalid status codes without changing the user', async () => {
     const sessionState = await session(true, ['create-users', 'update-users'])
-    const response = await app.request(`/users/update/${sessionState.userId}`, {
+    const response = await app.request(`/api/users/update/${sessionState.userId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Cookie: sessionState.cookie },
       body: JSON.stringify({ statusCode: 'inactive' }),
@@ -120,13 +120,13 @@ describe('user credential creation route', () => {
     const sessionState = await session(true, ['create-users', 'update-users'])
     const before = await getDb().select({ id: sessions.id }).from(sessions).where(eq(sessions.userId, sessionState.userId))
     expect(before).toHaveLength(1)
-    const response = await app.request(`/users/update/${sessionState.userId}`, {
+    const response = await app.request(`/api/users/update/${sessionState.userId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Cookie: sessionState.cookie },
       body: JSON.stringify({ statusCode: 'non_active' }),
     })
     expect(response.status).toBe(200)
     expect(await getDb().select({ id: sessions.id }).from(sessions).where(eq(sessions.userId, sessionState.userId))).toHaveLength(0)
-    expect((await app.request('/me', { headers: { Cookie: sessionState.cookie } })).status).toBe(401)
+    expect((await app.request('/api/me', { headers: { Cookie: sessionState.cookie } })).status).toBe(401)
   })
 })

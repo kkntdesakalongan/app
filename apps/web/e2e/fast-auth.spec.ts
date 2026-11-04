@@ -21,7 +21,7 @@ test.describe('first fast session', () => {
 
 test('a UI session can log out', async ({ authenticatedPage: page }) => {
   const apiUrl = requiredE2eValue('E2E_API_URL')
-  await page.request.post(`${apiUrl}/api/auth/sign-out`, {
+  await page.request.post(`${apiUrl}/auth/sign-out`, {
     headers: { Origin: requiredE2eValue('E2E_WEB_URL') },
   })
   await page.context().clearCookies()

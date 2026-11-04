@@ -12,7 +12,7 @@ function isRouteFile(filename) {
 
 function isPublicRouteFile(filename) {
   const path = normalizedFilename(filename)
-  return path.endsWith('/routes/health/+server.ts') || /\/routes\/api\/auth\/.+\/\+server\.ts$/.test(path)
+  return path.endsWith('/routes/health/+server.ts') || /\/routes\/auth\/.+\/\+server\.ts$/.test(path)
 }
 
 function propertyName(node) {
