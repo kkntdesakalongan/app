@@ -38,6 +38,62 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'disaster-reports': RouteRecordInfo<
+      'disaster-reports',
+      '/disaster-reports',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'disaster-reports-detail': RouteRecordInfo<
+      'disaster-reports-detail',
+      '/disaster-reports/:id/detail',
+      { id: ParamValue<true> },
+      { id: ParamValue<false> },
+      | never
+    >,
+    'disaster-reports-edit': RouteRecordInfo<
+      'disaster-reports-edit',
+      '/disaster-reports/:id/edit',
+      { id: ParamValue<true> },
+      { id: ParamValue<false> },
+      | never
+    >,
+    'disaster-reports-create': RouteRecordInfo<
+      'disaster-reports-create',
+      '/disaster-reports/create',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'map-pins': RouteRecordInfo<
+      'map-pins',
+      '/map-pins',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'map-pins-detail': RouteRecordInfo<
+      'map-pins-detail',
+      '/map-pins/:id/detail',
+      { id: ParamValue<true> },
+      { id: ParamValue<false> },
+      | never
+    >,
+    'map-pins-edit': RouteRecordInfo<
+      'map-pins-edit',
+      '/map-pins/:id/edit',
+      { id: ParamValue<true> },
+      { id: ParamValue<false> },
+      | never
+    >,
+    'map-pins-create': RouteRecordInfo<
+      'map-pins-create',
+      '/map-pins/create',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'settings-permissions': RouteRecordInfo<
       'settings-permissions',
       '/settings/permissions',
@@ -122,6 +178,20 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'disaster-reports-new': RouteRecordInfo<
+      'disaster-reports-new',
+      '/disaster-reports/new',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'map': RouteRecordInfo<
+      'map',
+      '/map',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'auth-login': RouteRecordInfo<
       'auth-login',
       '/auth/login',
@@ -152,6 +222,14 @@ declare module 'vue-router/auto-routes' {
     'src/routes/(authenticated)/authenticated.layout.vue': {
       routes:
         | 'dashboard'
+        | 'disaster-reports'
+        | 'disaster-reports-create'
+        | 'disaster-reports-detail'
+        | 'disaster-reports-edit'
+        | 'map-pins'
+        | 'map-pins-create'
+        | 'map-pins-detail'
+        | 'map-pins-edit'
         | 'settings-permissions'
         | 'settings-permissions-detail'
         | 'settings-roles'
@@ -172,6 +250,70 @@ declare module 'vue-router/auto-routes' {
     'src/routes/(authenticated)/dashboard/index.route.vue': {
       routes:
         | 'dashboard'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/disaster-reports/index.route.vue': {
+      routes:
+        | 'disaster-reports'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/disaster-reports/[id]/detail.route.vue': {
+      routes:
+        | 'disaster-reports-detail'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/disaster-reports/[id]/edit.route.vue': {
+      routes:
+        | 'disaster-reports-edit'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/disaster-reports/create.route.vue': {
+      routes:
+        | 'disaster-reports-create'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/map-pins/index.route.vue': {
+      routes:
+        | 'map-pins'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/map-pins/[id]/detail.route.vue': {
+      routes:
+        | 'map-pins-detail'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/map-pins/[id]/edit.route.vue': {
+      routes:
+        | 'map-pins-edit'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/map-pins/create.route.vue': {
+      routes:
+        | 'map-pins-create'
       views:
         | never
       pathParamNames:
@@ -270,6 +412,38 @@ declare module 'vue-router/auto-routes' {
     'src/routes/(authenticated)/settings/users/create.route.vue': {
       routes:
         | 'settings-users-create'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(intake)/intake.layout.vue': {
+      routes:
+        | 'disaster-reports-new'
+      views:
+        | 'default'
+      pathParamNames:
+        | never
+    }
+    'src/routes/(intake)/disaster-reports/new.route.vue': {
+      routes:
+        | 'disaster-reports-new'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(map)/public-map.layout.vue': {
+      routes:
+        | 'map'
+      views:
+        | 'default'
+      pathParamNames:
+        | never
+    }
+    'src/routes/(map)/map/index.route.vue': {
+      routes:
+        | 'map'
       views:
         | never
       pathParamNames:

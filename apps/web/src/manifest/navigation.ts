@@ -1,6 +1,22 @@
 import { defineNavigation, type NavigationIcon, type NavigationModule } from './contract'
 
 export const navigation = defineNavigation([
+  {
+    kind: 'standalone',
+    name: 'map-pins',
+    title: 'Map pins',
+    description: 'Map pins',
+    icon: 'folder',
+    routes: [{ to: { name: 'map-pins' }, permission: 'view-map-pins', title: 'Map pins', icon: 'folder' }],
+  },
+  {
+    kind: 'standalone',
+    name: 'disaster-reports',
+    title: 'Disaster reports',
+    description: 'Disaster reports',
+    icon: 'folder',
+    routes: [{ to: { name: 'disaster-reports' }, permission: 'view-disaster-reports', title: 'Disaster reports', icon: 'folder' }],
+  },
   { kind: 'standalone', name: 'dashboard', title: 'Dashboard', icon: 'home', description: 'Dashboard', routes: [{ to: { name: 'dashboard' }, permission: null, title: 'Dashboard', icon: 'home' }] },
   {
     kind: 'module',
