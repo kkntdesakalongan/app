@@ -53,3 +53,15 @@ Its progressive blur has a slight dark tint. Titles and status text align left;
 framework text actions align right, including retry and selected-pin actions.
 The browser module cases passed after the LocationInput change. Desktop and
 mobile screenshots were inspected. Evidence uses `toolbar-location` filenames.
+
+The route viewport now owns full-bleed map placement. Both map pages declare
+`fullBleed`; AppRouterView renders them outside the document transition in a
+stable absolute viewport. Normal document routes keep their fade. This removes
+the transformed-ancestor dependency and prevents map disposal during an outgoing
+document animation. A browser frame check reproduced incorrect map dimensions
+before the change. The same check now passes while entering and leaving the
+dashboard; it also checks that the toolbar is not left without map panes. Both
+browser module cases passed.
+The 16 focused routing/layout cases, web type check, web lint, production build,
+and diff check passed. Existing lint and build warnings remain. Verification
+evidence uses `map-viewport` filenames in the local run directory.

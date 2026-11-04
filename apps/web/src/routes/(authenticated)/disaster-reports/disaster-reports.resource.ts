@@ -20,11 +20,6 @@ export const resource = defineResource({
     route: { name: 'disaster-reports' },
     table: { ...defineTable({ schema: recordSchema, labels, columns: { title: { sortable: true }, createdAt: appDisplayPresets.createdAt } }), load: actions.list },
   },
-  create: {
-    permission: 'create-disaster-reports',
-    route: { name: 'disaster-reports-create' },
-    form: { ...form, submit: async (value: (typeof reportFormSchema)['_output']) => actions.create(await reportPayload(value)) },
-  },
   detail: {
     permission: 'view-disaster-reports',
     route: { name: 'disaster-reports-detail', params: (id) => ({ id: String(id) }) },

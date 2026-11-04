@@ -7,7 +7,7 @@ Implementation: Current
 
 Let the public submit disaster reports without an account. Let administrators manage the reports.
 
-Included: public intake at `/disaster-reports/new`, optional image upload, and administrator list, detail, create, update, and delete pages.
+Included: public intake at `/disaster-reports/new`, optional image upload, and administrator list, detail, update, and delete pages.
 
 Excluded: report publication, map pins, report locations, review states, and reporter contact details.
 
@@ -16,7 +16,7 @@ Excluded: report publication, map pins, report locations, review states, and rep
 | # | Capability | Users and access | Expected result |
 |---|---|---|---|
 | 1 | Submit a report | Public, without sign-in | Save a report with a required title and optional description and image. |
-| 2 | Manage reports | Administrators with the required operation permission | List, view, create, edit, and delete reports through standard management pages. |
+| 2 | Manage reports | Administrators with the required operation permission | List, view, edit, and delete reports through standard management pages. |
 | 3 | Protect intake data | Public | Public users can submit but cannot list, read, edit, or delete saved reports or retrieve their images. |
 | 4 | View an image | Authorized administrators | Show the saved image on report detail and allow replacement or removal during edit. |
 
@@ -37,7 +37,7 @@ Image access follows report access. Public upload authority is limited to intake
 
 Reports and map pins are separate records. A report does not create a pin.
 
-Approved defaults: administrators can create reports, and report content remains private. No additional business fields are proposed.
+Approved defaults: administrators manage existing reports but cannot create them through administration, and report content remains private. No additional business fields are proposed.
 
 ## 4. User journeys and workflows
 
@@ -50,7 +50,7 @@ Approved defaults: administrators can create reports, and report content remains
 ### Administrator management
 
 1. Open the disaster reports navigation entry.
-2. Use the standard list, detail, create, update, and delete flows.
+2. Use the standard list, detail, update, and delete flows.
 3. Confirm deletion before the write. Refresh the list after a confirmed save or delete.
 
 | Trigger or condition | Result | Next step |

@@ -10,7 +10,7 @@ const routes = [
   'GET /roles/{roleId}/permissions', 'DELETE /roles/{roleId}/permissions/{permissionId}', 'PUT /roles/{roleId}/permissions/{permissionId}',
   'POST /users/create', 'GET /users/detail/{id}', 'GET /users/list', 'PATCH /users/update/{id}',
   'GET /users/{userId}/role-assignments', 'DELETE /users/{userId}/role-assignments/{roleId}', 'PUT /users/{userId}/role-assignments/{roleId}',
-  'POST /disaster-reports/create', 'DELETE /disaster-reports/delete/{id}', 'GET /disaster-reports/detail/{id}', 'GET /disaster-reports/list', 'PATCH /disaster-reports/update/{id}',
+  'DELETE /disaster-reports/delete/{id}', 'GET /disaster-reports/detail/{id}', 'GET /disaster-reports/list', 'PATCH /disaster-reports/update/{id}',
   'POST /map-pins/create', 'DELETE /map-pins/delete/{id}', 'GET /map-pins/detail/{id}', 'GET /map-pins/list', 'PATCH /map-pins/update/{id}',
   'POST /public/disaster-reports/create', 'GET /public/map-pins',
 ].sort()

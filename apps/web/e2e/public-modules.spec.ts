@@ -1,6 +1,39 @@
 import { test, expect } from './fixtures'
+import type { Page } from '@playwright/test'
 
 test.use({ fastAuth: true })
+
+async function navigateWithoutMapFlash(page: Page, target: RegExp) {
+  const paddingDuringTransition = page.evaluate(
+    () =>
+      new Promise<string[]>((resolve) => {
+        const samples: string[] = []
+        const start = performance.now()
+        function sample() {
+          const main = document.querySelector('main')
+          if (main) {
+            samples.push(getComputedStyle(main).paddingLeft)
+            const map = document.querySelector('.location-map')
+            if (map) {
+              const bounds = map.getBoundingClientRect()
+              const viewport = main.getBoundingClientRect()
+              if (Math.abs(bounds.height - viewport.height) > 3 || Math.abs(bounds.width - viewport.width) > 3) samples.push('unstable-map-viewport')
+              if (!map.querySelector('.leaflet-map-pane')) samples.push('map-removed-before-page')
+            }
+          }
+          if (performance.now() - start < 700) requestAnimationFrame(sample)
+          else resolve(samples)
+        }
+        sample()
+      })
+  )
+  await page.getByRole('link', { name: target }).click()
+  const transitionSamples = await paddingDuringTransition
+  expect(transitionSamples.length).toBeGreaterThan(1)
+  expect(transitionSamples).not.toContain('0px')
+  expect(transitionSamples).not.toContain('unstable-map-viewport')
+  expect(transitionSamples).not.toContain('map-removed-before-page')
+}
 
 test('places a pin and shows it on both full-area maps', async ({ authenticatedPage: page }) => {
   const name = `Map proof ${Date.now()}`
@@ -16,22 +49,7 @@ test('places a pin and shows it on both full-area maps', async ({ authenticatedP
     pinId = (await response.json()).data.id
     await page.goto('/disaster-reports')
     await expect(page.getByRole('heading', { name: 'Disaster reports', exact: true })).toBeVisible()
-    const paddingDuringTransition = page.evaluate(
-      () =>
-        new Promise<string[]>((resolve) => {
-          const samples: string[] = []
-          const start = performance.now()
-          function sample() {
-            const main = document.querySelector('main')
-            if (main) samples.push(getComputedStyle(main).paddingLeft)
-            if (performance.now() - start < 700) requestAnimationFrame(sample)
-            else resolve(samples)
-          }
-          sample()
-        })
-    )
-    await page.getByRole('link', { name: /Dashboard$/ }).click()
-    expect(await paddingDuringTransition).not.toContain('0px')
+    await navigateWithoutMapFlash(page, /Dashboard$/)
     const dashboardMap = page.locator('.leaflet-container')
     await expect(dashboardMap).toBeVisible()
     const mapBounds = await dashboardMap.boundingBox()
@@ -49,6 +67,8 @@ test('places a pin and shows it on both full-area maps', async ({ authenticatedP
     await expect(dashboardMap.locator('.leaflet-map-pane')).toHaveClass(/leaflet-zoom-anim/)
     await expect(dashboardMap.locator('.leaflet-map-pane')).not.toHaveClass(/leaflet-zoom-anim/)
     await page.screenshot({ path: '../../.local/verification/disaster-map/dashboard-polish.png' })
+    await navigateWithoutMapFlash(page, /Disaster reports$/)
+    await expect(page.getByRole('heading', { name: 'Disaster reports', exact: true })).toBeVisible()
     await page.goto('/map')
     const publicMap = page.locator('.leaflet-container')
     await expect(publicMap).toBeVisible()

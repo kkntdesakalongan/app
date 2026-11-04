@@ -82,3 +82,12 @@ permission directly. The API authorizes requests independently.
 
 Router changes in `apps/web` are project-owned and need a separate reviewed
 adoption in each application.
+
+## Full-bleed route viewports
+
+Pages such as the dashboard map declare `definePage({ meta: { fullBleed: true } })`.
+AppRouterView reads this setting from the record at its own routing depth. It
+places that page in an absolute viewport that fills the positioned parent,
+outside the normal document-page transition. Parent layouts and ordinary pages
+keep their existing presentation. The shell does not switch its padding based
+on the target route. Map animation stays inside the map viewport.
