@@ -9,6 +9,7 @@ import { allowsPermission } from '@/framework/adapters/bundle'
 import Button from '@southneuhof/loom/components/base/Button.vue'
 import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import ProfileSegment from './layouts/ProfileSegment.vue'
+import Logo from '@/assets/corporate/common/Logo.vue'
 import { routeBreadcrumbs } from './breadcrumbs'
 
 const MotionDiv = motion.div
@@ -62,13 +63,17 @@ watch([() => route.fullPath, wide], () => {
             <MotionDiv class="navigation-label moving-navigation-label" aria-hidden="true" layout="position" :layout-dependency="open" :transition="transition">
               <Icon :name="currentIcon" class="shrink-0 text-on-surface-variant" /><span>{{ currentLabel }}</span>
             </MotionDiv>
-            <Transition name="mobile-menu-content" :duration="reducedMotion ? 0 : { enter: 360, leave: 120 }">
+            <Transition name="mobile-menu-content" :duration="reducedMotion ? 0 : { enter: 250, leave: 120 }">
               <DialogContent v-if="open" key="navigation" as-child @close-auto-focus="restoreFocus">
                 <div class="navigation-content">
                   <div class="window-body">
                     <DialogTitle class="sr-only">Menu</DialogTitle>
                     <DialogDescription class="sr-only">Menu links</DialogDescription>
-                    <nav aria-label="Mobile navigation" class="space-y-5 px-3 pb-4 pt-4">
+                    <div class="flex flex-row items-center justify-between gap-3 border-b border-outline-variant px-6 pb-4 pt-6">
+                      <Logo class="size-6 shrink-0" />
+                      <span class="min-w-0 truncate text-sm font-semibold tracking-[-0.01em]">Information System</span>
+                    </div>
+                    <nav aria-label="Mobile navigation" class="space-y-5 px-3 py-4">
                       <section v-for="module in navigation" :key="module.name">
                         <h3 class="mb-2 flex items-center gap-2 px-3 text-xs font-medium text-on-surface-variant">
                           <span aria-hidden="true" class="inline-flex"><Icon :name="module.icon" size="sm" /></span>{{ module.title }}
@@ -226,7 +231,7 @@ watch([() => route.fullPath, wide], () => {
   height: 24px;
 }
 .mobile-menu-content-enter-active {
-  transition: opacity 140ms ease 220ms;
+  transition: opacity 140ms ease 110ms;
 }
 .mobile-menu-content-leave-active {
   transition: opacity 120ms ease;
