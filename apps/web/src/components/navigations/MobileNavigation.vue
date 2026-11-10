@@ -57,7 +57,7 @@ watch([() => route.fullPath, wide], () => {
         <MotionDiv class="mobile-navigation text-on-surface lg:hidden" layout-root :class="{ 'is-open': open }">
           <MotionDiv
             class="navigation-surface bg-surface-container shadow-xl"
-            :style="{ width: open ? 'var(--mobile-navigation-width)' : '100%', height: open ? 'var(--mobile-navigation-height)' : '56px', borderRadius: '28px' }"
+            :style="{ width: open ? 'var(--mobile-navigation-width)' : '100%', height: open ? 'var(--mobile-navigation-height)' : 'var(--mobile-navigation-pill-height)', borderRadius: '28px' }"
             :transition="transition"
           >
             <MotionDiv class="navigation-label moving-navigation-label" aria-hidden="true" layout="position" :layout-dependency="open" :transition="transition">
@@ -131,13 +131,18 @@ watch([() => route.fullPath, wide], () => {
 </template>
 
 <style scoped>
+:global(:root) {
+  --mobile-navigation-pill-height: 56px;
+  --mobile-navigation-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  --mobile-navigation-clearance: calc(var(--mobile-navigation-pill-height) + var(--mobile-navigation-bottom) + theme('spacing.2'));
+}
 .mobile-navigation {
   --mobile-navigation-width: min(22.5rem, calc(100vw - 2rem));
   --mobile-navigation-height: min(39.75rem, calc(100dvh - 5rem - env(safe-area-inset-bottom) - env(safe-area-inset-top)));
   position: fixed;
   z-index: 9;
   right: max(1rem, env(safe-area-inset-right));
-  bottom: calc(1rem + env(safe-area-inset-bottom));
+  bottom: var(--mobile-navigation-bottom);
 }
 .navigation-surface {
   position: absolute;
@@ -165,7 +170,7 @@ watch([() => route.fullPath, wide], () => {
   position: absolute;
   bottom: 0;
   left: 4px;
-  height: 56px;
+  height: var(--mobile-navigation-pill-height);
 }
 .pill-controls {
   position: relative;
@@ -173,7 +178,7 @@ watch([() => route.fullPath, wide], () => {
   align-items: center;
   justify-content: space-between;
   width: max-content;
-  height: 56px;
+  height: var(--mobile-navigation-pill-height);
   padding: 4px;
   pointer-events: auto;
 }
@@ -217,7 +222,7 @@ watch([() => route.fullPath, wide], () => {
   flex-shrink: 0;
   align-items: center;
   justify-content: flex-end;
-  min-height: 56px;
+  min-height: var(--mobile-navigation-pill-height);
   padding: 4px;
 }
 .navigation-icon {
