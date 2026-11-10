@@ -25,7 +25,7 @@ import Logo from '@/assets/corporate/common/Logo.vue'
       >
         <AppRouterView>
           <template #after>
-            <div aria-hidden="true" class="h-[calc(6rem+env(safe-area-inset-bottom))] shrink-0 lg:hidden" />
+            <div aria-hidden="true" class="h-[var(--mobile-navigation-clearance)] shrink-0 lg:hidden" />
           </template>
         </AppRouterView>
       </main>
