@@ -12,10 +12,18 @@ their reasons, not copies of these rules.
 ## Shell and navigation
 
 Use one authenticated shell, with persistent navigation on wide screens, a
-drawer on narrow screens, a global toolbar, and one main content region.
+bottom-right navigation pill on narrow screens, a global toolbar on wide screens, and one main content region.
 Public and sign-in pages use their own shell. A module supplies the page body.
 Keep navigation available on direct entry to a child page and hide empty groups.
 Add search, notifications, or a dashboard only when the task requires them.
+
+The narrow-screen pill identifies the current menu and expands into its navigation
+window. Narrow screens have no shell header; show the logo and app name at
+the top of the navigation window in a row with space between them. Derive the current menu from the permission-filtered navigation manifest,
+including on direct entry to a detail or edit page. Keep the label and menu icon
+continuous through expansion and closure. Keep the menu and Close hit targets
+stationary. Use shared controls, existing Material color tokens, and the app's
+typography. Reserve safe-area and content clearance below the pill.
 
 ## Page structure
 
@@ -37,8 +45,8 @@ A record with one additional section shows that section directly below
 record. Use a default child `detail/index.route.vue` with `AppRouterView` only
 when the section owns an identity that users can link, refresh, and return to.
 The user does not need an Open button or a single tab to see that section.
-For several child sections, place the app routing `Tabs` below `DetailView`,
-then `AppRouterView`. Use named `RouteTab` targets. The detail remains visible.
+For several child sections, place Loom `Tabs` below `DetailView`,
+then `AppRouterView`. Use named `RoutedTabItem` targets. The route owns the default-child redirect. The detail remains visible.
 Length alone does not earn a route.
 See [file routing](docs/architecture/file-routing.md)
 for file placement, replacement pages, and Back targets.
@@ -114,8 +122,9 @@ urgent feedback. Support the app's light and dark themes.
 
 Use links for navigation and buttons for actions. Keep focus visible and
 headings in order. Give icon controls accessible names. Support keyboard use;
-keep focus inside an open navigation drawer and return it to the trigger when
-Escape closes the drawer. Respect reduced motion preferences.
+keep focus inside an open navigation window and return it to the trigger when
+Escape closes the window. When a resize closes mobile navigation, move focus to
+a visible app region. Respect reduced motion preferences.
 
 Preserve reading order when columns collapse. Keep labels, errors, and long
 values accessible. Keep page scrolling usable; isolate wide table scrolling

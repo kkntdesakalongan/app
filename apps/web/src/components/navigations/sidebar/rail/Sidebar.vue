@@ -16,7 +16,7 @@ function getDirectRoute(module: VisibleNavigationModule) {
 }
 
 const navigation = computed<SidebarNavigationModule[]>(() => visibleNavigation(allowsPermission).map((module) => ({ ...module, directRoute: getDirectRoute(module) })))
-const activeModule = computed(() => activeNavigationModule(route.path, (to) => router.resolve(to as never), allowsPermission))
+const activeModule = computed(() => activeNavigationModule(route.path, (to) => router.resolve(to), allowsPermission))
 const openGroups = ref(new Set<string>())
 const navigationElement = ref<HTMLElement>()
 const showTopFade = ref(false)
@@ -34,8 +34,8 @@ function isGroupOpen(name: string) {
   return openGroups.value.has(name)
 }
 
-function isActiveRoute(moduleName: string, routeName: string, to: unknown) {
-  return routeName === String(route.name) || (moduleName === activeModule.value && matchesNavigationPath(route.path, router.resolve(to as never).path))
+function isActiveRoute(moduleName: string, routeName: string, to: VisibleNavigationRoute['to']) {
+  return routeName === String(route.name) || (moduleName === activeModule.value && matchesNavigationPath(route.path, router.resolve(to).path))
 }
 
 function beforeEnter(element: Element) {
@@ -114,7 +114,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateScrollFades))
         <section v-for="module in navigation" :key="module.name" class="mb-2">
           <RouterLink
             v-if="module.directRoute"
-            :to="module.directRoute.to as never"
+            :to="module.directRoute.to"
             class="overlay flex min-h-10 w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-on-surface-variant outline-none focus-visible:ring-2 focus-visible:ring-primary"
             :class="
               isActiveRoute(module.name, module.directRoute.name, module.directRoute.to)
@@ -146,7 +146,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', updateScrollFades))
                   <p v-if="'separator' in entry" class="ml-3 px-3 pb-1 pt-2 text-xs font-medium text-on-surface-variant">{{ entry.name }}</p>
                   <RouterLink
                     v-else
-                    :to="entry.to as never"
+                    :to="entry.to"
                     class="overlay ml-3 flex min-h-10 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-on-surface-variant outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     :class="
                       isActiveRoute(module.name, entry.name, entry.to)

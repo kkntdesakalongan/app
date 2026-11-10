@@ -27,7 +27,7 @@ async function signOut() {
     <template #trigger>
       <button
         type="button"
-        class="overlay flex w-full items-center gap-3 rounded-2xl bg-surface-container-highest p-2.5 text-left shadow-[0_18px_50px_-24px_rgb(var(--md-sys-color-shadow)/0.42)] outline-none after:bg-on-surface-hover focus-visible:ring-2 focus-visible:ring-primary focus-visible:after:bg-on-surface-active active:after:bg-on-surface-active"
+        class="overlay flex w-full items-center gap-3 rounded-2xl bg-surface-container-highest p-2.5 text-left outline-none after:bg-on-surface-hover focus-visible:ring-2 focus-visible:ring-primary focus-visible:after:bg-on-surface-active active:after:bg-on-surface-active"
         aria-label="Open account menu"
       >
         <span class="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-container text-on-primary-container">

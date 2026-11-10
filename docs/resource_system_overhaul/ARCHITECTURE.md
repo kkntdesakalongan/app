@@ -139,7 +139,7 @@ Form passes the component's model and validity events directly. It applies manag
 
 Textarea constraints and file/image mode and multi-value contracts belong to their input components. File and image inputs use `AssetValue` by default. Set `mode: 'file'` to keep local `File` values. Form checks the selected mode and collection size against the schema, including each value shape a dynamic mode can emit.
 
-The display path is record, property or read, format, renderer, then surface layout. Scalars render as text; nullish values render as a dash. Dates need an explicit format. Objects need an explicit display form. Keep HTML sanitized or render it as text. Display and export reuse the same read and format behavior; export does not mount Vue components. Export keeps mapValue, exclusions, filenames, and pagination. A safety limit must not report a partial export as complete.
+The display path is record, property or read, format, renderer, then surface layout. Scalars render as text; nullish values render as a dash. Dates need an explicit format. Objects need an explicit display form. Keep HTML sanitized or render it as text. Display and export reuse the same read and format behavior. Export mounts the default or custom Vue report in the current app context. Spool copies its rendered document for preview, native browser printing, and XLSX output. Export keeps mapValue, exclusions, filenames, and pagination. A safety limit or an empty page before reported completion must not report a partial export as complete.
 
 ### 3.4 Canonical props and native forwarding
 
@@ -219,6 +219,16 @@ A loaded value updates untouched inputs only. Reset restores the loaded or initi
 
 ### 5.2 Submission
 
+`submit({ run, confirm })` selects a handler for one attempt and optionally asks
+for confirmation after validation. `run` receives the same parsed output and
+scope as the configured handler. It replaces that handler, including its access
+and invalidation policy. Use a bound operation when those policies are needed.
+`confirm` contains `title` and `message`. The attempt stays pending until the
+user confirms or cancels. Cancellation sends no write and reports no error.
+Unmounting, changed draft, handler, schema, or record identity cancels pending
+confirmation. Form, DialogForm, and FormView expose these options through their
+refs and action slots; ordinary `submit()` and `submit({ values })` stay valid.
+
 A Save action supersedes pending blur validation and validates the latest settled draft. Keep one active submit attempt. Disable Save for loading, pending input work, mutation, and submit validation; blur validation alone does not disable it. A newer edit or handler change makes in-flight validation stale. Parse once, then run submit validators on parsed output. The effective handler runs once for the accepted attempt. Every input validity event obsoletes pending validation, even when its message is unchanged. Do not retry a dispatched write automatically.
 
 Hidden controls follow the omission policy. Keep intentional schema values that have no rendered input. A hidden required value can fail at form level. Schema transforms and defaults can change parsed output. Wrappers do not parse it again. A stale session cannot accept a later completion from an older request, while the resource still completes its post-write invalidation.
@@ -259,6 +269,8 @@ A standard operation declares a permission string or null. Null removes the perm
 A routed custom command with a static permission uses that permission for route entry. If its execution permission is a callback, declare a static `routePermission` string, nonempty list, or null. This value controls route entry only. Loom does not call the execution callback or invent its arguments at entry. `routePermission` is not valid for a static or unrouted command. At execution, `can` and `run` still use their current arguments and row policy. The API remains the final authorization boundary.
 
 The binder returns complete View props and preserves supported page options such as filters, export, back targets, and completion callbacks. Extracting a primitive keeps its operation guard and cache behavior but does not add page navigation.
+
+Resource `exports.list` and `exports.detail` configure browser document output. Lists retain their existing export settings and default enablement. Detail export requires explicit configuration. List export uses the user's visible columns unless an export column map replaces them. Loom owns access, complete data loading, and display mapping. The separate Spool package owns document snapshots, native printing, and XLSX output. See the [export contract](../../packages/loom/src/exports/README.md).
 
 ### 6.2 Binding responsibilities
 
@@ -362,6 +374,14 @@ the parent rows needed to show those keys.
 
 ### 7.2 Filters
 
+ListView owns one filter session outside the popover. Its `filters`, `toolbar`,
+and `context` slots share `draft`, `setValue`, `validate`, `reset`, `errorFor`,
+`setError`, `touch`, `touched`, `issues`, and `validating`. `setValue` validates
+and commits valid output; invalid input stays in the draft. `validate` checks
+without committing. `reset` restores and applies the baseline even before the
+popover opens. Query replacement hydrates the same session. Nested ordinary
+Forms keep independent sessions.
+
 ListView filters use a submit-free form whose parsed output represents part of the table query. Form validates the draft; ListView owns query updates. Every filter declares `queryKeys`, the table-query keys it may set or clear, and `toDraft`, a synchronous mapping from raw query values to form draft values. The mapper receives `Readonly<QueryValues>` because query values can contain URL strings, arrays, missing keys, and malformed values. Check and normalize only the values that the filter uses. Do not parse the full query again or treat raw URL state as `TQuery`.
 
 ListView merges filter defaults before the mapped draft, so an explicit `undefined` from `toDraft` clears a default. On a valid parse, it checks that every output key is in `queryKeys`, removes all owned keys from the authoritative query, merges defined parsed values, and sets `page` to `1`. An empty output clears owned keys on the first edit. Do not include `page` in `queryKeys`; ListView resets it. Search, sort, and limit keys can be owned only when they are declared. Unowned query values stay in place. A parent query replacement cancels pending validation and hydrates from the replacement without emitting a query update. Form keeps its reset behavior, and the reset draft uses the same validation and commit path.
@@ -398,6 +418,8 @@ Option inputs own their data or loader. Declare `load`, `searchParameters`, `pic
 A custom input that owns a custom data set uses `useLoader`. LookupInput also uses this runtime for its collection reads. The installed query client owns shared reads, lifecycle cancellation, retries, and one terminal failure notification for the active read. `enabled` controls whether the loader runs; interaction `disabled` remains separate. LookupInput keeps selected-record hydration separate. This read feedback does not cover location or file-manager loaders.
 
 Resource-owned option and lookup keys include the operation, explicit namespace, and effective request parameters. Query values override matching search parameters. Different pages and page sizes have separate cache entries. An explicit namespace separates otherwise matching reads. Resource invalidation refreshes these reads through the existing options cache hierarchy.
+
+Cache identity omits top-level null, undefined, and empty string filters, as the app transport does. It preserves false, zero, arrays, and nested values. Clearing a filter therefore uses the same cache entry as an absent filter. This does not change option pagination contracts.
 
 A source-context change includes resource owner, loader identity, namespace, searchParameters, source mode, and identity props. A resource owner change follows the existing context-change behavior; refreshing options for the same owner does not clear a valid remote selection. SelectInput multi/asWhole, CheckboxGroupInput uniqueIDAs, and LookupInput multi affect model interpretation. A changed SelectInput picked-key identity affects selection validity; a view-only change does not. A context-driven clear is a normal model update and does not mark the input touched. A cleared value stays clear after component defaults run.
 

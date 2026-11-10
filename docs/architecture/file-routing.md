@@ -56,8 +56,10 @@ parent must keep it visible on child routes. Use a default `index.route.vue`
 child when the content needs its own route component identity for direct links,
 refresh, or Back navigation.
 
-Tabs replace a bare parent with the first available child. They stay active
-for deeper pages in their collection section. Page Back uses the resource
+The parent route owns its default-child redirect. Loom `Tabs` uses named
+`RoutedTabItem` targets with explicit route parameters. It stays active for
+deeper pages in the collection section and carries dotted query keys between
+sections. Target query values take precedence. Page Back uses the resource
 collection `backTo`. A workflow without a routed collection supplies an
 explicit target. Browser Back uses browser history.
 

@@ -9,7 +9,7 @@ Preserve unrelated project files and local environment values.
 
 | Updated from package repositories | Owned by the project |
 |---|---|
-| `packages/loom`, `packages/sprindle`, `packages/utilities`, `packages/sdk` | `apps/api`, `apps/web` |
+| `packages/loom`, `packages/sprindle`, `packages/spool`, `packages/utilities`, `packages/sdk` | `apps/api`, `apps/web` |
 |  | Root tooling, `.github/workflows`, `plans/`, and project documents |
 | Skills live separately at `southneuhof/skills` (`skills/<name>/`) | `.env`, `.env.test`, `.env.e2e` secrets |
 

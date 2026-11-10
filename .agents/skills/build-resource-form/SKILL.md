@@ -7,8 +7,8 @@ description: Build or review Carta forms, value conversion, relation sources, an
 
 Read [DESIGN.md](../../../DESIGN.md) for layout. Use the [form guide](../../../docs/ui/forms.md)
 for controls and composition, and the [value contract](../../../docs/resource_system_overhaul/ARCHITECTURE.md#4-schemas-and-value-ownership)
-for drafts, defaults, and schema input/output. Identical input contracts can
-share schemas.
+for drafts, defaults, and schema input/output. Reuse labels by business meaning
+and schema subsets by matching input/output contracts.
 
 Use [custom fields](references/custom-field-contract.md) for interactions
 existing controls cannot express.
@@ -37,6 +37,7 @@ or namespace. Put values that change the returned choices in
 `searchParameters`. For hydration and dependencies, read the
 [input source contract](../../../docs/resource_system_overhaul/ARCHITECTURE.md#74-lookup-option-and-location-inputs).
 
-Submit overrides replace access and invalidation. Follow the
-[binding](../../../docs/resource_system_overhaul/ARCHITECTURE.md#11-required-consumption)
-and [post-write contracts](../../../docs/resource_system_overhaul/ARCHITECTURE.md#52-submission).
+For a second submit action or confirmation, use the form's
+[submission options](../../../docs/resource_system_overhaul/ARCHITECTURE.md#52-submission).
+An override replaces access and invalidation; preserve them through a bound
+operation. Follow the same contract for post-write outcomes.

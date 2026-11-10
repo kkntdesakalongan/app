@@ -4,11 +4,9 @@ import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { visibleNavigation } from '@/manifest'
 import { allowsPermission } from '@/framework/adapters/bundle'
 import Logo from '@/assets/corporate/common/Logo.vue'
-import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import CommandPalette from './CommandPalette.vue'
 import { routeBreadcrumbs } from './breadcrumbs'
 
-defineEmits<{ openNavigation: [] }>()
 const route = useRoute()
 const router = useRouter()
 const breadcrumbs = computed(() => routeBreadcrumbs(route, router, visibleNavigation(allowsPermission)))
@@ -16,12 +14,9 @@ const breadcrumbs = computed(() => routeBreadcrumbs(route, router, visibleNaviga
 
 <template>
   <header
-    class="sticky top-0 grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center border-b border-outline-variant bg-surface-container-low px-4 text-on-surface lg:relative lg:z-[2] lg:h-full lg:border-b-0 lg:pl-8 lg:pr-11"
+    class="sticky top-0 z-[2] hidden h-16 grid-cols-[minmax(0,1fr)_auto] items-center border-b border-outline-variant bg-surface-container-low px-4 text-on-surface lg:relative lg:grid lg:h-full lg:border-b-0 lg:pl-8 lg:pr-11"
   >
     <div class="flex min-w-0 items-center gap-3">
-      <button v-bind="{ 'data-mobile-menu-trigger': true }" type="button" aria-label="Open menu" class="flex size-11 shrink-0 items-center justify-center lg:hidden" @click="$emit('openNavigation')">
-        <Icon name="menu" />
-      </button>
       <Logo class="w-9 shrink-0 lg:hidden" />
       <nav aria-label="Breadcrumb" class="min-w-0 overflow-hidden">
         <ol class="flex min-w-0 items-center gap-2 whitespace-nowrap text-sm">
