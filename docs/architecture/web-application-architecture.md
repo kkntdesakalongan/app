@@ -69,6 +69,12 @@ or rendered behavior.
 
 ## Route ownership
 
+Implement each page in its `*.route.vue` file. Keep single-page supporting
+components beside that route and sibling-route components beside those routes.
+Extract a component for a distinct shared interaction and keep reusable
+operations with their module owner. A wrapper for each page adds no ownership
+boundary by itself.
+
 Filesystem route names are part of the app contract. Keep a parent route when
 it owns the authenticated shell, persistent navigation, or a record summary
 that remains visible on a child page. A child owns its query state, data load,

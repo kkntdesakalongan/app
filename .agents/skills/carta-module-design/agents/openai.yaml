@@ -1,4 +1,4 @@
 interface:
   display_name: "Carta Module Design"
-  short_description: "Define modules for explicit approval"
-  default_prompt: "Use $carta-module-design to define this module for approval."
+  short_description: "Survey modules and define material behavior changes"
+  default_prompt: "Use $carta-module-design to survey this module and prepare a design only when the task requires one."

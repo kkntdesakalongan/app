@@ -7,9 +7,12 @@ description: Gate new or changed tests and audit existing tests for independent 
 
 ## Authoring gate
 
+For application tests, apply [module exclusions](../verify-carta-module/SKILL.md#exclude-module-tests)
+first. The gate below also applies to framework tests.
+
 Before writing or changing a test, establish:
 
-1. The observable application rule or independent contract it protects.
+1. The observable rule or independent contract it protects.
 2. A plausible incorrect implementation that its assertion would detect.
 3. The gap in framework guarantees, types, and existing coverage, and why this
    boundary is the cheapest reliable proof.
@@ -18,7 +21,6 @@ Before writing or changing a test, establish:
 
 A missing answer means do not add the test. Extend existing cases where useful.
 Each contract has one primary test owner; another layer needs a distinct risk.
-For application modules, use [proof selection](../verify-carta-module/SKILL.md).
 No test count, coverage target, or test file is required per module.
 
 ## Independent proof

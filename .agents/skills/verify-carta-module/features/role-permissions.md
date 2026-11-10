@@ -27,6 +27,6 @@ The existing spec creates its own users, role, and distinguishable permissions.
 ## Gotchas
 
 This establishes server behavior only. Standard filter controls use shared
-coverage. A changed custom switch needs a focused browser check for pending
-state and failure feedback; mocked network responses establish client feedback
-only. The route test does not establish the user's role-assignment controls.
+coverage. Use browser proof only for a selected business risk or an explicitly
+requested case. Mocked network responses establish client feedback only. The
+route test does not establish the user's role-assignment controls.

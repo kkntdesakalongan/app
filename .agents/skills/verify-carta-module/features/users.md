@@ -38,10 +38,11 @@ owned API instance from [runtime](../references/runtime.md).
 ## Gotchas
 
 The HTTP helper proves no UI entry point. Standard create/edit bags need
-configuration review and type checks. The edit page's custom confirmation
-needs browser proof if changed: Cancel preserves state; Confirm performs the
-write. Do not fill the whole form to check that branch. Existing route specs
-may retain fixture rows; use only the disposable target. Do not duplicate
-their rules in new unit, component, or browser suites.
-Better Auth account creation can leave an initial session. The helper counts
-it before two sign-ins and requires every stored session to be removed.
+configuration review and type checks. If confirmation is a selected business
+risk or an explicitly requested browser case, check that Cancel preserves state
+and Confirm performs the write. This recipe does not require that browser case
+for every change. Existing route specs may retain fixture rows; use only the
+disposable target. Do not duplicate their rules in new unit, component, or
+browser suites. Better Auth account creation can leave an initial session. The
+helper counts it before two sign-ins and requires every stored session to be
+removed.
