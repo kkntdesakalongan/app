@@ -20,9 +20,13 @@ import Logo from '@/assets/corporate/common/Logo.vue'
     <MobileNavigation />
     <main
       tabindex="-1"
-      class="isolate col-start-1 row-start-1 min-h-0 min-w-0 overflow-x-hidden overflow-y-auto bg-surface-container-lowest px-4 pt-4 after:block after:h-[calc(6rem+env(safe-area-inset-bottom))] sm:px-6 sm:pt-6 lg:absolute lg:bottom-4 lg:col-end-3 lg:col-start-1 lg:left-[17rem] lg:right-4 lg:row-end-3 lg:row-start-1 lg:top-[var(--app-toolbar-height)] lg:flex lg:flex-col lg:gap-2 lg:rounded-2xl lg:border lg:border-outline-variant lg:p-8 lg:shadow-[0_18px_50px_-24px_rgb(var(--md-sys-color-shadow)/0.42)] lg:after:hidden"
+      class="isolate col-start-1 row-start-1 min-h-0 min-w-0 overflow-x-hidden overflow-y-auto bg-surface-container-lowest px-4 pt-4 sm:px-6 sm:pt-6 lg:absolute lg:bottom-4 lg:col-end-3 lg:col-start-1 lg:left-[17rem] lg:right-4 lg:row-end-3 lg:row-start-1 lg:top-[var(--app-toolbar-height)] lg:flex lg:flex-col lg:gap-2 lg:rounded-2xl lg:border lg:border-outline-variant lg:p-8 lg:shadow-[0_18px_50px_-24px_rgb(var(--md-sys-color-shadow)/0.42)]"
     >
-      <AppRouterView />
+      <AppRouterView>
+        <template #after>
+          <div aria-hidden="true" class="h-[calc(6rem+env(safe-area-inset-bottom))] shrink-0 lg:hidden" />
+        </template>
+      </AppRouterView>
     </main>
   </div>
 </template>
