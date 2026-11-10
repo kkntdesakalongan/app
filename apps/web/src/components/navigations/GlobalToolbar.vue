@@ -14,7 +14,7 @@ const breadcrumbs = computed(() => routeBreadcrumbs(route, router, visibleNaviga
 
 <template>
   <header
-    class="sticky top-0 z-[2] grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center border-b border-outline-variant bg-surface-container-low px-4 text-on-surface lg:relative lg:h-full lg:border-b-0 lg:pl-8 lg:pr-11"
+    class="sticky top-0 z-[2] hidden h-16 grid-cols-[minmax(0,1fr)_auto] items-center border-b border-outline-variant bg-surface-container-low px-4 text-on-surface lg:relative lg:grid lg:h-full lg:border-b-0 lg:pl-8 lg:pr-11"
   >
     <div class="flex min-w-0 items-center gap-3">
       <Logo class="w-9 shrink-0 lg:hidden" />

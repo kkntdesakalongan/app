@@ -8,7 +8,7 @@ import Logo from '@/assets/corporate/common/Logo.vue'
 
 <template>
   <div
-    class="relative grid min-h-screen w-full grid-cols-1 grid-rows-[auto_1fr] bg-surface-container-low text-on-surface lg:h-screen lg:grid-cols-[17rem_minmax(0,1fr)] lg:grid-rows-[var(--app-toolbar-height)_minmax(0,1fr)]"
+    class="relative grid min-h-screen w-full grid-cols-1 grid-rows-[1fr] bg-surface-container-low text-on-surface lg:h-screen lg:grid-cols-[17rem_minmax(0,1fr)] lg:grid-rows-[var(--app-toolbar-height)_minmax(0,1fr)]"
     style="--app-toolbar-height: 3.5rem"
   >
     <div class="relative z-[2] hidden h-full items-center gap-3 overflow-hidden px-5 lg:col-start-1 lg:row-start-1 lg:flex">
@@ -20,7 +20,7 @@ import Logo from '@/assets/corporate/common/Logo.vue'
     <MobileNavigation />
     <main
       tabindex="-1"
-      class="isolate col-start-1 row-start-2 flex min-h-0 min-w-0 flex-col gap-2 overflow-x-hidden overflow-y-auto bg-surface-container-lowest p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] lg:absolute lg:bottom-4 lg:col-end-3 lg:col-start-1 lg:left-[17rem] lg:right-4 lg:row-end-3 lg:row-start-1 lg:top-[var(--app-toolbar-height)] lg:rounded-2xl lg:border lg:border-outline-variant lg:p-8 lg:shadow-[0_18px_50px_-24px_rgb(var(--md-sys-color-shadow)/0.42)]"
+      class="isolate col-start-1 row-start-1 flex min-h-0 min-w-0 flex-col gap-2 overflow-x-hidden overflow-y-auto bg-surface-container-lowest p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] lg:absolute lg:bottom-4 lg:col-end-3 lg:col-start-1 lg:left-[17rem] lg:right-4 lg:row-end-3 lg:row-start-1 lg:top-[var(--app-toolbar-height)] lg:rounded-2xl lg:border lg:border-outline-variant lg:p-8 lg:shadow-[0_18px_50px_-24px_rgb(var(--md-sys-color-shadow)/0.42)]"
     >
       <AppRouterView />
     </main>
