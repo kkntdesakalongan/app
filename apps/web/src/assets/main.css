@@ -16,6 +16,16 @@ html.dark {
   color-scheme: dark;
 }
 
+#app {
+  --app-content-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+
+#app:has(.authenticated-shell) {
+  --app-content-height: calc(100dvh - env(safe-area-inset-top, 0px));
+  padding-bottom: 0;
+}
+
 body {
   font-family: 'Geist Sans', ui-sans-serif, system-ui, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';

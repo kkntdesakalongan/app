@@ -16,6 +16,7 @@ bottom-right navigation pill on narrow screens, a global toolbar on wide screens
 Public and sign-in pages use their own shell. A module supplies the page body.
 Keep navigation available on direct entry to a child page and hide empty groups.
 Add search, notifications, or a dashboard only when the task requires them.
+Keep the top and side safe areas outside the authenticated scroll area.
 
 The narrow-screen pill identifies the current menu and expands into its navigation
 window. Narrow screens have no shell header; show the logo and app name at
