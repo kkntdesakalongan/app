@@ -23,7 +23,8 @@ the top of the navigation window in a row with space between them. Derive the cu
 including on direct entry to a detail or edit page. Keep the label and menu icon
 continuous through expansion and closure. Keep the menu and Close hit targets
 stationary. Use shared controls, existing Material color tokens, and the app's
-typography. Reserve safe-area and content clearance below the pill.
+typography. Let page content scroll behind the pill. Place safe-area and pill
+clearance at the end of the scrollable content so the last controls can clear it.
 
 ## Page structure
 
