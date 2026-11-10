@@ -12,10 +12,17 @@ their reasons, not copies of these rules.
 ## Shell and navigation
 
 Use one authenticated shell, with persistent navigation on wide screens, a
-drawer on narrow screens, a global toolbar, and one main content region.
+bottom-right navigation pill on narrow screens, a global toolbar, and one main content region.
 Public and sign-in pages use their own shell. A module supplies the page body.
 Keep navigation available on direct entry to a child page and hide empty groups.
 Add search, notifications, or a dashboard only when the task requires them.
+
+The narrow-screen pill identifies the current menu and expands into its navigation
+window. Derive the current menu from the permission-filtered navigation manifest,
+including on direct entry to a detail or edit page. Keep the label and menu icon
+continuous through expansion and closure. Keep the menu and Close hit targets
+stationary. Use shared controls, existing Material color tokens, and the app's
+typography. Reserve safe-area and content clearance below the pill.
 
 ## Page structure
 
@@ -114,8 +121,9 @@ urgent feedback. Support the app's light and dark themes.
 
 Use links for navigation and buttons for actions. Keep focus visible and
 headings in order. Give icon controls accessible names. Support keyboard use;
-keep focus inside an open navigation drawer and return it to the trigger when
-Escape closes the drawer. Respect reduced motion preferences.
+keep focus inside an open navigation window and return it to the trigger when
+Escape closes the window. When a resize closes mobile navigation, move focus to
+a visible app region. Respect reduced motion preferences.
 
 Preserve reading order when columns collapse. Keep labels, errors, and long
 values accessible. Keep page scrolling usable; isolate wide table scrolling

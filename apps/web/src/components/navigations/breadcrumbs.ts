@@ -1,5 +1,5 @@
 import type { RouteLocationNormalizedLoaded, RouteLocationRaw, Router } from 'vue-router'
-import type { VisibleNavigationModule } from '@/manifest'
+import { activeNavigationEntry, type VisibleNavigationModule } from '@/manifest'
 
 export type BreadcrumbItem = { label: string; to?: RouteLocationRaw }
 
@@ -21,21 +21,14 @@ function titleCase(value: string): string {
 
 export function routeBreadcrumbs(route: RouteLocationNormalizedLoaded, router: Pick<Router, 'resolve'>, navigation: readonly VisibleNavigationModule[]): BreadcrumbItem[] {
   const routeName = String(route.name ?? '')
-  const candidates = navigation.flatMap((module) =>
-    module.routes.flatMap((entry) => {
-      if ('separator' in entry) return []
-      const resolved = router.resolve(entry.to as never)
-      return route.path === resolved.path || route.path.startsWith(`${resolved.path}/`) ? [{ module, entry, resolved }] : []
-    })
-  )
-  const match = candidates.sort((a, b) => b.resolved.path.length - a.resolved.path.length)[0]
+  const match = activeNavigationEntry(route.path, (to) => router.resolve(to), navigation)
 
   if (!match) return [{ label: titleCase(routeName || 'Page') }]
 
   const items: BreadcrumbItem[] = []
   if (match.module.title !== match.entry.title) items.push({ label: match.module.title })
   const isEntrypoint = routeName === match.entry.name
-  items.push({ label: match.entry.title, ...(isEntrypoint ? {} : { to: match.entry.to as RouteLocationRaw }) })
+  items.push({ label: match.entry.title, ...(isEntrypoint ? {} : { to: match.entry.to }) })
 
   if (!isEntrypoint) {
     const suffix = routeName.slice(match.entry.name.length).split('-').filter(Boolean)
