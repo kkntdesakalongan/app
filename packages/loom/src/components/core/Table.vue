@@ -28,6 +28,7 @@ const emit = defineEmits<{
 
 defineSlots<{
   collection?: (props: import('../../contracts').CollectionSlotProps<TRecord, TQuery>) => unknown
+  footer?: () => unknown
   [name: string]: unknown
 }>()
 const slots = useSlots()
@@ -128,6 +129,7 @@ function hasQueryProp(): boolean {
         :update-query="collection.updateQuery"
         :search-parameters="props.searchParameters"
         :namespace="props.namespace"
+        :density="props.density"
         :pagination="props.pagination"
         :page-size-options="props.pageSizeOptions"
         :default-page-size="props.defaultPageSize"

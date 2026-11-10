@@ -39,6 +39,8 @@ defineSlots<{
   empty?: () => unknown
   'row-prefix'?: (scope: TreeRowScope) => unknown
   'row-actions'?: (scope: TreeRowScope) => unknown
+  footer?: () => unknown
+  'subtree-footer'?: (scope: TreeRowScope) => unknown
   'pagination-summary'?: (scope: { start: number; end: number; total?: number; query: QueryValues }) => unknown
   'page-size-control'?: (scope: { options: number[]; limit: number; setPageSize: (value: unknown) => void }) => unknown
   [name: `cell:${string}`]: (scope: TreeCellScope) => unknown
@@ -153,6 +155,7 @@ function hasVnodeProp(camel: string, kebab: string): boolean {
         :update-query="collection.updateQuery"
         :search-parameters="props.searchParameters"
         :namespace="props.namespace"
+        :density="props.density"
         :pagination="props.pagination"
         :page-size-options="props.pageSizeOptions"
         :default-page-size="props.defaultPageSize"
