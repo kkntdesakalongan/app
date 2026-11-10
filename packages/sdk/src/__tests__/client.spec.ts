@@ -14,7 +14,7 @@ describe('sdk createRpcClient', () => {
       proofClient.users.update[':id'].$patch({ param: { id: 'user-1' }, json: { name: 'Ada' } })
       proofClient.roles.detail[':id'].$get({ param: { id: 'role-1' } })
       proofClient.me.$get()
-      proofClient.api.auth['sign-out'].$post({ json: {} })
+      proofClient.auth['sign-out'].$post({ json: {} })
       proofClient.files.$get({ query: { prefix: 'uploads/' } })
 
       // @ts-expect-error missing root route must stay absent
@@ -32,7 +32,7 @@ describe('sdk createRpcClient', () => {
       // @ts-expect-error update input does not accept email
       proofClient.users.update[':id'].$patch({ param: { id: 'user-1' }, json: { email: 'wrong@example.test' } })
       // @ts-expect-error auth sign-out does not support GET
-      proofClient.api.auth['sign-out'].$get()
+      proofClient.auth['sign-out'].$get()
       // @ts-expect-error camelCase must not exist: the path segment keeps its hyphen
       proofClient.files.presignedUrl.$post()
 
@@ -63,14 +63,14 @@ describe('sdk createRpcClient', () => {
     try {
       const client = createRpcClient('http://localhost:8787', { headers: { 'x-test': 'sdk' } })
       await client.users.list.$get({ query: { page: '1', limit: '20' } })
-      await client.api.auth['sign-out'].$post({ json: {} })
+      await client.auth['sign-out'].$post({ json: {} })
       await client.files.object.$get()
 
       expect(fetchMock).toHaveBeenCalledTimes(3)
       const requests = fetchMock.mock.calls.map(([input, init]) => ({ url: String(input), init }))
       expect(requests.map(({ url }) => url)).toEqual([
         'http://localhost:8787/users/list?page=1&limit=20',
-        'http://localhost:8787/api/auth/sign-out',
+        'http://localhost:8787/auth/sign-out',
         'http://localhost:8787/files/object',
       ])
       expect(requests.every(({ init }) => init?.credentials === 'include')).toBe(true)
