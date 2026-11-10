@@ -219,6 +219,16 @@ A loaded value updates untouched inputs only. Reset restores the loaded or initi
 
 ### 5.2 Submission
 
+`submit({ run, confirm })` selects a handler for one attempt and optionally asks
+for confirmation after validation. `run` receives the same parsed output and
+scope as the configured handler. It replaces that handler, including its access
+and invalidation policy. Use a bound operation when those policies are needed.
+`confirm` contains `title` and `message`. The attempt stays pending until the
+user confirms or cancels. Cancellation sends no write and reports no error.
+Unmounting, changed draft, handler, schema, or record identity cancels pending
+confirmation. Form, DialogForm, and FormView expose these options through their
+refs and action slots; ordinary `submit()` and `submit({ values })` stay valid.
+
 A Save action supersedes pending blur validation and validates the latest settled draft. Keep one active submit attempt. Disable Save for loading, pending input work, mutation, and submit validation; blur validation alone does not disable it. A newer edit or handler change makes in-flight validation stale. Parse once, then run submit validators on parsed output. The effective handler runs once for the accepted attempt. Every input validity event obsoletes pending validation, even when its message is unchanged. Do not retry a dispatched write automatically.
 
 Hidden controls follow the omission policy. Keep intentional schema values that have no rendered input. A hidden required value can fail at form level. Schema transforms and defaults can change parsed output. Wrappers do not parse it again. A stale session cannot accept a later completion from an older request, while the resource still completes its post-write invalidation.
@@ -363,6 +373,14 @@ They do not refresh the collection or change its query. `reveal(keys)` opens
 the parent rows needed to show those keys.
 
 ### 7.2 Filters
+
+ListView owns one filter session outside the popover. Its `filters`, `toolbar`,
+and `context` slots share `draft`, `setValue`, `validate`, `reset`, `errorFor`,
+`setError`, `touch`, `touched`, `issues`, and `validating`. `setValue` validates
+and commits valid output; invalid input stays in the draft. `validate` checks
+without committing. `reset` restores and applies the baseline even before the
+popover opens. Query replacement hydrates the same session. Nested ordinary
+Forms keep independent sessions.
 
 ListView filters use a submit-free form whose parsed output represents part of the table query. Form validates the draft; ListView owns query updates. Every filter declares `queryKeys`, the table-query keys it may set or clear, and `toDraft`, a synchronous mapping from raw query values to form draft values. The mapper receives `Readonly<QueryValues>` because query values can contain URL strings, arrays, missing keys, and malformed values. Check and normalize only the values that the filter uses. Do not parse the full query again or treat raw URL state as `TQuery`.
 
