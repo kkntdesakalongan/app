@@ -35,6 +35,8 @@ defineSlots<{
   empty?: () => unknown
   'row-prefix'?: (scope: RowScope) => unknown
   'row-actions'?: (scope: RowScope) => unknown
+  footer?: () => unknown
+  'subtree-footer'?: (scope: RowScope) => unknown
   'pagination-summary'?: (scope: { start: number; end: number; total?: number; query: QueryValues }) => unknown
   'page-size-control'?: (scope: { options: number[]; limit: number; setPageSize: (value: unknown) => void }) => unknown
   [name: `cell:${string}`]: (scope: CellScope) => unknown
@@ -142,6 +144,7 @@ defineExpose({ expandAll, collapseAll, reveal })
     :update-query="props.updateQuery"
     :search-parameters="props.searchParameters"
     :namespace="props.namespace"
+    :density="props.density"
     :pagination="props.pagination"
     :page-size-options="props.pageSizeOptions"
     :default-page-size="props.defaultPageSize"
