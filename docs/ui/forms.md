@@ -6,6 +6,12 @@ the form surface or action placement.
 
 ## Form definition
 
+For another action on the same form, call
+`submit({ run, confirm: { title, message } })` from its ref or actions slot.
+Keep the ordinary save handler in the form definition. See the
+[submission contract](../resource_system_overhaul/ARCHITECTURE.md#52-submission)
+for validation, cancellation, and access ownership.
+
 Use a raw input schema with `defineForm`. Keep the selected inputs in that
 form's own ordered `fields` map. Use schema keys for direct fields and explicit
 bindings for controls that edit several keys. A display map does not configure

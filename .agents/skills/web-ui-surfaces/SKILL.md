@@ -14,10 +14,16 @@ Read [DESIGN.md](../../../DESIGN.md) for visual conventions.
 | API schemas, transport, query ownership | [Web architecture](../../../docs/architecture/web-application-architecture.md) |
 | Forms and inputs | [$build-resource-form](../build-resource-form/SKILL.md) |
 
+Before selecting components for a changed interaction, use the
+[capability index](references/capabilities.md) to find its existing owner. For
+prototype-based work, read [prototype translation](references/prototype-translation.md).
+
 Use the highest-level supported composition: standard View/action, extension
 point, then lower-level components. Add local code for unmet requirements.
 Use View-supplied guarded callbacks in custom controls; direct resource calls
 bypass mounted protections.
+Bound commands already invalidate their resource. Add invalidation only for
+another affected resource or an unbound write.
 
 Call `resource.list()` and `resource.create()` to bind their page props. Bind
 `detail` and `update` with the record identity. Use DetailView's `body` and

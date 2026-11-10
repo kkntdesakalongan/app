@@ -87,6 +87,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'map-preview': RouteRecordInfo<
+      'map-preview',
+      '/map-preview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'settings-permissions': RouteRecordInfo<
       'settings-permissions',
       '/settings/permissions',
@@ -148,7 +155,7 @@ declare module 'vue-router/auto-routes' {
       '/settings/users/:userId/detail',
       { userId: ParamValue<true> },
       { userId: ParamValue<false> },
-      | 'settings-users-detail-role-assignments'
+      | never
     >,
     'settings-users-detail-role-assignments': RouteRecordInfo<
       'settings-users-detail-role-assignments',
@@ -222,6 +229,7 @@ declare module 'vue-router/auto-routes' {
         | 'map-pins-create'
         | 'map-pins-detail'
         | 'map-pins-edit'
+        | 'map-preview'
         | 'settings-permissions'
         | 'settings-permissions-detail'
         | 'settings-roles'
@@ -303,6 +311,14 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/routes/(authenticated)/map-preview/index.route.vue': {
+      routes:
+        | 'map-preview'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/routes/(authenticated)/settings/permissions/index.route.vue': {
       routes:
         | 'settings-permissions'
@@ -374,6 +390,14 @@ declare module 'vue-router/auto-routes' {
         | 'settings-users-detail-role-assignments'
       views:
         | 'default'
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/settings/users/[userId]/detail/index.route.vue': {
+      routes:
+        | 'settings-users-detail'
+      views:
+        | never
       pathParamNames:
         | never
     }

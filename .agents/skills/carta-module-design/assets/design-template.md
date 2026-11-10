@@ -25,11 +25,11 @@ Excluded:
 
 ### <Record or business concept>
 
-<What this record represents.>
+<What this record represents. Reference the schema owner for standard fields.>
 
 | Field | Meaning | Rules |
 |---|---|---|
-| <Name> | <Business meaning> | <Constraints, defaults, edit restrictions> |
+| <New or changed business field> | <Business meaning> | <Constraints, defaults, edit restrictions> |
 
 <Relationships and shared rules.>
 

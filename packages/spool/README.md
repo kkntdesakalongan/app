@@ -1,6 +1,6 @@
 # spool
 
-Install with `npm install @southneuhof/spool`. Vue is an optional peer dependency for the Vue bindings.
+Carta uses `@southneuhof/spool` as a workspace package. Declare `workspace:^` in packages that import it. Vue is an optional peer dependency for the Vue bindings.
 
 Browser export library with a framework-independent browser core and Vue bindings. PDF uses Chromium's native print dialog and keeps text selectable. XLSX uses structured HTML tables and ExcelJS. No server is required.
 
@@ -44,7 +44,7 @@ XLSX authoring details and supported limitations are in [XLSX.md](XLSX.md).
 
 ## Verification
 
-Run `tsc --noEmit` and `vitest run` from this package. Browser proof fixtures live in `tests/browser`. Start Vite on port 5184 from this package, then run `node tests/browser/verify.cjs`. Set `CHROMIUM_PATH` when Chromium is installed elsewhere. The script verifies native print invocation, inherited and isolated colors, failed resource cleanup, disposal, and writes `tests/browser/report.pdf` from the prepared document for native PDF text and pagination inspection. Run `python3 tests/browser/verify_pdf.py` with PyMuPDF installed to assert all 90 native text rows and repeated helper geometry. Browser-dialog interaction itself is manual because headless Chromium exposes PDF bytes through its print engine.
+Run `pnpm --filter @southneuhof/spool type-check` and `pnpm --filter @southneuhof/spool build` from the Carta root. The existing browser proof remains in the [Spool repository](https://github.com/southneuhof/spool).
 
 
 ## Export your own component without Loom
@@ -74,7 +74,7 @@ The rendered `MyExport` is the preview. For PDF it can contain any report HTML
 and print helpers. For Excel it needs HTML tables, optionally composed with
 `XlsxSheet`, `XlsxCell`, and `XlsxColumn`. Both bindings support isolated styling
 through their `styles` option; otherwise your component's app styles carry over.
-You own data authorization and loading outside Loom. Declare `spool` as a direct
+You own data authorization and loading outside Loom. Declare `@southneuhof/spool` as a direct
 workspace dependency in any package that imports these bindings.
 
 Both `usePrint` and `useXlsx` accept an `orientation` option. PDF uses a native `@page` rule. XLSX writes the orientation into each worksheet's print setup. Explicit custom `@page` CSS can override the PDF default.

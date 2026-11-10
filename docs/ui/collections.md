@@ -47,6 +47,11 @@ ListView synchronizes filter inputs from the current query. Search and
 successful filter changes reset the page once. Clearing a filter removes its
 query keys. A stale or invalid filter result does not load records.
 
+For inline or toolbar filters, bind controls to the slot's `draft` and
+`setValue` rather than editing router state. Keep schemas, labels, and loaders
+in `filters`. The [shared filter contract](../resource_system_overhaul/ARCHITECTURE.md#72-filters)
+defines validation, errors, reset, and query hydration.
+
 Each filter declares all query keys it can set or clear in `queryKeys`, and a
 `toDraft` mapper from raw query values to form values. The mapper must check
 values from the URL; it cannot assume that the query has passed through the
@@ -108,7 +113,7 @@ The route owns query state and resets paging when the filter changes.
 ## Tabs
 
 Use framework `Tabs` for a local surface or presentation with exactly one
-selected item. Use the app routing Tabs component for route navigation. Tabs
+selected item. Use Loom `Tabs` with `RoutedTabItem` targets for route navigation. Tabs
 are not clearable and do not own router query state.
 
 A required query filter remains a `ChipFilter`; its required selection does
