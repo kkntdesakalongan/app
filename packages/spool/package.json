@@ -1,0 +1,51 @@
+{
+  "name": "@southneuhof/spool",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Browser PDF printing and XLSX exports with optional Vue bindings",
+  "exports": {
+    ".": "./src/index.ts",
+    "./vue": "./src/vue/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "build": "node build.mjs",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.39"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^6.0.2",
+    "vue": "^3.5.39"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/southneuhof/spool.git"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "XLSX.md"
+  ],
+  "typesVersions": {
+    "*": {
+      "vue": [
+        "./src/vue/index.ts"
+      ]
+    }
+  }
+}

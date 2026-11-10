@@ -37,8 +37,8 @@ A record with one additional section shows that section directly below
 record. Use a default child `detail/index.route.vue` with `AppRouterView` only
 when the section owns an identity that users can link, refresh, and return to.
 The user does not need an Open button or a single tab to see that section.
-For several child sections, place the app routing `Tabs` below `DetailView`,
-then `AppRouterView`. Use named `RouteTab` targets. The detail remains visible.
+For several child sections, place Loom `Tabs` below `DetailView`,
+then `AppRouterView`. Use named `RoutedTabItem` targets. The route owns the default-child redirect. The detail remains visible.
 Length alone does not earn a route.
 See [file routing](docs/architecture/file-routing.md)
 for file placement, replacement pages, and Back targets.

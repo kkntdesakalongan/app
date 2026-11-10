@@ -108,7 +108,7 @@ The route owns query state and resets paging when the filter changes.
 ## Tabs
 
 Use framework `Tabs` for a local surface or presentation with exactly one
-selected item. Use the app routing Tabs component for route navigation. Tabs
+selected item. Use Loom `Tabs` with `RoutedTabItem` targets for route navigation. Tabs
 are not clearable and do not own router query state.
 
 A required query filter remains a `ChipFilter`; its required selection does
