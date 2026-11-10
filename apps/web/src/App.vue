@@ -58,8 +58,8 @@ onBeforeUnmount(() => {
 <template>
   <div class="text-black-text transition-colors">
     <Toaster position="bottom-center" richColors :theme="useColorPreference().value" />
-    <div class="min-h-screen w-full">
-      <main v-if="error || identityFailed" class="flex min-h-screen w-screen items-center justify-center bg-background p-8 text-on-surface">
+    <div class="min-h-[var(--app-content-height)] w-full">
+      <main v-if="error || identityFailed" class="flex min-h-[var(--app-content-height)] w-full items-center justify-center bg-background p-8 text-on-surface">
         <div class="flex flex-col items-center gap-4 text-center" role="alert" aria-live="assertive">
           <h1 class="text-3xl font-semibold">Something went wrong.</h1>
           <p class="max-w-2xl break-words text-muted">{{ displayedError }}</p>
@@ -82,7 +82,7 @@ onBeforeUnmount(() => {
       <Suspense v-else :timeout="0">
         <RouterView />
         <template #fallback>
-          <div class="flex min-h-screen items-center justify-center">
+          <div class="flex min-h-[var(--app-content-height)] items-center justify-center">
             <Spinner />
           </div>
         </template>
