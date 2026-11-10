@@ -8,6 +8,11 @@ description: Build or review Carta API routes, scopes, entities, permissions, an
 Use Sprindle's [reference](../../../packages/sprindle/docs/reference.md) and
 [recipes](../../../packages/sprindle/docs/recipes.md) for framework APIs.
 
+Add queries, guards, locks, retries, or abstractions only for a required rule,
+contract, or concrete defect. Reuse validation from Sprindle, schemas, shared
+services, and database constraints. Keep existing patterns unless incorrect
+or unsafe.
+
 | Work | Carta guidance |
 |---|---|
 | Routes and inherited access | [File routing](references/file-routing.md) |
