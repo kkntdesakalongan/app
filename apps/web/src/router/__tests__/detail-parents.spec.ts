@@ -7,23 +7,21 @@ vi.mock('@southneuhof/loom', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@southneuhof/loom')>()
   return {
     ...actual,
+    Tabs: defineComponent({
+      props: { items: { type: Array, default: () => [] } },
+      setup: (props) => () =>
+        h(
+          'nav',
+          { 'data-tabs': true },
+          props.items.map((item: { label: string }) => h('span', { 'data-tab-label': item.label }, item.label))
+        ),
+    }),
     DetailView: defineComponent({
       props: { id: { type: String, required: true } },
       setup: (props) => () => h('div', { 'data-detail': props.id }, 'Detail'),
     }),
   }
 })
-vi.mock('@/components/routing/Tabs.vue', () => ({
-  default: defineComponent({
-    props: { items: { type: Array, default: () => [] } },
-    setup: (props) => () =>
-      h(
-        'nav',
-        { 'data-tabs': true },
-        props.items.map((item: { label: string }) => h('span', { 'data-tab-label': item.label }, item.label))
-      ),
-  }),
-}))
 vi.mock('@/routes/(authenticated)/settings/roles/roles.resource', () => ({
   roles: {
     detail: ({ id }: { id: string }) => ({ id }),

@@ -373,6 +373,7 @@ The framework update boundary currently covers:
 ```text
 packages/sprindle
 packages/loom
+packages/spool
 packages/utilities
 packages/sdk
 ```

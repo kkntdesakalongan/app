@@ -139,7 +139,7 @@ Form passes the component's model and validity events directly. It applies manag
 
 Textarea constraints and file/image mode and multi-value contracts belong to their input components. File and image inputs use `AssetValue` by default. Set `mode: 'file'` to keep local `File` values. Form checks the selected mode and collection size against the schema, including each value shape a dynamic mode can emit.
 
-The display path is record, property or read, format, renderer, then surface layout. Scalars render as text; nullish values render as a dash. Dates need an explicit format. Objects need an explicit display form. Keep HTML sanitized or render it as text. Display and export reuse the same read and format behavior; export does not mount Vue components. Export keeps mapValue, exclusions, filenames, and pagination. A safety limit must not report a partial export as complete.
+The display path is record, property or read, format, renderer, then surface layout. Scalars render as text; nullish values render as a dash. Dates need an explicit format. Objects need an explicit display form. Keep HTML sanitized or render it as text. Display and export reuse the same read and format behavior. Export mounts the default or custom Vue report in the current app context. Spool copies its rendered document for preview, native browser printing, and XLSX output. Export keeps mapValue, exclusions, filenames, and pagination. A safety limit or an empty page before reported completion must not report a partial export as complete.
 
 ### 3.4 Canonical props and native forwarding
 
@@ -259,6 +259,8 @@ A standard operation declares a permission string or null. Null removes the perm
 A routed custom command with a static permission uses that permission for route entry. If its execution permission is a callback, declare a static `routePermission` string, nonempty list, or null. This value controls route entry only. Loom does not call the execution callback or invent its arguments at entry. `routePermission` is not valid for a static or unrouted command. At execution, `can` and `run` still use their current arguments and row policy. The API remains the final authorization boundary.
 
 The binder returns complete View props and preserves supported page options such as filters, export, back targets, and completion callbacks. Extracting a primitive keeps its operation guard and cache behavior but does not add page navigation.
+
+Resource `exports.list` and `exports.detail` configure browser document output. Lists retain their existing export settings and default enablement. Detail export requires explicit configuration. List export uses the user's visible columns unless an export column map replaces them. Loom owns access, complete data loading, and display mapping. The separate Spool package owns document snapshots, native printing, and XLSX output. See the [export contract](../../packages/loom/src/exports/README.md).
 
 ### 6.2 Binding responsibilities
 
@@ -398,6 +400,8 @@ Option inputs own their data or loader. Declare `load`, `searchParameters`, `pic
 A custom input that owns a custom data set uses `useLoader`. LookupInput also uses this runtime for its collection reads. The installed query client owns shared reads, lifecycle cancellation, retries, and one terminal failure notification for the active read. `enabled` controls whether the loader runs; interaction `disabled` remains separate. LookupInput keeps selected-record hydration separate. This read feedback does not cover location or file-manager loaders.
 
 Resource-owned option and lookup keys include the operation, explicit namespace, and effective request parameters. Query values override matching search parameters. Different pages and page sizes have separate cache entries. An explicit namespace separates otherwise matching reads. Resource invalidation refreshes these reads through the existing options cache hierarchy.
+
+Cache identity omits top-level null, undefined, and empty string filters, as the app transport does. It preserves false, zero, arrays, and nested values. Clearing a filter therefore uses the same cache entry as an absent filter. This does not change option pagination contracts.
 
 A source-context change includes resource owner, loader identity, namespace, searchParameters, source mode, and identity props. A resource owner change follows the existing context-change behavior; refreshing options for the same owner does not clear a valid remote selection. SelectInput multi/asWhole, CheckboxGroupInput uniqueIDAs, and LookupInput multi affect model interpretation. A changed SelectInput picked-key identity affects selection validity; a view-only change does not. A context-driven clear is a normal model update and does not mark the input touched. A cleared value stays clear after component defaults run.
 

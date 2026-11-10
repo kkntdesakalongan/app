@@ -106,7 +106,7 @@ declare module 'vue-router/auto-routes' {
       '/settings/users/:userId/detail',
       { userId: ParamValue<true> },
       { userId: ParamValue<false> },
-      | 'settings-users-detail-role-assignments'
+      | never
     >,
     'settings-users-detail-role-assignments': RouteRecordInfo<
       'settings-users-detail-role-assignments',
@@ -264,6 +264,14 @@ declare module 'vue-router/auto-routes' {
         | 'settings-users-detail-role-assignments'
       views:
         | 'default'
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/settings/users/[userId]/detail/index.route.vue': {
+      routes:
+        | 'settings-users-detail'
+      views:
+        | never
       pathParamNames:
         | never
     }
