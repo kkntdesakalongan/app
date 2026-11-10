@@ -73,7 +73,7 @@ watch([() => route.fullPath, wide], () => {
                       <Logo class="size-6 shrink-0" />
                       <span class="min-w-0 truncate text-sm font-semibold tracking-[-0.01em]">Information System</span>
                     </div>
-                    <nav aria-label="Mobile navigation" class="space-y-5 px-3 py-4">
+                    <nav aria-label="Mobile navigation" class="menu-list space-y-5 px-3 py-4">
                       <section v-for="module in navigation" :key="module.name">
                         <h3 class="mb-2 flex items-center gap-2 px-3 text-xs font-medium text-on-surface-variant">
                           <span aria-hidden="true" class="inline-flex"><Icon :name="module.icon" size="sm" /></span>{{ module.title }}
@@ -201,11 +201,16 @@ watch([() => route.fullPath, wide], () => {
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
+  overflow: hidden;
 }
 .window-body > * {
   flex-shrink: 0;
+}
+.window-body > .menu-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .window-footer {
   display: flex;
