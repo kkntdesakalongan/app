@@ -8,6 +8,12 @@ const desiredBranch = 'main'
 
 const packages = [
   {
+    name: '@southneuhof/spool',
+    dir: 'packages/spool',
+    remote: 'https://github.com/southneuhof/spool.git',
+    remoteName: 'pkg-spool',
+  },
+  {
     name: '@southneuhof/loom',
     dir: 'packages/loom',
     remote: 'https://github.com/southneuhof/loom.git',
