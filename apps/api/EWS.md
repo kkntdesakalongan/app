@@ -54,9 +54,11 @@ Each range accepts `min` and `max` as finite numbers. At least one bound is requ
 
 | Station type | Allowed `statusCodes` |
 |---|---|
-| `flood` | `normal`, `warning`, `unknown` |
-| `landslide` | `warning`, `maintenance`, `unknown` |
-| `tsunami` | `unknown` |
+| `flood` | `telemetry_inactive`, `normal`, `warning`, `maintenance`, `unknown` |
+| `landslide` | `telemetry_inactive`, `normal`, `warning`, `maintenance`, `unknown` |
+| `tsunami` | `telemetry_inactive`, `normal`, `maintenance`, `unknown` |
+
+`telemetry_inactive` means telemetry is inactive or the station has no telemetry. `normal` means normal and active. `warning` means danger. `maintenance` means under repair.
 
 `unknown` means the source state cannot be interpreted reliably. It does not mean that the station is inactive or safe.
 

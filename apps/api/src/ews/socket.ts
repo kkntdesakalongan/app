@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { fetchStations, type Station } from './source'
 
 const type = z.enum(['flood', 'landslide', 'tsunami'])
-const status = z.enum(['normal', 'warning', 'maintenance', 'unknown'])
+const status = z.enum(['normal', 'warning', 'maintenance', 'telemetry_inactive', 'unknown'])
 const range = z.strictObject({ min: z.number().finite().optional(), max: z.number().finite().optional() }).refine(value => (value.min !== undefined || value.max !== undefined) && (value.min === undefined || value.max === undefined || value.min <= value.max))
 const filtersSchema = z.strictObject({
   stations: z.array(z.strictObject({ type, statusCodes: z.array(status).min(1).optional() })).min(1).optional(),
@@ -13,7 +13,7 @@ const filtersSchema = z.strictObject({
   rainfallMm: range.optional(),
   waterLevelMeters: range.optional(),
   groundMovementCm: range.optional(),
-}).refine(filters => !filters.stations || (new Set(filters.stations.map(station => station.type)).size === filters.stations.length && filters.stations.every(station => !station.statusCodes || station.statusCodes.every(code => code === 'unknown' || (code === 'normal' && station.type === 'flood') || (code === 'warning' && station.type !== 'tsunami') || (code === 'maintenance' && station.type === 'landslide')))))
+}).refine(filters => !filters.stations || (new Set(filters.stations.map(station => station.type)).size === filters.stations.length && filters.stations.every(station => !station.statusCodes || station.statusCodes.every(code => code === 'unknown' || code === 'normal' || code === 'maintenance' || (code === 'warning' && station.type !== 'tsunami') || code === 'telemetry_inactive'))))
 const messageSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('subscribe'), requestId: z.uuid(), filters: filtersSchema.default({}) }),
   z.strictObject({ type: z.literal('refresh'), requestId: z.uuid() }),
