@@ -14,7 +14,7 @@ try {
   await mkdir(generated, { recursive: true })
   await compileRouteManifest(root, 'src/routes', `${generatedName}/routes.mjs`, false)
   await writeFile(`${generated}application.ts`, `import manifest from './routes.mjs';import {createApp} from '../src/create-app';import {assertRouteEntitiesBound,bindRouteEntities} from '@southneuhof/sprindle/hono';import {getDb,getDomainSchema} from '../src/db';export {runWithAssetRequestUrl,storedAsset} from '../src/storage/assets';getDb();bindRouteEntities(manifest,getDomainSchema().entities);assertRouteEntitiesBound(manifest);export const routeManifest=manifest;export const app=createApp(manifest);`)
-  await writeFile(`${generated}server.ts`, `import {serve} from '@hono/node-server';import {app} from './application';const port=Number(process.env.API_PORT);if(!port)throw new Error('API_PORT is not set');serve({fetch:app.fetch,port});console.log('Listening on port '+port);`)
+  await writeFile(`${generated}server.ts`, `import {serve} from '@hono/node-server';import {app} from './application';import {installEwsSocket} from '../src/ews/socket';const port=Number(process.env.API_PORT);if(!port)throw new Error('API_PORT is not set');const server=serve({fetch:app.fetch,port});installEwsSocket(server);console.log('Listening on port '+port);`)
   await rm(`${root}dist`, { recursive: true, force: true })
   await build({
     entryPoints: { application: `${generated}application.ts`, server: `${generated}server.ts` },
