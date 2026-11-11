@@ -1,5 +1,6 @@
 import { serve } from "@hono/node-server";
 import { fileURLToPath } from "node:url";
+import { installEwsSocket } from "./ews/socket";
 
 const bootStarted = Date.now();
 const log = (message: string) => console.log(`[api] ${message} (+${Date.now() - bootStarted}ms)`);
@@ -32,9 +33,10 @@ bindRouteEntities(routeManifest, getDomainSchema().entities);
 assertRouteEntitiesBound(routeManifest);
 log("Routes bound. Starting HTTP server...");
 
-serve({
+const server = serve({
   fetch: app.fetch,
   port,
 });
+installEwsSocket(server);
 
 console.log(`Listening on port ${port} (+${Date.now() - bootStarted}ms)`);
