@@ -7,6 +7,7 @@ import { z } from 'zod/v4'
 import { mapPinsSelectSchema } from '@southneuhof/api/src/routes/(authenticated)/map-pins/schema.ts'
 import { routeLeaveCleanup } from '@/components/routing/routeTransition'
 import { rpc } from '@/framework/rpc'
+import { useEwsStations, type EwsStation } from './useEwsStations'
 import { useCollection, type CollectionLoadContext } from '@southneuhof/loom'
 const pinSchema = mapPinsSelectSchema.pick({ id: true, name: true, description: true, latitude: true, longitude: true })
 async function loadPins({ signal }: CollectionLoadContext) {
@@ -15,12 +16,14 @@ async function loadPins({ signal }: CollectionLoadContext) {
   return { data: z.array(pinSchema).parse(await response.json()) }
 }
 const { records: pins, loading, error, refresh } = useCollection(() => ({ load: loadPins, query: {} }))
+const { stations, state: ewsState, retry: retryEws } = useEwsStations()
 const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
 const host = ref<HTMLElement>()
 const tileError = ref(false)
 let map: L.Map | undefined
 let tiles: L.TileLayer | undefined
 let markers: L.LayerGroup | undefined
+let ewsMarkers: L.LayerGroup | undefined
 let observer: ResizeObserver | undefined
 let fitted = false
 function renderPins() {
@@ -54,12 +57,88 @@ function renderPins() {
     marker.bindPopup(content, { className: 'location-popup', maxWidth: 320, autoPanPaddingTopLeft: L.point(20, toolbarHeight + 20) })
     marker.addTo(markers)
   }
-  if (!fitted && pins.value.length && map) {
-    map.fitBounds(L.latLngBounds(pins.value.map((pin) => L.latLng(pin.latitude, pin.longitude))), { padding: [40, 40], maxZoom: 14 })
+  fitStations()
+}
+const statusLabels: Record<EwsStation['statusCode'], string> = {
+  normal: 'Normal and active',
+  warning: 'Danger',
+  maintenance: 'Under repair',
+  telemetry_inactive: 'Telemetry inactive',
+  unknown: 'Unknown',
+}
+const typeLabels: Record<EwsStation['type'], string> = { flood: 'Flood', landslide: 'Landslide', tsunami: 'Tsunami' }
+const iconStates: Record<EwsStation['statusCode'], string> = { normal: 'normal', warning: 'warning', maintenance: 'maintenance', telemetry_inactive: 'inactive', unknown: 'inactive' }
+const readings: { key: keyof EwsStation['readings']; label: string; unit: string }[] = [
+  { key: 'waterLevelMeters', label: 'Water level', unit: 'm' },
+  { key: 'rainfallMm', label: 'Rainfall', unit: 'mm' },
+  { key: 'groundMovementCm', label: 'Ground movement', unit: 'cm' },
+  { key: 'humidityPercent', label: 'Humidity', unit: '%' },
+  { key: 'batteryVolts', label: 'Battery', unit: 'V' },
+  { key: 'sensorBatteryVolts', label: 'Sensor battery', unit: 'V' },
+  { key: 'hornOhms', label: 'Horn', unit: 'Ω' },
+]
+function fitStations() {
+  if (fitted || !map || loading.value || ewsState.value === 'loading') return
+  const points = [...pins.value, ...stations.value].map((item) => L.latLng(item.latitude, item.longitude))
+  if (points.length) {
+    map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 14 })
     fitted = true
   }
 }
+function renderEws() {
+  if (!ewsMarkers || !map) return
+  ewsMarkers.clearLayers()
+  for (const station of stations.value) {
+    const iconState = iconStates[station.statusCode]
+    const extension = iconState === 'warning' ? 'gif' : 'svg'
+    const marker = L.marker([station.latitude, station.longitude], {
+      title: `${station.name} — ${statusLabels[station.statusCode]}`,
+      keyboard: true,
+      icon:
+        station.statusCode === 'unknown'
+          ? L.divIcon({ className: 'ews-unknown-icon', html: '?', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -28] })
+          : L.icon({
+              iconUrl: `${import.meta.env.BASE_URL}ews-icons/${station.type}-${iconState}.${extension}`,
+              iconSize: [32, 37],
+              iconAnchor: [16, 37],
+              popupAnchor: [0, -28],
+            }),
+    })
+    const content = document.createElement('section')
+    content.setAttribute('aria-label', 'Early warning station details')
+    const heading = document.createElement('h2')
+    heading.className = 'text-base font-semibold'
+    heading.textContent = station.name
+    content.append(heading)
+    const status = document.createElement('p')
+    status.className = 'mt-1 text-sm'
+    status.textContent = `${typeLabels[station.type]} · ${statusLabels[station.statusCode]}`
+    content.append(status)
+    const list = document.createElement('dl')
+    list.className = 'mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm'
+    for (const reading of readings) {
+      const value = station.readings[reading.key]
+      if (value === null) continue
+      const term = document.createElement('dt')
+      term.textContent = reading.label
+      const detail = document.createElement('dd')
+      detail.textContent = `${value} ${reading.unit}`
+      list.append(term, detail)
+    }
+    if (list.childElementCount) content.append(list)
+    const updated = document.createElement('p')
+    updated.className = 'mt-2 text-xs'
+    updated.textContent = `Source update: ${station.sourceUpdatedAt && /^\d{4}-\d{2}-\d{2}/.test(station.sourceUpdatedAt) ? station.sourceUpdatedAt : 'Unavailable'}`
+    content.append(updated)
+    const toolbarHeight = host.value?.parentElement?.querySelector('.map-toolbar')?.getBoundingClientRect().height ?? 100
+    marker.bindPopup(content, { className: 'location-popup', maxWidth: 320, autoPanPaddingTopLeft: L.point(20, toolbarHeight + 20) })
+    marker.addTo(ewsMarkers)
+  }
+  fitStations()
+}
 watch(pins, renderPins)
+watch(stations, renderEws)
+watch([loading, ewsState], fitStations)
 function retryTiles() {
   tileError.value = false
   tiles?.redraw()
@@ -77,9 +156,11 @@ onMounted(() => {
     tileError.value = true
   })
   markers = L.layerGroup().addTo(map)
+  ewsMarkers = L.layerGroup().addTo(map)
   observer = new ResizeObserver(() => map?.invalidateSize())
   observer.observe(host.value)
   renderPins()
+  renderEws()
 })
 onBeforeUnmount(() => {
   observer?.disconnect()
@@ -100,6 +181,7 @@ onBeforeUnmount(() => {
         <div class="ml-auto flex flex-wrap items-center justify-end gap-2">
           <slot name="actions" />
           <Button v-if="error" type="button" variant="text" @click="refresh">Retry locations</Button>
+          <Button v-if="ewsState === 'error'" type="button" variant="text" @click="retryEws">Retry early warnings</Button>
           <Button v-if="tileError" type="button" variant="text" @click="retryTiles">Retry map</Button>
         </div>
       </div>
@@ -107,6 +189,9 @@ onBeforeUnmount(() => {
         <p v-if="loading" role="status">Loading locations…</p>
         <p v-else-if="error" role="alert">{{ error.message }}</p>
         <p v-else-if="!pins.length">No locations yet.</p>
+        <p v-if="ewsState === 'loading'" role="status">Loading early warning stations…</p>
+        <p v-else-if="ewsState === 'error'" role="alert">Early warning stations could not load.{{ stations.length ? ' Showing the last available data.' : '' }}</p>
+        <p v-else-if="!stations.length">No early warning stations available.</p>
         <p v-if="tileError" role="alert">Map tiles could not load.</p>
       </div>
     </div>
@@ -142,6 +227,15 @@ onBeforeUnmount(() => {
 </style>
 
 <style>
+.ews-unknown-icon {
+  display: grid;
+  place-items: center;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #374151;
+  color: white;
+  font-weight: 700;
+}
 .location-popup .leaflet-popup-content-wrapper,
 .location-popup .leaflet-popup-tip {
   background: rgb(var(--md-sys-color-surface-container-lowest));
