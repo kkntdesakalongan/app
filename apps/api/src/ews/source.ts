@@ -1,7 +1,7 @@
 import { load } from 'cheerio'
 
 export type StationType = 'flood' | 'landslide' | 'tsunami'
-export type StatusCode = 'normal' | 'warning' | 'maintenance' | 'unknown'
+export type StatusCode = 'normal' | 'warning' | 'maintenance' | 'telemetry_inactive' | 'unknown'
 
 export interface Station {
   type: StationType
@@ -24,6 +24,20 @@ export interface Station {
 }
 
 const sourceUrl = 'https://earlywarning-datacenter.net/?halaman=map'
+const iconStates: Record<string, StatusCode> = {
+  'longsor-abu.svg': 'telemetry_inactive',
+  'banjir-abu.svg': 'telemetry_inactive',
+  'tsunami-abu.svg': 'telemetry_inactive',
+  'longsor-hijau.svg': 'normal',
+  'banjir-hijau.svg': 'normal',
+  'tsunami-hijau.svg': 'normal',
+  'merged.gif': 'warning',
+  'longsor-warning.gif': 'warning',
+  'banjir-warning.gif': 'warning',
+  'perbaikan-longsor.svg': 'maintenance',
+  'perbaikan-banjir.svg': 'maintenance',
+  'perbaikan-tsunami.svg': 'maintenance',
+}
 const markers = /L\.marker\(\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\],\s*\{\s*icon:\s*(\w+)\s*\}\)\.addTo\(map\)\.bindPopup\('((?:\\.|[^'\\])*)'\)/g
 
 export async function fetchStations(): Promise<{ fetchedAt: string; stations: Station[] }> {
@@ -31,6 +45,11 @@ export async function fetchStations(): Promise<{ fetchedAt: string; stations: St
   if (!response.ok) throw new Error('source_fetch_failed')
   const html = await response.text()
   const stations: Station[] = []
+  const iconFiles = new Map<string, string>()
+  for (const match of html.matchAll(/(?:var|let|const)\s+(\w+)\s*=\s*L\.icon\(\{\s*iconUrl:\s*['"]([^'"]+)['"]/g)) {
+    const [, name, url] = match
+    if (name && url) iconFiles.set(name, url.split('/').at(-1) ?? '')
+  }
   for (const match of html.matchAll(markers)) {
     const [, latitude, longitude, icon, popup] = match
     if (!latitude || !longitude || !icon || popup === undefined) throw new Error('source_parse_failed')
@@ -49,7 +68,7 @@ export async function fetchStations(): Promise<{ fetchedAt: string; stations: St
       return result?.[1] ? Number(result[1]) : null
     }
     const sourceStatus = value('status')
-    const statusCode: StatusCode = icon.toLowerCase().includes('warning') || icon.toLowerCase().includes('warn') ? 'warning' : icon.toLowerCase().includes('perbaikan') ? 'maintenance' : type === 'flood' && icon === 'Icon_banjir' && sourceStatus?.toLowerCase() === 'normal' ? 'normal' : 'unknown'
+    const statusCode = iconStates[iconFiles.get(icon) ?? ''] ?? 'unknown'
     stations.push({
       type, name, latitude: Number(latitude), longitude: Number(longitude), statusCode, sourceStatus, sourceIcon: icon,
       sourceUpdatedAt: value('update terakhir') ?? value('date'),
