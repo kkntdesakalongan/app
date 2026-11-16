@@ -349,6 +349,10 @@ A table schema describes returned records, not query or mutation values. The bou
 
 ListView merges the current route query into its standard create, detail, and update targets, including targets in action slots. Destination query values replace carried values. The standard export button appears when `export` is not `false` and the table has data or a loader. Set `export: false` to hide it. The unscoped `toolbar` slot adds controls beside the standard list controls.
 
+Custom collection slots receive a `rowActions` component. Render it with the
+original resource record to reuse standard controls, permissions, and guarded
+deletion. A synthetic tree ancestor has no resource record or standard actions.
+
 A ListView delete callback needs `recordIdentity`. A ListView without a delete callback does not accept that property. A resource binder forwards its declared identity when it binds a delete operation; resource authors do not declare it again. A standalone ListView delete callback supplies the identity. The view checks and encodes that identity before a write. Its local outcome state uses the bound table resource key and canonical scalar or composite identity. A standalone view uses its identity callback as its local owner.
 
 When a delete callback returns an uncertain or legacy error with `postWrite: true`, ListView retains the normalized error for that owner and identity. It blocks another request for that record and shows persistent guidance that the delete may have completed. A confirmed refresh failure closes the confirmation, reports one saved/refresh warning, and offers a guarded read-only Retry refresh action. It clears the block only after that read succeeds while the view and binding still match. A different record remains available. Pre-write failures show the normalized message and allow a deliberate retry. Row-action and collection slots receive a guarded callback and read-only per-record state; use that callback because a direct resource call outside ListView has no view guard.
