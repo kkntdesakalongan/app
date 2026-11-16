@@ -181,7 +181,7 @@ onBeforeUnmount(() => {
 })
 </script>
 <template>
-  <div class="location-map absolute inset-0 isolate">
+  <div class="location-map absolute inset-0 isolate" :class="{ 'has-map-error': mapError }">
     <div ref="host" class="absolute inset-0 z-0" aria-label="Location map" />
     <div class="map-toolbar absolute inset-x-0 top-0 z-[500] px-5 py-5 text-on-surface sm:px-7 sm:py-6">
       <div class="map-atmosphere pointer-events-none absolute inset-x-0 -bottom-16 top-0" aria-hidden="true">
@@ -196,16 +196,10 @@ onBeforeUnmount(() => {
         </div>
       </div>
     </div>
-    <Card variant="elevated" color="surfaceContainer" class="absolute left-3 top-24 z-[500] w-64 max-w-[calc(100%_-_1.5rem)] gap-0 p-0">
+    <Card variant="elevated" color="surfaceContainer" class="map-legend absolute z-[500] w-64 max-w-[calc(100%_-_1.5rem)] gap-0 p-0">
       <CollapsibleRoot :default-open="true">
-        <CollapsibleTrigger
-          class="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold transition-colors hover:bg-on-surface/[8%] focus-visible:outline-none focus-visible:bg-on-surface/[8%]"
-        >
-          <span class="flex items-center gap-2"><Icon name="map-2" class="text-primary" />Legend</span>
-          <Icon name="arrow-down-s" class="transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
-        </CollapsibleTrigger>
         <CollapsibleContent class="legend-content">
-          <div class="max-h-[calc(100dvh_-_16rem)] space-y-3 overflow-y-auto border-t border-outline-variant/50 px-4 py-3 text-xs">
+          <div class="legend-items space-y-3 overflow-y-auto border-b border-outline-variant/50 px-4 py-3 text-xs">
             <section v-for="group in legendGroups" :key="group.type">
               <h2 class="font-semibold">{{ typeLabels[group.type] }}</h2>
               <ul class="mt-1 space-y-1">
@@ -218,11 +212,15 @@ onBeforeUnmount(() => {
             <div class="flex items-center gap-2"><span aria-hidden="true" class="ews-unknown-icon h-6 w-6">?</span><span>Unknown status</span></div>
           </div>
         </CollapsibleContent>
+        <CollapsibleTrigger
+          class="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold transition-colors hover:bg-on-surface/[8%] focus-visible:outline-none focus-visible:bg-on-surface/[8%]"
+        >
+          <span class="flex items-center gap-2"><Icon name="map-2" class="text-primary" />Legend</span>
+          <Icon name="arrow-up-s" class="transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
+        </CollapsibleTrigger>
       </CollapsibleRoot>
     </Card>
-    <div
-      class="map-filter-controls absolute bottom-[calc(env(safe-area-inset-bottom,0px)_+_6rem)] left-1/2 z-[500] flex w-max max-w-[calc(100%_-_7rem)] -translate-x-1/2 flex-col items-center gap-2 sm:max-w-[calc(100%_-_10rem)] lg:bottom-[calc(env(safe-area-inset-bottom,0px)_+_1.5rem)]"
-    >
+    <div class="map-filter-controls absolute left-1/2 z-[500] flex w-max max-w-[calc(100%_-_7rem)] -translate-x-1/2 flex-col items-center gap-2 sm:max-w-[calc(100%_-_10rem)]">
       <div v-if="mapError">
         <Tooltip>
           <template #trigger>
@@ -239,6 +237,33 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.location-map {
+  --map-controls-bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem);
+  --map-controls-clearance: 4rem;
+}
+.location-map.has-map-error {
+  --map-controls-clearance: 7rem;
+}
+.map-filter-controls {
+  bottom: var(--map-controls-bottom);
+}
+.map-legend {
+  right: max(0.75rem, env(safe-area-inset-right, 0px));
+  bottom: calc(var(--map-controls-bottom) + var(--map-controls-clearance));
+}
+.legend-items {
+  max-height: min(28rem, calc(100dvh - var(--map-controls-bottom) - var(--map-controls-clearance) - 8rem));
+}
+@media (min-width: 1024px) {
+  .location-map {
+    --map-controls-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+  }
+}
+@media (min-width: 1280px) {
+  .map-legend {
+    bottom: var(--map-controls-bottom);
+  }
+}
 .legend-content {
   overflow: hidden;
 }
@@ -322,8 +347,8 @@ onBeforeUnmount(() => {
 .location-popup a.leaflet-popup-close-button {
   color: rgb(var(--md-sys-color-on-surface));
 }
-.public-map-viewport .map-filter-controls {
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
+.public-map-viewport .location-map {
+  --map-controls-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
 }
 .public-map-viewport .map-toolbar {
   padding-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
