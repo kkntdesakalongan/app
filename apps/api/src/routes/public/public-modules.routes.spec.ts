@@ -6,11 +6,15 @@ import { createSystemSession } from '../../testing/session'
 import { disasterReports } from '../(authenticated)/disaster-reports/disaster-reports.table'
 import { mapPins } from '../(authenticated)/map-pins/map-pins.table'
 
+import { reportCategories } from '../(authenticated)/report-categories/report-categories.table'
+
+const categoryIds: string[] = []
 const reportIds: string[] = []
 const pinIds: string[] = []
 afterAll(async () => {
   for (const id of reportIds) await getDb().delete(disasterReports).where(eq(disasterReports.id, id))
   for (const id of pinIds) await getDb().delete(mapPins).where(eq(mapPins.id, id))
+  for (const id of categoryIds) await getDb().delete(reportCategories).where(eq(reportCategories.id, id))
   await closeDb()
 })
 function write(path: string, body: unknown, cookie = '', method = 'POST') {
@@ -58,4 +62,39 @@ it('publishes saved pins but restricts writes and rejects invalid coordinates', 
   expect((await getDb().select().from(mapPins).where(eq(mapPins.id, saved.id)))[0]).toMatchObject({ name: 'Moved shelter', longitude: 111 })
   expect((await app.request(`/api/map-pins/delete/${saved.id}`, { method: 'DELETE', headers: { Cookie: admin.cookie } })).status).toBe(200)
   expect(await getDb().select().from(mapPins).where(eq(mapPins.id, saved.id))).toHaveLength(0)
+})
+
+
+it('publishes category choices, saves report categories, and protects categories in use', async () => {
+  const name = `Banjir ${crypto.randomUUID()}`
+  const admin = await createSystemSession(['create-report-categories', 'update-report-categories', 'delete-report-categories', 'update-disaster-reports'], 'categories-admin')
+  expect((await write('/report-categories/create', { name })).status).toBe(401)
+  const limited = await createSystemSession([], 'categories-limited')
+  expect((await write('/report-categories/create', { name }, limited.cookie)).status).toBe(403)
+  const created = await write('/report-categories/create', { name }, admin.cookie)
+  expect(created.status).toBe(201)
+  const category = (await created.json()).data
+  categoryIds.push(category.id)
+  expect((await (await app.request('/api/public/report-categories')).json()).data).toContainEqual({ id: category.id, name })
+  const title = `Category report ${crypto.randomUUID()}`
+  const submitted = await write('/public/disaster-reports/create', { title, categoryId: category.id })
+  expect(submitted.status).toBe(201)
+  const report = (await submitted.json()).data
+  reportIds.push(report.id)
+  expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, report.id)))[0]).toMatchObject({ categoryId: category.id })
+  const rejected = await write('/public/disaster-reports/create', { title, categoryId: crypto.randomUUID() })
+  expect(rejected.status).toBe(400)
+  expect((await rejected.json()).issues).toContainEqual({ field: 'categoryId', message: 'Pilih Kategori Laporan yang tersedia.' })
+  expect(await getDb().select().from(disasterReports).where(eq(disasterReports.title, title))).toHaveLength(1)
+  const remove = () => app.request(`/api/report-categories/delete/${category.id}`, { method: 'DELETE', headers: { Cookie: admin.cookie } })
+  expect((await remove()).status).toBe(409)
+  expect((await getDb().select().from(reportCategories).where(eq(reportCategories.id, category.id)))[0]).toMatchObject({ name })
+  expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, report.id)))[0]).toMatchObject({ categoryId: category.id })
+  const renamed = `${name} baru`
+  expect((await write(`/report-categories/update/${category.id}`, { name: renamed }, admin.cookie, 'PATCH')).status).toBe(200)
+  expect((await (await app.request('/api/public/report-categories')).json()).data).toContainEqual({ id: category.id, name: renamed })
+  expect((await write(`/disaster-reports/update/${report.id}`, { title, categoryId: null }, admin.cookie, 'PATCH')).status).toBe(200)
+  expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, report.id)))[0]).toMatchObject({ categoryId: null })
+  expect((await remove()).status).toBe(200)
+  expect(await getDb().select().from(reportCategories).where(eq(reportCategories.id, category.id))).toHaveLength(0)
 })

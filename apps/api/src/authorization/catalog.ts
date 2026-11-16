@@ -18,6 +18,15 @@ type ModuleDefinition = {
 };
 
 export const authorizationModules = [
+  { code: "report-categories", name: "Kategori Laporan", active: true, permissions: [
+    { code: "view-report-categories", name: "View Kategori Laporan", description: "View report categories.", targetType: "global", active: true },
+    { code: "list-report-categories", name: "List Kategori Laporan", description: "List report categories.", targetType: "global", active: true },
+    { code: "detail-report-categories", name: "Detail Kategori Laporan", description: "Detail report categories.", targetType: "global", active: true },
+    { code: "create-report-categories", name: "Create Kategori Laporan", description: "Create report categories.", targetType: "global", active: true },
+    { code: "update-report-categories", name: "Update Kategori Laporan", description: "Update report categories.", targetType: "global", active: true },
+    { code: "delete-report-categories", name: "Delete Kategori Laporan", description: "Delete report categories.", targetType: "global", active: true },
+  ] },
+
   { code: "map-pins", name: "Map pins", active: true, permissions: [
     { code: "view-map-pins", name: "View Map pins", description: "View map pins.", targetType: "global", active: true },
     { code: "list-map-pins", name: "List Map pins", description: "List map pins.", targetType: "global", active: true },

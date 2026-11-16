@@ -47,3 +47,11 @@ editing, and removing it. Evidence uses `report-detail` filenames.
 
 The list and standard detail show the formatted submission timestamp with the
 label Submitted at. The browser report journey checked both labels.
+
+Public intake presentation now uses the framework Form directly. The shared input renderers, schema, payload conversion, and create operation remain in use. The page has a title and logo header, Bahasa Indonesia labels, and fixed bottom actions over progressive blur. The submit action fills the row beside an icon-only cancel link. Bottom clearance derives from the blur and safe-area dimensions. No framework packages changed.
+
+Selected proof for this presentation change: web type check, scoped lint, production build, surface architecture checks, and source review. All passed. Scoped lint reports one `vue/no-restricted-syntax` warning for the user-approved custom actions slot. The production build reports old Browserslist data and large chunks. The Impeccable detector returned no findings. No automated tests were added.
+
+Source review found no material issue. Live browser verification remains incomplete because a reliable preview was not obtained. Actual phone layout, end-of-scroll clearance, zoom, keyboard focus, success announcements, and submission were not verified in this pass. Global design artifacts remain unchanged because this is a refinement within the current visual system.
+
+The public success view now centers a large shared check icon and confirmation text. It moves keyboard focus to the confirmation heading after save. One full-width `Kembali` link to `/map` uses the bottom action row. The user-approved intake header uses a smaller, heavier title and a thin theme-token divider below the title and logo. No new automated tests were added for standard presentation.

@@ -94,6 +94,34 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'master-report-categories': RouteRecordInfo<
+      'master-report-categories',
+      '/master/report-categories',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'master-report-categories-detail': RouteRecordInfo<
+      'master-report-categories-detail',
+      '/master/report-categories/:id/detail',
+      { id: ParamValue<true> },
+      { id: ParamValue<false> },
+      | never
+    >,
+    'master-report-categories-edit': RouteRecordInfo<
+      'master-report-categories-edit',
+      '/master/report-categories/:id/edit',
+      { id: ParamValue<true> },
+      { id: ParamValue<false> },
+      | never
+    >,
+    'master-report-categories-create': RouteRecordInfo<
+      'master-report-categories-create',
+      '/master/report-categories/create',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'settings-permissions': RouteRecordInfo<
       'settings-permissions',
       '/settings/permissions',
@@ -230,6 +258,10 @@ declare module 'vue-router/auto-routes' {
         | 'map-pins-detail'
         | 'map-pins-edit'
         | 'map-preview'
+        | 'master-report-categories'
+        | 'master-report-categories-create'
+        | 'master-report-categories-detail'
+        | 'master-report-categories-edit'
         | 'settings-permissions'
         | 'settings-permissions-detail'
         | 'settings-roles'
@@ -314,6 +346,38 @@ declare module 'vue-router/auto-routes' {
     'src/routes/(authenticated)/map-preview/index.route.vue': {
       routes:
         | 'map-preview'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/master/report-categories/index.route.vue': {
+      routes:
+        | 'master-report-categories'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/master/report-categories/[id]/detail.route.vue': {
+      routes:
+        | 'master-report-categories-detail'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/master/report-categories/[id]/edit.route.vue': {
+      routes:
+        | 'master-report-categories-edit'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/master/report-categories/create.route.vue': {
+      routes:
+        | 'master-report-categories-create'
       views:
         | never
       pathParamNames:

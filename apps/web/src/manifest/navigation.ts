@@ -20,6 +20,14 @@ export const navigation = defineNavigation([
   },
   {
     kind: 'module',
+    name: 'master',
+    title: 'Master',
+    description: 'Master',
+    icon: 'folder',
+    routes: [{ to: { name: 'master-report-categories' }, permission: 'view-report-categories', title: 'Kategori Laporan', icon: 'folder' }],
+  },
+  {
+    kind: 'module',
     name: 'settings',
     title: 'Settings',
     icon: 'settings',

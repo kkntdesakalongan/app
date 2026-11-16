@@ -1,3 +1,4 @@
 import { defineScope } from '@southneuhof/sprindle'
 import { entity } from './disaster-reports.entity'
-export default defineScope({ entity })
+import { categoryReferenceError } from '../report-categories/reference-error'
+export default defineScope({ entity, error: categoryReferenceError })

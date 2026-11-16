@@ -2,6 +2,7 @@ import { disasterReportsCreateSchema, disasterReportsSelectSchema, disasterRepor
 import { z } from 'zod/v4'
 import { collectionQueryFields } from '@/framework/hono/collectionQuery'
 export const recordSchema = disasterReportsSelectSchema
+export const detailSchema = recordSchema.extend({ categoryName: z.string().nullable().optional() })
 export const createSchema = disasterReportsCreateSchema
 export const updateSchema = disasterReportsUpdateSchema
 export const querySchema = z.object({ ...collectionQueryFields, sort_by: z.enum(['title', 'createdAt']).optional() })
