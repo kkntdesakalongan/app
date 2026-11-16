@@ -1,6 +1,7 @@
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import { z } from 'zod/v4'
 import { apiUrl } from '@/framework/rpc'
+import type { EwsFilters } from './ewsFilters'
 
 const stationSchema = z.object({
   type: z.enum(['flood', 'landslide', 'tsunami']),
@@ -19,12 +20,33 @@ const stationSchema = z.object({
     hornOhms: z.number().nullable(),
   }),
 })
-const messageSchema = z.discriminatedUnion('type', [z.object({ type: z.literal('snapshot'), stations: z.array(stationSchema) }), z.object({ type: z.literal('error'), message: z.string() })])
+const messageSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('snapshot'), requestId: z.uuid(), stations: z.array(stationSchema) }),
+  z.object({ type: z.literal('error'), requestId: z.uuid().optional(), message: z.string() }),
+])
 export type EwsStation = z.infer<typeof stationSchema>
 
-export function useEwsStations() {
+export const kalonganBoundingBox = { south: -7.164, west: 110.427, north: -7.108, east: 110.466 }
+
+export function useEwsStations(filters: Ref<EwsFilters>) {
   const stations = ref<EwsStation[]>([])
   const state = ref<'loading' | 'ready' | 'error'>('loading')
+  const errorMessage = ref('')
+  let requestId: string | undefined
+  let filterTimer: ReturnType<typeof setTimeout> | undefined
+  function subscribe() {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return
+    if (filterTimer) clearTimeout(filterTimer)
+    requestId = crypto.randomUUID()
+    state.value = 'loading'
+    socket?.send(
+      JSON.stringify({
+        type: 'subscribe',
+        requestId,
+        filters: { ...filters.value, boundingBox: kalonganBoundingBox },
+      })
+    )
+  }
   let socket: WebSocket | undefined
   let reconnectTimer: ReturnType<typeof setTimeout> | undefined
   let reconnectDelay = 1000
@@ -36,27 +58,33 @@ export function useEwsStations() {
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
     socket = new WebSocket(url)
     socket.addEventListener('open', () => {
-      socket?.send(JSON.stringify({ type: 'subscribe', requestId: crypto.randomUUID() }))
+      subscribe()
     })
     socket.addEventListener('message', (event) => {
       try {
         const message = messageSchema.parse(JSON.parse(String(event.data)))
+        if (message.requestId && message.requestId !== requestId) return
         if (message.type === 'error') {
+          errorMessage.value = message.message
           state.value = 'error'
           return
         }
+        errorMessage.value = ''
         stations.value = message.stations
         state.value = 'ready'
         reconnectDelay = 1000
       } catch {
+        errorMessage.value = 'Cannot read early warning data.'
         state.value = 'error'
       }
     })
     socket.addEventListener('error', () => {
+      errorMessage.value = 'Cannot connect to early warning stations.'
       state.value = 'error'
     })
     socket.addEventListener('close', () => {
       if (stopped) return
+      errorMessage.value ||= 'The early warning connection closed.'
       state.value = 'error'
       reconnectTimer = setTimeout(connect, reconnectDelay)
       reconnectDelay = Math.min(reconnectDelay * 2, 30000)
@@ -67,17 +95,29 @@ export function useEwsStations() {
     if (reconnectTimer) clearTimeout(reconnectTimer)
     state.value = 'loading'
     if (socket?.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ type: 'subscribe', requestId: crypto.randomUUID() }))
+      subscribe()
     } else if (!socket || socket.readyState === WebSocket.CLOSED) {
       connect()
     }
   }
 
+  watch(
+    () => JSON.stringify(filters.value),
+    () => {
+      requestId = undefined
+      if (filterTimer) clearTimeout(filterTimer)
+      if (socket?.readyState !== WebSocket.OPEN) return
+      state.value = 'loading'
+      filterTimer = setTimeout(subscribe, 300)
+    }
+  )
+
   onMounted(connect)
   onBeforeUnmount(() => {
     stopped = true
+    if (filterTimer) clearTimeout(filterTimer)
     if (reconnectTimer) clearTimeout(reconnectTimer)
     socket?.close()
   })
-  return { stations, state, retry }
+  return { stations, state, errorMessage, retry }
 }

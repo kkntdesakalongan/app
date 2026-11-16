@@ -17,6 +17,7 @@
   "type": "subscribe",
   "requestId": "d0bc2f38-a472-4bf5-b2d8-129d50de946b",
   "filters": {
+    "boundingBox": { "south": -8, "west": 109, "north": -7, "east": 111 },
     "stations": [
       { "type": "landslide", "statusCodes": ["warning", "maintenance"] },
       { "type": "flood" }
@@ -42,6 +43,7 @@ All filter fields are optional. An omitted or empty `filters` object selects all
 
 | Field | Values | Rule |
 |---|---|---|
+| `boundingBox` | Object with `south`, `west`, `north`, and `east` | Select stations within the box, including its edges. |
 | `stations` | Nonempty array of station selectors | Match any selector. Omit to include all types. A type can appear once. |
 | `stations[].type` | `flood`, `landslide`, `tsunami` | Required in each selector. |
 | `stations[].statusCodes` | Nonempty array of status codes for the selected type | Match any listed code. Omit to include all states for that type. |
@@ -51,6 +53,8 @@ All filter fields are optional. An omitted or empty `filters` object selects all
 | `groundMovementCm` | Range object | Ground movement in centimeters. |
 
 Each range accepts `min` and `max` as finite numbers. At least one bound is required. Bounds are inclusive and `min` cannot exceed `max`. A missing reading does not match a range. Different filter fields combine with AND.
+
+All four bounding box coordinates are required numbers in degrees. Latitude bounds must be between -90 and 90, and `south` cannot exceed `north`. Longitude bounds must be between -180 and 180. If `west` exceeds `east`, the box crosses the antimeridian. Equal bounds select that latitude or longitude. Omit `boundingBox` to include all locations. The server applies this filter after it retrieves the source data.
 
 | Station type | Allowed `statusCodes` |
 |---|---|

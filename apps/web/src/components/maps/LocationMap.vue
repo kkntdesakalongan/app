@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import Card from '@southneuhof/loom/components/base/Card.vue'
+import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui'
 import Button from '@southneuhof/loom/components/base/Button.vue'
-import { inject, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import Icon from '@southneuhof/loom/components/base/Icon.vue'
+import Tooltip from '@southneuhof/loom/components/base/Tooltip.vue'
+import { computed, inject, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { z } from 'zod/v4'
 import { mapPinsSelectSchema } from '@southneuhof/api/src/routes/(authenticated)/map-pins/schema.ts'
 import { routeLeaveCleanup } from '@/components/routing/routeTransition'
 import { rpc } from '@/framework/rpc'
-import { useEwsStations, type EwsStation } from './useEwsStations'
+import EwsFilterPill from './EwsFilterPill.vue'
+import type { EwsFilters } from './ewsFilters'
+import { kalonganBoundingBox, useEwsStations, type EwsStation } from './useEwsStations'
 import { useCollection, type CollectionLoadContext } from '@southneuhof/loom'
 const pinSchema = mapPinsSelectSchema.pick({ id: true, name: true, description: true, latitude: true, longitude: true })
 async function loadPins({ signal }: CollectionLoadContext) {
@@ -15,17 +21,23 @@ async function loadPins({ signal }: CollectionLoadContext) {
   if (!response.ok) throw new Error('Cannot load locations.')
   return { data: z.array(pinSchema).parse(await response.json()) }
 }
-const { records: pins, loading, error, refresh } = useCollection(() => ({ load: loadPins, query: {} }))
-const { stations, state: ewsState, retry: retryEws } = useEwsStations()
+const { records: pins, error, refresh } = useCollection(() => ({ load: loadPins, query: {} }))
+const ewsFilters = ref<EwsFilters>({})
+const { stations, state: ewsState, errorMessage: ewsError, retry: retryEws } = useEwsStations(ewsFilters)
 const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
 const host = ref<HTMLElement>()
 const tileError = ref(false)
+const mapError = computed(() => [error.value?.message, ewsState.value === 'error' ? ewsError.value : '', tileError.value ? 'Map tiles could not load.' : ''].filter(Boolean).join(' '))
+function retryMap() {
+  if (error.value) void refresh()
+  if (ewsState.value === 'error') retryEws()
+  if (tileError.value) retryTiles()
+}
 let map: L.Map | undefined
 let tiles: L.TileLayer | undefined
 let markers: L.LayerGroup | undefined
 let ewsMarkers: L.LayerGroup | undefined
 let observer: ResizeObserver | undefined
-let fitted = false
 function renderPins() {
   if (!markers || !map) return
   markers?.clearLayers()
@@ -57,7 +69,6 @@ function renderPins() {
     marker.bindPopup(content, { className: 'location-popup', maxWidth: 320, autoPanPaddingTopLeft: L.point(20, toolbarHeight + 20) })
     marker.addTo(markers)
   }
-  fitStations()
 }
 const statusLabels: Record<EwsStation['statusCode'], string> = {
   normal: 'Normal and active',
@@ -67,7 +78,13 @@ const statusLabels: Record<EwsStation['statusCode'], string> = {
   unknown: 'Unknown',
 }
 const typeLabels: Record<EwsStation['type'], string> = { flood: 'Flood', landslide: 'Landslide', tsunami: 'Tsunami' }
+const iconBaseUrl = `${import.meta.env.BASE_URL}ews-icons/`
 const iconStates: Record<EwsStation['statusCode'], string> = { normal: 'normal', warning: 'warning', maintenance: 'maintenance', telemetry_inactive: 'inactive', unknown: 'inactive' }
+const legendGroups = [
+  { type: 'landslide', statuses: ['telemetry_inactive', 'normal', 'warning', 'maintenance'] },
+  { type: 'flood', statuses: ['telemetry_inactive', 'normal', 'warning', 'maintenance'] },
+  { type: 'tsunami', statuses: ['telemetry_inactive', 'normal', 'maintenance'] },
+] as const
 const readings: { key: keyof EwsStation['readings']; label: string; unit: string }[] = [
   { key: 'waterLevelMeters', label: 'Water level', unit: 'm' },
   { key: 'rainfallMm', label: 'Rainfall', unit: 'mm' },
@@ -77,14 +94,6 @@ const readings: { key: keyof EwsStation['readings']; label: string; unit: string
   { key: 'sensorBatteryVolts', label: 'Sensor battery', unit: 'V' },
   { key: 'hornOhms', label: 'Horn', unit: 'Ω' },
 ]
-function fitStations() {
-  if (fitted || !map || loading.value || ewsState.value === 'loading') return
-  const points = [...pins.value, ...stations.value].map((item) => L.latLng(item.latitude, item.longitude))
-  if (points.length) {
-    map.fitBounds(L.latLngBounds(points), { padding: [40, 40], maxZoom: 14 })
-    fitted = true
-  }
-}
 function renderEws() {
   if (!ewsMarkers || !map) return
   ewsMarkers.clearLayers()
@@ -98,7 +107,7 @@ function renderEws() {
         station.statusCode === 'unknown'
           ? L.divIcon({ className: 'ews-unknown-icon', html: '?', iconSize: [28, 28], iconAnchor: [14, 28], popupAnchor: [0, -28] })
           : L.icon({
-              iconUrl: `${import.meta.env.BASE_URL}ews-icons/${station.type}-${iconState}.${extension}`,
+              iconUrl: `${iconBaseUrl}${station.type}-${iconState}.${extension}`,
               iconSize: [32, 37],
               iconAnchor: [16, 37],
               popupAnchor: [0, -28],
@@ -134,11 +143,9 @@ function renderEws() {
     marker.bindPopup(content, { className: 'location-popup', maxWidth: 320, autoPanPaddingTopLeft: L.point(20, toolbarHeight + 20) })
     marker.addTo(ewsMarkers)
   }
-  fitStations()
 }
 watch(pins, renderPins)
 watch(stations, renderEws)
-watch([loading, ewsState], fitStations)
 function retryTiles() {
   tileError.value = false
   tiles?.redraw()
@@ -146,7 +153,13 @@ function retryTiles() {
 onMounted(() => {
   if (!host.value) return
   const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  map = L.map(host.value, { zoomAnimation: animate, fadeAnimation: animate, markerZoomAnimation: animate, zoomControl: false }).setView([-2.5, 118], 5)
+  map = L.map(host.value, { zoomAnimation: animate, fadeAnimation: animate, markerZoomAnimation: animate, zoomControl: false, zoomSnap: 0.25 }).fitBounds(
+    [
+      [kalonganBoundingBox.south, kalonganBoundingBox.west],
+      [kalonganBoundingBox.north, kalonganBoundingBox.east],
+    ],
+    { padding: [16, 16], maxZoom: 15 }
+  )
   L.control.zoom({ position: 'bottomleft' }).addTo(map)
   tiles = L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -180,25 +193,87 @@ onBeforeUnmount(() => {
         <div class="min-w-0"><slot /></div>
         <div class="ml-auto flex flex-wrap items-center justify-end gap-2">
           <slot name="actions" />
-          <Button v-if="error" type="button" variant="text" @click="refresh">Retry locations</Button>
-          <Button v-if="ewsState === 'error'" type="button" variant="text" @click="retryEws">Retry early warnings</Button>
-          <Button v-if="tileError" type="button" variant="text" @click="retryTiles">Retry map</Button>
         </div>
       </div>
-      <div class="relative mt-2 text-sm" aria-live="polite">
-        <p v-if="loading" role="status">Loading locations…</p>
-        <p v-else-if="error" role="alert">{{ error.message }}</p>
-        <p v-else-if="!pins.length">No locations yet.</p>
-        <p v-if="ewsState === 'loading'" role="status">Loading early warning stations…</p>
-        <p v-else-if="ewsState === 'error'" role="alert">Early warning stations could not load.{{ stations.length ? ' Showing the last available data.' : '' }}</p>
-        <p v-else-if="!stations.length">No early warning stations available.</p>
-        <p v-if="tileError" role="alert">Map tiles could not load.</p>
+    </div>
+    <Card variant="elevated" color="surfaceContainer" class="absolute left-3 top-24 z-[500] w-64 max-w-[calc(100%_-_1.5rem)] gap-0 p-0">
+      <CollapsibleRoot :default-open="true">
+        <CollapsibleTrigger
+          class="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold transition-colors hover:bg-on-surface/[8%] focus-visible:outline-none focus-visible:bg-on-surface/[8%]"
+        >
+          <span class="flex items-center gap-2"><Icon name="map-2" class="text-primary" />Legend</span>
+          <Icon name="arrow-down-s" class="transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
+        </CollapsibleTrigger>
+        <CollapsibleContent class="legend-content">
+          <div class="max-h-[calc(100dvh_-_16rem)] space-y-3 overflow-y-auto border-t border-outline-variant/50 px-4 py-3 text-xs">
+            <section v-for="group in legendGroups" :key="group.type">
+              <h2 class="font-semibold">{{ typeLabels[group.type] }}</h2>
+              <ul class="mt-1 space-y-1">
+                <li v-for="status in group.statuses" :key="status" class="flex items-center gap-2">
+                  <img :src="`${iconBaseUrl}${group.type}-${iconStates[status]}.${status === 'warning' ? 'gif' : 'svg'}`" alt="" class="h-6 w-6 object-contain" />
+                  <span>{{ statusLabels[status] }}</span>
+                </li>
+              </ul>
+            </section>
+            <div class="flex items-center gap-2"><span aria-hidden="true" class="ews-unknown-icon h-6 w-6">?</span><span>Unknown status</span></div>
+          </div>
+        </CollapsibleContent>
+      </CollapsibleRoot>
+    </Card>
+    <div
+      class="map-filter-controls absolute bottom-[calc(env(safe-area-inset-bottom,0px)_+_6rem)] left-1/2 z-[500] flex w-max max-w-[calc(100%_-_7rem)] -translate-x-1/2 flex-col items-center gap-2 sm:max-w-[calc(100%_-_10rem)] lg:bottom-[calc(env(safe-area-inset-bottom,0px)_+_1.5rem)]"
+    >
+      <div v-if="mapError">
+        <Tooltip>
+          <template #trigger>
+            <Button type="button" kind="icon" variant="filled" color="warning" ariaLabel="Refresh map data" @click="retryMap">
+              <template #icon><Icon name="refresh" /></template>
+            </Button>
+          </template>
+          <template #content>{{ mapError }}</template>
+        </Tooltip>
       </div>
+      <EwsFilterPill v-model="ewsFilters" class="max-w-full" />
     </div>
   </div>
 </template>
 
 <style scoped>
+.legend-content {
+  overflow: hidden;
+}
+.legend-content[data-state='open'] {
+  animation: legend-expand 220ms ease-out;
+}
+.legend-content[data-state='closed'] {
+  animation: legend-collapse 180ms ease-in;
+}
+@keyframes legend-expand {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--reka-collapsible-content-height);
+    opacity: 1;
+  }
+}
+@keyframes legend-collapse {
+  from {
+    height: var(--reka-collapsible-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .legend-content {
+    animation: none;
+  }
+}
+
 .map-atmosphere {
   background: linear-gradient(to bottom, rgb(0 0 0 / 0.1), transparent), linear-gradient(to bottom, rgb(var(--md-sys-color-surface) / 0.65), rgb(var(--md-sys-color-surface) / 0));
 }
@@ -246,6 +321,9 @@ onBeforeUnmount(() => {
 }
 .location-popup a.leaflet-popup-close-button {
   color: rgb(var(--md-sys-color-on-surface));
+}
+.public-map-viewport .map-filter-controls {
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.5rem);
 }
 .public-map-viewport .map-toolbar {
   padding-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);

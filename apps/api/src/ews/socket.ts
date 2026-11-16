@@ -7,7 +7,14 @@ import { fetchStations, type Station } from './source'
 const type = z.enum(['flood', 'landslide', 'tsunami'])
 const status = z.enum(['normal', 'warning', 'maintenance', 'telemetry_inactive', 'unknown'])
 const range = z.strictObject({ min: z.number().finite().optional(), max: z.number().finite().optional() }).refine(value => (value.min !== undefined || value.max !== undefined) && (value.min === undefined || value.max === undefined || value.min <= value.max))
+const boundingBox = z.strictObject({
+  south: z.number().min(-90).max(90),
+  west: z.number().min(-180).max(180),
+  north: z.number().min(-90).max(90),
+  east: z.number().min(-180).max(180),
+}).refine(value => value.south <= value.north)
 const filtersSchema = z.strictObject({
+  boundingBox: boundingBox.optional(),
   stations: z.array(z.strictObject({ type, statusCodes: z.array(status).min(1).optional() })).min(1).optional(),
   search: z.string().trim().min(1).optional(),
   rainfallMm: range.optional(),
@@ -21,6 +28,14 @@ const messageSchema = z.discriminatedUnion('type', [
 type Filters = z.output<typeof filtersSchema>
 
 function matches(station: Station, filters: Filters): boolean {
+  const box = filters.boundingBox
+  if (box) {
+    if (station.latitude < box.south || station.latitude > box.north) return false
+    const longitudeMatches = box.west <= box.east
+      ? station.longitude >= box.west && station.longitude <= box.east
+      : station.longitude >= box.west || station.longitude <= box.east
+    if (!longitudeMatches) return false
+  }
   if (filters.stations && !filters.stations.some(selection => selection.type === station.type && (!selection.statusCodes || selection.statusCodes.includes(station.statusCode)))) return false
   if (filters.search && !station.name.toLowerCase().includes(filters.search.toLowerCase())) return false
   for (const key of ['rainfallMm', 'waterLevelMeters', 'groundMovementCm'] as const) {
