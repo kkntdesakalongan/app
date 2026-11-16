@@ -202,7 +202,7 @@ onBeforeUnmount(() => {
           class="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold transition-colors hover:bg-on-surface/[8%] focus-visible:outline-none focus-visible:bg-on-surface/[8%]"
         >
           <span class="flex items-center gap-2"><Icon name="map-2" class="text-primary" />Legend</span>
-          <Icon name="arrow-up-s" class="transition-transform duration-200 group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
+          <Icon name="arrow-up-s" class="transition-transform duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
         </CollapsibleTrigger>
         <CollapsibleContent class="legend-content">
           <div class="legend-items space-y-3 overflow-y-auto border-t border-outline-variant/50 px-4 py-3 text-xs">
@@ -268,10 +268,10 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 .legend-content[data-state='open'] {
-  animation: legend-expand 220ms ease-out;
+  animation: legend-expand 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .legend-content[data-state='closed'] {
-  animation: legend-collapse 180ms ease-in;
+  animation: legend-collapse 350ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes legend-expand {
   from {
