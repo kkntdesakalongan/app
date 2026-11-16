@@ -7,7 +7,7 @@ test('public map fills the mobile viewport after resize and rotation', async ({ 
   await expect(page).toHaveTitle('Kalongan WebGIS')
   await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', /viewport-fit=cover/)
   await expect(page.getByRole('heading', { name: 'WebGIS', exact: true })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Report a disaster', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Buat Laporan', exact: true })).toBeVisible()
   await page.screenshot({ path: `../../.local/verification/disaster-map/webgis-mobile-${test.info().project.name}-portrait.png` })
   for (const viewport of [
     { width: 390, height: 844 },

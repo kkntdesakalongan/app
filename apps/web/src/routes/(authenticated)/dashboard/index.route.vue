@@ -11,7 +11,7 @@ definePage({ meta: { fullBleed: true } })
       ><Button variant="filled" href="/disaster-reports/new"
         ><template #icon
           ><span aria-hidden="true"><Icon name="alarm-warning" /></span></template
-        >Report a disaster</Button
+        >Buat Laporan</Button
       ></template
     >
   </LocationMap>
