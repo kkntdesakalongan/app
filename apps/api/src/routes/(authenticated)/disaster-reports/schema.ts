@@ -14,6 +14,6 @@ export const reportImageSchema = z.string().max(7_000_000).regex(/^data:image\/(
  return String.fromCharCode(...bytes.subarray(0, 4)) === 'RIFF' && String.fromCharCode(...bytes.subarray(8, 12)) === 'WEBP'
 }, 'Use a PNG, JPEG, or WebP image up to 5 MB.')
 
-export const disasterReportsCreateSchema = createInsertSchema(disasterReports).omit({ id: true, createdAt: true, updatedAt: true }).extend({ title: z.string().trim().min(1).max(255), description: optionalText(10000), image: reportImageSchema.nullable().optional(), })
+export const disasterReportsCreateSchema = createInsertSchema(disasterReports).omit({ id: true, createdAt: true, updatedAt: true }).extend({ title: z.string().trim().min(1).max(255), description: optionalText(10000), image: reportImageSchema.nullable().optional(), latitude: z.number().finite().min(-90).max(90).nullable().optional(), longitude: z.number().finite().min(-180).max(180).nullable().optional(), }).refine((value) => (value.latitude == null) === (value.longitude == null), { path: ['latitude'], message: 'Pilih lokasi yang lengkap.' })
 export const disasterReportsUpdateSchema = disasterReportsCreateSchema
 export const disasterReportsSelectSchema = createSelectSchema(disasterReports)

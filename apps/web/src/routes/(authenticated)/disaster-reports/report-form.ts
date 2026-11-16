@@ -1,6 +1,8 @@
 import { z } from 'zod/v4'
+import { locationOperations } from '@/framework/adapters/location'
 import { createSchema } from './disaster-reports.schema'
-export const reportFormSchema = createSchema.omit({ image: true }).extend({
+export const reportFormSchema = z.object({
+  ...createSchema.shape,
   image: z
     .custom<File>((value) => typeof File !== 'undefined' && value instanceof File)
     .nullable()
@@ -18,3 +20,15 @@ export async function reportPayload(value: z.output<typeof reportFormSchema>) {
   })
   return { ...fields, image: encoded }
 }
+
+export const reportLocationField = {
+  renderer: 'location',
+  label: 'Lokasi',
+  initialValue: () => null,
+  props: { mapProvider: 'openstreetmap', operations: locationOperations },
+  binding: {
+    keys: ['latitude', 'longitude'],
+    read: ({ latitude, longitude }: z.input<typeof reportFormSchema>) => (latitude == null || longitude == null ? null : { lat: latitude, lng: longitude }),
+    write: ({ lat, lng }: { lat: number; lng: number }) => ({ latitude: lat, longitude: lng }),
+  },
+} as const

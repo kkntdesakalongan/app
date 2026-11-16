@@ -1,14 +1,16 @@
-import { categoryField, publicCategoryActions } from '../master/report-categories/category-field'
+import type { z } from 'zod/v4'
+import { categoryField } from '../master/report-categories/category-field'
 import { defineDetail, defineForm, defineResource, defineTable } from '@southneuhof/loom'
 import { appDisplayPresets } from '@/configs/display-presets'
 import { actions } from './disaster-reports.actions'
-import { recordSchema, detailSchema } from './disaster-reports.schema'
-import { reportFormSchema, reportPayload } from './report-form'
+import { recordSchema } from './disaster-reports.schema'
+import { reportFormSchema, reportPayload, reportLocationField } from './report-form'
 
 const fields = {
   title: { renderer: 'text' },
   description: { renderer: 'textarea' },
   categoryId: categoryField,
+  location: reportLocationField,
   image: { renderer: 'image', props: { mode: 'file', maxSize: 5, accept: ['image/png', 'image/jpeg', 'image/webp'] } },
 } as const
 const labels = { title: 'Title', name: 'Name', description: 'Description', categoryName: 'Kategori Laporan', image: 'Image', createdAt: 'Submitted at', latitude: 'Latitude', longitude: 'Longitude' }
@@ -20,19 +22,29 @@ export const resource = defineResource({
   list: {
     permission: 'view-disaster-reports',
     route: { name: 'disaster-reports' },
-    table: { ...defineTable({ schema: recordSchema, labels, columns: { title: { sortable: true }, createdAt: appDisplayPresets.createdAt } }), load: actions.list },
+    table: { ...defineTable({ schema: recordSchema, labels, columns: { title: { sortable: true }, categoryName: {}, createdAt: appDisplayPresets.createdAt } }), load: actions.list },
   },
   detail: {
     permission: 'view-disaster-reports',
     route: { name: 'disaster-reports-detail', params: (id) => ({ id: String(id) }) },
     detail: () => ({
-      ...defineDetail({ schema: detailSchema, labels, fields: { title: {}, description: {}, categoryName: {}, createdAt: appDisplayPresets.createdAt, image: {} } }),
-      load: async (context) => {
-        const record = await actions.detail(context)
-        if (!record) return undefined
-        const categories = await publicCategoryActions['report-categories']({ signal: context.signal, query: {}, searchParameters: {} })
-        return { ...record, categoryName: categories.data.find((category) => category.id === record.categoryId)?.name ?? null }
-      },
+      ...defineDetail({
+        schema: recordSchema,
+        labels,
+        fields: {
+          title: {},
+          description: {},
+          categoryName: {},
+          location: {
+            label: 'Lokasi',
+            renderer: 'location',
+            read: (record: z.output<typeof recordSchema>) => (record.latitude == null || record.longitude == null ? null : { lat: record.latitude, lng: record.longitude }),
+          },
+          createdAt: appDisplayPresets.createdAt,
+          image: {},
+        },
+      }),
+      load: actions.detail,
     }),
   },
   update: {
@@ -43,7 +55,7 @@ export const resource = defineResource({
       fields: { ...fields, removeImage: { renderer: 'checkbox', label: 'Remove saved image' } },
       load: async (context) => {
         const record = await actions.detail(context)
-        return record ? { title: record.title, description: record.description, categoryId: record.categoryId, image: null } : undefined
+        return record ? { title: record.title, description: record.description, categoryId: record.categoryId, latitude: record.latitude, longitude: record.longitude, image: null } : undefined
       },
       submit: async (value: (typeof reportFormSchema)['_output']) => actions.update(id, await reportPayload(value)),
     }),

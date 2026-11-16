@@ -6,7 +6,7 @@ import { nextTick, ref } from 'vue'
 import { defineForm, Form } from '@southneuhof/loom'
 import { createHonoResourceActions } from '@/framework/hono'
 import { rpc } from '@/framework/rpc'
-import { reportFormSchema, reportPayload } from '@/routes/(authenticated)/disaster-reports/report-form'
+import { reportFormSchema, reportPayload, reportLocationField } from '@/routes/(authenticated)/disaster-reports/report-form'
 import { categoryField } from '@/routes/(authenticated)/master/report-categories/category-field'
 const saved = ref(false)
 const successHeading = ref<HTMLHeadingElement | null>(null)
@@ -22,6 +22,7 @@ const form = defineForm({
     title: { renderer: 'text', label: 'Judul laporan' },
     description: { renderer: 'textarea', label: 'Keterangan' },
     categoryId: categoryField,
+    location: reportLocationField,
     image: { renderer: 'image', label: 'Foto', props: { mode: 'file', maxSize: 5, accept: ['image/png', 'image/jpeg', 'image/webp'] } },
   },
   submit: async (value) => api.create(await reportPayload(value)),

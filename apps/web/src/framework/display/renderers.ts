@@ -2,6 +2,7 @@ import { defineComponent, h, type PropType } from 'vue'
 import type { AssetValue, DisplayRendererRegistriesInput } from '@southneuhof/loom'
 import Chip from '@southneuhof/loom/components/base/Chip.vue'
 import ImagePreviewMulti from '@southneuhof/loom/components/base/ImagePreviewMulti.vue'
+import LocationDisplay from '@/components/maps/LocationDisplay.vue'
 import FileComponent from '@southneuhof/loom/components/utils/FileComponent.vue'
 
 type ChipColor = 'primary' | 'secondary' | 'tertiary' | 'warning' | 'error' | 'info' | 'success' | 'neutral'
@@ -79,6 +80,7 @@ const arrayRenderer = defineComponent({
 
 declare module '@southneuhof/loom/renderers/displayContracts' {
   interface DisplayRendererComponents {
+    location: typeof LocationDisplay
     chip: typeof chipRenderer
     html: typeof textBlockRenderer
     image: typeof imageRenderer
@@ -88,6 +90,7 @@ declare module '@southneuhof/loom/renderers/displayContracts' {
 }
 
 export const appDisplayRenderers = {
+  location: LocationDisplay,
   chip: chipRenderer,
   html: textBlockRenderer,
   image: imageRenderer,

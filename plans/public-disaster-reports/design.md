@@ -7,15 +7,15 @@ Implementation: Current
 
 Let the public submit disaster reports without an account. Let administrators manage the reports.
 
-Included: public intake at `/disaster-reports/new`, optional image upload, and administrator list, detail, update, and delete pages.
+Included: public intake at `/disaster-reports/new`, optional image upload and location selection, and administrator list, detail, update, and delete pages.
 
-Excluded: report publication, map pins, report locations, review states, and reporter contact details.
+Excluded: report publication, map pins, review states, and reporter contact details.
 
 ## 2. Functional requirements
 
 | # | Capability | Users and access | Expected result |
 |---|---|---|---|
-| 1 | Submit a report | Public, without sign-in | Save a report with a required title and optional description, category, and image. |
+| 1 | Submit a report | Public, without sign-in | Save a report with a required title and optional description, category, location, and image. |
 | 2 | Manage reports | Administrators with the required operation permission | List, view, edit, and delete reports through standard management pages. |
 | 3 | Protect intake data | Public | Public users can submit but cannot list, read, edit, or delete saved reports or retrieve their images. |
 | 4 | View an image | Authorized administrators | Show the saved image on report detail and allow replacement or removal during edit. |
@@ -30,6 +30,7 @@ Excluded: report publication, map pins, report locations, review states, and rep
 | Title | Short report name | Required; trim whitespace; reject an empty result. |
 | Description | Additional information | Optional plain text; an empty value means no description. |
 | Category | Report classification | Optional reference to Kategori Laporan. See the [category design](../report-categories/design.md) for access and deletion rules. |
+| Location | Report position | Optional latitude and longitude pair. Both coordinates are set or cleared together. Latitude is from -90 to 90 and longitude is from -180 to 180. Existing reports have no location. Public intake uses the location input labelled Lokasi; administrator detail uses the read-only location map renderer. Administrator edit can change or clear the location. |
 | Image | Supporting image | Optional; at most one image. Accept PNG, JPEG, or WebP up to 5 MB. Validate file type, signature, and size on the server. |
 | Created at | Submission time | Set by the server; cannot be edited. Show the formatted date and time as Submitted at in the list and detail. |
 | Updated at | Last change time | Set by the server after a saved change. |
@@ -45,13 +46,13 @@ Approved defaults: administrators manage existing reports but cannot create them
 ### Public submission
 
 1. Open `/disaster-reports/new` in a public form shell.
-2. Enter a title and, if needed, a description, category, and one image.
+2. Enter a title and, if needed, a description, category, location, and one image.
 3. Submit. Show confirmation after the save succeeds. Show a centered check icon and confirmation. Offer one fixed bottom `Kembali` action to `/map`.
 
 ### Administrator management
 
 1. Open the disaster reports navigation entry.
-2. Use the standard list, detail, update, and delete flows.
+2. Use the standard list, detail, update, and delete flows. Show the current category name in the report list.
 3. Confirm deletion before the write. Refresh the list after a confirmed save or delete.
 
 | Trigger or condition | Result | Next step |

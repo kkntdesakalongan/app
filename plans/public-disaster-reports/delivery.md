@@ -55,3 +55,43 @@ Selected proof for this presentation change: web type check, scoped lint, produc
 Source review found no material issue. Live browser verification remains incomplete because a reliable preview was not obtained. Actual phone layout, end-of-scroll clearance, zoom, keyboard focus, success announcements, and submission were not verified in this pass. Global design artifacts remain unchanged because this is a refinement within the current visual system.
 
 The public success view now centers a large shared check icon and confirmation text. It moves keyboard focus to the confirmation heading after save. One full-width `Kembali` link to `/map` uses the bottom action row. The user-approved intake header uses a smaller, heavier title and a thin theme-token divider below the title and logo. No new automated tests were added for standard presentation.
+
+
+The public intake now has an optional Lokasi field below Kategori Laporan.
+The shared location input binds directly to nullable latitude and longitude.
+The server validates coordinate limits and complete pairs. A database check
+keeps each pair complete. Existing reports have no location. Administrator edit
+loads both coordinates and can change or clear the location.
+
+The application now registers a location display renderer. It uses the shared
+OpenStreetMap with selection and marker dragging disabled. Report detail reads
+its saved coordinate pair into that renderer. A report without a location shows
+a dash. The existing public LocationMap shows public pins and EWS stations; it
+does not accept a report position, so it is not used for private report detail.
+No framework packages changed.
+
+Kategori Laporan is now a list column. The action adapter resolves current
+category names for both list and detail through the existing public source.
+This replaces the detail-only name mapping. List pagination metadata remains
+with the report response.
+
+The development database target and migration history matched before writes.
+The additive location migration passed. A fresh read confirmed both nullable
+columns and the coordinate-pair constraint. No database reset or seed was needed.
+
+The existing public report route case now proves location persistence,
+authorized detail output, and clearing through the real update route. Its
+assertions detect dropped or uncleared coordinates. Other existing report
+submissions still omit location. No new case was added for basic validation,
+standard field bindings, or map presentation. The selected proof passed all
+three API cases. API lint and type check, SDK type check, web type check, scoped
+web lint, production build, surface architecture checks, and diff check passed.
+The web type check initially rejected an untyped computed display reader; the
+reader now derives its record type from the schema. A later formatting check
+required formatting that reader; the scoped check was rerun after correction.
+
+Evidence is under `.local/verification/report-location/`. Existing intake
+custom-action lint and build size/data warnings remain. The build also reports
+schema-boundary plugin timing. Browser map selection, map tiles, and rendered
+category cells were not driven in this pass. The test PostgreSQL instance
+started for this check was stopped after the tests.

@@ -24,11 +24,11 @@ function write(path: string, body: unknown, cookie = '', method = 'POST') {
 it('accepts anonymous reports, protects saved content, and validates image bytes', async () => {
   const title = `Flood ${crypto.randomUUID()}`
   const image = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aL1sAAAAASUVORK5CYII='
-  const response = await write('/public/disaster-reports/create', { title, image })
+  const response = await write('/public/disaster-reports/create', { title, image, latitude: -7.112, longitude: 110.425 })
   expect(response.status).toBe(201)
   const saved = (await response.json()).data
   reportIds.push(saved.id)
-  expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id)))[0]).toMatchObject({ title, image, description: null })
+  expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id)))[0]).toMatchObject({ title, image, description: null, latitude: -7.112, longitude: 110.425 })
   expect((await app.request(`/api/disaster-reports/detail/${saved.id}`)).status).toBe(401)
   expect((await app.request('/api/disaster-reports/list')).status).toBe(401)
   const limited = await createSystemSession([], 'reports-limited')
@@ -39,9 +39,11 @@ it('accepts anonymous reports, protects saved content, and validates image bytes
   expect(await getDb().select().from(disasterReports).where(eq(disasterReports.title, title))).toHaveLength(1)
   const admin = await createSystemSession(['detail-disaster-reports', 'update-disaster-reports', 'delete-disaster-reports'], 'reports-admin')
   expect((await write('/disaster-reports/create', { title: 'Admin report' }, admin.cookie)).status).toBe(404)
-  expect((await app.request(`/api/disaster-reports/detail/${saved.id}`, { headers: { Cookie: admin.cookie } })).status).toBe(200)
-  expect((await write(`/disaster-reports/update/${saved.id}`, { title: 'Updated', image: null }, admin.cookie, 'PATCH')).status).toBe(200)
-  expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id)))[0]).toMatchObject({ title: 'Updated', image: null })
+  const detail = await app.request(`/api/disaster-reports/detail/${saved.id}`, { headers: { Cookie: admin.cookie } })
+  expect(detail.status).toBe(200)
+  expect((await detail.json()).data).toMatchObject({ latitude: -7.112, longitude: 110.425 })
+  expect((await write(`/disaster-reports/update/${saved.id}`, { title: 'Updated', image: null, latitude: null, longitude: null }, admin.cookie, 'PATCH')).status).toBe(200)
+  expect((await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id)))[0]).toMatchObject({ title: 'Updated', image: null, latitude: null, longitude: null })
   expect((await app.request(`/api/disaster-reports/delete/${saved.id}`, { method: 'DELETE', headers: { Cookie: admin.cookie } })).status).toBe(200)
   expect(await getDb().select().from(disasterReports).where(eq(disasterReports.id, saved.id))).toHaveLength(0)
 })

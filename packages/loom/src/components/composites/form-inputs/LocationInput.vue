@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Popover from '../../base/Popover.vue'
+import Tooltip from '../../base/Tooltip.vue'
 import OpenStreetMap from '../../utils/OpenStreetMap.vue'
 import { GoogleMap, Marker } from 'vue3-google-map'
 import { computed, onBeforeUnmount, onMounted, ref, watch, useAttrs, useId, type InputHTMLAttributes, type PropType } from 'vue'
@@ -278,7 +279,7 @@ onBeforeUnmount(() => {
 
 <template>
   <BaseInput v-bind="props" :id="inputId()" v-slot="{ controlBindings }">
-    <div class="location-preview relative isolate overflow-hidden rounded-2xl border border-outline-variant bg-surface-container">
+    <div class="location-preview relative isolate overflow-hidden rounded-2xl border border-outline-variant bg-surface-container outline outline-1 outline-outline/[24%] -outline-offset-1">
       <OpenStreetMap v-if="mapProvider === 'openstreetmap'" :center="center" :location="modelValue" :disabled="props.disabled" @select="updateCoordinate($event.lat, $event.lng)" />
       <GoogleMap
         v-if="apiKey && mapProvider === 'google'"
@@ -304,12 +305,22 @@ onBeforeUnmount(() => {
             <div ref="searchAnchor" class="map-search relative w-full rounded-full text-on-surface">
               <SearchBox v-model="query" v-bind="{ ...controlBindings, ...searchBindings() }" :debounced="false" :placeholder="searchPlaceholder" class="w-full rounded-full !outline-none" />
               <div class="absolute inset-y-0 right-1 flex items-center">
-                <button v-if="modelValue" type="button" class="map-tool" aria-label="Clear location" :disabled="props.disabled" @click="clearLocation">
-                  <Icon name="close" />
-                </button>
-                <button type="button" class="map-tool" aria-label="Use current location" :disabled="props.disabled || loading" @click="getCurrentLocation">
-                  <Icon name="crosshair" />
-                </button>
+                <Tooltip v-if="modelValue">
+                  <template #trigger>
+                    <button type="button" class="map-tool" aria-label="Clear location" :disabled="props.disabled" @click="clearLocation">
+                      <Icon name="close" />
+                    </button>
+                  </template>
+                  <template #content>Clear location</template>
+                </Tooltip>
+                <Tooltip>
+                  <template #trigger>
+                    <button type="button" class="map-tool" aria-label="Use current location" :disabled="props.disabled || loading" @click="getCurrentLocation">
+                      <Icon name="crosshair" />
+                    </button>
+                  </template>
+                  <template #content>Use current location</template>
+                </Tooltip>
               </div>
             </div>
           </template>
@@ -355,6 +366,9 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.location-preview {
+  clip-path: inset(0 round 1rem);
+}
 .map-top-shade {
   background: linear-gradient(to bottom, rgb(0 0 0 / 10%), transparent), linear-gradient(to bottom, rgb(var(--md-sys-color-surface) / 65%), rgb(var(--md-sys-color-surface) / 0%));
 }
