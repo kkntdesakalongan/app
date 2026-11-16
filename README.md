@@ -1,4 +1,4 @@
-# Carta
+# KKNT Desa Kalongan App
 
 Carta is a full-stack TypeScript framework and project template for building information systems.
 
@@ -12,7 +12,7 @@ Carta does not replace Hono, Drizzle, or Vue. It puts a smaller application fram
 The repo also ships agent skills for designing, planning, implementing, and verifying application modules.
 
 ```text
-Carta
+kkntdesakalongan-app
 ├── apps/
 │   ├── api/          Hono application
 │   └── web/          Vue application
