@@ -57,7 +57,7 @@ Source review found no material issue. Live browser verification remains incompl
 The public success view now centers a large shared check icon and confirmation text. It moves keyboard focus to the confirmation heading after save. One full-width `Kembali` link to `/map` uses the bottom action row. The user-approved intake header uses a smaller, heavier title and a thin theme-token divider below the title and logo. No new automated tests were added for standard presentation.
 
 
-The public intake now has an optional Lokasi field below Kategori Laporan.
+The public intake now has an optional Lokasi field as its last field, below the image.
 The shared location input binds directly to nullable latitude and longitude.
 The server validates coordinate limits and complete pairs. A database check
 keeps each pair complete. Existing reports have no location. Administrator edit

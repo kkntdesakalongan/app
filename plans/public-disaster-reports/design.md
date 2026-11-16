@@ -30,7 +30,7 @@ Excluded: report publication, map pins, review states, and reporter contact deta
 | Title | Short report name | Required; trim whitespace; reject an empty result. |
 | Description | Additional information | Optional plain text; an empty value means no description. |
 | Category | Report classification | Optional reference to Kategori Laporan. See the [category design](../report-categories/design.md) for access and deletion rules. |
-| Location | Report position | Optional latitude and longitude pair. Both coordinates are set or cleared together. Latitude is from -90 to 90 and longitude is from -180 to 180. Existing reports have no location. Public intake uses the location input labelled Lokasi; administrator detail uses the read-only location map renderer. Administrator edit can change or clear the location. |
+| Location | Report position | Optional latitude and longitude pair. Both coordinates are set or cleared together. Latitude is from -90 to 90 and longitude is from -180 to 180. Existing reports have no location. Public intake uses the location input labelled Lokasi as its last field, below the image; administrator detail uses the read-only location map renderer. Administrator edit can change or clear the location. |
 | Image | Supporting image | Optional; at most one image. Accept PNG, JPEG, or WebP up to 5 MB. Validate file type, signature, and size on the server. |
 | Created at | Submission time | Set by the server; cannot be edited. Show the formatted date and time as Submitted at in the list and detail. |
 | Updated at | Last change time | Set by the server after a saved change. |

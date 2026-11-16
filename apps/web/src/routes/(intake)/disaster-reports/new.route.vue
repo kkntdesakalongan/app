@@ -22,8 +22,8 @@ const form = defineForm({
     title: { renderer: 'text', label: 'Judul laporan' },
     description: { renderer: 'textarea', label: 'Keterangan' },
     categoryId: categoryField,
-    location: reportLocationField,
     image: { renderer: 'image', label: 'Foto', props: { mode: 'file', maxSize: 5, accept: ['image/png', 'image/jpeg', 'image/webp'] } },
+    location: reportLocationField,
   },
   submit: async (value) => api.create(await reportPayload(value)),
 })
