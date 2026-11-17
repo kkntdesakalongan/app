@@ -106,6 +106,7 @@ watch(
     aria-label="Early warning filters"
   >
     <MotionDiv layout="position" :transition="transition" class="flex min-w-0 items-center gap-1 overflow-x-auto rounded-full">
+      <slot />
       <Popover :model-value="openFilter === 'type'" side="top" align="center" :side-offset="12" content-class="bg-surface-container w-64 gap-3" @update:model-value="openFilter = $event ? 'type' : ''">
         <template #trigger>
           <Button

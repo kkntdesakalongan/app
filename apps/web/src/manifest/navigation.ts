@@ -35,6 +35,7 @@ export const navigation = defineNavigation([
     routes: [
       { to: { name: 'settings-users' }, permission: 'view-users', title: 'Users', icon: 'folder' },
       { to: { name: 'settings-roles' }, permission: 'view-roles', title: 'Roles', icon: 'folder' },
+      { to: { name: 'settings-gis-data' }, permission: 'view-gis-data', title: 'Data GIS', icon: 'folder' },
       { to: { name: 'settings-permissions' }, permission: 'view-permissions', title: 'Permissions', icon: 'folder' },
     ],
   },

@@ -12,6 +12,9 @@ import { mapPinsSelectSchema } from '@southneuhof/api/src/routes/(authenticated)
 import { routeLeaveCleanup } from '@/components/routing/routeTransition'
 import { rpc } from '@/framework/rpc'
 import EwsFilterPill from './EwsFilterPill.vue'
+import { gisLegend, gisStyle } from './gisStyles'
+import GisLayerPicker from './GisLayerPicker.vue'
+import { gisLayers, useGisLayers } from './useGisLayers'
 import type { EwsFilters } from './ewsFilters'
 import { kalonganBoundingBox, useEwsStations, type EwsStation } from './useEwsStations'
 import { useCollection, type CollectionLoadContext } from '@southneuhof/loom'
@@ -22,6 +25,7 @@ async function loadPins({ signal }: CollectionLoadContext) {
   return { data: z.array(pinSchema).parse(await response.json()) }
 }
 const { records: pins, error, refresh } = useCollection(() => ({ load: loadPins, query: {} }))
+const gis = useGisLayers()
 const ewsFilters = ref<EwsFilters>({})
 const { stations, state: ewsState, errorMessage: ewsError, retry: retryEws } = useEwsStations(ewsFilters)
 const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
@@ -38,6 +42,44 @@ let tiles: L.TileLayer | undefined
 let markers: L.LayerGroup | undefined
 let ewsMarkers: L.LayerGroup | undefined
 let observer: ResizeObserver | undefined
+let gisGroup: L.LayerGroup | undefined
+function renderGis() {
+  if (!gisGroup) return
+  gisGroup.clearLayers()
+  for (const definition of gisLayers) {
+    if (!gis.selected.value.includes(definition.id)) continue
+    const data = gis.datasets.value[definition.code]
+    if (!data) continue
+    const layer = L.geoJSON(data, {
+      pane: 'gis-polygons',
+      style: (feature) => gisStyle(definition.id, feature),
+      onEachFeature: (feature, polygon) => {
+        const content = document.createElement('section')
+        const heading = document.createElement('h2')
+        heading.textContent = definition.label
+        heading.className = 'font-semibold'
+        content.append(heading)
+        const fields = [
+          ['hazardClass', 'Kelas bahaya'],
+          ['landUse', 'Penggunaan lahan'],
+          ['estimatedPopulation', 'Estimasi penduduk'],
+          ['location', 'Lokasi'],
+          ['parcelId', 'ID persil'],
+        ]
+        for (const [key, label] of fields) {
+          const value = feature.properties?.[key]
+          if (value === null || value === undefined) continue
+          const line = document.createElement('p')
+          line.textContent = `${label}: ${String(value)}`
+          content.append(line)
+        }
+        polygon.bindPopup(content)
+      },
+    })
+    layer.addTo(gisGroup)
+  }
+}
+watch([gis.selected, gis.datasets], renderGis)
 function renderPins() {
   if (!markers || !map) return
   markers?.clearLayers()
@@ -160,6 +202,7 @@ onMounted(() => {
     ],
     { padding: [16, 16], maxZoom: 15 }
   )
+  map.createPane('gis-polygons').style.zIndex = '350'
   L.control.zoom({ position: 'bottomleft' }).addTo(map)
   tiles = L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -168,6 +211,7 @@ onMounted(() => {
   tiles.on('tileerror', () => {
     tileError.value = true
   })
+  gisGroup = L.layerGroup().addTo(map)
   markers = L.layerGroup().addTo(map)
   ewsMarkers = L.layerGroup().addTo(map)
   observer = new ResizeObserver(() => map?.invalidateSize())
@@ -206,6 +250,17 @@ onBeforeUnmount(() => {
         </CollapsibleTrigger>
         <CollapsibleContent class="legend-content">
           <div class="legend-items space-y-3 overflow-y-auto border-t border-outline-variant/50 px-4 py-3 text-xs">
+            <section v-for="layer in gisLayers.filter((item) => gis.selected.value.includes(item.id))" :key="layer.id">
+              <h2 class="font-semibold">{{ layer.label }}</h2>
+              <p v-if="layer.id === 'estimasi-penduduk'" class="mt-1">Estimasi berdasarkan luas permukiman.</p>
+              <ul class="mt-1 space-y-1">
+                <li v-for="entry in gisLegend(layer.id)" :key="entry.label" class="flex items-center gap-2">
+                  <span class="h-3 w-5 shrink-0 rounded-sm border" :style="{ backgroundColor: layer.id === 'persil-tanah' ? 'transparent' : entry.color, borderColor: entry.color }" /><span>{{
+                    entry.label
+                  }}</span>
+                </li>
+              </ul>
+            </section>
             <section v-for="group in legendGroups" :key="group.type">
               <h2 class="font-semibold">{{ typeLabels[group.type] }}</h2>
               <ul class="mt-1 space-y-1">
@@ -231,7 +286,9 @@ onBeforeUnmount(() => {
           <template #content>{{ mapError }}</template>
         </Tooltip>
       </div>
-      <EwsFilterPill v-model="ewsFilters" class="max-w-full" />
+      <EwsFilterPill v-model="ewsFilters" class="max-w-full">
+        <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
+      </EwsFilterPill>
     </div>
   </div>
 </template>

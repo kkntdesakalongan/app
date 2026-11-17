@@ -122,6 +122,27 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'settings-gis-data': RouteRecordInfo<
+      'settings-gis-data',
+      '/settings/gis-data',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'settings-gis-data-detail': RouteRecordInfo<
+      'settings-gis-data-detail',
+      '/settings/gis-data/:code/detail',
+      { code: ParamValue<true> },
+      { code: ParamValue<false> },
+      | never
+    >,
+    'settings-gis-data-edit': RouteRecordInfo<
+      'settings-gis-data-edit',
+      '/settings/gis-data/:code/edit',
+      { code: ParamValue<true> },
+      { code: ParamValue<false> },
+      | never
+    >,
     'settings-permissions': RouteRecordInfo<
       'settings-permissions',
       '/settings/permissions',
@@ -262,6 +283,9 @@ declare module 'vue-router/auto-routes' {
         | 'master-report-categories-create'
         | 'master-report-categories-detail'
         | 'master-report-categories-edit'
+        | 'settings-gis-data'
+        | 'settings-gis-data-detail'
+        | 'settings-gis-data-edit'
         | 'settings-permissions'
         | 'settings-permissions-detail'
         | 'settings-roles'
@@ -378,6 +402,30 @@ declare module 'vue-router/auto-routes' {
     'src/routes/(authenticated)/master/report-categories/create.route.vue': {
       routes:
         | 'master-report-categories-create'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/settings/gis-data/index.route.vue': {
+      routes:
+        | 'settings-gis-data'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/settings/gis-data/[code]/detail.route.vue': {
+      routes:
+        | 'settings-gis-data-detail'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/routes/(authenticated)/settings/gis-data/[code]/edit.route.vue': {
+      routes:
+        | 'settings-gis-data-edit'
       views:
         | never
       pathParamNames:

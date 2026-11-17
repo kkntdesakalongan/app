@@ -1,3 +1,4 @@
+import { bodyLimit } from 'hono/body-limit'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { consoleLogger, installSprindle, requestContext, sprindleNotFound, type FileRouteManifest } from '@southneuhof/sprindle/hono'
@@ -20,6 +21,7 @@ export function createApp(routeManifest: FileRouteManifest) {
         exposeHeaders: ['Set-Cookie', 'Content-Disposition'],
         credentials: true,
       }))
+      .use('/gis-data/update/*', bodyLimit({ maxSize: 25 * 1024 * 1024, onError: (c) => c.json({ message: 'GIS data exceeds 25 MiB.' }, 413) }))
       .use('*', async (_c, next) => { getDb(); await next() })
       .use('*', async (c, next) => {
         await next()

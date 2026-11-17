@@ -18,6 +18,10 @@ type ModuleDefinition = {
 };
 
 export const authorizationModules = [
+  { code: "gis-data", name: "Data GIS", active: true, permissions: [
+    { code: "view-gis-data", name: "View Data GIS", description: "View GIS datasets.", targetType: "global", active: true },
+    { code: "update-gis-data", name: "Update Data GIS", description: "Replace GIS datasets.", targetType: "global", active: true },
+  ] },
   { code: "report-categories", name: "Kategori Laporan", active: true, permissions: [
     { code: "view-report-categories", name: "View Kategori Laporan", description: "View report categories.", targetType: "global", active: true },
     { code: "list-report-categories", name: "List Kategori Laporan", description: "List report categories.", targetType: "global", active: true },
