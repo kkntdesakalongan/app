@@ -22,6 +22,7 @@ if [ ! -f "$root/.seeded" ]; then
 fi
 ln -sfn "$release" "$root/next"
 mv -Tf "$root/next" "$root/current"
-sudo systemctl restart kknkalongan-api
+env -i HOME="$HOME" PATH="$PATH" USER="$USER" pm2 startOrRestart "$release/deploy/ecosystem.config.cjs" --update-env
+env -i HOME="$HOME" PATH="$PATH" USER="$USER" pm2 save
 sudo systemctl reload nginx
 curl --fail --silent --show-error --retry 10 --retry-connrefused --retry-delay 2 http://127.0.0.1:5180/api/health
