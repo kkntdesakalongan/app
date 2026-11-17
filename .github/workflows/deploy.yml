@@ -1,0 +1,19 @@
+name: Deploy
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kknkalongan-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, Linux, X64, kknkalongan]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy app
+        run: bash deploy/deploy.sh
