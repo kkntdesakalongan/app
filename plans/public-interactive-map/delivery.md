@@ -90,3 +90,21 @@ Web type checking, lint, and production build passed, with existing warnings.
 The detector returned no findings. Evidence uses `webgis-update` filenames.
 Native iPhone Safari chrome remains for the user to check on-device. Further
 verification was stopped at the user's request.
+
+The bottom toolbar opens one sheet above Search, Stations, Readings, and
+Lapisan. The map owns the sheet so its edges align with the toolbar and users
+can switch sections while it is open. Search uses the highest container surface.
+
+Chromium checks on `/map` confirmed the search and range subscriptions, the
+tsunami status restriction, keyboard focus return, and independent GIS layer
+selection after a filter reset. The sheet matched the toolbar width in desktop,
+phone, and landscape views. Touch and reduced-motion checks passed. Web type
+checking, focused lint, and the production build passed. Screenshots are in
+`.local/verification/map-filter-sheet/`.
+
+The sheet uses the low container surface and extends to the bottom of the pill.
+The filled pill slides between buttons. The label contrast follows the pill. The heading and controls fade
+as one section. The sheet resizes between sections. In Chromium, the pill and all four buttons held their
+positions during rapid tab changes at four viewport sizes with station and GIS
+filters active. Frame samples and a recording are in
+`.local/verification/filter-motion/`.

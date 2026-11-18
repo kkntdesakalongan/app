@@ -31,7 +31,7 @@ const form = defineForm({
 <template>
   <section class="intake-report flex flex-col gap-6">
     <header v-if="!saved" class="flex items-center justify-between gap-4 border-b border-outline-variant pb-4">
-      <h1 class="text-xl font-bold tracking-tight">Laporkan bencana</h1>
+      <h1 class="text-xl font-bold tracking-tight">Buat Laporan</h1>
       <img :src="logo" class="size-10 shrink-0 object-contain" alt="Logo aplikasi" width="40" height="40" />
     </header>
     <section v-if="saved" class="flex flex-1 flex-col items-center justify-center gap-4 text-center">

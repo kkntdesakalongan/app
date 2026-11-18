@@ -227,9 +227,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    'disaster-reports-new': RouteRecordInfo<
-      'disaster-reports-new',
-      '/disaster-reports/new',
+    'create-report': RouteRecordInfo<
+      'create-report',
+      '/create-report',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -539,15 +539,15 @@ declare module 'vue-router/auto-routes' {
     }
     'src/routes/(intake)/intake.layout.vue': {
       routes:
-        | 'disaster-reports-new'
+        | 'create-report'
       views:
         | 'default'
       pathParamNames:
         | never
     }
-    'src/routes/(intake)/disaster-reports/new.route.vue': {
+    'src/routes/(intake)/create-report/index.route.vue': {
       routes:
-        | 'disaster-reports-new'
+        | 'create-report'
       views:
         | never
       pathParamNames:

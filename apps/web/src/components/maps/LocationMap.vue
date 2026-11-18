@@ -275,7 +275,7 @@ onBeforeUnmount(() => {
         </CollapsibleContent>
       </CollapsibleRoot>
     </Card>
-    <div class="map-filter-controls absolute left-1/2 z-[500] flex w-max max-w-[calc(100%_-_7rem)] -translate-x-1/2 flex-col items-center gap-2 sm:max-w-[calc(100%_-_10rem)]">
+    <div class="map-filter-controls absolute left-1/2 z-[500] flex w-[32rem] max-w-[calc(100%_-_7rem)] -translate-x-1/2 flex-col items-center gap-2 sm:max-w-[calc(100%_-_10rem)]">
       <div v-if="mapError">
         <Tooltip>
           <template #trigger>
@@ -286,8 +286,10 @@ onBeforeUnmount(() => {
           <template #content>{{ mapError }}</template>
         </Tooltip>
       </div>
-      <EwsFilterPill v-model="ewsFilters" class="max-w-full">
-        <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
+      <EwsFilterPill v-model="ewsFilters" :layer-count="gis.selected.value.length">
+        <template #layers>
+          <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
+        </template>
       </EwsFilterPill>
     </div>
   </div>
@@ -303,6 +305,15 @@ onBeforeUnmount(() => {
 }
 .map-filter-controls {
   bottom: var(--map-controls-bottom);
+}
+@media (max-width: 639px) {
+  .map-filter-controls {
+    left: max(3.25rem, calc(env(safe-area-inset-left, 0px) + 3rem));
+    right: max(0.75rem, env(safe-area-inset-right, 0px));
+    width: auto;
+    max-width: none;
+    transform: none;
+  }
 }
 .map-legend {
   right: max(0.75rem, env(safe-area-inset-right, 0px));
