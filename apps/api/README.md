@@ -55,6 +55,9 @@ Auth is served at `/api/auth/*`. All routes except `/health`, `/openapi.json`, a
 The API can issue an authenticated, short-lived `PUT` URL. The API does not
 receive the file bytes.
 
+Set `PUBLIC_API_ORIGIN` to the public API origin when a reverse proxy terminates
+HTTPS. The API uses this origin for stored asset links.
+
 Configure these variables in `.env`:
 
 ```text

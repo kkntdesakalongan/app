@@ -14,7 +14,7 @@ const requestUrlStorage = new AsyncLocalStorage<string>()
 
 export function assetRequestContext(): MiddlewareHandler {
   return async (c: Context, next: () => Promise<void>) => {
-    await requestUrlStorage.run(c.req.url, next)
+    await requestUrlStorage.run(process.env.PUBLIC_API_ORIGIN || c.req.url, next)
   }
 }
 
