@@ -87,7 +87,7 @@ function createApi() {
     },
     delete: {
       permission: null,
-      run: actions.delete,
+      run: (record: Row) => actions.delete(record.id),
     },
   })
   return {
@@ -120,7 +120,8 @@ function isFormViewHandle(value: unknown): value is FormViewHandle {
 function mountPage(resource: ReturnType<typeof createApi>, options: { operation?: 'create' | 'update'; slotSubmit?: boolean } = {}) {
   const host = document.createElement('div')
   document.body.appendChild(host)
-  const route = options.operation === 'update' ? resource.update : resource.create
+  let route: Record<string, unknown> = resource.create
+  if (options.operation === 'update') route = resource.update
   const list = resource.list
   const submissions: { result: unknown; refreshError: unknown }[] = []
   const errors: unknown[] = []

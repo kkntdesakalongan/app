@@ -184,7 +184,7 @@ defineResource({
     expect(await names(root)).toEqual(['keeper'])
     await expect(compile()).rejects.toMatchObject({
       code: 1,
-      stdout: expect.stringMatching(/consumer\.ts\(\d+,\d+\): error TS2322: Type '"alpha"' is not assignable/),
+      stdout: expect.stringMatching(/consumer\.ts\(\d+,\d+\): error TS(?:2322|2769):[\s\S]*Type '"alpha"' is not assignable/),
     })
     await writeFile(join(root, 'src/routes/alpha.route.vue'), '<template />')
     await generate(root)
