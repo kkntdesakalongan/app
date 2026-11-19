@@ -320,7 +320,7 @@ onBeforeUnmount(() => {
   bottom: calc(var(--map-controls-bottom) + var(--map-controls-clearance));
 }
 .legend-items {
-  max-height: min(28rem, calc(100dvh - var(--map-controls-bottom) - var(--map-controls-clearance) - 8rem));
+  max-height: min(28rem, calc(100svh - var(--map-controls-bottom) - var(--map-controls-clearance) - env(safe-area-inset-top, 0px) - 8rem));
 }
 @media (min-width: 1024px) {
   .location-map {
@@ -367,28 +367,42 @@ onBeforeUnmount(() => {
   }
 }
 
-.map-atmosphere {
-  background: linear-gradient(to bottom, rgb(0 0 0 / 0.1), transparent), linear-gradient(to bottom, rgb(var(--md-sys-color-surface) / 0.65), rgb(var(--md-sys-color-surface) / 0));
+.map-atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.12), transparent 70%), linear-gradient(to bottom, rgb(var(--md-sys-color-surface) / 0.72), rgb(var(--md-sys-color-surface) / 0));
 }
 .map-atmosphere > div {
   position: absolute;
   inset: 0;
-  mask-image: linear-gradient(to bottom, black, transparent);
-  backdrop-filter: blur(3px);
+  transform: translateZ(0);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 40%, transparent 100%);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 .map-atmosphere > div:nth-child(2) {
-  bottom: 25%;
-  backdrop-filter: blur(8px);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 25%, transparent 65%);
+  mask-image: linear-gradient(to bottom, black 0%, black 25%, transparent 65%);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 .map-atmosphere > div:nth-child(3) {
-  bottom: 55%;
-  backdrop-filter: blur(16px);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 40%);
+  mask-image: linear-gradient(to bottom, black 0%, transparent 40%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 @media (prefers-reduced-transparency: reduce) {
   .map-toolbar {
     background: rgb(var(--md-sys-color-surface));
   }
+  .map-atmosphere::after {
+    display: none;
+  }
   .map-atmosphere > div {
+    -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 }
@@ -423,19 +437,13 @@ onBeforeUnmount(() => {
   padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
   padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
 }
-.public-map-viewport .leaflet-control-container {
-  position: absolute;
-  inset: 0;
-  height: 100dvh;
-  pointer-events: none;
-}
-.public-map-viewport .leaflet-bottom {
+.location-map .leaflet-bottom {
   bottom: env(safe-area-inset-bottom, 0px);
 }
-.public-map-viewport .leaflet-left {
+.location-map .leaflet-left {
   left: env(safe-area-inset-left, 0px);
 }
-.public-map-viewport .leaflet-right {
+.location-map .leaflet-right {
   right: env(safe-area-inset-right, 0px);
 }
 </style>

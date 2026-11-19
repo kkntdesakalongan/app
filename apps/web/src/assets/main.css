@@ -30,7 +30,6 @@ body {
   font-family: 'Geist Sans', ui-sans-serif, system-ui, sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   font-kerning: normal;
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -47,19 +46,17 @@ body {
 
 .vfade-enter-active,
 .vfade-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .vfade-enter-from,
 .vfade-leave-to {
   opacity: 0;
-  transform: translateY(8px);
 }
 
 .vfade-enter-to,
 .vfade-leave-from {
   opacity: 1;
-  transform: translateY(0%);
 }
 
 span a,
@@ -76,7 +73,7 @@ span a,
 
 .hfade-enter-active,
 .hfade-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .hfade-enter-from {
@@ -197,7 +194,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 100;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-Thin.otf') format('opentype');
   }
 
@@ -205,7 +202,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 200;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-UltraLight.otf') format('opentype');
   }
 
@@ -213,7 +210,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 300;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-Light.otf') format('opentype');
   }
 
@@ -221,7 +218,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 400;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-Regular.otf') format('opentype');
   }
 
@@ -229,7 +226,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 500;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-Medium.otf') format('opentype');
   }
 
@@ -237,7 +234,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 600;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-SemiBold.otf') format('opentype');
   }
 
@@ -245,7 +242,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 700;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-Bold.otf') format('opentype');
   }
 
@@ -253,7 +250,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 800;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-Black.otf') format('opentype');
   }
 
@@ -261,7 +258,7 @@ body:has(.tox-dialog-wrap) [data-reka-dialog-overlay] {
     font-family: 'Geist Sans';
     font-style: normal;
     font-weight: 900;
-    font-display: swap;
+    font-display: optional;
     src: url('/src/assets/fonts/Geist-UltraBlack.otf') format('opentype');
   }
 }
@@ -294,7 +291,7 @@ html {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.1s ease;
+  transition: opacity 0.1s ease, transform 0.1s ease;
 }
 
 .fade-enter-from,
@@ -374,10 +371,6 @@ html {
   }
 }
 
-#app {
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
 html:has(.public-map-viewport), body:has(.public-map-viewport) {
   overflow: hidden;
 }

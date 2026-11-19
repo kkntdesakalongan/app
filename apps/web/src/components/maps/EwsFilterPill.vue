@@ -318,7 +318,7 @@ watch(
 }
 .filter-sheet {
   outline: none;
-  max-height: min(32rem, calc(100dvh - var(--map-controls-bottom) - 9rem));
+  max-height: min(32rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 9rem));
 }
 .sheet-page-leave-active {
   transition: opacity 80ms ease-out;

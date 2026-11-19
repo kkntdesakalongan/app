@@ -86,7 +86,7 @@ const form = defineForm({
   position: fixed;
   inset: auto 0 0;
   z-index: 20;
-  height: var(--intake-dock-height);
+  min-height: var(--intake-dock-height);
   pointer-events: none;
 }
 .intake-actions {
@@ -102,22 +102,32 @@ const form = defineForm({
   inset: auto 0 0;
   height: var(--intake-blur-height);
 }
-.intake-blur {
-  background: linear-gradient(to top, rgb(var(--md-sys-color-surface-container-lowest) / 0.9), rgb(var(--md-sys-color-surface-container-lowest) / 0));
+.intake-blur::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgb(var(--md-sys-color-surface-container-lowest) / 0.92), rgb(var(--md-sys-color-surface-container-lowest) / 0));
 }
 .intake-blur > div {
   inset: 0;
   height: auto;
-  mask-image: linear-gradient(to top, black, transparent);
-  backdrop-filter: blur(3px);
+  transform: translateZ(0);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 40%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, black 40%, transparent 100%);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
 }
 .intake-blur > div:nth-child(2) {
-  top: 25%;
-  backdrop-filter: blur(8px);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 25%, transparent 65%);
+  mask-image: linear-gradient(to top, black 0%, black 25%, transparent 65%);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 .intake-blur > div:nth-child(3) {
-  top: 55%;
-  backdrop-filter: blur(16px);
+  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 40%);
+  mask-image: linear-gradient(to top, black 0%, transparent 40%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 @media (min-width: 640px) {
   .intake-report {
@@ -132,7 +142,11 @@ const form = defineForm({
     height: var(--intake-dock-height);
     background: rgb(var(--md-sys-color-surface-container-lowest));
   }
+  .intake-blur::after {
+    display: none;
+  }
   .intake-blur > div {
+    -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
 }

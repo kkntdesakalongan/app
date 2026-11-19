@@ -138,10 +138,10 @@ watch([() => route.fullPath, wide], () => {
 }
 .mobile-navigation {
   --mobile-navigation-width: min(22.5rem, calc(100vw - 2rem));
-  --mobile-navigation-height: min(39.75rem, calc(100dvh - 5rem - env(safe-area-inset-bottom) - env(safe-area-inset-top)));
+  --mobile-navigation-height: min(39.75rem, calc(100svh - 5rem - env(safe-area-inset-bottom, 0px) - env(safe-area-inset-top, 0px)));
   position: fixed;
   z-index: 9;
-  right: max(1rem, env(safe-area-inset-right));
+  right: max(1rem, env(safe-area-inset-right, 0px));
   bottom: var(--mobile-navigation-bottom);
 }
 .navigation-surface {
