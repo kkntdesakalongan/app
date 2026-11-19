@@ -4,5 +4,5 @@ import type { RouteNamedMap } from 'vue-router/auto-routes'
 export type AppRouteName = keyof RouteNamedMap & string
 
 export type StaticAppRouteName = {
-  [Name in AppRouteName]: Record<never, never> extends RouteNamedMap[Name]["paramsRaw"] ? Name : never
+  [Name in AppRouteName]: Record<never, never> extends RouteNamedMap[Name]['paramsRaw'] ? Name : never
 }[AppRouteName]
