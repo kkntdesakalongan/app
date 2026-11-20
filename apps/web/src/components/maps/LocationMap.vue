@@ -30,37 +30,39 @@ const ewsFilters = ref<EwsFilters>({})
 const { stations, state: ewsState, errorMessage: ewsError, retry: retryEws } = useEwsStations(ewsFilters)
 const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
 const mobile = useBreakpoints(breakpointsTailwind).smaller('lg')
-const layersSheetOpen = ref(false)
-const layersRail = ref<HTMLElement>()
-const layersSheet = ref<HTMLElement>()
+const activeSheet = ref<'layers' | 'legend' | null>(null)
+const mapRail = ref<HTMLElement>()
+const mobileSheet = ref<HTMLElement>()
 const layersTrigger = ref<HTMLElement>()
+const legendTrigger = ref<HTMLElement>()
 const layersSheetId = useId()
+const legendSheetId = useId()
 const host = ref<HTMLElement>()
 const tileError = ref(false)
 const mapError = computed(() => [error.value?.message, ewsState.value === 'error' ? ewsError.value : '', tileError.value ? 'Map tiles could not load.' : ''].filter(Boolean).join(' '))
-function toggleLayersSheet() {
-  if (layersSheetOpen.value) {
-    closeLayersSheet(true)
+function toggleSheet(sheet: 'layers' | 'legend') {
+  if (activeSheet.value === sheet) {
+    closeSheet(true)
     return
   }
-  layersSheetOpen.value = true
+  activeSheet.value = sheet
 }
-function closeLayersSheet(restoreFocus = false) {
-  if (!layersSheetOpen.value) return
-  layersSheetOpen.value = false
-  if (restoreFocus) layersTrigger.value?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true })
+function closeSheet(restoreFocus = false) {
+  const closing = activeSheet.value
+  if (!closing) return
+  activeSheet.value = null
+  if (restoreFocus) {
+    const trigger = closing === 'layers' ? layersTrigger.value : legendTrigger.value
+    trigger?.querySelector<HTMLElement>('button')?.focus({ preventScroll: true })
+  }
 }
-onClickOutside(layersSheet, () => closeLayersSheet(), { ignore: [layersRail] })
+onClickOutside(mobileSheet, () => closeSheet(), { ignore: [mapRail] })
 watch(mobile, (isMobile) => {
-  if (!isMobile) layersSheetOpen.value = false
+  if (!isMobile) activeSheet.value = null
 })
-watch(
-  layersSheetOpen,
-  (open) => {
-    if (open) layersSheet.value?.focus({ preventScroll: true })
-  },
-  { flush: 'post' }
-)
+function focusMobileSheet(element: Element) {
+  if (element instanceof HTMLElement) element.focus({ preventScroll: true })
+}
 function retryMap() {
   if (error.value) void refresh()
   if (ewsState.value === 'error') retryEws()
@@ -278,50 +280,64 @@ onBeforeUnmount(() => {
         </template>
         <template #content>{{ mapError }}</template>
       </Tooltip>
-      <Card variant="elevated" color="surfaceContainer" class="map-legend w-72 max-w-[calc(100%_-_1.5rem)] gap-0 p-0">
+      <Card variant="elevated" color="surfaceContainer" class="map-layers w-64 max-w-[calc(100%_-_1.5rem)] gap-0 p-0">
+        <CollapsibleRoot :default-open="false">
+          <CollapsibleTrigger
+            class="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold transition-colors hover:bg-on-surface/[8%] focus-visible:outline-none focus-visible:bg-on-surface/[8%]"
+          >
+            <span class="flex items-center gap-2">
+              <Icon name="stack" class="text-primary" />
+              <span>Lapisan peta</span>
+              <span v-if="gis.selected.value.length" class="rounded-full bg-secondary-container px-1.5 text-[11px] font-semibold leading-5 text-on-secondary-container tabular-nums">{{
+                gis.selected.value.length
+              }}</span>
+            </span>
+            <Icon name="arrow-up-s" class="transition-transform duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
+          </CollapsibleTrigger>
+          <CollapsibleContent class="legend-content">
+            <div class="layers-items overflow-y-auto border-t border-outline-variant/50 px-3 py-3">
+              <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
+            </div>
+          </CollapsibleContent>
+        </CollapsibleRoot>
+      </Card>
+      <Card variant="elevated" color="surfaceContainer" class="map-legend w-64 max-w-[calc(100%_-_1.5rem)] gap-0 p-0">
         <CollapsibleRoot :default-open="true">
           <CollapsibleTrigger
             class="group flex w-full items-center justify-between gap-2 px-4 py-3 text-left text-sm font-semibold transition-colors hover:bg-on-surface/[8%] focus-visible:outline-none focus-visible:bg-on-surface/[8%]"
           >
-            <span class="flex items-center gap-2"><Icon name="stack" class="text-primary" />Lapisan &amp; Legend</span>
+            <span class="flex items-center gap-2"><Icon name="map-2" class="text-primary" />Legend</span>
             <Icon name="arrow-up-s" class="transition-transform duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)] group-data-[state=open]:rotate-180 motion-reduce:transition-none" />
           </CollapsibleTrigger>
           <CollapsibleContent class="legend-content">
-            <div class="legend-items space-y-4 overflow-y-auto border-t border-outline-variant/50 px-4 py-3">
-              <section class="space-y-2">
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Lapisan peta</h2>
-                <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
+            <div class="legend-items space-y-3 overflow-y-auto border-t border-outline-variant/50 px-4 py-3 text-xs">
+              <section v-for="layer in gisLayers.filter((item) => gis.selected.value.includes(item.id))" :key="layer.id">
+                <h2 class="font-semibold">{{ layer.label }}</h2>
+                <p v-if="layer.id === 'estimasi-penduduk'" class="mt-1">Estimasi berdasarkan luas permukiman.</p>
+                <ul class="mt-1 space-y-1">
+                  <li v-for="entry in gisLegend(layer.id)" :key="entry.label" class="flex items-center gap-2">
+                    <span class="h-3 w-5 shrink-0 rounded-sm border" :style="{ backgroundColor: layer.id === 'persil-tanah' ? 'transparent' : entry.color, borderColor: entry.color }" /><span>{{
+                      entry.label
+                    }}</span>
+                  </li>
+                </ul>
               </section>
-              <section class="space-y-3 border-t border-outline-variant/50 pt-3 text-xs">
-                <h2 class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Legend</h2>
-                <section v-for="layer in gisLayers.filter((item) => gis.selected.value.includes(item.id))" :key="layer.id">
-                  <h3 class="font-semibold">{{ layer.label }}</h3>
-                  <p v-if="layer.id === 'estimasi-penduduk'" class="mt-1">Estimasi berdasarkan luas permukiman.</p>
-                  <ul class="mt-1 space-y-1">
-                    <li v-for="entry in gisLegend(layer.id)" :key="entry.label" class="flex items-center gap-2">
-                      <span class="h-3 w-5 shrink-0 rounded-sm border" :style="{ backgroundColor: layer.id === 'persil-tanah' ? 'transparent' : entry.color, borderColor: entry.color }" /><span>{{
-                        entry.label
-                      }}</span>
-                    </li>
-                  </ul>
-                </section>
-                <section v-for="group in legendGroups" :key="group.type">
-                  <h3 class="font-semibold">{{ typeLabels[group.type] }}</h3>
-                  <ul class="mt-1 space-y-1">
-                    <li v-for="status in group.statuses" :key="status" class="flex items-center gap-2">
-                      <img :src="`${iconBaseUrl}${group.type}-${iconStates[status]}.${status === 'warning' ? 'gif' : 'svg'}`" alt="" class="h-6 w-6 object-contain" />
-                      <span>{{ statusLabels[status] }}</span>
-                    </li>
-                  </ul>
-                </section>
-                <div class="flex items-center gap-2"><span aria-hidden="true" class="ews-unknown-icon h-6 w-6">?</span><span>Unknown status</span></div>
+              <section v-for="group in legendGroups" :key="group.type">
+                <h2 class="font-semibold">{{ typeLabels[group.type] }}</h2>
+                <ul class="mt-1 space-y-1">
+                  <li v-for="status in group.statuses" :key="status" class="flex items-center gap-2">
+                    <img :src="`${iconBaseUrl}${group.type}-${iconStates[status]}.${status === 'warning' ? 'gif' : 'svg'}`" alt="" class="h-6 w-6 object-contain" />
+                    <span>{{ statusLabels[status] }}</span>
+                  </li>
+                </ul>
               </section>
+              <div class="flex items-center gap-2"><span aria-hidden="true" class="ews-unknown-icon h-6 w-6">?</span><span>Unknown status</span></div>
             </div>
           </CollapsibleContent>
         </CollapsibleRoot>
       </Card>
     </div>
-    <div v-if="mobile" ref="layersRail" class="map-right-rail absolute z-[500] flex flex-col items-center gap-2">
+    <div v-if="mobile" ref="mapRail" class="map-right-rail absolute z-[500] flex flex-col items-center gap-2">
       <Tooltip v-if="mapError">
         <template #trigger>
           <Button type="button" kind="icon" variant="filled" color="warning" ariaLabel="Refresh map data" class="h-11 w-11 shadow-md" @click="retryMap">
@@ -334,11 +350,11 @@ onBeforeUnmount(() => {
         <Button
           type="button"
           kind="icon"
-          :variant="layersSheetOpen ? 'filled' : gis.selected.value.length ? 'tonal' : 'elevated'"
-          ariaLabel="Lapisan dan legend"
+          :variant="activeSheet === 'layers' ? 'filled' : gis.selected.value.length ? 'tonal' : 'elevated'"
+          ariaLabel="Lapisan peta"
           class="h-11 w-11 shadow-md"
-          v-bind="{ 'aria-expanded': layersSheetOpen, 'aria-controls': layersSheetOpen ? layersSheetId : undefined }"
-          @click="toggleLayersSheet"
+          v-bind="{ 'aria-expanded': activeSheet === 'layers', 'aria-controls': activeSheet === 'layers' ? layersSheetId : undefined }"
+          @click="toggleSheet('layers')"
         >
           <template #icon><Icon name="stack" size="lg" /></template>
         </Button>
@@ -346,35 +362,64 @@ onBeforeUnmount(() => {
           v-if="gis.selected.value.length"
           aria-hidden="true"
           class="pointer-events-none absolute -right-1 -top-1 rounded-full px-1.5 text-[10px] font-semibold leading-4 tabular-nums"
-          :class="layersSheetOpen ? 'bg-on-primary text-primary' : 'bg-on-secondary-container text-secondary-container'"
+          :class="activeSheet === 'layers' ? 'bg-on-primary text-primary' : 'bg-on-secondary-container text-secondary-container'"
           >{{ gis.selected.value.length }}</span
         >
       </div>
-    </div>
-    <section
-      v-if="mobile && layersSheetOpen"
-      :id="layersSheetId"
-      ref="layersSheet"
-      tabindex="-1"
-      :aria-labelledby="layersSheetId + '-title'"
-      class="mobile-layers-sheet absolute z-[505] flex flex-col overflow-hidden rounded-[1.625rem] bg-surface-container-low text-on-surface shadow-xl outline-none"
-      @keydown.esc="closeLayersSheet(true)"
-    >
-      <header class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-variant/50 px-4 py-3">
-        <h2 :id="layersSheetId + '-title'" class="flex items-center gap-2 text-lg font-semibold"><Icon name="stack" class="text-primary" />Lapisan &amp; Legend</h2>
-        <Button type="button" kind="icon" variant="standard" ariaLabel="Tutup lapisan dan legend" @click="closeLayersSheet(true)">
-          <template #icon><Icon name="close" /></template>
+      <div ref="legendTrigger" class="relative">
+        <Button
+          type="button"
+          kind="icon"
+          :variant="activeSheet === 'legend' ? 'filled' : 'elevated'"
+          ariaLabel="Legend"
+          class="h-11 w-11 shadow-md"
+          v-bind="{ 'aria-expanded': activeSheet === 'legend', 'aria-controls': activeSheet === 'legend' ? legendSheetId : undefined }"
+          @click="toggleSheet('legend')"
+        >
+          <template #icon><Icon name="map-2" size="lg" /></template>
         </Button>
-      </header>
-      <div class="space-y-4 overflow-y-auto overscroll-contain p-4">
-        <section class="space-y-2">
-          <h3 class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Lapisan peta</h3>
+      </div>
+    </div>
+    <Transition name="map-sheet" mode="out-in" @enter="focusMobileSheet">
+      <section
+        v-if="mobile && activeSheet === 'layers'"
+        key="layers"
+        :id="layersSheetId"
+        ref="mobileSheet"
+        tabindex="-1"
+        :aria-labelledby="layersSheetId + '-title'"
+        class="mobile-map-sheet absolute z-[505] flex flex-col overflow-hidden rounded-[1.625rem] bg-surface-container-low text-on-surface shadow-xl outline-none"
+        @keydown.esc="closeSheet(true)"
+      >
+        <header class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-variant/50 px-4 py-3">
+          <h2 :id="layersSheetId + '-title'" class="flex items-center gap-2 text-lg font-semibold"><Icon name="stack" class="text-primary" />Lapisan peta</h2>
+          <Button type="button" kind="icon" variant="standard" ariaLabel="Tutup lapisan peta" @click="closeSheet(true)">
+            <template #icon><Icon name="close" /></template>
+          </Button>
+        </header>
+        <div class="overflow-y-auto overscroll-contain p-4">
           <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
-        </section>
-        <section class="space-y-3 border-t border-outline-variant/50 pt-3 text-xs">
-          <h3 class="text-xs font-semibold uppercase tracking-wide text-on-surface-variant">Legend</h3>
+        </div>
+      </section>
+      <section
+        v-else-if="mobile && activeSheet === 'legend'"
+        key="legend"
+        :id="legendSheetId"
+        ref="mobileSheet"
+        tabindex="-1"
+        :aria-labelledby="legendSheetId + '-title'"
+        class="mobile-map-sheet absolute z-[505] flex flex-col overflow-hidden rounded-[1.625rem] bg-surface-container-low text-on-surface shadow-xl outline-none"
+        @keydown.esc="closeSheet(true)"
+      >
+        <header class="flex shrink-0 items-center justify-between gap-2 border-b border-outline-variant/50 px-4 py-3">
+          <h2 :id="legendSheetId + '-title'" class="flex items-center gap-2 text-lg font-semibold"><Icon name="map-2" class="text-primary" />Legend</h2>
+          <Button type="button" kind="icon" variant="standard" ariaLabel="Tutup legend" @click="closeSheet(true)">
+            <template #icon><Icon name="close" /></template>
+          </Button>
+        </header>
+        <div class="space-y-3 overflow-y-auto overscroll-contain p-4 text-xs">
           <section v-for="layer in gisLayers.filter((item) => gis.selected.value.includes(item.id))" :key="layer.id">
-            <h4 class="font-semibold">{{ layer.label }}</h4>
+            <h3 class="font-semibold">{{ layer.label }}</h3>
             <p v-if="layer.id === 'estimasi-penduduk'" class="mt-1">Estimasi berdasarkan luas permukiman.</p>
             <ul class="mt-1 space-y-1">
               <li v-for="entry in gisLegend(layer.id)" :key="entry.label" class="flex items-center gap-2">
@@ -385,7 +430,7 @@ onBeforeUnmount(() => {
             </ul>
           </section>
           <section v-for="group in legendGroups" :key="group.type">
-            <h4 class="font-semibold">{{ typeLabels[group.type] }}</h4>
+            <h3 class="font-semibold">{{ typeLabels[group.type] }}</h3>
             <ul class="mt-1 space-y-1">
               <li v-for="status in group.statuses" :key="status" class="flex items-center gap-2">
                 <img :src="`${iconBaseUrl}${group.type}-${iconStates[status]}.${status === 'warning' ? 'gif' : 'svg'}`" alt="" class="h-6 w-6 object-contain" />
@@ -394,9 +439,9 @@ onBeforeUnmount(() => {
             </ul>
           </section>
           <div class="flex items-center gap-2"><span aria-hidden="true" class="ews-unknown-icon h-6 w-6">?</span><span>Unknown status</span></div>
-        </section>
-      </div>
-    </section>
+        </div>
+      </section>
+    </Transition>
   </div>
 </template>
 
@@ -409,18 +454,36 @@ onBeforeUnmount(() => {
   bottom: var(--map-mobile-rail-bottom);
   right: max(1rem, env(safe-area-inset-right, 0px));
 }
-.mobile-layers-sheet {
+.mobile-map-sheet {
   left: max(0.75rem, env(safe-area-inset-left, 0px));
   right: max(0.75rem, env(safe-area-inset-right, 0px));
   bottom: var(--map-mobile-rail-bottom);
   max-height: min(28rem, calc(100svh - var(--map-mobile-rail-bottom) - env(safe-area-inset-top, 0px) - 6.5rem));
 }
+.map-sheet-enter-active {
+  transition:
+    opacity 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    translate 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.map-sheet-leave-active {
+  transition:
+    opacity 180ms cubic-bezier(0.4, 0, 1, 1),
+    translate 180ms cubic-bezier(0.4, 0, 1, 1);
+}
+.map-sheet-enter-from,
+.map-sheet-leave-to {
+  opacity: 0;
+  translate: 0 12px;
+}
 .map-side-controls {
   right: max(0.75rem, env(safe-area-inset-right, 0px));
   bottom: var(--map-controls-bottom);
 }
+.layers-items {
+  max-height: min(16rem, calc(40svh - 4rem));
+}
 .legend-items {
-  max-height: min(32rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 10rem));
+  max-height: min(26rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 14rem));
 }
 .legend-content {
   overflow: hidden;
@@ -454,6 +517,14 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   .legend-content {
     animation: none;
+  }
+  .map-sheet-enter-active,
+  .map-sheet-leave-active {
+    transition: opacity 100ms ease;
+  }
+  .map-sheet-enter-from,
+  .map-sheet-leave-to {
+    translate: none;
   }
 }
 

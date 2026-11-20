@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="48 48 984 984" width="984" height="984"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="147 147 786 786" width="786" height="786"
      role="img" aria-labelledby="logo-title logo-description">
   <title id="logo-title">KKN SOP IG circular landscape and drone logo</title>
   <desc id="logo-description">Sun arcs, drone, green hills, map marker, fields, blue water, and a mountain, arranged in a circle.</desc>
@@ -20,7 +20,6 @@
     <!-- Geometrically exact round crop, diameter 786px at center 540,540. -->
     <clipPath id="exact-circle"><circle cx="540" cy="540" r="393"/></clipPath>
   </defs>
-  <rect x="48" y="48" width="984" height="984" rx="216" fill="#ffffff"/>
   <g clip-path="url(#exact-circle)" fill-rule="evenodd">
     <!-- Horizontal correction: the source was about 5.8% too narrow.
          Its vertically offset center is also realigned with the circle. -->

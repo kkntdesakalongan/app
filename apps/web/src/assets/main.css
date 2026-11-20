@@ -46,17 +46,31 @@ body {
 
 .vfade-enter-active,
 .vfade-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .vfade-enter-from,
 .vfade-leave-to {
   opacity: 0;
+  transform: translateY(8px);
 }
 
 .vfade-enter-to,
 .vfade-leave-from {
   opacity: 1;
+  transform: translateY(0%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vfade-enter-active,
+  .vfade-leave-active {
+    transition: opacity 0.1s ease;
+  }
+
+  .vfade-enter-from,
+  .vfade-leave-to {
+    transform: none;
+  }
 }
 
 span a,
