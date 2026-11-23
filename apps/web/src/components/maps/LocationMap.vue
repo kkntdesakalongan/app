@@ -6,6 +6,7 @@ import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import Tooltip from '@southneuhof/loom/components/base/Tooltip.vue'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
 import { computed, inject, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { motion, useReducedMotion, type $Transition } from 'motion-v'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { z } from 'zod/v4'
@@ -32,6 +33,9 @@ const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
 const mobile = useBreakpoints(breakpointsTailwind).smaller('lg')
 const layersOpen = ref(false)
 const layersAnchor = ref<HTMLElement>()
+const MotionPath = motion.path
+const reducedMotion = useReducedMotion()
+const layersIconTransition = computed<$Transition>(() => (reducedMotion.value ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 38, mass: 0.85 }))
 const legendOpen = ref(!mobile.value)
 const host = ref<HTMLElement>()
 const tileError = ref(false)
@@ -314,27 +318,46 @@ onBeforeUnmount(() => {
               <template #content>{{ mapError }}</template>
             </Tooltip>
           </div>
-          <div class="map-layers-surface pointer-events-none absolute bottom-0 right-0 overflow-hidden bg-surface-container" :class="{ 'is-open': layersOpen }">
+          <div class="map-layers-surface pointer-events-none absolute bottom-0 right-0 overflow-hidden" :class="{ 'is-open': layersOpen }">
             <Transition name="map-layers-content">
               <DialogContent v-if="layersOpen" class="map-layers-panel absolute bottom-0 right-0 flex flex-col text-on-surface outline-none" @escape-key-down.prevent="closeLayers">
                 <DialogDescription class="sr-only">Pilih lapisan yang ingin ditampilkan pada peta.</DialogDescription>
                 <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
                   <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
                 </div>
-                <footer class="flex h-12 shrink-0 items-end justify-between border-t border-outline-variant/50 pl-4">
-                  <DialogTitle class="flex h-10 items-center text-sm font-medium">Map layers</DialogTitle>
-                  <Button type="button" kind="icon" variant="tonal" ariaLabel="Close map layers" class="border-0 focus-visible:outline-offset-[-3px]" @click="closeLayers">
-                    <template #icon><Icon name="close" /></template>
-                  </Button>
+                <footer class="flex shrink-0 items-center justify-between border-t border-outline-variant/50 pl-4 pt-2">
+                  <DialogTitle class="text-sm font-medium leading-5">Map layers</DialogTitle>
+                  <Button type="button" kind="icon" variant="tonal" ariaLabel="Close map layers" class="map-layers-button border-0 focus-visible:outline-offset-[-3px]" @click="closeLayers" />
                 </footer>
               </DialogContent>
             </Transition>
           </div>
           <DialogTrigger as-child>
-            <Button v-show="!layersOpen" type="button" kind="icon" :variant="gis.selected.value.length ? 'tonal' : 'elevated'" ariaLabel="Map layers">
-              <template #icon><Icon name="stack" /></template>
-            </Button>
+            <Button
+              v-show="!layersOpen"
+              type="button"
+              kind="icon"
+              :variant="gis.selected.value.length ? 'tonal' : 'elevated'"
+              ariaLabel="Map layers"
+              class="map-layers-button border-0 focus-visible:outline-offset-[-3px]"
+            />
           </DialogTrigger>
+          <svg
+            class="map-layers-icon pointer-events-none absolute bottom-2 right-2 size-6"
+            :class="layersOpen || gis.selected.value.length ? 'text-on-secondary-container' : 'text-primary'"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 6 6 L 9 9 L 12 12 L 15 15 L 18 18' : 'M 4 8 L 12 4 L 20 8 L 12 12 L 4 8' }" :transition="layersIconTransition" />
+            <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 12 12 L 12 12 L 12 12' : 'M 4 12 L 12 16 L 20 12', opacity: layersOpen ? 0 : 1 }" :transition="layersIconTransition" />
+            <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 6 18 L 12 12 L 18 6' : 'M 4 16 L 12 20 L 20 16' }" :transition="layersIconTransition" />
+          </svg>
           <span
             v-if="gis.selected.value.length && !layersOpen"
             aria-hidden="true"
@@ -360,7 +383,10 @@ onBeforeUnmount(() => {
 }
 .map-layers {
   --map-layers-width: min(16rem, calc(100vw - var(--map-controls-left) - var(--map-controls-right)));
-  --map-layers-height: min(20.25rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
+  --map-layers-height: min(20.5rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
+}
+.map-layers-button {
+  -webkit-tap-highlight-color: transparent;
 }
 .map-layers-surface {
   width: 100%;
@@ -369,12 +395,15 @@ onBeforeUnmount(() => {
   transition:
     width 360ms cubic-bezier(0.22, 1, 0.36, 1),
     height 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 360ms ease;
+    box-shadow 360ms ease,
+    background-color 0s 360ms;
 }
 .map-layers-surface.is-open {
+  @apply bg-surface-container;
   width: var(--map-layers-width);
   height: var(--map-layers-height);
   box-shadow: 0 12px 36px rgb(var(--md-sys-color-shadow) / 0.28);
+  transition-delay: 0s;
 }
 .map-layers-panel {
   width: var(--map-layers-width);

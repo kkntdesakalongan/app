@@ -144,3 +144,8 @@ The title now sits on the left of the bottom row. The card and close button
 share a 20 px corner radius. The close button has an inset keyboard focus
 outline and returns focus to the layers button when it closes the panel.
 Chromium and WebKit checked the footer geometry and keyboard dismissal.
+
+The title and icon now share one centerline. Both button states use
+borderless hover and press feedback. One icon morphs between the layers
+stack and the close symbol, with an immediate change in reduced motion.
+Chromium and WebKit checked the transition in both directions.
