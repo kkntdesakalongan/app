@@ -31,8 +31,10 @@ test('public map fills the mobile viewport after resize and rotation', async ({ 
         })
       )
       .toEqual(expect.objectContaining({ x: 0, y: 0, coversViewport: true }))
-    await expect(page.getByRole('button', { name: 'Zoom in', exact: true })).toBeInViewport({ ratio: 0.99 })
+    await expect(page.getByRole('button', { name: 'Zoom in', exact: true })).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'OpenStreetMap', exact: true })).toBeInViewport({ ratio: 0.99 })
   }
   await page.screenshot({ path: `../../.local/verification/disaster-map/webgis-mobile-${test.info().project.name}.png` })
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await expect(page.getByRole('button', { name: 'Zoom in', exact: true })).toBeInViewport({ ratio: 0.99 })
 })

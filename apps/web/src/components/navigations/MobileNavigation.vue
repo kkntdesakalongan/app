@@ -11,6 +11,7 @@ import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import ProfileSegment from './layouts/ProfileSegment.vue'
 import Logo from '@/assets/corporate/common/Logo.vue'
 import { routeBreadcrumbs } from './breadcrumbs'
+import './mobile-menu.css'
 
 const MotionDiv = motion.div
 const MotionPath = motion.path
@@ -56,7 +57,7 @@ watch([() => route.fullPath, wide], () => {
         </AnimatePresence>
         <MotionDiv class="mobile-navigation text-on-surface lg:hidden" layout-root :class="{ 'is-open': open }">
           <MotionDiv
-            class="navigation-surface bg-surface-container shadow-xl"
+            class="mobile-menu-surface navigation-surface bg-surface-container shadow-xl"
             :style="{ width: open ? 'var(--mobile-navigation-width)' : '100%', height: open ? 'var(--mobile-navigation-height)' : 'var(--mobile-navigation-pill-height)', borderRadius: '28px' }"
             :transition="transition"
           >
@@ -149,10 +150,6 @@ watch([() => route.fullPath, wide], () => {
   right: 0;
   bottom: 0;
   overflow: hidden;
-  transition:
-    width 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    height 360ms cubic-bezier(0.22, 1, 0.36, 1);
-  transform-origin: bottom right;
   pointer-events: none;
 }
 .navigation-label {
@@ -239,25 +236,5 @@ watch([() => route.fullPath, wide], () => {
 .navigation-icon svg {
   width: 24px;
   height: 24px;
-}
-.mobile-menu-content-enter-active {
-  transition: opacity 140ms ease 110ms;
-}
-.mobile-menu-content-leave-active {
-  transition: opacity 120ms ease;
-}
-.mobile-menu-content-enter-from,
-.mobile-menu-content-leave-to {
-  opacity: 0;
-}
-@media (prefers-reduced-motion: reduce) {
-  .navigation-surface {
-    transition-duration: 0ms;
-  }
-  .mobile-menu-content-enter-active,
-  .mobile-menu-content-leave-active {
-    transition-duration: 0ms;
-    transition-delay: 0ms;
-  }
 }
 </style>

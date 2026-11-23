@@ -1,0 +1,31 @@
+.mobile-menu-surface {
+  transition:
+    width 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: bottom right;
+}
+
+.mobile-menu-content-enter-active {
+  transition: opacity 140ms ease 110ms;
+}
+
+.mobile-menu-content-leave-active {
+  transition: opacity 120ms ease;
+}
+
+.mobile-menu-content-enter-from,
+.mobile-menu-content-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu-surface {
+    transition-duration: 0ms;
+  }
+
+  .mobile-menu-content-enter-active,
+  .mobile-menu-content-leave-active {
+    transition-duration: 0ms;
+    transition-delay: 0ms;
+  }
+}

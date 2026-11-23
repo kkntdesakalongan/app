@@ -108,3 +108,15 @@ as one section. The sheet resizes between sections. In Chromium, the pill and al
 positions during rapid tab changes at four viewport sizes with station and GIS
 filters active. Frame samples and a recording are in
 `.local/verification/filter-motion/`.
+
+The mobile bottom toolbar puts the legend on the left and the layers button
+on the right. The layers menu shares its width, height, and content transition
+timing with the global mobile menu. On desktop, the legend and layers icon
+are side by side at the bottom right, with the legend first. The zoom buttons
+appear on desktop.
+
+Chromium checks on `/map` and `/dashboard` used fixture data. They checked
+portrait and landscape layout, the desktop breakpoint, keyboard dismissal
+and focus return, reduced motion, and the legend update after layer selection.
+Screenshots are in `.local/verification/map-bottom-toolbar/`. The configured
+Playwright suite requires a local API, test database, and storage target.
