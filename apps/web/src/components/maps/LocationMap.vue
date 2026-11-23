@@ -325,7 +325,7 @@ onBeforeUnmount(() => {
                 <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
                   <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
                 </div>
-                <footer class="flex shrink-0 items-center justify-between border-t border-outline-variant/50 pl-4 pt-2">
+                <footer class="flex shrink-0 items-center justify-between pl-4">
                   <DialogTitle class="text-sm font-medium leading-5">Map layers</DialogTitle>
                   <Button type="button" kind="icon" variant="tonal" ariaLabel="Close map layers" class="map-layers-button border-0 focus-visible:outline-offset-[-3px]" @click="closeLayers" />
                 </footer>
@@ -342,22 +342,13 @@ onBeforeUnmount(() => {
               class="map-layers-button border-0 focus-visible:outline-offset-[-3px]"
             />
           </DialogTrigger>
-          <svg
-            class="map-layers-icon pointer-events-none absolute bottom-2 right-2 size-6"
-            :class="layersOpen || gis.selected.value.length ? 'text-on-secondary-container' : 'text-primary'"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 6 6 L 9 9 L 12 12 L 15 15 L 18 18' : 'M 4 8 L 12 4 L 20 8 L 12 12 L 4 8' }" :transition="layersIconTransition" />
-            <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 12 12 L 12 12 L 12 12' : 'M 4 12 L 12 16 L 20 12', opacity: layersOpen ? 0 : 1 }" :transition="layersIconTransition" />
-            <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 6 18 L 12 12 L 18 6' : 'M 4 16 L 12 20 L 20 16' }" :transition="layersIconTransition" />
-          </svg>
+          <span class="map-layers-icon" :class="layersOpen || gis.selected.value.length ? 'text-on-secondary-container' : 'text-primary'" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" focusable="false">
+              <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 6 6 L 9 9 L 12 12 L 15 15 L 18 18' : 'M 4 8 L 12 4 L 20 8 L 12 12 L 4 8' }" :transition="layersIconTransition" />
+              <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 12 12 L 12 12 L 12 12' : 'M 4 12 L 12 16 L 20 12', opacity: layersOpen ? 0 : 1 }" :transition="layersIconTransition" />
+              <MotionPath :initial="false" :animate="{ d: layersOpen ? 'M 6 18 L 12 12 L 18 6' : 'M 4 16 L 12 20 L 20 16' }" :transition="layersIconTransition" />
+            </svg>
+          </span>
           <span
             v-if="gis.selected.value.length && !layersOpen"
             aria-hidden="true"
@@ -383,10 +374,17 @@ onBeforeUnmount(() => {
 }
 .map-layers {
   --map-layers-width: min(16rem, calc(100vw - var(--map-controls-left) - var(--map-controls-right)));
-  --map-layers-height: min(20.5rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
+  --map-layers-height: min(20rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
 }
 .map-layers-button {
   -webkit-tap-highlight-color: transparent;
+}
+.map-layers-icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
 }
 .map-layers-surface {
   width: 100%;
