@@ -139,3 +139,8 @@ card width, and the close button stays at its original position in the bottom
 row. The card uses a broad shadow. The map stays undimmed and interactive.
 Chromium checked the animation and open card over live map tiles at phone,
 landscape, and desktop sizes. Screenshots are in `.local/verification/map-layers-card/`.
+
+The title now sits on the left of the bottom row. The card and close button
+share a 20 px corner radius. The close button has an inset keyboard focus
+outline and returns focus to the layers button when it closes the panel.
+Chromium and WebKit checked the footer geometry and keyboard dismissal.

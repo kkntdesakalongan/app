@@ -5,7 +5,7 @@ import Button from '@southneuhof/loom/components/base/Button.vue'
 import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import Tooltip from '@southneuhof/loom/components/base/Tooltip.vue'
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
-import { computed, inject, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, inject, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { z } from 'zod/v4'
@@ -31,6 +31,7 @@ const { stations, state: ewsState, errorMessage: ewsError, retry: retryEws } = u
 const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
 const mobile = useBreakpoints(breakpointsTailwind).smaller('lg')
 const layersOpen = ref(false)
+const layersAnchor = ref<HTMLElement>()
 const legendOpen = ref(!mobile.value)
 const host = ref<HTMLElement>()
 const tileError = ref(false)
@@ -39,6 +40,11 @@ watch(mobile, (isMobile) => {
   layersOpen.value = false
   legendOpen.value = !isMobile
 })
+async function closeLayers() {
+  layersOpen.value = false
+  await nextTick()
+  layersAnchor.value?.querySelector<HTMLButtonElement>('button[aria-haspopup="dialog"]')?.focus({ preventScroll: true })
+}
 function retryMap() {
   if (error.value) void refresh()
   if (ewsState.value === 'error') retryEws()
@@ -297,7 +303,7 @@ onBeforeUnmount(() => {
             </CollapsibleContent>
           </CollapsibleRoot>
         </Card>
-        <div class="map-layers relative z-[500] size-10 shrink-0">
+        <div ref="layersAnchor" class="map-layers relative z-[500] size-10 shrink-0">
           <div v-if="mapError" class="absolute bottom-full right-0 mb-2 size-10" :inert="layersOpen">
             <Tooltip>
               <template #trigger>
@@ -310,19 +316,23 @@ onBeforeUnmount(() => {
           </div>
           <div class="map-layers-surface pointer-events-none absolute bottom-0 right-0 overflow-hidden bg-surface-container" :class="{ 'is-open': layersOpen }">
             <Transition name="map-layers-content">
-              <DialogContent v-if="layersOpen" class="map-layers-panel absolute bottom-0 right-0 flex flex-col text-on-surface outline-none">
-                <DialogTitle class="shrink-0 border-b border-outline-variant/50 px-3 py-2 text-sm font-medium">Lapisan peta</DialogTitle>
+              <DialogContent v-if="layersOpen" class="map-layers-panel absolute bottom-0 right-0 flex flex-col text-on-surface outline-none" @escape-key-down.prevent="closeLayers">
                 <DialogDescription class="sr-only">Pilih lapisan yang ingin ditampilkan pada peta.</DialogDescription>
                 <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
                   <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
                 </div>
-                <div aria-hidden="true" class="h-10 shrink-0 border-t border-outline-variant/50" />
+                <footer class="flex h-12 shrink-0 items-end justify-between border-t border-outline-variant/50 pl-4">
+                  <DialogTitle class="flex h-10 items-center text-sm font-medium">Map layers</DialogTitle>
+                  <Button type="button" kind="icon" variant="tonal" ariaLabel="Close map layers" class="border-0 focus-visible:outline-offset-[-3px]" @click="closeLayers">
+                    <template #icon><Icon name="close" /></template>
+                  </Button>
+                </footer>
               </DialogContent>
             </Transition>
           </div>
           <DialogTrigger as-child>
-            <Button type="button" kind="icon" :variant="layersOpen || gis.selected.value.length ? 'tonal' : 'elevated'" :ariaLabel="layersOpen ? 'Tutup lapisan peta' : 'Lapisan peta'">
-              <template #icon><Icon :name="layersOpen ? 'close' : 'stack'" /></template>
+            <Button v-show="!layersOpen" type="button" kind="icon" :variant="gis.selected.value.length ? 'tonal' : 'elevated'" ariaLabel="Map layers">
+              <template #icon><Icon name="stack" /></template>
             </Button>
           </DialogTrigger>
           <span
@@ -350,7 +360,7 @@ onBeforeUnmount(() => {
 }
 .map-layers {
   --map-layers-width: min(16rem, calc(100vw - var(--map-controls-left) - var(--map-controls-right)));
-  --map-layers-height: min(22rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
+  --map-layers-height: min(20.25rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
 }
 .map-layers-surface {
   width: 100%;
@@ -359,13 +369,11 @@ onBeforeUnmount(() => {
   transition:
     width 360ms cubic-bezier(0.22, 1, 0.36, 1),
     height 360ms cubic-bezier(0.22, 1, 0.36, 1),
-    border-radius 360ms ease,
     box-shadow 360ms ease;
 }
 .map-layers-surface.is-open {
   width: var(--map-layers-width);
   height: var(--map-layers-height);
-  border-radius: 0.75rem;
   box-shadow: 0 12px 36px rgb(var(--md-sys-color-shadow) / 0.28);
 }
 .map-layers-panel {
