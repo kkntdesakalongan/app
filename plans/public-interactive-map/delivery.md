@@ -202,3 +202,12 @@ device position in Jakarta leaves the map centered on Kalongan, with
 permission granted before opening the public map and after opening the
 dashboard. Focused lint and web type checking passed. Screenshots are in
 `.local/verification/kalongan-opening-view/`.
+
+## Layer selection loading
+
+Layer selections stay available while dataset requests run. Each selected layer
+shows its own spinner, and layers that share a dataset share its request. A failed
+request clears the affected selections so the user can select them again.
+
+The web type check, focused lint, and production build passed. Browser proof of
+concurrent loading remains unverified: the local preview could not reach its API.

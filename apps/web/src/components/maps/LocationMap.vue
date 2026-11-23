@@ -473,7 +473,15 @@ onBeforeUnmount(() => {
               <DialogContent v-if="layersOpen" class="map-layers-panel absolute bottom-0 right-0 flex flex-col text-on-surface outline-none" @escape-key-down.prevent="closeLayers">
                 <DialogDescription class="sr-only">Pilih lapisan yang ingin ditampilkan pada peta.</DialogDescription>
                 <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
-                  <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
+                  <GisLayerPicker
+                    :available="gis.available.value"
+                    :selected="gis.selected.value"
+                    :loading="gis.loading.value"
+                    :loading-codes="gis.loadingCodes.value"
+                    :error="gis.error.value"
+                    @toggle="gis.toggle"
+                    @retry="gis.refresh"
+                  />
                 </div>
                 <footer class="flex shrink-0 items-center justify-between pl-4">
                   <DialogTitle class="text-sm font-medium leading-5">Map layers</DialogTitle>

@@ -21,6 +21,8 @@ export function useGisLayers() {
   const datasets = ref<Record<string, FeatureCollection>>({})
   const loading = ref(false)
   const error = ref('')
+  const loadingCodes = ref<string[]>([])
+  const pending = new Map<string, Promise<void>>()
   async function refresh() {
     loading.value = true
     error.value = ''
@@ -36,27 +38,38 @@ export function useGisLayers() {
       loading.value = false
     }
   }
+  async function load(code: string) {
+    const existing = pending.get(code)
+    if (existing) return existing
+    loadingCodes.value = [...loadingCodes.value, code]
+    const request = (async () => {
+      const response = await fetch(new URL(`public/gis-data/${encodeURIComponent(code)}`, apiUrl))
+      if (!response.ok) throw new Error('Data lapisan tidak dapat dimuat. Coba lagi.')
+      const data = gisFeatureCollectionSchema.parse(await response.json())
+      datasets.value = { ...datasets.value, [code]: data }
+    })()
+    pending.set(code, request)
+    try {
+      await request
+    } finally {
+      pending.delete(code)
+      loadingCodes.value = loadingCodes.value.filter((value) => value !== code)
+    }
+  }
   async function toggle(id: string, code: string) {
     if (selected.value.includes(id)) {
       selected.value = selected.value.filter((value) => value !== id)
       return
     }
-    loading.value = true
+    selected.value = [...selected.value, id]
     error.value = ''
     try {
-      if (!datasets.value[code]) {
-        const response = await fetch(new URL(`public/gis-data/${encodeURIComponent(code)}`, apiUrl))
-        if (!response.ok) throw new Error('Data lapisan tidak dapat dimuat. Coba lagi.')
-        const data = gisFeatureCollectionSchema.parse(await response.json())
-        datasets.value = { ...datasets.value, [code]: data }
-      }
-      selected.value = [...selected.value, id]
+      if (!datasets.value[code]) await load(code)
     } catch (cause) {
+      selected.value = selected.value.filter((value) => !gisLayers.some((layer) => layer.id === value && layer.code === code))
       error.value = cause instanceof Error ? cause.message : 'Lapisan tidak dapat dimuat.'
-    } finally {
-      loading.value = false
     }
   }
   onMounted(refresh)
-  return { available, selected, datasets, loading, error, refresh, toggle }
+  return { available, selected, datasets, loading, loadingCodes, error, refresh, toggle }
 }
