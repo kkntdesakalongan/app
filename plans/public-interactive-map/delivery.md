@@ -120,3 +120,10 @@ portrait and landscape layout, the desktop breakpoint, keyboard dismissal
 and focus return, reduced motion, and the legend update after layer selection.
 Screenshots are in `.local/verification/map-bottom-toolbar/`. The configured
 Playwright suite requires a local API, test database, and storage target.
+
+The legend toggle and layers button now match the 40 px refresh button.
+Refresh stays above the layers button when the legend opens or closes.
+The smaller layers panel has its own animation and leaves the map interactive.
+Chromium checked both map routes at mobile and desktop widths with fixture
+data. It checked the refresh position, map panning, and panel dismissal.
+Screenshots are in `.local/verification/map-compact-controls/`.
