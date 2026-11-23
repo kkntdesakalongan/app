@@ -133,3 +133,9 @@ fixed lower-right corner. The contents fade in after the expansion starts.
 Chromium checked intermediate frames in both directions at phone, landscape,
 and desktop sizes. It also checked that refresh and map panning work with
 the layers panel open. Screenshots are in `.local/verification/map-layers-expansion/`.
+
+The layers panel now covers refresh as it expands. The layer rows fill the
+card width, and the close button stays at its original position in the bottom
+row. The card uses a broad shadow. The map stays undimmed and interactive.
+Chromium checked the animation and open card over live map tiles at phone,
+landscape, and desktop sizes. Screenshots are in `.local/verification/map-layers-card/`.

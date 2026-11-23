@@ -298,25 +298,28 @@ onBeforeUnmount(() => {
           </CollapsibleRoot>
         </Card>
         <div class="map-layers relative z-[500] size-10 shrink-0">
+          <div v-if="mapError" class="absolute bottom-full right-0 mb-2 size-10" :inert="layersOpen">
+            <Tooltip>
+              <template #trigger>
+                <Button type="button" kind="icon" variant="filled" color="warning" ariaLabel="Refresh map data" @click="retryMap">
+                  <template #icon><Icon name="refresh" /></template>
+                </Button>
+              </template>
+              <template #content>{{ mapError }}</template>
+            </Tooltip>
+          </div>
           <div class="map-layers-surface pointer-events-none absolute bottom-0 right-0 overflow-hidden bg-surface-container" :class="{ 'is-open': layersOpen }">
             <Transition name="map-layers-content">
-              <DialogContent v-if="layersOpen" class="map-layers-panel absolute bottom-0 right-12 flex flex-col text-on-surface outline-none">
+              <DialogContent v-if="layersOpen" class="map-layers-panel absolute bottom-0 right-0 flex flex-col text-on-surface outline-none">
                 <DialogTitle class="shrink-0 border-b border-outline-variant/50 px-3 py-2 text-sm font-medium">Lapisan peta</DialogTitle>
                 <DialogDescription class="sr-only">Pilih lapisan yang ingin ditampilkan pada peta.</DialogDescription>
-                <div class="min-h-0 overflow-y-auto overscroll-contain p-2">
+                <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
                   <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
                 </div>
+                <div aria-hidden="true" class="h-10 shrink-0 border-t border-outline-variant/50" />
               </DialogContent>
             </Transition>
           </div>
-          <Tooltip v-if="mapError">
-            <template #trigger>
-              <Button type="button" kind="icon" variant="filled" color="warning" ariaLabel="Refresh map data" class="absolute bottom-full right-0 mb-2" @click="retryMap">
-                <template #icon><Icon name="refresh" /></template>
-              </Button>
-            </template>
-            <template #content>{{ mapError }}</template>
-          </Tooltip>
           <DialogTrigger as-child>
             <Button type="button" kind="icon" :variant="layersOpen || gis.selected.value.length ? 'tonal' : 'elevated'" :ariaLabel="layersOpen ? 'Tutup lapisan peta' : 'Lapisan peta'">
               <template #icon><Icon :name="layersOpen ? 'close' : 'stack'" /></template>
@@ -346,8 +349,8 @@ onBeforeUnmount(() => {
   right: var(--map-controls-right);
 }
 .map-layers {
-  --map-layers-width: min(18rem, calc(100vw - var(--map-controls-left) - var(--map-controls-right)));
-  --map-layers-height: min(21rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
+  --map-layers-width: min(16rem, calc(100vw - var(--map-controls-left) - var(--map-controls-right)));
+  --map-layers-height: min(22rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
 }
 .map-layers-surface {
   width: 100%;
@@ -360,13 +363,13 @@ onBeforeUnmount(() => {
     box-shadow 360ms ease;
 }
 .map-layers-surface.is-open {
-  @apply shadow-md;
   width: var(--map-layers-width);
   height: var(--map-layers-height);
   border-radius: 0.75rem;
+  box-shadow: 0 12px 36px rgb(var(--md-sys-color-shadow) / 0.28);
 }
 .map-layers-panel {
-  width: calc(var(--map-layers-width) - 3rem);
+  width: var(--map-layers-width);
   height: var(--map-layers-height);
   pointer-events: auto;
 }
