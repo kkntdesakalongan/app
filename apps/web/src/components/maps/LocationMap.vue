@@ -297,7 +297,18 @@ onBeforeUnmount(() => {
             </CollapsibleContent>
           </CollapsibleRoot>
         </Card>
-        <div class="relative z-[500] size-10 shrink-0">
+        <div class="map-layers relative z-[500] size-10 shrink-0">
+          <div class="map-layers-surface pointer-events-none absolute bottom-0 right-0 overflow-hidden bg-surface-container" :class="{ 'is-open': layersOpen }">
+            <Transition name="map-layers-content">
+              <DialogContent v-if="layersOpen" class="map-layers-panel absolute bottom-0 right-12 flex flex-col text-on-surface outline-none">
+                <DialogTitle class="shrink-0 border-b border-outline-variant/50 px-3 py-2 text-sm font-medium">Lapisan peta</DialogTitle>
+                <DialogDescription class="sr-only">Pilih lapisan yang ingin ditampilkan pada peta.</DialogDescription>
+                <div class="min-h-0 overflow-y-auto overscroll-contain p-2">
+                  <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
+                </div>
+              </DialogContent>
+            </Transition>
+          </div>
           <Tooltip v-if="mapError">
             <template #trigger>
               <Button type="button" kind="icon" variant="filled" color="warning" ariaLabel="Refresh map data" class="absolute bottom-full right-0 mb-2" @click="retryMap">
@@ -317,18 +328,6 @@ onBeforeUnmount(() => {
             class="pointer-events-none absolute -right-1 -top-1 rounded-full bg-on-secondary-container px-1.5 text-[10px] font-semibold leading-4 text-secondary-container tabular-nums"
             >{{ gis.selected.value.length }}</span
           >
-          <Transition name="map-layers">
-            <DialogContent
-              v-if="layersOpen"
-              class="map-layers-panel absolute bottom-full right-full mb-2 mr-2 flex flex-col overflow-hidden rounded-xl bg-surface-container text-on-surface shadow-md outline-none"
-            >
-              <DialogTitle class="shrink-0 border-b border-outline-variant/50 px-3 py-2 text-sm font-medium">Lapisan peta</DialogTitle>
-              <DialogDescription class="sr-only">Pilih lapisan yang ingin ditampilkan pada peta.</DialogDescription>
-              <div class="min-h-0 overflow-y-auto overscroll-contain p-2">
-                <GisLayerPicker :available="gis.available.value" :selected="gis.selected.value" :loading="gis.loading.value" :error="gis.error.value" @toggle="gis.toggle" @retry="gis.refresh" />
-              </div>
-            </DialogContent>
-          </Transition>
         </div>
       </div>
     </DialogRoot>
@@ -346,23 +345,40 @@ onBeforeUnmount(() => {
   left: var(--map-controls-left);
   right: var(--map-controls-right);
 }
-.map-layers-panel {
-  width: min(16rem, calc(100vw - var(--map-controls-left) - var(--map-controls-right) - 3rem));
-  max-height: min(22rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 8rem));
-  transform-origin: bottom right;
+.map-layers {
+  --map-layers-width: min(18rem, calc(100vw - var(--map-controls-left) - var(--map-controls-right)));
+  --map-layers-height: min(21rem, calc(100svh - var(--map-controls-bottom) - env(safe-area-inset-top, 0px) - 5rem));
 }
-.map-layers-enter-active,
-.map-layers-leave-active {
+.map-layers-surface {
+  width: 100%;
+  height: 100%;
+  border-radius: 1.25rem;
   transition:
-    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 150ms ease;
+    width 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 360ms ease,
+    box-shadow 360ms ease;
 }
-.map-layers-leave-active {
+.map-layers-surface.is-open {
+  @apply shadow-md;
+  width: var(--map-layers-width);
+  height: var(--map-layers-height);
+  border-radius: 0.75rem;
+}
+.map-layers-panel {
+  width: calc(var(--map-layers-width) - 3rem);
+  height: var(--map-layers-height);
+  pointer-events: auto;
+}
+.map-layers-content-enter-active {
+  transition: opacity 140ms ease 110ms;
+}
+.map-layers-content-leave-active {
   pointer-events: none;
+  transition: opacity 120ms ease;
 }
-.map-layers-enter-from,
-.map-layers-leave-to {
-  transform: scale(0.72);
+.map-layers-content-enter-from,
+.map-layers-content-leave-to {
   opacity: 0;
 }
 .legend-items {
@@ -413,8 +429,9 @@ onBeforeUnmount(() => {
   .legend-content {
     animation: none;
   }
-  .map-layers-enter-active,
-  .map-layers-leave-active {
+  .map-layers-surface,
+  .map-layers-content-enter-active,
+  .map-layers-content-leave-active {
     transition: none;
   }
 }

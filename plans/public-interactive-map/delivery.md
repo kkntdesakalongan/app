@@ -127,3 +127,9 @@ The smaller layers panel has its own animation and leaves the map interactive.
 Chromium checked both map routes at mobile and desktop widths with fixture
 data. It checked the refresh position, map panning, and panel dismissal.
 Screenshots are in `.local/verification/map-compact-controls/`.
+
+The layers surface now expands from the button in width and height with a
+fixed lower-right corner. The contents fade in after the expansion starts.
+Chromium checked intermediate frames in both directions at phone, landscape,
+and desktop sizes. It also checked that refresh and map panning work with
+the layers panel open. Screenshots are in `.local/verification/map-layers-expansion/`.
