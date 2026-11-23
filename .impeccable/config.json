@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "geist sans",
+        "createdAt": "2026-11-23T12:23:29.901Z",
+        "reason": "Agent: The web app already specifies Geist Sans as its Tailwind sans family and bundles nine weights. The touch gesture change preserves that typography."
+      }
+    ]
+  }
+}

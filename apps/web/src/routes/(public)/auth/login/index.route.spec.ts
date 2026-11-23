@@ -111,7 +111,7 @@ describe('login route', () => {
     expect(mocks.resolvePostLoginRoute).toHaveBeenCalledWith(mocks.router, '/settings/users')
     expect(mocks.router.push).toHaveBeenCalledExactlyOnceWith({ name: 'users' })
     expect(mocks.signOut).not.toHaveBeenCalled()
-    expect(wrapper.find('button').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('button[type=submit]').attributes('disabled')).toBeUndefined()
 
     wrapper.unmount()
   })
@@ -127,7 +127,7 @@ describe('login route', () => {
     expect(mocks.router.push).not.toHaveBeenCalled()
     expect(mocks.signOut).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain('Email atau password tidak valid')
-    expect(wrapper.find('button').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('button[type=submit]').attributes('disabled')).toBeUndefined()
 
     wrapper.unmount()
   })
@@ -145,7 +145,7 @@ describe('login route', () => {
     expect(mocks.router.push).not.toHaveBeenCalled()
     expect(mocks.signOut).toHaveBeenCalledOnce()
     expect(wrapper.text()).toContain('Gagal memuat akses aplikasi. Silakan coba lagi')
-    expect(wrapper.find('button').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('button[type=submit]').attributes('disabled')).toBeUndefined()
 
     wrapper.unmount()
   })
@@ -161,7 +161,7 @@ describe('login route', () => {
     expect(mocks.router.push).not.toHaveBeenCalled()
     expect(wrapper.text()).toContain('Tidak dapat terhubung ke server. Silakan coba lagi')
     expect(wrapper.text()).not.toContain('network details must stay hidden')
-    expect(wrapper.find('button').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('button[type=submit]').attributes('disabled')).toBeUndefined()
 
     wrapper.unmount()
   })
@@ -183,7 +183,7 @@ describe('login route', () => {
     expect(mocks.clearIdentity).not.toHaveBeenCalled()
     expect(mocks.router.push).toHaveBeenCalledOnce()
     expect(mocks.signOut).not.toHaveBeenCalled()
-    expect(wrapper.find('button').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('button[type=submit]').attributes('disabled')).toBeUndefined()
 
     wrapper.unmount()
   })
@@ -207,7 +207,7 @@ describe('login route', () => {
     expect(mocks.router.push).not.toHaveBeenCalled()
     expect(mocks.signOut).toHaveBeenCalledOnce()
     expect(wrapper.text()).toContain('Tidak ada halaman yang dapat diakses oleh akun ini')
-    expect(wrapper.find('button').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('button[type=submit]').attributes('disabled')).toBeUndefined()
 
     wrapper.unmount()
   })
@@ -225,7 +225,7 @@ describe('login route', () => {
     expect(mocks.signOut).toHaveBeenCalledOnce()
     expect(wrapper.text()).toContain('Gagal memuat akses aplikasi. Silakan coba lagi')
     expect(wrapper.text()).not.toContain('cleanup details must stay hidden')
-    expect(wrapper.find('button').attributes('disabled')).toBeUndefined()
+    expect(wrapper.get('button[type=submit]').attributes('disabled')).toBeUndefined()
 
     wrapper.unmount()
   })

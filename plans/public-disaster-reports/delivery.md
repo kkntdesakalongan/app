@@ -95,3 +95,8 @@ custom-action lint and build size/data warnings remain. The build also reports
 schema-boundary plugin timing. Browser map selection, map tiles, and rendered
 category cells were not driven in this pass. The test PostgreSQL instance
 started for this check was stopped after the tests.
+
+The report confirmation and cancel actions return to the dashboard or public
+map, depending on where the form opened. Direct visits return to the public
+map. Chromium checked all three entry points with a successful API fixture.
+WebKit also checked the public-map entry point.

@@ -4,7 +4,7 @@ import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger, DialogContent,
 import Button from '@southneuhof/loom/components/base/Button.vue'
 import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import Tooltip from '@southneuhof/loom/components/base/Tooltip.vue'
-import { breakpointsTailwind, useBreakpoints } from '@vueuse/core'
+import { breakpointsTailwind, onClickOutside, useBreakpoints } from '@vueuse/core'
 import { computed, inject, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { motion, useReducedMotion, type $Transition } from 'motion-v'
 import * as L from 'leaflet'
@@ -37,9 +37,13 @@ const MotionPath = motion.path
 const reducedMotion = useReducedMotion()
 const layersIconTransition = computed<$Transition>(() => (reducedMotion.value ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 38, mass: 0.85 }))
 const legendOpen = ref(!mobile.value)
+const legendCard = ref<InstanceType<typeof Card>>()
 const host = ref<HTMLElement>()
 const tileError = ref(false)
 const mapError = computed(() => [error.value?.message, ewsState.value === 'error' ? ewsError.value : '', tileError.value ? 'Map tiles could not load.' : ''].filter(Boolean).join(' '))
+onClickOutside(legendCard, () => {
+  legendOpen.value = false
+})
 watch(mobile, (isMobile) => {
   layersOpen.value = false
   legendOpen.value = !isMobile
@@ -268,7 +272,7 @@ onBeforeUnmount(() => {
     </div>
     <DialogRoot v-model:open="layersOpen" :modal="false">
       <div class="map-controls absolute flex items-end gap-2">
-        <Card variant="elevated" color="surfaceContainer" class="relative z-[500] min-w-0 flex-1 gap-0 p-0 lg:w-64 lg:flex-none">
+        <Card ref="legendCard" variant="elevated" color="surfaceContainer" class="relative z-[500] min-w-0 flex-1 gap-0 p-0 lg:w-64 lg:flex-none">
           <CollapsibleRoot v-model:open="legendOpen" class="flex flex-col-reverse">
             <CollapsibleTrigger
               class="group flex min-h-10 w-full items-center justify-between gap-2 px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-on-surface/[8%] focus-visible:outline-none focus-visible:bg-on-surface/[8%]"

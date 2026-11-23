@@ -17,6 +17,10 @@ import 'remixicon/fonts/remixicon.css'
 import VueTippy from 'vue-tippy'
 import 'tippy.js/dist/tippy.css' // optional for styling
 
+if (CSS.supports('-webkit-touch-callout', 'none') && window.matchMedia('(any-pointer: coarse)').matches) {
+  document.addEventListener('gesturestart', (event) => event.preventDefault(), { passive: false })
+}
+
 const app = createApp(App)
 beginPageReadiness()
 router.beforeEach(() => beginPageReadiness())

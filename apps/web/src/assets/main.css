@@ -7,6 +7,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@media (any-pointer: coarse) {
+  :where(*) {
+    touch-action: manipulation;
+  }
+}
+
 html {
   background: rgb(var(--md-sys-color-surface-container-low));
   color-scheme: light;

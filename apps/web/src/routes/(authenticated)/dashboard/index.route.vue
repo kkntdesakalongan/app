@@ -8,7 +8,7 @@ definePage({ meta: { fullBleed: true } })
   <LocationMap>
     <h1 class="text-xl font-semibold tracking-tight">WebGIS</h1>
     <template #actions
-      ><Button variant="filled" href="/create-report"
+      ><Button variant="filled" href="/create-report?from=dashboard"
         ><template #icon
           ><span aria-hidden="true"><Icon name="alarm-warning" /></span></template
         >Buat Laporan</Button

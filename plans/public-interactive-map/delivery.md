@@ -149,3 +149,24 @@ The title and icon now share one centerline. Both button states use
 borderless hover and press feedback. One icon morphs between the layers
 stack and the close symbol, with an immediate change in reduced motion.
 Chromium and WebKit checked the transition in both directions.
+
+The root route opens the public map for signed-out visitors. Signed-in users
+go to the existing authenticated default. The public map toolbar puts Masuk
+or Admin before Buat Laporan. Both states use an icon. Below 380 px, the icon
+keeps the accessible name and the toolbar stays on one row.
+Chromium and WebKit checked the root redirect and both destinations with
+session fixtures. Screenshots are in `.local/verification/map-home/`.
+
+Clicking outside an open legend closes it. Clicking inside keeps it open.
+Peta opens `/map`.
+Chromium and WebKit checked both actions on the preview.
+
+The login card fits a 320 px viewport and permits scrolling on short screens.
+Chromium and WebKit checked the layout, form errors, and Peta link. Chromium
+checked that the logo sits on the left and Peta sits on the right at 320 px
+and 1280 px. The login still uses Geist Sans.
+
+The app suppresses touch gestures that zoom the browser page. Chromium kept
+the viewport at 1× while Leaflet pinch zoom and drag panning worked. Touch
+scrolling worked on the login page. The native Safari gesture was not tested
+on an iPhone.

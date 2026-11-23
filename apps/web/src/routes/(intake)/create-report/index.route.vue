@@ -2,12 +2,16 @@
 import Button from '@southneuhof/loom/components/base/Button.vue'
 import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import logo from '@/assets/corporate/assets/app-logo.svg'
-import { nextTick, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { defineForm, Form } from '@southneuhof/loom'
 import { createHonoResourceActions } from '@/framework/hono'
 import { rpc } from '@/framework/rpc'
 import { reportFormSchema, reportPayload, reportLocationField } from '@/routes/(authenticated)/disaster-reports/report-form'
 import { categoryField } from '@/routes/(authenticated)/master/report-categories/category-field'
+const route = useRoute()
+const router = useRouter()
+const returnHref = computed(() => router.resolve({ name: route.query.from === 'dashboard' ? 'dashboard' : 'map' }).href)
 const saved = ref(false)
 const successHeading = ref<HTMLHeadingElement | null>(null)
 async function showSuccess() {
@@ -49,7 +53,7 @@ const form = defineForm({
           <div />
         </div>
         <div class="intake-actions mx-auto flex max-w-2xl flex-row items-center gap-2">
-          <Button type="button" href="/map" class="min-w-0 flex-1">Kembali</Button>
+          <Button type="button" :href="returnHref" class="min-w-0 flex-1">Kembali</Button>
         </div>
       </div>
     </section>
@@ -62,7 +66,7 @@ const form = defineForm({
             <div />
           </div>
           <div class="intake-actions mx-auto flex max-w-2xl flex-row items-center gap-2">
-            <Button type="button" kind="icon" variant="tonal" ariaLabel="Batal dan kembali ke peta" href="/map" :disabled="actions.submitPending">
+            <Button type="button" kind="icon" variant="tonal" ariaLabel="Batal dan kembali" :href="returnHref" :disabled="actions.submitPending">
               <template #icon><Icon name="arrow-left" /></template>
             </Button>
             <Button type="submit" class="min-w-0 flex-1" :disabled="actions.submitPending || actions.inputPending || actions.postWriteError !== undefined">

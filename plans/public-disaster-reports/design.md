@@ -7,7 +7,7 @@ Implementation: Current
 
 Let the public submit disaster reports without an account. Let administrators manage the reports.
 
-Included: public intake at `/disaster-reports/new`, optional image upload and location selection, and administrator list, detail, update, and delete pages.
+Included: public intake at `/create-report`, optional image upload and location selection, and administrator list, detail, update, and delete pages.
 
 Excluded: report publication, map pins, review states, and reporter contact details.
 
@@ -45,9 +45,9 @@ Approved defaults: administrators manage existing reports but cannot create them
 
 ### Public submission
 
-1. Open `/disaster-reports/new` in a public form shell.
+1. Open `/create-report` from the public map or dashboard.
 2. Enter a title and, if needed, a description, category, location, and one image.
-3. Submit. Show confirmation after the save succeeds. Show a centered check icon and confirmation. Offer one fixed bottom `Kembali` action to `/map`.
+3. Submit. Show a centered check icon and confirmation after the save succeeds. Offer one fixed bottom `Kembali` action that opens the map or dashboard that launched the form. Use `/map` when the form opens directly.
 
 ### Administrator management
 
@@ -64,6 +64,6 @@ Approved defaults: administrators manage existing reports but cannot create them
 
 ## 5. Public intake presentation
 
-User-approved exception: `/disaster-reports/new` uses framework `Form` directly, without a card or `FormView`. One native header places the title and app logo at opposite ends. The page uses Bahasa Indonesia. Fixed bottom controls contain an icon-only cancel link to `/map` and a submit button that fills the remaining row width. The action slot uses the framework session states.
+User-approved exception: `/create-report` uses framework `Form` directly, without a card or `FormView`. One native header places the title and app logo at opposite ends. The page uses Bahasa Indonesia. Fixed bottom controls contain an icon-only cancel link to the same return page as the confirmation and a submit button that fills the remaining row width. The action slot uses the framework session states.
 
 The bottom progressive blur follows the map's layered mask technique, reversed toward the bottom. End padding clears the full blur height, the action row, and the device safe area. Keep current theme tokens and shared inputs and buttons. This exception replaces the standard page header and action placement for this public form only.

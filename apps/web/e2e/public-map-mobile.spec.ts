@@ -3,10 +3,12 @@ import { test, expect } from './fixtures'
 test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
 
 test('public map fills the mobile viewport after resize and rotation', async ({ page }) => {
-  await page.goto('/map')
+  await page.goto('/')
+  await expect(page).toHaveURL(/\/map$/)
   await expect(page).toHaveTitle('Kalongan WebGIS')
   await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', /viewport-fit=cover/)
   await expect(page.getByRole('heading', { name: 'WebGIS', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Masuk', exact: true })).toHaveAttribute('href', '/auth/login')
   await expect(page.getByRole('link', { name: 'Buat Laporan', exact: true })).toBeVisible()
   await page.screenshot({ path: `../../.local/verification/disaster-map/webgis-mobile-${test.info().project.name}-portrait.png` })
   for (const viewport of [

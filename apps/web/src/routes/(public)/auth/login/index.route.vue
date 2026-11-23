@@ -9,6 +9,7 @@ import { consumePostLoginRedirect } from '@/utils/post-login-redirect'
 import Card from '@southneuhof/loom/components/base/Card.vue'
 import Toast from '@southneuhof/loom/components/base/Toast.vue'
 import Button from '@southneuhof/loom/components/base/Button.vue'
+import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import Spinner from '@southneuhof/loom/components/base/Spinner.vue'
 import TextInput from '@southneuhof/loom/components/inputs/TextInput.vue'
 import PasswordInput from '@southneuhof/loom/components/inputs/PasswordInput.vue'
@@ -80,23 +81,31 @@ async function login() {
 </script>
 
 <template>
-  <Card class="flex flex-col gap-16 p-8">
-    <div class="flex flex-row items-center gap-8"><Logo class="w-16" /></div>
-    <div class="flex flex-col gap-4">
-      <div class="text-lg">Welcome to</div>
-      <div class="text-4xl font-bold">{{ config.name }}</div>
+  <Card class="mx-auto flex w-full max-w-md flex-col gap-5 p-5 sm:gap-6 sm:p-8">
+    <div class="flex items-center justify-between gap-3">
+      <Logo class="w-12 shrink-0" />
+      <Button variant="text" href="/map" class="min-h-11 px-2">
+        <template #icon
+          ><span aria-hidden="true"><Icon name="map-2" /></span
+        ></template>
+        Peta
+      </Button>
     </div>
-    <form class="flex flex-col items-center gap-4" @submit.prevent="login">
-      <TextInput class="w-full" :model-value="formData.email" @update:model-value="(value) => (formData.email = String(value))" label="Email" required />
-      <PasswordInput class="w-full" :model-value="formData.password" @update:model-value="(value) => (formData.password = String(value))" label="Password" required />
-      <div v-if="!loading" class="flex w-full flex-row items-center gap-2">
-        <Button :disabled="loading" type="submit" class="mt-6 w-full">Login</Button>
-      </div>
-      <Button v-else disabled variant="tonal" class="mt-6 w-full"><Spinner /></Button>
-    </form>
-    <div class="flex w-full items-center justify-center">
+    <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">{{ config.name }}</h1>
+    <form class="login-form flex flex-col gap-4" @submit.prevent="login">
+      <TextInput :model-value="formData.email" @update:model-value="(value) => (formData.email = String(value))" type="email" name="email" autocomplete="username" label="Email" required />
+      <PasswordInput :model-value="formData.password" @update:model-value="(value) => (formData.password = String(value))" name="password" autocomplete="current-password" label="Password" required />
       <Toast v-if="loginMessage.message" :type="loginMessage.type">{{ loginMessage.message }}</Toast>
-    </div>
-    <div class="text-center text-muted">Company Ltd.</div>
+      <Button :disabled="loading" type="submit" class="min-h-11 w-full">
+        <Spinner v-if="loading" />
+        <template v-else>Login</template>
+      </Button>
+    </form>
   </Card>
 </template>
+
+<style scoped>
+.login-form :deep(input) {
+  font-size: 1rem;
+}
+</style>

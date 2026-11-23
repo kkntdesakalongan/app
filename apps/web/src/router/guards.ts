@@ -20,21 +20,19 @@ export function createPermissionGuard(access?: AccessAdapter): NavigationGuard {
 
 export function createAuthGuard(): NavigationGuard {
   return async (to) => {
-    const needsIdentity = to.path === '/' || to.name === 'auth-login' || Boolean(to.meta.requiresAuth)
+    const isHome = to.path === '/'
+    const needsIdentity = isHome || to.name === 'auth-login' || Boolean(to.meta.requiresAuth)
     if (!needsIdentity) return true
 
     let authenticated = false
     try {
       authenticated = Boolean(await loadIdentity())
     } catch (_) {
-      // Keep the current route when the server is unavailable. Do not turn a
-      // valid server session into an anonymous browser state.
-      return true
+      return isHome ? { name: 'map' } : true
     }
 
-    if (to.path === '/') {
-      if (!authenticated) return { name: 'auth-login' } as never
-      return getDefaultAuthenticatedRouteLocation() ?? true
+    if (isHome) {
+      return (authenticated ? getDefaultAuthenticatedRouteLocation() : null) ?? { name: 'map' }
     }
 
     if (authenticated && to.name === 'auth-login') {

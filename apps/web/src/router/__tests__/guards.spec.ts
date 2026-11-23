@@ -106,14 +106,20 @@ describe('createAuthGuard', () => {
     expect(result).toEqual({ name: 'auth-login' })
   })
 
-  it('redirects root route with a profile to first accessible route', async () => {
-    authState.identity = { userId: 'user-1' }
-    loadIdentitySpy.mockResolvedValue(authState.identity)
+  it('opens the public map at the root for a signed-out visitor', async () => {
     const guard = createAuthGuard()
     const result = await guard({ name: 'root', fullPath: '/', path: '/', meta: {}, matched: [{}] } as any, {} as any, next)
 
-    expect(getDefaultRouteSpy).toHaveBeenCalled()
-    expect(result).toEqual({ name: 'dashboard' })
+    expect(result).toEqual({ name: 'map' })
+  })
+
+  it('opens the configured default at the root for a signed-in user', async () => {
+    loadIdentitySpy.mockResolvedValue({ userId: 'user-1' })
+    getDefaultRouteSpy.mockReturnValue({ name: 'settings-users' })
+    const guard = createAuthGuard()
+    const result = await guard({ name: 'root', fullPath: '/', path: '/', meta: {}, matched: [{}] } as any, {} as any, next)
+
+    expect(result).toEqual({ name: 'settings-users' })
   })
 
   it('redirects unknown route without a profile to login', async () => {
