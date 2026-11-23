@@ -7,7 +7,13 @@ export const gisDatasets = [
   { code: "area-longsor", name: "Area Longsor", layers: ["area-longsor"] },
   { code: "area-terdampak", name: "Area Terdampak", layers: ["area-terdampak"] },
   { code: "persil-tanah", name: "Persil Tanah", layers: ["persil-tanah"] },
+  { code: "jalur-evakuasi", name: "Jalur Evakuasi", layers: ["jalur-evakuasi"] },
 ] as const;
+export const evacuationKinds = ["longsor-tes", "tes-tea", "tes", "tea"] as const;
+const evacuationProperties = z.object({
+  kind: z.enum(evacuationKinds),
+  name: z.string().trim().min(1).nullable(),
+});
 export type GisDatasetCode = (typeof gisDatasets)[number]["code"];
 export const gisDatasetCodes = gisDatasets.map((dataset) => dataset.code);
 
@@ -26,6 +32,14 @@ const ring = z
     "Polygon rings must be closed.",
   );
 const polygon = z.array(ring).min(1);
+const line = z.array(position).min(2);
+export const gisGeometrySchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("Polygon"), coordinates: polygon }),
+  z.object({ type: z.literal("MultiPolygon"), coordinates: z.array(polygon).min(1) }),
+  z.object({ type: z.literal("Point"), coordinates: position }),
+  z.object({ type: z.literal("LineString"), coordinates: line }),
+  z.object({ type: z.literal("MultiLineString"), coordinates: z.array(line).min(1) }),
+]);
 export const gisFeatureCollectionSchema = z.object({
   type: z.literal("FeatureCollection"),
   features: z
@@ -33,10 +47,7 @@ export const gisFeatureCollectionSchema = z.object({
       z.object({
         type: z.literal("Feature"),
         id: z.union([z.string(), z.number()]).optional(),
-        geometry: z.discriminatedUnion("type", [
-          z.object({ type: z.literal("Polygon"), coordinates: polygon }),
-          z.object({ type: z.literal("MultiPolygon"), coordinates: z.array(polygon).min(1) }),
-        ]),
+        geometry: gisGeometrySchema,
         properties: z.record(
           z.string(),
           z.union([z.string(), z.number().finite(), z.boolean(), z.null()]),
@@ -58,8 +69,33 @@ export type GisFeatureCollection = z.infer<typeof gisFeatureCollectionSchema>;
 
 export function gisDatasetUpdateSchema(code: GisDatasetCode) {
   return gisUpdateSchema.superRefine((input, context) => {
+    const evacuationKindsPresent = new Set<string>();
     input.data.features.forEach((feature, index) => {
       const properties = feature.properties;
+      const type = feature.geometry.type;
+      if (code === "jalur-evakuasi") {
+        const parsed = evacuationProperties.safeParse(properties);
+        const isPoint = parsed.success && (parsed.data.kind === "tes" || parsed.data.kind === "tea");
+        const geometryMatches = isPoint ? type === "Point" : type === "LineString" || type === "MultiLineString";
+        if (!parsed.success || !geometryMatches) {
+          context.addIssue({
+            code: "custom",
+            path: ["data", "features", index],
+            message: "Geometri atau jenis fitur evakuasi tidak sesuai.",
+          });
+          return;
+        }
+        feature.properties = parsed.data;
+        evacuationKindsPresent.add(parsed.data.kind);
+        return;
+      }
+      if (type !== "Polygon" && type !== "MultiPolygon") {
+        context.addIssue({
+          code: "custom",
+          path: ["data", "features", index, "geometry"],
+          message: "Dataset ini hanya mendukung poligon.",
+        });
+      }
       const propertySchema =
         code === "bahaya"
           ? z.object({ hazardClass: z.enum(["RENDAH", "SEDANG", "TINGGI"]) })
@@ -91,5 +127,12 @@ export function gisDatasetUpdateSchema(code: GisDatasetCode) {
         });
       else feature.properties = parsed.data;
     });
+    if (code === "jalur-evakuasi" && evacuationKindsPresent.size !== evacuationKinds.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["data", "features"],
+        message: "Data evakuasi harus memuat kedua tahap rute serta titik TES dan TEA.",
+      });
+    }
   });
 }

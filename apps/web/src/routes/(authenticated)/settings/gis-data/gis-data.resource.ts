@@ -6,7 +6,7 @@ import { toast } from 'vue-sonner'
 import GisSourceInput from '@/components/maps/GisSourceInput.vue'
 import { gisLayers } from '@/components/maps/useGisLayers'
 import { actions } from './gis-data.actions'
-const labels = { name: 'Dataset', layers: 'Lapisan', filename: 'Berkas', featureCount: 'Jumlah area', updatedAt: 'Diubah pada', available: 'Status' }
+const labels = { name: 'Dataset', layers: 'Lapisan', filename: 'Berkas', featureCount: 'Jumlah fitur', updatedAt: 'Diubah pada', available: 'Status' }
 const status = { read: (record: { available: boolean }) => (record.available ? 'Tersedia' : 'Belum diunggah') }
 const uploadSchema = z.object({ source: z.custom<File>((value) => typeof File !== 'undefined' && value instanceof File, 'Pilih berkas sumber.') })
 export const resource = defineResource({

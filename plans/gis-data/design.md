@@ -16,7 +16,7 @@ framework changes, and dataset creation or deletion are excluded.
 
 ## Dataset ownership
 
-One table contains five fixed records. A shared application catalog owns names,
+One table contains six fixed records. A shared application catalog owns names,
 accepted source formats, conversion rules, and supplied map layer identities.
 The database references dataset codes and stores the active processed asset and
 upload metadata. Seeds insert missing records and preserve uploaded data.
@@ -28,6 +28,7 @@ upload metadata. Seeds insert missing records and preserve uploaded data.
 | area-longsor | Area Longsor |
 | area-terdampak | Area Terdampak |
 | persil-tanah | Persil Tanah |
+| jalur-evakuasi | Jalur Evakuasi |
 
 All records start without a file. Settings provides list, detail, and update.
 There are no create or delete operations. Existing role permissions govern
@@ -36,7 +37,7 @@ view and update access. Public map reads do not require a session.
 ## Upload workflow
 
 1. Select a supported local source for an existing dataset.
-2. Convert polygon geometry to WGS84 in the browser and normalize attributes.
+2. Convert geometry to WGS84 in the browser and normalize attributes.
 3. Preview the resulting geometry before submission.
 4. Submit converted output only. Validate it on the server.
 5. Store it in the existing bucket, then update the active dataset reference.
@@ -55,16 +56,21 @@ Population values describe estimates allocated to settlement areas, not people p
 Source CRS must be read and transformed explicitly. The supplied GeoPackages use
 EPSG:32749 and EPSG:23835. Unsupported files or projections return clear errors.
 Unverified affected-land area and percentage attributes must not appear as facts.
+Jalur Evakuasi imports four named tables from the supplied GeoPackage. It
+requires both route stages and the temporary and final evacuation points. The
+other tables in the package are outside this overlay. Existing datasets accept
+polygon geometry.
 
 ## Map interaction
 
 Add Lapisan inside the existing bottom map filter toolbar.
-It opens one flat list of six independent checkboxes. Any combination is valid.
+It opens one flat list of independent layer controls. Any combination is valid.
 Unavailable datasets cannot be selected. Closing the control preserves visibility.
 Both public map and dashboard use the same map component.
 Keep existing pins, EWS controls, toolbar actions, safe areas, and navigation.
 Draw markers above polygons and use consistent overlay ordering.
 Each visible layer has meaningful styling and legend text.
+Jalur Evakuasi shows both route stages and the TES and TEA points together.
 Use current Loom controls, app fonts, and light and dark theme tokens.
 
 ## Verification

@@ -12,6 +12,7 @@ const layerLabels: Record<string, string> = {
   'area-longsor': 'Area Longsor',
   'area-terdampak': 'Area Terdampak',
   'persil-tanah': 'Persil Tanah',
+  'jalur-evakuasi': 'Jalur Evakuasi',
 }
 export const gisLayers = gisDatasets.flatMap((dataset) => dataset.layers.map((id) => ({ id, label: layerLabels[id], code: dataset.code })))
 export function useGisLayers() {

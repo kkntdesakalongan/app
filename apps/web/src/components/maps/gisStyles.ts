@@ -1,5 +1,18 @@
 import type { Feature } from 'geojson'
 import type { PathOptions } from 'leaflet'
+import { evacuationKinds } from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
+
+const evacuationStyles = {
+  'longsor-tes': { label: 'Rute dari longsor ke TES', color: '#c2410c', symbol: 'line' },
+  'tes-tea': { label: 'Rute dari TES ke TEA', color: '#1d4ed8', symbol: 'line' },
+  tes: { label: 'Titik Evakuasi Sementara (TES)', color: '#047857', symbol: 'point' },
+  tea: { label: 'Titik Evakuasi Akhir (TEA)', color: '#7e22ce', symbol: 'point' },
+} satisfies Record<(typeof evacuationKinds)[number], { label: string; color: string; symbol: 'line' | 'point' }>
+
+export function evacuationStyle(feature?: Feature) {
+  const kind = evacuationKinds.find((value) => value === feature?.properties?.kind)
+  return kind ? evacuationStyles[kind] : undefined
+}
 export const hazardLegend = [
   { label: 'Rendah', color: '#16a34a' },
   { label: 'Sedang', color: '#eab308' },
@@ -33,7 +46,8 @@ export const populationLegend = [
   { label: 'Lebih dari 1.000 jiwa', color: '#172554' },
   { label: 'Tidak tersedia', color: '#64748b' },
 ]
-export function gisLegend(id: string) {
+export function gisLegend(id: string): { label: string; color: string; symbol?: 'line' | 'point' }[] {
+  if (id === 'jalur-evakuasi') return Object.values(evacuationStyles)
   if (id === 'bahaya') return hazardLegend
   if (id === 'penggunaan-lahan') return landUseLegend
   if (id === 'estimasi-penduduk') return populationLegend
@@ -45,6 +59,10 @@ export function gisLegend(id: string) {
   ]
 }
 export function gisStyle(id: string, feature?: Feature): PathOptions {
+  if (id === 'jalur-evakuasi') {
+    const style = evacuationStyle(feature)
+    return style?.symbol === 'point' ? { color: '#fff', weight: 2, fillColor: style.color, fillOpacity: 1 } : { color: style?.color, weight: 4 }
+  }
   const entries = gisLegend(id)
   const properties = feature?.properties
   let entry = entries[0]

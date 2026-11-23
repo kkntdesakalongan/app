@@ -66,3 +66,22 @@ Concurrent publication races and storage cleanup failures were not fault-injecte
 The application does not promise support for arbitrary GIS inputs or repair
 self-intersecting source geometry. Source dimensions, coordinate systems, canonical
 properties, coordinate ranges, and closed rings are checked.
+
+## Jalur Evakuasi
+
+The migration adds the dataset to existing installations. The administrator can
+preview and publish both route stages and the TES and TEA points from the supplied
+GeoPackage. The public map and dashboard share one overlay and legend.
+
+- The supplied GeoPackage converted to 19 route features and five evacuation
+  points. Conversion rejected a missing group, an incorrect geometry type, and
+  an unrelated GeoPackage. The existing exposure file still gave 14,063 people.
+- Chromium verified preview, authorized publication, a fresh public read, and
+  rejection of an incomplete replacement without a change to the active data.
+  On a mobile viewport, both route colors, both marker types, and the legend
+  rendered. Disabling the layer removed the routes and markers.
+- Type checks, focused lint, the web build, and surface architecture checks
+  passed. The configured E2E database and bucket were absent. The browser check
+  used the development database and temporary local storage. It restored the
+  empty dataset record and removed the proof object.
+- Local evidence is in `.local/verification/jalur-evakuasi`.

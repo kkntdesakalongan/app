@@ -5,6 +5,9 @@ import { gisCodeSchema, gisFeatureCollectionSchema, type GisFeatureCollection } 
 import { convertGisFile } from './gisConversion'
 import GisPreview from './GisPreview.vue'
 const props = defineProps<{ code: string; disabled?: boolean; label?: string; error?: string }>()
+const evacuationCode = 'jalur-evakuasi'
+const evacuationFormats = ['.gpkg', '.json', '.geojson']
+const polygonFormats = ['.gpkg', '.zip', '.json', '.geojson']
 const model = defineModel<File | null>()
 const preview = ref<GisFeatureCollection>()
 async function transform(file: File, context: { signal: AbortSignal }) {
@@ -21,11 +24,14 @@ watch(model, async (file) => {
 </script>
 <template>
   <div class="flex flex-col gap-3">
-    <FileInput v-model="model" mode="file" :disabled="disabled" :error="error" :accept="['.gpkg', '.zip', '.json', '.geojson']" :max-size="25" :transform="transform" />
-    <p class="text-sm text-on-surface-variant">Konversi berlangsung di perangkat ini. Hanya hasil konversi yang disimpan. Periksa posisi area sebelum menyimpan.</p>
+    <FileInput v-model="model" mode="file" :disabled="disabled" :error="error" :accept="code === evacuationCode ? evacuationFormats : polygonFormats" :max-size="25" :transform="transform" />
+    <p class="text-sm text-on-surface-variant">
+      Konversi berlangsung di perangkat ini. Hanya hasil konversi yang disimpan.
+      {{ code === evacuationCode ? 'Periksa posisi rute serta titik TES dan TEA sebelum menyimpan.' : 'Periksa posisi area sebelum menyimpan.' }}
+    </p>
     <template v-if="preview"
-      ><p class="text-sm">{{ preview.features.length.toLocaleString('id-ID') }} area siap disimpan.</p>
-      <GisPreview :data="preview"
+      ><p class="text-sm">{{ preview.features.length.toLocaleString('id-ID') }} {{ code === evacuationCode ? 'fitur' : 'area' }} siap disimpan.</p>
+      <GisPreview :data="preview" :code="code"
     /></template>
   </div>
 </template>

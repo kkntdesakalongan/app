@@ -14,7 +14,7 @@ import { z } from 'zod/v4'
 import { mapPinsSelectSchema } from '@southneuhof/api/src/routes/(authenticated)/map-pins/schema.ts'
 import { routeLeaveCleanup } from '@/components/routing/routeTransition'
 import { rpc } from '@/framework/rpc'
-import { gisLegend, gisStyle } from './gisStyles'
+import { evacuationStyle, gisLegend, gisStyle } from './gisStyles'
 import GisLayerPicker from './GisLayerPicker.vue'
 import { gisLayers, useGisLayers } from './useGisLayers'
 import type { EwsFilters } from './ewsFilters'
@@ -144,12 +144,17 @@ function renderGis() {
     const data = gis.datasets.value[definition.code]
     if (!data) continue
     const layer = L.geoJSON(data, {
-      pane: 'gis-polygons',
+      pane: definition.id === 'jalur-evakuasi' ? 'gis-routes' : 'gis-polygons',
       style: (feature) => gisStyle(definition.id, feature),
-      onEachFeature: (feature, polygon) => {
+      pointToLayer: (feature, latlng) =>
+        L.circleMarker(latlng, {
+          pane: 'gis-points',
+          radius: feature.properties?.kind === 'tea' ? 9 : 7,
+        }),
+      onEachFeature: (feature, featureLayer) => {
         const content = document.createElement('section')
         const heading = document.createElement('h2')
-        heading.textContent = definition.label
+        heading.textContent = evacuationStyle(feature)?.label ?? definition.label
         heading.className = 'font-semibold'
         content.append(heading)
         const fields = [
@@ -158,6 +163,7 @@ function renderGis() {
           ['estimatedPopulation', 'Estimasi penduduk'],
           ['location', 'Lokasi'],
           ['parcelId', 'ID persil'],
+          ['name', 'Nama'],
         ]
         for (const [key, label] of fields) {
           const value = feature.properties?.[key]
@@ -166,7 +172,7 @@ function renderGis() {
           line.textContent = `${label}: ${String(value)}`
           content.append(line)
         }
-        polygon.bindPopup(content)
+        featureLayer.bindPopup(content)
       },
     })
     layer.addTo(gisGroup)
@@ -309,6 +315,8 @@ onMounted(() => {
   )
   map.createPane('gis-polygons').style.zIndex = '350'
   map.createPane('ews-ranges').style.zIndex = '360'
+  map.createPane('gis-routes').style.zIndex = '410'
+  map.createPane('gis-points').style.zIndex = '420'
   const locationMap = map
   const zoom = L.control.zoom({ position: 'bottomleft' })
   watch(
@@ -441,9 +449,11 @@ onBeforeUnmount(() => {
                   <p v-if="layer.id === 'estimasi-penduduk'" class="mt-1">Estimasi berdasarkan luas permukiman.</p>
                   <ul class="mt-1 space-y-1">
                     <li v-for="entry in gisLegend(layer.id)" :key="entry.label" class="flex items-center gap-2">
-                      <span class="h-3 w-5 shrink-0 rounded-sm border" :style="{ backgroundColor: layer.id === 'persil-tanah' ? 'transparent' : entry.color, borderColor: entry.color }" /><span>{{
-                        entry.label
-                      }}</span>
+                      <span
+                        class="shrink-0 border"
+                        :class="entry.symbol === 'point' ? 'size-3 rounded-full' : entry.symbol === 'line' ? 'h-1 w-5 rounded-full' : 'h-3 w-5 rounded-sm'"
+                        :style="{ backgroundColor: layer.id === 'persil-tanah' ? 'transparent' : entry.color, borderColor: entry.color }"
+                      /><span>{{ entry.label }}</span>
                     </li>
                   </ul>
                 </section>
