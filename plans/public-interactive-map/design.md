@@ -9,7 +9,7 @@ Show location pins on the public WebGIS map and on `/dashboard`. The application
 
 Included: a public route at `/map`, a map that fills the dashboard content area, and simple pin CRUD.
 
-Excluded: disaster report integration, routes and directions, live tracking, and public pin changes.
+Excluded: disaster report integration, routes and directions, location history, and public pin changes.
 
 ## 2. Functional requirements
 
@@ -21,6 +21,8 @@ Excluded: disaster report integration, routes and directions, live tracking, and
 | 4 | Manage pins | Administrators with the required operation permission | Create, read, update, and delete pins. Place a new pin by selecting a map position. |
 | 5 | Change a pin position | Authorized administrators | Select a replacement position and save it with the pin form. |
 | 6 | Enter the app | All visitors | `/` opens `/map` for signed-out visitors and the configured authenticated default for signed-in users. The public map toolbar shows Masuk or Admin based on the session. |
+| 7 | View EWS station ranges | All map viewers | Show a light blue fill around each station as soon as it appears on the map. Use the reported 1 km radius and fade the outer part to transparent. |
+| 8 | View device location | All map viewers | Use browser permission to show the current device position. Keep location updates in the open map and stop them when the viewer leaves. |
 
 ## 3. Data and business rules
 
@@ -49,6 +51,10 @@ The public map extends into mobile safe areas, while toolbar and map controls st
 On desktop, put the zoom buttons at the bottom left. Put the legend and layers icon side by side at the bottom right, with the legend first. Limit the desktop legend width to 16 rem. On mobile, hide the zoom buttons and put the same controls in a bottom toolbar. The mobile legend starts closed. Close an open legend when the user clicks outside its card. Match the height of the legend toggle and layers icon button to the refresh button. Keep refresh above the layers button when the legend opens. Expand the layers panel from its stationary button and fade the contents separately, as in the mobile navigation menu. Morph the layers icon into the close icon at the same position. Give the panel a soft shadow and match its corner radius to the close button. Align the Map layers title with the close icon in the bottom row. Let the open panel cover refresh and keep the rest of the map interactive.
 
 Suppress browser page zoom from touch gestures across the app. Keep map zoom and drag panning available.
+
+Place the location prompt in the row above the legend and layers controls. Use the solid secondary color on the location button. The refresh error button keeps its width at the right. The prompt takes the space remaining in the row. Let the legend open over the row. Use the browser permission prompt after the viewer selects the location action. Start position updates immediately if the browser already allows access.
+
+Show the location action while browser approval is pending. Show a warning icon beside WebGIS when access is blocked or the browser cannot obtain a position. Give the icon a tooltip with the cause and the next step. Use the icon-only Masuk or Admin action on narrow screens when the warning needs room. Keep the refresh error button visible and soft-disabled during a retry. Remove it after the failed sources recover, or enable it again when a retry fails.
 
 Use one sheet above the bottom filter toolbar. The borderless sheet uses the low container surface. It matches the toolbar width and extends behind the pill to its bottom edge. When a user switches sections, fill the selected button in place. Fade out the old section, resize the sheet, and show the new heading and controls together. Respect reduced motion. Put search at the left edge on a distinct surface. Group station type and status together, sensor ranges together, and GIS layers under Lapisan.
 

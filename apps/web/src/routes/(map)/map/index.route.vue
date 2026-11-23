@@ -48,6 +48,14 @@ onMounted(() => {
     padding-inline: 0.75rem;
   }
 }
+@media (max-width: 423px) {
+  .map-toolbar:has(.map-location-warning) .map-access {
+    @apply w-10 min-w-10 gap-0 px-0;
+  }
+  .map-toolbar:has(.map-location-warning) .map-access-label {
+    @apply sr-only;
+  }
+}
 @media (max-width: 379px) {
   .map-access {
     width: 2.5rem;

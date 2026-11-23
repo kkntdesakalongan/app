@@ -170,3 +170,29 @@ The app suppresses touch gestures that zoom the browser page. Chromium kept
 the viewport at 1× while Leaflet pinch zoom and drag panning worked. Touch
 scrolling worked on the login page. The native Safari gesture was not tested
 on an iPhone.
+
+Each EWS station shows a light blue 1 km fill when it loads. The outer part fades
+to transparent. A shared pane keeps overlapping fills from darkening the map.
+The browser permission and geolocation APIs supply the
+device position and stop updates when the viewer leaves the map. The first
+position pans into view if needed. Later updates move the dot in place.
+The solid secondary location button and fixed refresh button share a row
+above the toolbar. The open legend covers the row where they overlap.
+
+Chromium and WebKit verified the range and action row on the preview.
+Chromium checked permission, the location dot with emulated coordinates, and
+revocation. Focused lint, web type checking, and the production build passed.
+Screenshots are in `.local/verification/map-location-range/`.
+
+Blocked location access replaces the prompt with a warning icon beside
+WebGIS. Chromium changed the browser permission and opened the warning
+tooltip by tap and keyboard focus. Chromium and WebKit held failed pin,
+station, and tile requests open to check that refresh stays visible and
+soft-disabled until completion. A failure re-enabled refresh. Successful
+recovery removed it. Focused lint, web type checking, and the build passed.
+Screenshots are in `.local/verification/map-location-warning-refresh/`.
+
+Chromium and WebKit checked that the range fills appear before any marker
+interaction and update when the station list changes. Screenshot samples
+confirmed the edge fade and the opacity of overlapping fills. Focused lint,
+web type checking, and the build passed.

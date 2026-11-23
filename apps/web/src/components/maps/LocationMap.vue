@@ -4,9 +4,10 @@ import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger, DialogContent,
 import Button from '@southneuhof/loom/components/base/Button.vue'
 import Icon from '@southneuhof/loom/components/base/Icon.vue'
 import Tooltip from '@southneuhof/loom/components/base/Tooltip.vue'
-import { breakpointsTailwind, onClickOutside, useBreakpoints } from '@vueuse/core'
-import { computed, inject, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { breakpointsTailwind, onClickOutside, useBreakpoints, usePermission, useSupported } from '@vueuse/core'
+import { computed, inject, nextTick, onMounted, onBeforeUnmount, ref, useId, watch } from 'vue'
 import { motion, useReducedMotion, type $Transition } from 'motion-v'
+import { directive as vTippy } from 'vue-tippy'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { z } from 'zod/v4'
@@ -29,6 +30,7 @@ const { records: pins, error, refresh } = useCollection(() => ({ load: loadPins,
 const gis = useGisLayers()
 const ewsFilters = ref<EwsFilters>({})
 const { stations, state: ewsState, errorMessage: ewsError, retry: retryEws } = useEwsStations(ewsFilters)
+const detectionFillId = useId()
 const deferCleanup = inject(routeLeaveCleanup, (cleanup) => cleanup())
 const mobile = useBreakpoints(breakpointsTailwind).smaller('lg')
 const layersOpen = ref(false)
@@ -40,7 +42,23 @@ const legendOpen = ref(!mobile.value)
 const legendCard = ref<InstanceType<typeof Card>>()
 const host = ref<HTMLElement>()
 const tileError = ref(false)
-const mapError = computed(() => [error.value?.message, ewsState.value === 'error' ? ewsError.value : '', tileError.value ? 'Map tiles could not load.' : ''].filter(Boolean).join(' '))
+const pinRetry = ref<'idle' | 'loading' | 'failed'>('idle')
+const retryingTiles = ref(false)
+const pinError = computed(() => error.value?.message ?? (pinRetry.value === 'failed' ? 'Cannot load locations.' : ''))
+const mapError = computed(() => [pinError.value, ewsError.value, tileError.value ? 'Map tiles could not load.' : ''].filter(Boolean).join(' '))
+const retryingMap = computed(() => pinRetry.value === 'loading' || (ewsState.value === 'loading' && Boolean(ewsError.value)) || retryingTiles.value)
+const locationSupported = useSupported(() => Boolean(navigator.geolocation))
+const { state: locationPermission, isSupported: permissionSupported } = usePermission('geolocation', { controls: true })
+const locationState = ref<'idle' | 'locating' | 'located' | 'denied' | 'error'>('idle')
+const userLocationLabel = 'Lokasi Anda'
+const showLocationAction = computed(
+  () => locationSupported.value && (locationPermission.value === 'prompt' || !permissionSupported.value) && (locationState.value === 'idle' || locationState.value === 'locating')
+)
+const locationWarning = computed(() => {
+  if (locationPermission.value === 'denied' || locationState.value === 'denied') return 'Akses lokasi diblokir. Izinkan akses lokasi di pengaturan situs pada browser Anda.'
+  if (locationState.value === 'error') return 'Lokasi tidak dapat ditemukan. Periksa layanan lokasi perangkat, lalu muat ulang halaman.'
+  return ''
+})
 onClickOutside(legendCard, () => {
   legendOpen.value = false
 })
@@ -53,17 +71,71 @@ async function closeLayers() {
   await nextTick()
   layersAnchor.value?.querySelector<HTMLButtonElement>('button[aria-haspopup="dialog"]')?.focus({ preventScroll: true })
 }
-function retryMap() {
-  if (error.value) void refresh()
+async function retryMap() {
+  if (retryingMap.value) return
   if (ewsState.value === 'error') retryEws()
   if (tileError.value) retryTiles()
+  if (!pinError.value) return
+  pinRetry.value = 'loading'
+  try {
+    await refresh()
+    pinRetry.value = 'idle'
+  } catch {
+    pinRetry.value = 'failed'
+  }
 }
 let map: L.Map | undefined
 let tiles: L.TileLayer | undefined
+let tileRetryFailed = false
 let markers: L.LayerGroup | undefined
-let ewsMarkers: L.LayerGroup | undefined
+let ewsLayers: L.LayerGroup | undefined
 let observer: ResizeObserver | undefined
 let gisGroup: L.LayerGroup | undefined
+let locationWatch: number | undefined
+let locationMarker: L.Marker | undefined
+function clearLocation() {
+  if (locationWatch !== undefined) navigator.geolocation.clearWatch(locationWatch)
+  locationWatch = undefined
+  locationMarker?.remove()
+  locationMarker = undefined
+}
+function locate() {
+  if (!map || !locationSupported.value || locationWatch !== undefined) return
+  locationState.value = 'locating'
+  locationWatch = navigator.geolocation.watchPosition(
+    ({ coords }) => {
+      if (!map || locationWatch === undefined) return
+      const position = L.latLng(coords.latitude, coords.longitude)
+      if (locationMarker) {
+        locationMarker.setLatLng(position)
+      } else {
+        locationMarker = L.marker(position, {
+          title: userLocationLabel,
+          alt: userLocationLabel,
+          keyboard: false,
+          interactive: false,
+          icon: L.divIcon({ className: 'map-user-location', iconSize: [16, 16] }),
+        }).addTo(map)
+        if (!map.getBounds().contains(position)) map.panTo(position, { animate: !reducedMotion.value })
+      }
+      locationState.value = 'located'
+    },
+    (reason) => {
+      if (locationWatch === undefined) return
+      clearLocation()
+      locationState.value = reason.code === reason.PERMISSION_DENIED ? 'denied' : 'error'
+    },
+    { maximumAge: 30_000, timeout: 10_000 }
+  )
+}
+function syncLocationPermission(permission: PermissionState | undefined, previousPermission?: PermissionState) {
+  if (permission === 'granted') locate()
+  else if (permission === 'denied' || previousPermission === 'granted' || locationState.value === 'denied') {
+    clearLocation()
+    locationState.value = permission === 'denied' ? 'denied' : 'idle'
+  }
+}
+watch(locationPermission, syncLocationPermission)
 function renderGis() {
   if (!gisGroup) return
   gisGroup.clearLayers()
@@ -158,8 +230,8 @@ const readings: { key: keyof EwsStation['readings']; label: string; unit: string
   { key: 'hornOhms', label: 'Horn', unit: 'Ω' },
 ]
 function renderEws() {
-  if (!ewsMarkers || !map) return
-  ewsMarkers.clearLayers()
+  if (!ewsLayers) return
+  ewsLayers.clearLayers()
   for (const station of stations.value) {
     const iconState = iconStates[station.statusCode]
     const extension = iconState === 'warning' ? 'gif' : 'svg'
@@ -204,14 +276,26 @@ function renderEws() {
     content.append(updated)
     const toolbarHeight = host.value?.parentElement?.querySelector('.map-toolbar')?.getBoundingClientRect().height ?? 100
     marker.bindPopup(content, { className: 'location-popup', maxWidth: 320, autoPanPaddingTopLeft: L.point(20, toolbarHeight + 20) })
-    marker.addTo(ewsMarkers)
+    L.circle(marker.getLatLng(), {
+      radius: 1_000,
+      pane: 'ews-ranges',
+      stroke: false,
+      fillColor: `url(#${detectionFillId})`,
+      fillOpacity: 1,
+      interactive: false,
+      className: 'ews-detection-range',
+    }).addTo(ewsLayers)
+    marker.addTo(ewsLayers)
   }
 }
 watch(pins, renderPins)
 watch(stations, renderEws)
 function retryTiles() {
-  tileError.value = false
-  tiles?.redraw()
+  if (!tiles) return
+  tileRetryFailed = false
+  retryingTiles.value = true
+  tiles.redraw()
+  if (!tiles.isLoading()) retryingTiles.value = false
 }
 onMounted(() => {
   if (!host.value) return
@@ -224,6 +308,7 @@ onMounted(() => {
     { padding: [16, 16], maxZoom: 15 }
   )
   map.createPane('gis-polygons').style.zIndex = '350'
+  map.createPane('ews-ranges').style.zIndex = '360'
   const locationMap = map
   const zoom = L.control.zoom({ position: 'bottomleft' })
   watch(
@@ -240,22 +325,38 @@ onMounted(() => {
   }).addTo(map)
   tiles.on('tileerror', () => {
     tileError.value = true
+    tileRetryFailed = true
+  })
+  tiles.on('load', () => {
+    if (!retryingTiles.value) return
+    tileError.value = tileRetryFailed
+    retryingTiles.value = false
   })
   gisGroup = L.layerGroup().addTo(map)
   markers = L.layerGroup().addTo(map)
-  ewsMarkers = L.layerGroup().addTo(map)
+  ewsLayers = L.layerGroup().addTo(map)
+  syncLocationPermission(locationPermission.value)
   observer = new ResizeObserver(() => map?.invalidateSize())
   observer.observe(host.value)
   renderPins()
   renderEws()
 })
 onBeforeUnmount(() => {
+  clearLocation()
   observer?.disconnect()
   deferCleanup(() => map?.remove())
 })
 </script>
 <template>
   <div class="location-map absolute inset-0 isolate">
+    <svg width="0" height="0" aria-hidden="true" class="pointer-events-none absolute text-info">
+      <defs>
+        <radialGradient :id="detectionFillId">
+          <stop offset="72%" stop-color="currentColor" />
+          <stop offset="100%" stop-color="currentColor" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+    </svg>
     <div ref="host" class="absolute inset-0 z-0" aria-label="Location map" />
     <div class="map-toolbar absolute inset-x-0 top-0 z-[500] px-5 py-5 text-on-surface sm:px-7 sm:py-6">
       <div class="map-atmosphere pointer-events-none absolute inset-x-0 -bottom-16 top-0" aria-hidden="true">
@@ -264,7 +365,21 @@ onBeforeUnmount(() => {
         <div />
       </div>
       <div class="relative flex flex-wrap items-center justify-between gap-3">
-        <div class="min-w-0"><slot /></div>
+        <div class="flex min-w-0 items-center gap-1">
+          <slot />
+          <Button
+            v-if="locationWarning"
+            v-tippy="{ content: locationWarning, placement: 'bottom-start', trigger: 'mouseenter focus click', delay: 300, maxWidth: 260 }"
+            type="button"
+            kind="icon"
+            variant="standard"
+            color="warning"
+            ariaLabel="Masalah lokasi"
+            class="map-location-warning w-8 min-w-8"
+          >
+            <template #icon><Icon name="error-warning" /></template>
+          </Button>
+        </div>
         <div class="ml-auto flex flex-wrap items-center justify-end gap-2">
           <slot name="actions" />
         </div>
@@ -272,6 +387,41 @@ onBeforeUnmount(() => {
     </div>
     <DialogRoot v-model:open="layersOpen" :modal="false">
       <div class="map-controls absolute flex items-end gap-2">
+        <div v-if="showLocationAction || mapError || retryingMap" class="pointer-events-none absolute inset-x-0 bottom-12 z-[500] flex items-center justify-end gap-2" :inert="layersOpen">
+          <div v-if="showLocationAction" class="pointer-events-auto min-w-0 flex-1">
+            <Button
+              type="button"
+              variant="filled"
+              class="w-full min-w-0 bg-secondary px-3 text-on-secondary after:bg-on-secondary-hover focus-visible:outline-secondary focus-visible:after:bg-on-secondary-active active:after:bg-on-secondary-active aria-disabled:bg-secondary aria-disabled:text-on-secondary"
+              :soft-disabled="locationState === 'locating'"
+              @click="locate"
+            >
+              <template #icon
+                ><span aria-hidden="true"><Icon name="crosshair" /></span
+              ></template>
+              <span class="truncate" aria-live="polite">{{ locationState === 'locating' ? 'Mencari lokasi…' : 'Izinkan lokasi' }}</span>
+            </Button>
+          </div>
+          <div v-if="mapError || retryingMap" class="pointer-events-auto size-10 shrink-0" :aria-busy="retryingMap">
+            <Tooltip>
+              <template #trigger>
+                <Button
+                  type="button"
+                  kind="icon"
+                  variant="filled"
+                  color="warning"
+                  ariaLabel="Refresh map data"
+                  class="aria-disabled:bg-warning aria-disabled:text-on-warning"
+                  :soft-disabled="retryingMap"
+                  @click="retryMap"
+                >
+                  <template #icon><Icon name="refresh" :class="{ 'motion-safe:animate-spin': retryingMap }" /></template>
+                </Button>
+              </template>
+              <template #content>{{ retryingMap ? 'Refreshing map data…' : mapError }}</template>
+            </Tooltip>
+          </div>
+        </div>
         <Card ref="legendCard" variant="elevated" color="surfaceContainer" class="relative z-[500] min-w-0 flex-1 gap-0 p-0 lg:w-64 lg:flex-none">
           <CollapsibleRoot v-model:open="legendOpen" class="flex flex-col-reverse">
             <CollapsibleTrigger
@@ -312,16 +462,6 @@ onBeforeUnmount(() => {
           </CollapsibleRoot>
         </Card>
         <div ref="layersAnchor" class="map-layers relative z-[500] size-10 shrink-0">
-          <div v-if="mapError" class="absolute bottom-full right-0 mb-2 size-10" :inert="layersOpen">
-            <Tooltip>
-              <template #trigger>
-                <Button type="button" kind="icon" variant="filled" color="warning" ariaLabel="Refresh map data" @click="retryMap">
-                  <template #icon><Icon name="refresh" /></template>
-                </Button>
-              </template>
-              <template #content>{{ mapError }}</template>
-            </Tooltip>
-          </div>
           <div class="map-layers-surface pointer-events-none absolute bottom-0 right-0 overflow-hidden" :class="{ 'is-open': layersOpen }">
             <Transition name="map-layers-content">
               <DialogContent v-if="layersOpen" class="map-layers-panel absolute bottom-0 right-0 flex flex-col text-on-surface outline-none" @escape-key-down.prevent="closeLayers">
@@ -520,6 +660,15 @@ onBeforeUnmount(() => {
 </style>
 
 <style>
+.location-map .leaflet-ews-ranges-pane {
+  opacity: 0.18;
+}
+.location-map .map-user-location {
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #1a73e8;
+  box-shadow: 0 1px 4px #0005;
+}
 .ews-unknown-icon {
   display: grid;
   place-items: center;
