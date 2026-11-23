@@ -40,7 +40,7 @@ Excluded: disaster report integration, routes and directions, location history, 
 
 All saved pins are public. Public reads expose only the fields needed for map display. The API enforces write permissions. Names need not be unique.
 
-Fit the initial map view to saved pins. With no pins, use a configured default view. Keep tile attribution visible. Use OpenStreetMap tiles through Leaflet for both maps and the pin position input. Google Maps is not used.
+Center the initial map view on Desa Kalongan in Ungaran Timur at −7.13528, 110.44667. Fit the zoom to the map area and viewport size. Keep the camera in place when the browser supplies a device position. Keep tile attribution visible. Use OpenStreetMap tiles through Leaflet for both maps and the pin position input. [GeoNames location for Desa Kalongan](https://www.geonames.org/6410598)
 
 Put the Masuk or Admin action immediately left of Buat Laporan on the public map. Use a secondary button with an icon in both states. At narrow widths, show only the icon and keep the accessible name. Masuk opens `/auth/login` and Admin opens `/dashboard`.
 

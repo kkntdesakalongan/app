@@ -173,9 +173,8 @@ on an iPhone.
 
 Each EWS station shows a light blue 1 km fill when it loads. The outer part fades
 to transparent. A shared pane keeps overlapping fills from darkening the map.
-The browser permission and geolocation APIs supply the
-device position and stop updates when the viewer leaves the map. The first
-position pans into view if needed. Later updates move the dot in place.
+The browser permission and geolocation APIs supply the device position.
+Position updates move the dot and stop when the viewer leaves the map.
 The solid secondary location button and fixed refresh button share a row
 above the toolbar. The open legend covers the row where they overlap.
 
@@ -196,3 +195,10 @@ Chromium and WebKit checked that the range fills appear before any marker
 interaction and update when the station list changes. Screenshot samples
 confirmed the edge fade and the opacity of overlapping fills. Focused lint,
 web type checking, and the build passed.
+
+The public map and dashboard open at the GeoNames coordinates for Desa
+Kalongan. The initial zoom fits the viewport. Chromium checked that a
+device position in Jakarta leaves the map centered on Kalongan, with
+permission granted before opening the public map and after opening the
+dashboard. Focused lint and web type checking passed. Screenshots are in
+`.local/verification/kalongan-opening-view/`.

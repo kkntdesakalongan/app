@@ -20,6 +20,7 @@ import { gisLayers, useGisLayers } from './useGisLayers'
 import type { EwsFilters } from './ewsFilters'
 import { kalonganBoundingBox, useEwsStations, type EwsStation } from './useEwsStations'
 import { useCollection, type CollectionLoadContext } from '@southneuhof/loom'
+const kalonganCenter = L.latLng(-7.13528, 110.44667)
 const pinSchema = mapPinsSelectSchema.pick({ id: true, name: true, description: true, latitude: true, longitude: true })
 async function loadPins({ signal }: CollectionLoadContext) {
   const response = await rpc.public['map-pins'].$get({}, { init: { signal } })
@@ -116,7 +117,6 @@ function locate() {
           interactive: false,
           icon: L.divIcon({ className: 'map-user-location', iconSize: [16, 16] }),
         }).addTo(map)
-        if (!map.getBounds().contains(position)) map.panTo(position, { animate: !reducedMotion.value })
       }
       locationState.value = 'located'
     },
@@ -306,18 +306,14 @@ function retryTiles() {
 onMounted(() => {
   if (!host.value) return
   const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  map = L.map(host.value, { zoomAnimation: animate, fadeAnimation: animate, markerZoomAnimation: animate, zoomControl: false, zoomSnap: 0.25 }).fitBounds(
-    [
-      [kalonganBoundingBox.south, kalonganBoundingBox.west],
-      [kalonganBoundingBox.north, kalonganBoundingBox.east],
-    ],
-    { padding: [16, 16], maxZoom: 15 }
-  )
+  const bounds = L.latLngBounds([kalonganBoundingBox.south, kalonganBoundingBox.west], [kalonganBoundingBox.north, kalonganBoundingBox.east])
+  const locationMap = L.map(host.value, { zoomAnimation: animate, fadeAnimation: animate, markerZoomAnimation: animate, zoomControl: false, zoomSnap: 0.25 })
+  const initialZoom = Math.min(locationMap.getBoundsZoom(bounds, false, L.point(32, 32)), 15)
+  map = locationMap.setView(kalonganCenter, initialZoom)
   map.createPane('gis-polygons').style.zIndex = '350'
   map.createPane('ews-ranges').style.zIndex = '360'
   map.createPane('gis-routes').style.zIndex = '410'
   map.createPane('gis-points').style.zIndex = '420'
-  const locationMap = map
   const zoom = L.control.zoom({ position: 'bottomleft' })
   watch(
     mobile,
