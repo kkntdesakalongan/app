@@ -104,3 +104,5 @@ files. Large upload requests use gzip and the bucket stores complete GeoJSON.
 - The E2E database and bucket were absent. Browser proof used the migrated
   development database and an isolated local MinIO bucket. Evidence is in
   `.local/verification/gis-layer-expansion`.
+- The Vercel API build runs database migrations in production. The self-hosted
+  deploy workflow applies migrations to its own database.

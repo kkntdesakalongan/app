@@ -5,7 +5,7 @@
       "root": "apps/api",
       "framework": "hono",
       "entrypoint": "vercel.mjs",
-      "buildCommand": "pnpm run type-check && pnpm run routes:compile .sprindle-vercel/routes.mjs"
+      "buildCommand": "pnpm run type-check && pnpm run routes:compile .sprindle-vercel/routes.mjs && if [ \"$VERCEL_ENV\" = production ]; then pnpm run db:migrate; fi"
     },
     "web": {
       "root": "apps/web",
