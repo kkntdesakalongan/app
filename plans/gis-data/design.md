@@ -16,7 +16,7 @@ framework changes, and dataset creation or deletion are excluded.
 
 ## Dataset ownership
 
-One table contains six fixed records. A shared application catalog owns names,
+One table contains fixed dataset records. A shared application catalog owns names,
 accepted source formats, conversion rules, and supplied map layer identities.
 The database references dataset codes and stores the active processed asset and
 upload metadata. Seeds insert missing records and preserve uploaded data.
@@ -29,6 +29,9 @@ upload metadata. Seeds insert missing records and preserve uploaded data.
 | area-terdampak | Area Terdampak |
 | persil-tanah | Persil Tanah |
 | jalur-evakuasi | Jalur Evakuasi |
+| kerentanan-fisik, fasilitas-kesehatan, fasilitas-umum, fasilitas-pendidikan, rumah | Kerentanan Fisik, Fasilitas Kesehatan, Fasilitas Umum, Fasilitas Pendidikan, Rumah |
+| kerentanan-lingkungan, kelas-hutan, kelas-semak | Kerentanan Lingkungan, Kelas Hutan, Kelas Semak |
+| rambu-jalur-evakuasi, rambu-peringatan, titik-longsor, jaringan-jalan, masjid, batas-administrasi | Rambu Jalur Evakuasi, Rambu Peringatan, Titik Longsor, Jaringan Jalan, Masjid, Batas Administrasi |
 
 All records start without a file. Settings provides list, detail, and update.
 There are no create or delete operations. Existing role permissions govern
@@ -45,6 +48,8 @@ view and update access. Public map reads do not require a session.
 A failed conversion or replacement preserves the existing active file.
 Original source files are not uploaded or retained by this workflow.
 The stored output retains complete geometry and required attributes.
+The browser compresses large upload requests. The API decodes and validates
+the data before storage. Public reads can return compressed GeoJSON.
 The settings page shows source filename, availability, supplied layers, and update data.
 
 ## Source interpretation
@@ -56,10 +61,16 @@ Population values describe estimates allocated to settlement areas, not people p
 Source CRS must be read and transformed explicitly. The supplied GeoPackages use
 EPSG:32749 and EPSG:23835. Unsupported files or projections return clear errors.
 Unverified affected-land area and percentage attributes must not appear as facts.
-Jalur Evakuasi imports four named tables from the supplied GeoPackage. It
-requires both route stages and the temporary and final evacuation points. The
-other tables in the package are outside this overlay. Existing datasets accept
-polygon geometry.
+Jalur Evakuasi imports both route stages and the temporary and final evacuation
+points from four named tables. Its GeoPackage also supplies six independent
+datasets. Select the named table for each upload and require the applicable
+point, line, or polygon geometry.
+
+Select the named polygon shapefile from the physical or environmental vulnerability
+ZIP for each upload. Use KELAS for physical vulnerability. Use SKOR values 1, 2,
+and 3 for low, medium, and high environmental vulnerability. Show missing classes
+as unavailable. Publish only the normalized class and applicable display name.
+The Risiko folder has no source files.
 
 ## Map interaction
 

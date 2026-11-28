@@ -1,5 +1,6 @@
 import { readJsonBody } from "../../../../../request-body";
 import { randomUUID } from "node:crypto";
+import { gunzipSync } from "node:zlib";
 import { defineRoute, notFound, validationError } from "@southneuhof/sprindle";
 import { and, eq, isNull } from "drizzle-orm";
 import { getDb } from "../../../../../db";
@@ -7,13 +8,25 @@ import { requirePermission } from "../../../../../identity";
 import { putObject, deleteObject } from "../../../../../storage/s3";
 import { gisRecord } from "../../../../../gis/records";
 import { gisData } from "../../gis-data.table";
-import { gisCodeSchema, gisDatasetUpdateSchema, gisUpdateSchema } from "../../schema";
+import { gisCodeSchema, gisCompressedUpdateSchema, gisDatasetUpdateSchema, gisMaxUploadBytes, gisUploadSchema } from "../../schema";
+
+function readCompressedGis(body: Record<string, unknown>) {
+  const { filename, gzipBase64 } = gisCompressedUpdateSchema.parse(body);
+  try {
+    const decoded = gunzipSync(Buffer.from(atob(gzipBase64), "latin1"), { maxOutputLength: gisMaxUploadBytes });
+    const data: unknown = JSON.parse(decoded.toString("utf8"));
+    return { filename, data };
+  } catch {
+    throw validationError("Berkas GIS terkompresi tidak valid atau melebihi 25 MiB.");
+  }
+}
 export const PATCH = defineRoute({
-  openapi: { requestBody: gisUpdateSchema },
+  openapi: { requestBody: gisUploadSchema },
   authorize: requirePermission("update-gis-data"),
   action: async ({ c }) => {
     const code = gisCodeSchema.parse(c.req.param("id"));
-    const input = gisDatasetUpdateSchema(code).parse(await readJsonBody(c));
+    const body = await readJsonBody(c);
+    const input = gisDatasetUpdateSchema(code).parse("gzipBase64" in body ? readCompressedGis(body) : body);
     const [current] = await getDb().select().from(gisData).where(eq(gisData.code, code));
     if (!current) throw notFound();
     const key = `gis/${code}/${randomUUID()}.geojson`;

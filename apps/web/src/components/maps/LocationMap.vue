@@ -14,7 +14,7 @@ import { z } from 'zod/v4'
 import { mapPinsSelectSchema } from '@southneuhof/api/src/routes/(authenticated)/map-pins/schema.ts'
 import { routeLeaveCleanup } from '@/components/routing/routeTransition'
 import { rpc } from '@/framework/rpc'
-import { evacuationStyle, gisLegend, gisStyle } from './gisStyles'
+import { evacuationStyle, gisLegend, gisPane, gisStyle } from './gisStyles'
 import GisLayerPicker from './GisLayerPicker.vue'
 import { gisLayers, useGisLayers } from './useGisLayers'
 import type { EwsFilters } from './ewsFilters'
@@ -92,6 +92,7 @@ let markers: L.LayerGroup | undefined
 let ewsLayers: L.LayerGroup | undefined
 let observer: ResizeObserver | undefined
 let gisGroup: L.LayerGroup | undefined
+let gisPolygonRenderer: L.Canvas | undefined
 let locationWatch: number | undefined
 let locationMarker: L.Marker | undefined
 function clearLocation() {
@@ -143,39 +144,42 @@ function renderGis() {
     if (!gis.selected.value.includes(definition.id)) continue
     const data = gis.datasets.value[definition.code]
     if (!data) continue
-    const layer = L.geoJSON(data, {
-      pane: definition.id === 'jalur-evakuasi' ? 'gis-routes' : 'gis-polygons',
+    const options: L.GeoJSONOptions & L.PathOptions = {
+      pane: gisPane(definition.id),
+      renderer: definition.id === 'kerentanan-fisik' || definition.id === 'rumah' ? gisPolygonRenderer : undefined,
       style: (feature) => gisStyle(definition.id, feature),
       pointToLayer: (feature, latlng) =>
         L.circleMarker(latlng, {
           pane: 'gis-points',
           radius: feature.properties?.kind === 'tea' ? 9 : 7,
         }),
-      onEachFeature: (feature, featureLayer) => {
-        const content = document.createElement('section')
-        const heading = document.createElement('h2')
-        heading.textContent = evacuationStyle(feature)?.label ?? definition.label
-        heading.className = 'font-semibold'
-        content.append(heading)
-        const fields = [
-          ['hazardClass', 'Kelas bahaya'],
-          ['landUse', 'Penggunaan lahan'],
-          ['estimatedPopulation', 'Estimasi penduduk'],
-          ['location', 'Lokasi'],
-          ['parcelId', 'ID persil'],
-          ['name', 'Nama'],
-        ]
-        for (const [key, label] of fields) {
-          const value = feature.properties?.[key]
-          if (value === null || value === undefined) continue
-          const line = document.createElement('p')
-          line.textContent = `${label}: ${String(value)}`
-          content.append(line)
-        }
-        featureLayer.bindPopup(content)
-      },
-    })
-    layer.addTo(gisGroup)
+      onEachFeature: (feature, featureLayer) =>
+        featureLayer.bindPopup(() => {
+          const content = document.createElement('section')
+          const heading = document.createElement('h2')
+          heading.textContent = evacuationStyle(feature)?.label ?? definition.label
+          heading.className = 'font-semibold'
+          content.append(heading)
+          const fields = [
+            ['hazardClass', 'Kelas bahaya'],
+            ['vulnerabilityClass', 'Kelas kerentanan'],
+            ['landUse', 'Penggunaan lahan'],
+            ['estimatedPopulation', 'Estimasi penduduk'],
+            ['location', 'Lokasi'],
+            ['parcelId', 'ID persil'],
+            ['name', 'Nama'],
+          ]
+          for (const [key, label] of fields) {
+            const value = feature.properties?.[key]
+            if (value === null || value === undefined) continue
+            const line = document.createElement('p')
+            line.textContent = `${label}: ${String(value)}`
+            content.append(line)
+          }
+          return content
+        }),
+    }
+    L.geoJSON(data, options).addTo(gisGroup)
   }
 }
 watch([gis.selected, gis.datasets], renderGis)
@@ -311,7 +315,9 @@ onMounted(() => {
   const initialZoom = Math.min(locationMap.getBoundsZoom(bounds, false, L.point(32, 32)), 15)
   map = locationMap.setView(kalonganCenter, initialZoom)
   map.createPane('gis-polygons').style.zIndex = '350'
+  gisPolygonRenderer = L.canvas({ pane: 'gis-polygons' })
   map.createPane('ews-ranges').style.zIndex = '360'
+  map.createPane('gis-roads').style.zIndex = '405'
   map.createPane('gis-routes').style.zIndex = '410'
   map.createPane('gis-points').style.zIndex = '420'
   const zoom = L.control.zoom({ position: 'bottomleft' })
@@ -448,7 +454,7 @@ onBeforeUnmount(() => {
                       <span
                         class="shrink-0 border"
                         :class="entry.symbol === 'point' ? 'size-3 rounded-full' : entry.symbol === 'line' ? 'h-1 w-5 rounded-full' : 'h-3 w-5 rounded-sm'"
-                        :style="{ backgroundColor: layer.id === 'persil-tanah' ? 'transparent' : entry.color, borderColor: entry.color }"
+                        :style="{ backgroundColor: layer.id === 'persil-tanah' || layer.id === 'batas-administrasi' ? 'transparent' : entry.color, borderColor: entry.color }"
                       /><span>{{ entry.label }}</span>
                     </li>
                   </ul>

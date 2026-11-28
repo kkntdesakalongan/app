@@ -6,15 +6,10 @@ import { gisFeatureCollectionSchema } from '@southneuhof/api/src/routes/(authent
 import { apiUrl } from '@/framework/rpc'
 const recordSchema = z.object({ code: z.string(), name: z.string(), layers: z.array(z.string()), available: z.boolean() })
 const layerLabels: Record<string, string> = {
-  bahaya: 'Bahaya',
   'penggunaan-lahan': 'Penggunaan Lahan',
   'estimasi-penduduk': 'Estimasi Penduduk',
-  'area-longsor': 'Area Longsor',
-  'area-terdampak': 'Area Terdampak',
-  'persil-tanah': 'Persil Tanah',
-  'jalur-evakuasi': 'Jalur Evakuasi',
 }
-export const gisLayers = gisDatasets.flatMap((dataset) => dataset.layers.map((id) => ({ id, label: layerLabels[id], code: dataset.code })))
+export const gisLayers = gisDatasets.flatMap((dataset) => dataset.layers.map((id) => ({ id, label: layerLabels[id] ?? dataset.name, code: dataset.code })))
 export function useGisLayers() {
   const available = ref<string[]>([])
   const selected = ref<string[]>([])

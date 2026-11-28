@@ -11,6 +11,7 @@ export const GET = defineRoute({
     if (!row?.assetKey) throw notFound();
     const bytes = await getObjectBytes(row.assetKey);
     c.header("Content-Type", "application/geo+json");
+    c.header("Vary", "Accept-Encoding", { append: true });
     c.header("Cache-Control", "no-cache");
     return c.body(new Uint8Array(bytes).buffer);
   },

@@ -1,6 +1,6 @@
 import type { Feature } from 'geojson'
 import type { PathOptions } from 'leaflet'
-import { evacuationKinds } from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
+import { evacuationKinds, evacuationSupportingDatasets, vulnerabilityClasses, vulnerabilityDatasets } from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
 
 const evacuationStyles = {
   'longsor-tes': { label: 'Rute dari longsor ke TES', color: '#c2410c', symbol: 'line' },
@@ -46,11 +46,28 @@ export const populationLegend = [
   { label: 'Lebih dari 1.000 jiwa', color: '#172554' },
   { label: 'Tidak tersedia', color: '#64748b' },
 ]
+const supportingColors = {
+  'rambu-jalur-evakuasi': '#0e7490',
+  'rambu-peringatan': '#b45309',
+  'titik-longsor': '#b91c1c',
+  'jaringan-jalan': '#64748b',
+  masjid: '#6d28d9',
+  'batas-administrasi': '#0369a1',
+} satisfies Record<(typeof evacuationSupportingDatasets)[number]['code'], string>
+
+export function gisPane(id: string) {
+  if (id === 'jalur-evakuasi') return 'gis-routes'
+  if (id === 'jaringan-jalan') return 'gis-roads'
+  return 'gis-polygons'
+}
+
 export function gisLegend(id: string): { label: string; color: string; symbol?: 'line' | 'point' }[] {
   if (id === 'jalur-evakuasi') return Object.values(evacuationStyles)
-  if (id === 'bahaya') return hazardLegend
+  if (id === 'bahaya' || vulnerabilityDatasets.some(({ code }) => code === id)) return hazardLegend
   if (id === 'penggunaan-lahan') return landUseLegend
   if (id === 'estimasi-penduduk') return populationLegend
+  const supporting = evacuationSupportingDatasets.find(({ code }) => code === id)
+  if (supporting) return [{ label: supporting.name, color: supportingColors[supporting.code], symbol: supporting.geometry === 'polygon' ? undefined : supporting.geometry }]
   return [
     {
       label: id === 'area-longsor' ? 'Area longsor' : id === 'area-terdampak' ? 'Area terdampak' : 'Batas persil',
@@ -66,11 +83,17 @@ export function gisStyle(id: string, feature?: Feature): PathOptions {
   const entries = gisLegend(id)
   const properties = feature?.properties
   let entry = entries[0]
-  if (id === 'bahaya') entry = hazardLegend[properties?.hazardClass === 'RENDAH' ? 0 : properties?.hazardClass === 'SEDANG' ? 1 : properties?.hazardClass === 'TINGGI' ? 2 : 3]
+  if (entries === hazardLegend) {
+    const classification = properties?.hazardClass ?? properties?.vulnerabilityClass
+    const index = vulnerabilityClasses.findIndex((level) => level === classification)
+    entry = hazardLegend[index < 0 ? vulnerabilityClasses.length : index]
+  }
   if (id === 'penggunaan-lahan') entry = landUseLegend.find((item) => item.label === properties?.landUse) ?? landUseLegend[landUseLegend.length - 1]
   if (id === 'estimasi-penduduk') {
     const value = properties?.estimatedPopulation
     entry = populationLegend[typeof value !== 'number' ? 5 : value === 0 ? 0 : value <= 10 ? 1 : value <= 100 ? 2 : value <= 1000 ? 3 : 4]
   }
-  return { color: entry.color, weight: id === 'persil-tanah' ? 1 : 2, fillOpacity: id === 'persil-tanah' ? 0 : 0.4 }
+  if (entry.symbol === 'point') return { color: '#fff', weight: 2, fillColor: entry.color, fillOpacity: 1 }
+  const outline = id === 'persil-tanah' || id === 'batas-administrasi'
+  return { color: entry.color, weight: outline ? 1 : 2, fillOpacity: outline ? 0 : 0.4 }
 }

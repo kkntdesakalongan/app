@@ -1,6 +1,26 @@
 import { z } from "zod/v4";
 import { createSelectSchema } from "drizzle-orm/zod";
 import { gisData } from "./gis-data.table";
+export const vulnerabilityClasses = ["RENDAH", "SEDANG", "TINGGI"] as const;
+export const vulnerabilityDatasets = [
+  { code: "kerentanan-fisik", name: "Kerentanan Fisik", shapefile: "KERENTANAN_FISIK", classField: "KELAS" },
+  { code: "fasilitas-kesehatan", name: "Fasilitas Kesehatan", shapefile: "FASKES", classField: "KELAS", nameField: "Keterangan" },
+  { code: "fasilitas-umum", name: "Fasilitas Umum", shapefile: "FASUM", classField: "KELAS", nameField: "NAMA" },
+  { code: "fasilitas-pendidikan", name: "Fasilitas Pendidikan", shapefile: "PENDIDIKAN", classField: "KELAS", nameField: "PENDIDIKAN" },
+  { code: "rumah", name: "Rumah", shapefile: "RUMAH", classField: "KELAS" },
+  { code: "kerentanan-lingkungan", name: "Kerentanan Lingkungan", shapefile: "RENTAN_LINGKUNGAN", classField: "SKOR" },
+  { code: "kelas-hutan", name: "Kelas Hutan", shapefile: "HUTAN_KELAS", classField: "SKOR" },
+  { code: "kelas-semak", name: "Kelas Semak", shapefile: "SEMAK_KELAS", classField: "SKOR" },
+] as const;
+export const evacuationSupportingDatasets = [
+  { code: "rambu-jalur-evakuasi", name: "Rambu Jalur Evakuasi", table: "rambu_jalur evakuasi", geometry: "point", nameField: "arah rambu" },
+  { code: "rambu-peringatan", name: "Rambu Peringatan", table: "rambu_peringatan", geometry: "point", nameField: "keterangan" },
+  { code: "titik-longsor", name: "Titik Longsor", table: "tiitk longsor", geometry: "point", nameField: "keterangan" },
+  { code: "jaringan-jalan", name: "Jaringan Jalan", table: "jalan_net_v3", geometry: "line" },
+  { code: "masjid", name: "Masjid", table: "masjid", geometry: "point" },
+  { code: "batas-administrasi", name: "Batas Administrasi", table: "batas administrasi_ar", geometry: "polygon", nameField: "WADMKD" },
+] as const;
+
 export const gisDatasets = [
   { code: "bahaya", name: "Bahaya", layers: ["bahaya"] },
   { code: "keterpaparan", name: "Keterpaparan", layers: ["penggunaan-lahan", "estimasi-penduduk"] },
@@ -8,12 +28,22 @@ export const gisDatasets = [
   { code: "area-terdampak", name: "Area Terdampak", layers: ["area-terdampak"] },
   { code: "persil-tanah", name: "Persil Tanah", layers: ["persil-tanah"] },
   { code: "jalur-evakuasi", name: "Jalur Evakuasi", layers: ["jalur-evakuasi"] },
+  ...[...vulnerabilityDatasets, ...evacuationSupportingDatasets].map(({ code, name }) => ({ code, name, layers: [code] as const })),
 ] as const;
 export const evacuationKinds = ["longsor-tes", "tes-tea", "tes", "tea"] as const;
 const evacuationProperties = z.object({
   kind: z.enum(evacuationKinds),
   name: z.string().trim().min(1).nullable(),
 });
+const namedProperties = z.object({ name: z.string().trim().min(1).nullable() });
+const vulnerabilityProperties = namedProperties.extend({
+  vulnerabilityClass: z.enum(vulnerabilityClasses).nullable(),
+});
+const geometryTypes = {
+  point: ["Point"],
+  line: ["LineString", "MultiLineString"],
+  polygon: ["Polygon", "MultiPolygon"],
+} satisfies Record<string, string[]>;
 export type GisDatasetCode = (typeof gisDatasets)[number]["code"];
 export const gisDatasetCodes = gisDatasets.map((dataset) => dataset.code);
 
@@ -61,6 +91,9 @@ export const gisUpdateSchema = z.object({
   filename: z.string().trim().min(1).max(255),
   data: gisFeatureCollectionSchema,
 });
+export const gisCompressedUpdateSchema = gisUpdateSchema.pick({ filename: true }).extend({ gzipBase64: z.string().min(1) });
+export const gisUploadSchema = z.union([gisUpdateSchema, gisCompressedUpdateSchema]);
+export const gisMaxUploadBytes = 25 * 1024 * 1024;
 export const gisStoredRecordSchema = createSelectSchema(gisData);
 export const gisDataSelectSchema = gisStoredRecordSchema
   .omit({ assetKey: true })
@@ -68,6 +101,9 @@ export const gisDataSelectSchema = gisStoredRecordSchema
 export type GisFeatureCollection = z.infer<typeof gisFeatureCollectionSchema>;
 
 export function gisDatasetUpdateSchema(code: GisDatasetCode) {
+  const vulnerability = vulnerabilityDatasets.find((entry) => entry.code === code);
+  const supporting = evacuationSupportingDatasets.find((entry) => entry.code === code);
+  const expectedTypes = geometryTypes[supporting?.geometry ?? "polygon"];
   return gisUpdateSchema.superRefine((input, context) => {
     const evacuationKindsPresent = new Set<string>();
     input.data.features.forEach((feature, index) => {
@@ -89,15 +125,19 @@ export function gisDatasetUpdateSchema(code: GisDatasetCode) {
         evacuationKindsPresent.add(parsed.data.kind);
         return;
       }
-      if (type !== "Polygon" && type !== "MultiPolygon") {
+      if (!expectedTypes.includes(type)) {
         context.addIssue({
           code: "custom",
           path: ["data", "features", index, "geometry"],
-          message: "Dataset ini hanya mendukung poligon.",
+          message: "Tipe geometri tidak sesuai dengan dataset.",
         });
       }
       const propertySchema =
-        code === "bahaya"
+        vulnerability
+          ? vulnerabilityProperties
+          : supporting
+            ? namedProperties
+            : code === "bahaya"
           ? z.object({ hazardClass: z.enum(["RENDAH", "SEDANG", "TINGGI"]) })
           : code === "keterpaparan"
             ? z

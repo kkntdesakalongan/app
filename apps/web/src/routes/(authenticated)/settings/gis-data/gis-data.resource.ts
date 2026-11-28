@@ -1,11 +1,11 @@
 import { defineDetail, defineForm, defineResource, defineTable } from '@southneuhof/loom'
-import { gisDataSelectSchema, gisFeatureCollectionSchema } from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
+import { gisDataSelectSchema } from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
 import { appDisplayPresets } from '@/configs/display-presets'
 import { z } from 'zod/v4'
 import { toast } from 'vue-sonner'
 import GisSourceInput from '@/components/maps/GisSourceInput.vue'
 import { gisLayers } from '@/components/maps/useGisLayers'
-import { actions } from './gis-data.actions'
+import { actions, uploadGisSource } from './gis-data.actions'
 const labels = { name: 'Dataset', layers: 'Lapisan', filename: 'Berkas', featureCount: 'Jumlah fitur', updatedAt: 'Diubah pada', available: 'Status' }
 const status = { read: (record: { available: boolean }) => (record.available ? 'Tersedia' : 'Belum diunggah') }
 const uploadSchema = z.object({ source: z.custom<File>((value) => typeof File !== 'undefined' && value instanceof File, 'Pilih berkas sumber.') })
@@ -25,9 +25,7 @@ export const resource = defineResource({
         schema: uploadSchema,
         fields: { source: { renderer: GisSourceInput, label: 'Berkas sumber', props: { code: String(id) } } },
         submit: async ({ source }) => {
-          const saved = gisDataSelectSchema
-            .extend({ cleanupWarning: z.string().optional() })
-            .parse(await actions.update(id, { filename: source.name, data: gisFeatureCollectionSchema.parse(JSON.parse(await source.text())) }))
+          const saved = gisDataSelectSchema.extend({ cleanupWarning: z.string().optional() }).parse(await uploadGisSource(id, source))
           if (saved.cleanupWarning) toast.warning(saved.cleanupWarning)
           return saved
         },

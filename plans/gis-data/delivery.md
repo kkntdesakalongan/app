@@ -85,3 +85,22 @@ GeoPackage. The public map and dashboard share one overlay and legend.
   used the development database and temporary local storage. It restored the
   empty dataset record and removed the proof object.
 - Local evidence is in `.local/verification/jalur-evakuasi`.
+
+## Vulnerability and evacuation support layers
+
+The catalog and migration add 14 independently replaceable datasets. The
+converter selects named shapefiles and GeoPackage tables from the three Drive
+files. Large upload requests use gzip and the bucket stores complete GeoJSON.
+
+- Converted all 14 source layers and the existing evacuation overlay. Feature
+  counts matched the source files. The converter rejected a ZIP that lacked
+  the selected shapefile.
+- Applied the migration to the configured development database. It contains 20
+  GIS records. API and SDK type checks, focused API and web lint, the web build,
+  and surface architecture checks passed.
+- Chromium published physical vulnerability, environmental vulnerability, and
+  warning signs through the admin form. Fresh public reads matched the source
+  counts. The mobile map exposed 21 controls and allowed independent selection.
+- The E2E database and bucket were absent. Browser proof used the migrated
+  development database and an isolated local MinIO bucket. Evidence is in
+  `.local/verification/gis-layer-expansion`.

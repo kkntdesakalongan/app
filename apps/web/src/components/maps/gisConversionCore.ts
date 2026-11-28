@@ -2,7 +2,16 @@ import initSqlJs from 'sql.js'
 import proj4 from 'proj4'
 import shp from 'shpjs'
 import { z } from 'zod/v4'
-import { evacuationKinds, gisCodeSchema, gisDatasetUpdateSchema, gisGeometrySchema, type GisFeatureCollection } from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
+import {
+  evacuationKinds,
+  evacuationSupportingDatasets,
+  gisCodeSchema,
+  gisDatasetUpdateSchema,
+  gisGeometrySchema,
+  vulnerabilityClasses,
+  vulnerabilityDatasets,
+  type GisFeatureCollection,
+} from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
 
 export type { GisFeatureCollection } from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
 
@@ -13,7 +22,12 @@ type DatasetCode = z.infer<typeof gisCodeSchema>
 const nullableText = z.string().nullable()
 const nullableNumber = z.number().finite().nonnegative().nullable()
 const parcelIdentity = z.union([z.string(), z.number().finite(), z.null()])
-const hazardClass = z.enum(['RENDAH', 'SEDANG', 'TINGGI'])
+const hazardClass = z.enum(vulnerabilityClasses)
+
+function sourceName(properties: Record<string, unknown>, field?: string) {
+  const value = field ? properties[field] : null
+  return typeof value === 'string' ? value.trim() || null : null
+}
 
 function canonicalProperties(code: DatasetCode, properties: Record<string, unknown>, canonicalOnly = false) {
   switch (code) {
@@ -40,6 +54,8 @@ function canonicalProperties(code: DatasetCode, properties: Record<string, unkno
       const source = z.object({ NIB: parcelIdentity, PENGGUNAAN: nullableText }).parse(properties)
       return { parcelId: source.NIB, landUse: source.PENGGUNAAN ?? 'Tidak diketahui' }
     }
+    default:
+      throw new Error('Atribut dataset GIS tidak didukung.')
   }
 }
 
@@ -114,18 +130,22 @@ function readGeometry(bytes: Uint8Array, project: (point: Position) => Position)
 export async function convertGisBytes(bytes: ArrayBuffer, filename: string, inputCode: string, wasmUrl: string): Promise<GisFeatureCollection> {
   const code = gisCodeSchema.parse(inputCode)
   const extension = filename.split('.').pop()?.toLowerCase()
+  const vulnerability = vulnerabilityDatasets.find((dataset) => dataset.code === code)
+  const supporting = evacuationSupportingDatasets.find((dataset) => dataset.code === code)
+  const validate = (data: unknown) => gisDatasetUpdateSchema(code).parse({ filename, data }).data
   let data: unknown
-  if (extension === 'gpkg') {
+  if (extension === 'gpkg' && !vulnerability) {
     const SQL = await initSqlJs({ locateFile: () => wasmUrl })
     const db = new SQL.Database(new Uint8Array(bytes))
     try {
       const layers = db.exec('SELECT table_name, column_name, srs_id, z, m FROM gpkg_geometry_columns')[0]?.values ?? []
-      if (code !== 'jalur-evakuasi' && layers.length !== 1) throw new Error('GeoPackage harus memiliki satu layer poligon.')
-      const sources = code === 'jalur-evakuasi' ? evacuationKinds.map((kind) => ({ kind, layer: layers.find(([table]) => table === evacuationTables[kind]) })) : [{ kind: null, layer: layers[0] }]
+      if (code !== 'jalur-evakuasi' && !supporting && layers.length !== 1) throw new Error('GeoPackage harus memiliki satu layer poligon.')
+      const sources = code === 'jalur-evakuasi' ? evacuationKinds.map((kind) => ({ kind, table: evacuationTables[kind] })) : [{ kind: null, table: supporting?.table ?? layers[0]?.[0] }]
       const quote = (name: string) => '"' + name.replaceAll('"', '""') + '"'
       const features: GisFeatureCollection['features'] = []
-      for (const { kind, layer } of sources) {
-        if (!layer) throw new Error(kind ? `Layer GeoPackage tidak ditemukan: ${evacuationTables[kind]}.` : 'Layer GeoPackage tidak ditemukan.')
+      for (const { kind, table: sourceTable } of sources) {
+        const layer = layers.find(([table]) => table === sourceTable)
+        if (!layer) throw new Error(`Layer GeoPackage tidak ditemukan${typeof sourceTable === 'string' ? ` (${sourceTable})` : ''}.`)
         const [table, column, srs, zDimension, mDimension] = layer
         if (typeof table !== 'string' || typeof column !== 'string' || zDimension !== 0 || mDimension !== 0) throw new Error('Layer harus memiliki geometri dua dimensi.')
         const definition = db.exec('SELECT definition FROM gpkg_spatial_ref_sys WHERE srs_id = ' + Number(srs))[0]?.values[0]?.[0]
@@ -138,11 +158,14 @@ export async function convertGisBytes(bytes: ArrayBuffer, filename: string, inpu
             const blob = row[column]
             if (!(blob instanceof Uint8Array)) throw new Error('Geometri kosong tidak didukung.')
             const id = typeof row.fid === 'number' ? row.fid : features.length
-            const name = typeof row.nama === 'string' ? row.nama.trim() || null : null
             features.push({
               type: 'Feature',
               id: kind ? `${kind}-${id}` : id,
-              properties: kind ? { kind, name } : canonicalProperties(code, row),
+              properties: kind
+                ? { kind, name: sourceName(row, 'nama') }
+                : supporting
+                  ? { name: sourceName(row, 'nameField' in supporting ? supporting.nameField : undefined) }
+                  : canonicalProperties(code, row),
               geometry: readGeometry(blob, (point) => projection.forward(point)),
             })
           }
@@ -154,22 +177,42 @@ export async function convertGisBytes(bytes: ArrayBuffer, filename: string, inpu
     } finally {
       db.close()
     }
-  } else if (extension === 'zip' && code !== 'jalur-evakuasi') {
+  } else if (extension === 'zip' && code !== 'jalur-evakuasi' && !supporting) {
     const result = await shp(bytes)
+    if (vulnerability) {
+      const matches = (Array.isArray(result) ? result : [result]).filter((layer) => layer.fileName?.split(/[/\\]/).at(-1)?.toUpperCase() === vulnerability.shapefile)
+      if (matches.length !== 1) throw new Error(`ZIP harus memiliki satu shapefile ${vulnerability.shapefile}.`)
+      const parsed = collection.parse(matches[0])
+      return validate({
+        ...parsed,
+        features: parsed.features.map((feature) => {
+          const properties = feature.properties ?? {}
+          if (!(vulnerability.classField in properties)) throw new Error(`Kolom ${vulnerability.classField} tidak ditemukan.`)
+          const raw = properties[vulnerability.classField]
+          const value = typeof raw === 'string' ? raw.trim() : raw
+          const classification = vulnerability.classField === 'SKOR' ? vulnerabilityClasses[Number(value) - 1] : String(value).toUpperCase()
+          const name = sourceName(properties, 'nameField' in vulnerability ? vulnerability.nameField : undefined)
+          return { ...feature, properties: { name, vulnerabilityClass: value === '' || value === null ? null : hazardClass.parse(classification) } }
+        }),
+      })
+    }
     if (Array.isArray(result)) throw new Error('ZIP harus berisi satu shapefile beserta berkas pendampingnya.')
     data = result
   } else if (extension === 'geojson' || extension === 'json') {
     data = JSON.parse(new TextDecoder().decode(bytes))
   } else {
-    throw new Error(code === 'jalur-evakuasi' ? 'Gunakan GeoPackage Jalur Evakuasi atau GeoJSON.' : 'Gunakan GeoPackage, ZIP shapefile, atau GeoJSON.')
+    throw new Error(
+      vulnerability
+        ? 'Gunakan ZIP shapefile atau GeoJSON.'
+        : code === 'jalur-evakuasi' || supporting
+          ? 'Gunakan GeoPackage Jalur Evakuasi atau GeoJSON.'
+          : 'Gunakan GeoPackage, ZIP shapefile, atau GeoJSON.'
+    )
   }
-  if (code === 'jalur-evakuasi') return gisDatasetUpdateSchema(code).parse({ filename, data }).data
+  if (code === 'jalur-evakuasi' || supporting || vulnerability) return validate(data)
   const parsed = collection.parse(data)
-  return gisDatasetUpdateSchema(code).parse({
-    filename,
-    data: {
-      type: 'FeatureCollection',
-      features: parsed.features.map((feature) => ({ ...feature, properties: canonicalProperties(code, feature.properties ?? {}, extension === 'geojson' || extension === 'json') })),
-    },
-  }).data
+  return validate({
+    type: 'FeatureCollection',
+    features: parsed.features.map((feature) => ({ ...feature, properties: canonicalProperties(code, feature.properties ?? {}, extension === 'geojson' || extension === 'json') })),
+  })
 }

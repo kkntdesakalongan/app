@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import FileInput from '@southneuhof/loom/components/inputs/FileInput.vue'
-import { gisCodeSchema, gisFeatureCollectionSchema, type GisFeatureCollection } from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
+import {
+  evacuationSupportingDatasets,
+  gisCodeSchema,
+  gisFeatureCollectionSchema,
+  vulnerabilityDatasets,
+  type GisFeatureCollection,
+} from '@southneuhof/api/src/routes/(authenticated)/gis-data/schema.ts'
 import { convertGisFile } from './gisConversion'
 import GisPreview from './GisPreview.vue'
 const props = defineProps<{ code: string; disabled?: boolean; label?: string; error?: string }>()
 const evacuationCode = 'jalur-evakuasi'
-const evacuationFormats = ['.gpkg', '.json', '.geojson']
-const polygonFormats = ['.gpkg', '.zip', '.json', '.geojson']
+const formats = computed(() => {
+  const geojson = ['.json', '.geojson']
+  if (props.code === evacuationCode || evacuationSupportingDatasets.some(({ code }) => code === props.code)) return ['.gpkg', ...geojson]
+  if (vulnerabilityDatasets.some(({ code }) => code === props.code)) return ['.zip', ...geojson]
+  return ['.gpkg', '.zip', ...geojson]
+})
 const model = defineModel<File | null>()
 const preview = ref<GisFeatureCollection>()
 async function transform(file: File, context: { signal: AbortSignal }) {
@@ -24,13 +34,13 @@ watch(model, async (file) => {
 </script>
 <template>
   <div class="flex flex-col gap-3">
-    <FileInput v-model="model" mode="file" :disabled="disabled" :error="error" :accept="code === evacuationCode ? evacuationFormats : polygonFormats" :max-size="25" :transform="transform" />
+    <FileInput v-model="model" mode="file" :disabled="disabled" :error="error" :accept="formats" :max-size="25" :transform="transform" />
     <p class="text-sm text-on-surface-variant">
       Konversi berlangsung di perangkat ini. Hanya hasil konversi yang disimpan.
-      {{ code === evacuationCode ? 'Periksa posisi rute serta titik TES dan TEA sebelum menyimpan.' : 'Periksa posisi area sebelum menyimpan.' }}
+      {{ code === evacuationCode ? 'Periksa posisi rute serta titik TES dan TEA sebelum menyimpan.' : 'Periksa posisi fitur sebelum menyimpan.' }}
     </p>
     <template v-if="preview"
-      ><p class="text-sm">{{ preview.features.length.toLocaleString('id-ID') }} {{ code === evacuationCode ? 'fitur' : 'area' }} siap disimpan.</p>
+      ><p class="text-sm">{{ preview.features.length.toLocaleString('id-ID') }} fitur siap disimpan.</p>
       <GisPreview :data="preview" :code="code"
     /></template>
   </div>

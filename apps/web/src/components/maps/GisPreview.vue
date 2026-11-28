@@ -11,14 +11,14 @@ function render() {
   if (!map) return
   layer?.remove()
   layer = L.geoJSON(props.data, {
-    style: (feature) => (props.code === 'jalur-evakuasi' ? gisStyle(props.code, feature) : { color: '#2563eb', weight: 1, fillOpacity: 0.3 }),
+    style: (feature) => gisStyle(props.code, feature),
     pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: feature.properties?.kind === 'tea' ? 9 : 7 }),
   }).addTo(map)
   if (layer.getBounds().isValid()) map.fitBounds(layer.getBounds(), { padding: [20, 20] })
 }
 onMounted(() => {
   if (!host.value) return
-  map = L.map(host.value)
+  map = L.map(host.value, { preferCanvas: true })
   L.tileLayer(import.meta.env.VITE_MAP_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', maxZoom: 19 }).addTo(map)
   render()
 })
